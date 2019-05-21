@@ -1,9 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./Operator.sol";
-import "./interface/IRule.sol";
 import "./interface/IUserRegistry.sol";
-
+import "./util/governance/Operator.sol";
 
 /**
  * @title UserRegistry

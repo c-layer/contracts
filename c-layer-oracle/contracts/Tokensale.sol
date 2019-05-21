@@ -4,9 +4,9 @@ import "./interface/IUserRegistry.sol";
 import "./interface/ITokensale.sol";
 import "./interface/IRatesProvider.sol";
 import "./interface/IERC20.sol";
-import "./math/SafeMath.sol";
-import "./lifecycle/Pausable.sol";
-import "./Operator.sol";
+import "./util/math/SafeMath.sol";
+import "./util/lifecycle/Pausable.sol";
+import "./util/governance/Operator.sol";
 
 
 /**
@@ -190,6 +190,10 @@ contract Tokensale is ITokensale, Operator, Pausable {
 
   function totalRefundedETH() public view returns (uint256) {
     return totalRefundedETH_;
+  }
+
+  function allocatedTokens() public view returns (uint256) {
+    return allocatedTokens_;
   }
 
   function availableSupply() public view returns (uint256) {

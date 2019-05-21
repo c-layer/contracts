@@ -1,8 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./math/SafeMath.sol";
 import "./interface/IRatesProvider.sol";
-import "./Operator.sol";
+import "./util/math/SafeMath.sol";
+import "./util/governance/Operator.sol";
 
 
 /**
