@@ -1,7 +1,5 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../ownership/Ownable.sol";
-import "../math/SafeMath.sol";
 import "../token/ProvableOwnershipToken.sol";
 import "./Dividend.sol";
 import "../rule/WithRules.sol";
@@ -20,7 +18,7 @@ contract DividendWithRules is Dividend, WithRules {
    */
   constructor(ProvableOwnershipToken _token, IRule[] memory _rules) public
     Dividend(_token) WithRules(_rules)
-  { }
+  {} /* solhint-disable no-empty-blocks */
 
   /**
    * @dev claim the next dividend without a proof of ownership

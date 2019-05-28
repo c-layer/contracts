@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./interface/IUserRegistry.sol";
-import "./util/governance/Operator.sol";
+import "./util/governance/Operable.sol";
 
 /**
  * @title UserRegistry
@@ -20,7 +20,7 @@ import "./util/governance/Operator.sol";
  * UR06: User is already suspended
  * UR07: User is not suspended
 */
-contract UserRegistry is IUserRegistry, Operator {
+contract UserRegistry is IUserRegistry, Operable {
 
   struct User {
     uint256 validUntilTime;
@@ -293,7 +293,7 @@ contract UserRegistry is IUserRegistry, Operator {
    * @dev validity of the current user
    */
   function isValidInternal(User storage user) internal view returns (bool) {
-    // solium-disable-next-line security/no-block-members
+    // solhint-disable-next-line not-rely-on-time
     return !user.suspended && user.validUntilTime > now;
   }
 }

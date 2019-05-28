@@ -21,11 +21,10 @@ contract("UserRegistry", function (accounts) {
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
   const dayPlusTwoTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 48;
 
-  const operator = accounts[0];
-
   describe("without an operator", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new([], 0);
+      await userRegistry.removeOperator(accounts[0]);
     });
 
     it("should not register a user", async function () {
@@ -44,7 +43,6 @@ contract("UserRegistry", function (accounts) {
   describe("when empty with an operator", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new([], 0);
-      await userRegistry.defineOperators([ operator ]);
     });
 
     it("should have no users", async function () {
@@ -178,7 +176,6 @@ contract("UserRegistry", function (accounts) {
   describe("with 4 accounts registred", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new([accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
-      await userRegistry.defineOperators([ operator ]);
       await userRegistry.attachAddress(1, accounts[4]);
       await userRegistry.attachManyAddresses([ 2, 2 ], [accounts[5], accounts[6]]);
       await userRegistry.updateUser(3, dayMinusOneTime, false);
@@ -349,7 +346,6 @@ contract("UserRegistry", function (accounts) {
   describe("with 4 accounts and with 2 accounts suspended", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new([accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
-      await userRegistry.defineOperators([ accounts[0] ]);
       await userRegistry.suspendManyUsers([ 2, 3 ]);
     });
 

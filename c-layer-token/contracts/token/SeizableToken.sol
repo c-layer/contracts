@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./BaseToken.sol";
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/ISeizable.sol";
 
 
@@ -11,10 +11,9 @@ import "../interface/ISeizable.sol";
  * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
  *
  * Error messages
- * ST01: Owner cannot seize itself
+ * ST01: Operator cannot seize itself
 */
-contract SeizableToken is ISeizable, Ownable, BaseToken {
-  using SafeMath for uint256;
+contract SeizableToken is ISeizable, Operable, BaseToken {
 
   // Although very unlikely, the value below may overflow.
   // This contract and his childs should expect it to happened and consider
@@ -25,9 +24,9 @@ contract SeizableToken is ISeizable, Ownable, BaseToken {
    * @dev called by the owner to seize value from the account
    */
   function seize(address _account, uint256 _value)
-    public onlyOwner
+    public onlyOperator
   {
-    require(_account != owner, "ST01");
+    require(_account != msg.sender, "ST01");
 
     balances[_account] = balances[_account].sub(_value);
     balances[owner] = balances[owner].add(_value);

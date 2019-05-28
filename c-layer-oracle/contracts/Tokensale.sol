@@ -6,7 +6,7 @@ import "./interface/IRatesProvider.sol";
 import "./interface/IERC20.sol";
 import "./util/math/SafeMath.sol";
 import "./util/lifecycle/Pausable.sol";
-import "./util/governance/Operator.sol";
+import "./util/governance/Operable.sol";
 
 
 /**
@@ -39,10 +39,10 @@ import "./util/governance/Operator.sol";
  * TOS21: Cannot unspent more CHF than BASE_TOKEN_PRICE_CHF
  * TOS22: Token transfer must be successfull
  */
-contract Tokensale is ITokensale, Operator, Pausable {
+contract Tokensale is ITokensale, Operable, Pausable {
   using SafeMath for uint256;
 
-  uint32[5] contributionLimits = [
+  uint32[5] internal contributionLimits = [
     0,
     500000,
     1500000,
@@ -491,18 +491,19 @@ contract Tokensale is ITokensale, Operator, Pausable {
       _amountETH == 0 && _amountCHF != 0
       );
     require(isInvesting, "TOS16");
-    require(ratesProvider_.rateWEIPerCHFCent() != 0, "TOS17");
+    IRatesProvider.Currency chf = IRatesProvider.Currency.CHF;
+    require(ratesProvider_.rate(chf) != 0, "TOS17");
     uint256 investorId = userRegistry_.userId(_investor);
     require(userRegistry_.isValid(investorId), "TOS18");
 
     Investor storage investor = investors[investorId];
 
-    uint256 contributionCHF = ratesProvider_.convertWEIToCHFCent(
-      investor.unspentETH);
+    uint256 contributionCHF = ratesProvider_.convertFromWEI(
+      chf, investor.unspentETH);
 
     if (_amountETH > 0) {
       contributionCHF = contributionCHF.add(
-        ratesProvider_.convertWEIToCHFCent(_amountETH));
+        ratesProvider_.convertFromWEI(chf, _amountETH));
     }
     if (_amountCHF > 0) {
       contributionCHF = contributionCHF.add(_amountCHF);
@@ -523,8 +524,8 @@ contract Tokensale is ITokensale, Operator, Pausable {
         // from creating a too large and dangerous unspentETH value
         require(unspentContributionCHF < BASE_PRICE_CHF_CENT, "TOS21");
       }
-      unspentETH = ratesProvider_.convertCHFCentToWEI(
-        unspentContributionCHF);
+      unspentETH = ratesProvider_.convertToWEI(
+        chf, unspentContributionCHF);
     }
 
     /** Spent ETH **/
@@ -572,8 +573,8 @@ contract Tokensale is ITokensale, Operator, Pausable {
       emit ChangeETHCHF(
         _investor,
         spentETH,
-        ratesProvider_.convertWEIToCHFCent(spentETH),
-        ratesProvider_.rateWEIPerCHFCent());
+        ratesProvider_.convertFromWEI(chf, spentETH),
+        ratesProvider_.rate(chf));
     }
     emit Investment(investorId, investedCHF);
   }
@@ -583,7 +584,7 @@ contract Tokensale is ITokensale, Operator, Pausable {
    * @dev current time
    */
   function currentTime() private view returns (uint256) {
-    // solium-disable-next-line security/no-block-members
+    // solhint-disable-next-line not-rely-on-time
     return now;
   }
 }

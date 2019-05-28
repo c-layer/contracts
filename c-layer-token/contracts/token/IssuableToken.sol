@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./BaseToken.sol";
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/IIssuable.sol";
 
 
@@ -10,7 +10,7 @@ import "../interface/IIssuable.sol";
  * @dev BasicToken contract which implement an issuing mechanism.
  * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
  */
-contract IssuableToken is IIssuable, Ownable, BaseToken {
+contract IssuableToken is IIssuable, Operable, BaseToken {
 
   // Overflow on attributes below is an expected behavior
   // The contract should not be locked because
@@ -22,7 +22,7 @@ contract IssuableToken is IIssuable, Ownable, BaseToken {
   /**
    * @dev called by the owner to increase the supply
    */
-  function issue(uint256 _amount) public onlyOwner {
+  function issue(uint256 _amount) public onlyOperator {
     balances[owner] = balances[owner].add(_amount);
     totalSupply_ = totalSupply_.add(_amount);
 
@@ -33,7 +33,7 @@ contract IssuableToken is IIssuable, Ownable, BaseToken {
   /**
    * @dev called by the owner to decrease the supply
    */
-  function redeem(uint256 _amount) public onlyOwner {
+  function redeem(uint256 _amount) public onlyOperator {
     balances[owner] = balances[owner].sub(_amount);
     totalSupply_ = totalSupply_.sub(_amount);
 

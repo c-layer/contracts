@@ -1,8 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-
 import "../../interface/IERC20.sol";
 import "../math/SafeMath.sol";
+
 
 /**
  * @title Base token

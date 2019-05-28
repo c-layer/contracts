@@ -23,9 +23,8 @@ contract YesNoRule is IRule {
   }
 
   function isTransferValid(
-    address /* _from */,
-    address /*_to */,
-    uint256 /*_amount */)
+    // solhint-disable-next-line space-after-comma
+    address /* _from */, address /*_to */, uint256 /*_amount */)
     public view returns (bool)
   {
     return yesNo;

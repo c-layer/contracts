@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/IRule.sol";
 
 
@@ -14,7 +14,7 @@ import "../interface/IRule.sol";
  * Error messages
  * LOR01: startAt must be before or equal to endAt
  */
-contract LockRule is IRule, Ownable {
+contract LockRule is IRule, Operable {
 
   enum Direction {
     NONE,
@@ -30,8 +30,8 @@ contract LockRule is IRule, Ownable {
     bool scheduleInverted;
   }
 
-  mapping(address => Direction) individualPasses;
-  ScheduledLock lock = ScheduledLock(
+  mapping(address => Direction) internal individualPasses;
+  ScheduledLock internal lock = ScheduledLock(
     Direction.NONE,
     0,
     0,
@@ -86,7 +86,7 @@ contract LockRule is IRule, Ownable {
    * @dev isLocked
    */
   function isLocked() public view returns (bool) {
-    // solium-disable-next-line security/no-block-members
+    // solhint-disable-next-line not-rely-on-time
     return (lock.startAt <= now && lock.endAt > now)
       ? !lock.scheduleInverted : lock.scheduleInverted;
   }
@@ -124,7 +124,7 @@ contract LockRule is IRule, Ownable {
    * @dev allow owner to provide a pass to an address
    */
   function definePass(address _address, uint256 _lock)
-    public onlyOwner returns (bool)
+    public onlyOperator returns (bool)
   {
     individualPasses[_address] = Direction(_lock);
     emit PassDefinition(_address, Direction(_lock));
@@ -135,7 +135,7 @@ contract LockRule is IRule, Ownable {
    * @dev allow owner to provide addresses with lock passes
    */
   function defineManyPasses(address[] memory _addresses, uint256 _lock)
-    public onlyOwner returns (bool)
+    public onlyOperator returns (bool)
   {
     bool result = true;
     for (uint256 i = 0; i < _addresses.length && result; i++) {
@@ -150,7 +150,7 @@ contract LockRule is IRule, Ownable {
   function scheduleLock(
     Direction _restriction,
     uint256 _startAt, uint256 _endAt, bool _scheduleInverted)
-    public onlyOwner returns (bool)
+    public onlyOperator returns (bool)
   {
     require(_startAt <= _endAt, "LOR01");
     lock = ScheduledLock(

@@ -17,11 +17,11 @@ contract ITokensale {
 
   // Minimal Auto Withdraw must be allow the nominal price
   // to ensure enough remains on the balance to refund the investors
-  uint256 constant MINIMAL_AUTO_WITHDRAW = 0.5 ether;
-  uint256 constant MINIMAL_BALANCE = 0.5 ether;
-  uint256 constant MINIMAL_INVESTMENT = 50; // tokens
-  uint256 constant BASE_PRICE_CHF_CENT = 500;
-  uint256 constant KYC_LEVEL_KEY = 1;
+  uint256 constant public MINIMAL_AUTO_WITHDRAW = 0.5 ether;
+  uint256 constant public MINIMAL_BALANCE = 0.5 ether;
+  uint256 constant public MINIMAL_INVESTMENT = 50; // tokens
+  uint256 constant public BASE_PRICE_CHF_CENT = 500;
+  uint256 constant public KYC_LEVEL_KEY = 1;
 
   function minimalAutoWithdraw() public view returns (uint256);
   function minimalBalance() public view returns (uint256);

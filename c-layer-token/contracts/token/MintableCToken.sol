@@ -14,7 +14,8 @@ contract MintableCToken is CToken, MintableToken {
   /**
    * @dev constructor
    */
-  constructor(string memory _name, string memory _symbol, uint256 _decimal)
-    CToken(_name, _symbol, _decimal) public {}
+  constructor(string memory _name, string memory _symbol, IRule[] memory _rules)
+    public CToken(_name, _symbol, _rules)
+    {} /* solhint-disable no-empty-blocks */
 }
 

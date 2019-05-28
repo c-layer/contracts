@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./ProvableOwnershipToken.sol";
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/IWithClaims.sol";
 
 
@@ -18,9 +18,9 @@ import "../interface/IWithClaims.sol";
  * E02: Claimables parameter must not be empty
  * E03: Claimable does not exist
 **/
-contract TokenWithClaims is IWithClaims, Ownable, ProvableOwnershipToken {
+contract TokenWithClaims is IWithClaims, Operable, ProvableOwnershipToken {
 
-  IClaimable[] claimables_;
+  IClaimable[] internal claimables_;
 
   /**
    * @dev Constructor
@@ -132,7 +132,7 @@ contract TokenWithClaims is IWithClaims, Ownable, ProvableOwnershipToken {
   /**
    * @dev define claimables contract to this token
    */
-  function defineClaimables(IClaimable[] memory _claimables) public onlyOwner {
+  function defineClaimables(IClaimable[] memory _claimables) public onlyOperator {
     claimables_ = _claimables;
     emit ClaimablesDefined();
   }

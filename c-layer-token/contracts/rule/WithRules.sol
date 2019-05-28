@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/IWithRules.sol";
 import "../interface/IRule.sol";
 
@@ -23,7 +23,7 @@ import "../interface/IRule.sol";
  * WR01: The rules rejected this address
  * WR02: The rules rejected the transfer
  **/
-contract WithRules is IWithRules, Ownable {
+contract WithRules is IWithRules, Operable {
 
   IRule[] internal rules_;
 
@@ -92,7 +92,7 @@ contract WithRules is IWithRules, Ownable {
   /**
    * @dev Define rules to the token
    */
-  function defineRules(IRule[] memory _rules) public onlyOwner {
+  function defineRules(IRule[] memory _rules) public onlyOperator {
     rules_ = _rules;
     emit RulesDefined();
   }

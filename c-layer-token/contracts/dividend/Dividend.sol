@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../ownership/Ownable.sol";
-import "../math/SafeMath.sol";
+import "../util/governance/Operable.sol";
+import "../util/math/SafeMath.sol";
 import "../token/ProvableOwnershipToken.sol";
 import "../interface/IDividend.sol";
 import "../interface/IERC20.sol";
@@ -17,7 +17,7 @@ import "../interface/IERC20.sol";
  * DI01: This contract must have access to the funds
  * DI02: Not enough funds have been provided
 */
-contract Dividend is IDividend, Ownable {
+contract Dividend is IDividend, Operable {
   using SafeMath for uint256;
 
   // Dividends are distributed proportionnaly to ownership of (token)
@@ -160,7 +160,7 @@ contract Dividend is IDividend, Ownable {
    * @dev create a new dividend
    */
   function createDividend(IERC20 _payToken, address _vault, uint256 _amount)
-    public onlyOwner
+    public onlyOperator
   {
     require(_payToken.allowance(_vault, address(this)) >= _amount, "DI01");
     require(_payToken.balanceOf(_vault) >= _amount, "DI02");
@@ -169,7 +169,7 @@ contract Dividend is IDividend, Ownable {
       _vault,
       _amount,
       token_.totalSupply(),
-      // solium-disable-next-line security/no-block-members
+      // solhint-disable-next-line not-rely-on-time
       now
     );
     emit DividendAdded(dividendCount_, address(_payToken), _amount);
@@ -179,7 +179,7 @@ contract Dividend is IDividend, Ownable {
   /**
    * @dev number of dividends created
    */
-  function updateToken(ProvableOwnershipToken _token) public onlyOwner {
+  function updateToken(ProvableOwnershipToken _token) public onlyOperator {
     token_ = _token;
     emit TokenUpdated(token_);
   }

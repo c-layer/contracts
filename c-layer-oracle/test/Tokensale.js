@@ -21,6 +21,7 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 contract("Tokensale", function (accounts) {
   let sale, token, userRegistry, ratesProvider;
 
+  const CHF = 4;
   const KYC_LEVEL_KEY = 1;
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[0];
@@ -32,7 +33,6 @@ contract("Tokensale", function (accounts) {
   before(async function () {
     userRegistry = await UserRegistry.new(
       [ accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6] ], dayPlusOneTime);
-    await userRegistry.defineOperators([ accounts[0] ]);
     await userRegistry.updateUserExtended(1, KYC_LEVEL_KEY, 0);
     await userRegistry.updateUserExtended(2, KYC_LEVEL_KEY, 1);
     await userRegistry.updateUserExtended(3, KYC_LEVEL_KEY, 2);
@@ -40,13 +40,11 @@ contract("Tokensale", function (accounts) {
     await userRegistry.updateUserExtended(5, KYC_LEVEL_KEY, 4);
     await userRegistry.updateUserExtended(6, KYC_LEVEL_KEY, 5);
     ratesProvider = await RatesProvider.new();
-    await ratesProvider.defineOperators([ accounts[0] ]);
   });
 
   beforeEach(async function () {
     token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
     sale = await Tokensale.new(token.address, userRegistry.address, ratesProvider.address, vaultERC20, vaultETH);
-    await sale.defineOperators([ accounts[0] ]);
     await token.approve(sale.address, 1000000, { from: accounts[1] });
   });
 
@@ -381,7 +379,7 @@ contract("Tokensale", function (accounts) {
 
     describe("with SPA Defined, allocations defined, rate defined", async function () {
       beforeEach(async function () {
-        await ratesProvider.defineETHCHFRate(2072333, 2);
+        await ratesProvider.defineETHRate(CHF, 2072333, 2);
         await sale.defineSPA(sharePurchaseAgreementHash);
         await sale.allocateManyTokens([ accounts[2], accounts[3] ], [ 500, 4000 ]);
       });
@@ -413,12 +411,6 @@ contract("Tokensale", function (accounts) {
       });
 
       it("should allow accept SPA with value and above allocations", async function () {
-        console.log(await sale.allowedTokenInvestment(2, 200000));
-        console.log(await ratesProvider.convertWEIToCHFCent(web3.utils.toWei("0.1", "ether")));
-        console.log(await ratesProvider.convertWEIToCHFCent(web3.utils.toWei("1", "gwei")));
-        console.log(await ratesProvider.convertWEIToCHFCent(web3.utils.toWei("1000000", "ether")));
-        console.log(await userRegistry.userId(accounts[2]));
-
         const tx = await sale.acceptSPA(sharePurchaseAgreementHash,
           { from: accounts[2], value: web3.utils.toWei("0.1", "ether") });
         assert.ok(tx.receipt.status, "Status");
@@ -831,7 +823,7 @@ contract("Tokensale", function (accounts) {
     beforeEach(async function () {
       await sale.updateInvestorLimits([ 6 ], 80000000);
       await sale.updateSchedule(dayMinusOneTime, dayPlusOneTime);
-      await ratesProvider.defineETHCHFRate(2072333, 2);
+      await ratesProvider.defineETHRate(CHF, 2072333, 2);
     });
 
     describe("invest some CHF", async function () {

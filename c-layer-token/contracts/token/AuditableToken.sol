@@ -41,7 +41,7 @@ contract AuditableToken is IAuditable, BaseToken {
    * @dev Time of the last transaction
    */
   function lastTransactionAt(address _address) public view returns (uint256) {
-    return ( audits[_address].lastReceivedAt > audits[_address].lastSentAt ) ?
+    return (audits[_address].lastReceivedAt > audits[_address].lastSentAt) ?
       audits[_address].lastReceivedAt : audits[_address].lastSentAt;
   }
 
@@ -125,7 +125,7 @@ contract AuditableToken is IAuditable, BaseToken {
    * @dev currentTime()
    */
   function currentTime() internal view returns (uint256) {
-    // solium-disable-next-line security/no-block-members
+    // solhint-disable-next-line not-rely-on-time
     return now;
   }
 

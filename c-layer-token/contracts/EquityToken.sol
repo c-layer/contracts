@@ -10,13 +10,14 @@ import "./token/MintableCToken.sol";
  */
 contract EquityToken is MintableCToken {
 
+  // Equities are non divisible assets
+  uint256 internal decimal_ = 0;
+
   /**
    * @dev constructor
    */
-  constructor(string memory _name, string memory _symbol)
-    MintableCToken(_name, _symbol, 0) public
-  {
-    // Equities are non divisible assets
-  }
+  constructor(string memory _name, string memory _symbol, IRule[] memory _rules)
+    public MintableCToken(_name, _symbol, _rules)
+    {} /* solhint-disable no-empty-blocks */
 }
 

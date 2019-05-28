@@ -19,8 +19,8 @@ contract TokenWithRules is WithRules, BaseToken {
    * @dev Constructor
    */
   constructor(IRule[] memory _rules)
-    WithRules(_rules) public {}
-
+    public WithRules(_rules) {} /* solhint-disable no-empty-blocks */
+ 
   /**
    * @dev Overriden transfer function
    */

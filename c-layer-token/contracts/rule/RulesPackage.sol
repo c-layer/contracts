@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../ownership/Ownable.sol";
+import "../util/governance/Operable.sol";
 import "../interface/IRule.sol";
 
 
@@ -13,7 +13,7 @@ import "../interface/IRule.sol";
  *
  * Error messages
  **/
-contract RulesPackage is IRule, Ownable {
+contract RulesPackage is IRule, Operable {
 
   IRule[] internal rules_;
 
@@ -60,7 +60,7 @@ contract RulesPackage is IRule, Ownable {
   /**
    * @dev Define rules to the token
    */
-  function defineRules(IRule[] memory _rules) public onlyOwner {
+  function defineRules(IRule[] memory _rules) public onlyOperator {
     rules_ = _rules;
     emit RulesDefined(rules_.length);
   }

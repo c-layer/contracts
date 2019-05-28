@@ -19,6 +19,7 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 contract("RatesProvider", function (accounts) {
   let provider;
 
+  const CHF = 4;
   const ethToWei = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "4825789016504";
   const aETHCHFSample = "207220";
@@ -27,82 +28,83 @@ contract("RatesProvider", function (accounts) {
 
   beforeEach(async function () {
     provider = await RatesProvider.new();
-    await provider.defineOperators([  accounts[0] ]);
   });
 
   it("should convert rate from ETHCHF", async function () {
-    const rateWEICHFCent = await provider.convertRateFromETHCHF(aETHCHFSample, 2);
+    const rateWEICHFCent = await provider.convertRate(aETHCHFSample, 2);
     assert.equal(rateWEICHFCent.toString(), aWEICHFSample, "rate from ETHCHF");
   });
 
   it("should convert rate to ETHCHF", async function () {
-    const rateETHCHF = await provider.convertRateToETHCHF(aWEICHFSample, 2);
+    const rateETHCHF = await provider.convertRate(aWEICHFSample, 2);
     assert.equal(rateETHCHF.toString(), aETHCHFSample, "rate to ETHCHF");
   });
 
   it("should convert CHF Cent to 0", async function () {
-    const amountWEI = await provider.convertCHFCentToWEI(1000);
+    const amountWEI = await provider.convertToWEI(CHF, 1000);
     assert.equal(amountWEI.toString(), "0", "WEICHFCents");
   });
 
   it("should convert WEI to CHFCent to 0", async function () {
-    const amountCHFCent = await provider.convertWEIToCHFCent(ethToWei);
+    const amountCHFCent = await provider.convertFromWEI(CHF, ethToWei);
     assert.equal(amountCHFCent.toString(), "0", "no rates");
   });
 
   it("should have 0 rate WEICHFCent", async function () {
-    const rateWEICHFCent = await provider.rateWEIPerCHFCent();
+    const rateWEICHFCent = await provider.rate(CHF);
     assert.equal(rateWEICHFCent.toString(), "0", "WEICHFCents");
   });
 
   it("should have 0 rate ETHCHF", async function () {
-    const rateETHCHF = await provider.rateETHCHF(2);
+    const rateETHCHF = await provider.rateETH(CHF, 2);
     assert.equal(rateETHCHF.toString(), "0", "no rates");
   });
 
   it("should let operator define a rate", async function () {
-    const tx = await provider.defineRate(aWEICHFSample);
+    const tx = await provider.defineRate(CHF, aWEICHFSample);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
     assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
     assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
-    assert.ok(tx.logs[0].args.rateWEIPerCHFCent.toString(), aWEICHFSample, "rate");
+    assert.equal(tx.logs[0].args.currency, CHF, "currency");
+    assert.ok(tx.logs[0].args.rateFromWEI.toString(), aWEICHFSample, "rate");
   });
 
   it("should prevent anyone from defining a rate", async function () {
     await assertRevert(
-      provider.defineRate(aWEICHFSample, { from: accounts[1] }), "OP01");
+      provider.defineRate(CHF, aWEICHFSample, { from: accounts[1] }), "OP01");
   });
 
   it("should let authority define an ETHCHF rate", async function () {
-    const tx = await provider.defineETHCHFRate(aETHCHFSample, 2);
+    const tx = await provider.defineETHRate(CHF, aETHCHFSample, 2);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
     assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
     assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
-    assert.ok(tx.logs[0].args.rateWEIPerCHFCent.toString(), aWEICHFSample, "rate");
+    assert.equal(tx.logs[0].args.currency, CHF, "currency");
+    assert.ok(tx.logs[0].args.rateFromWEI.toString(), aWEICHFSample, "rate");
   });
 
   it("should prevent anyone from defining an ETHCHF rate", async function () {
     await assertRevert(
-      provider.defineETHCHFRate(aETHCHFSample, 2, { from: accounts[1] }),
+      provider.defineETHRate(CHF, aETHCHFSample, 2, { from: accounts[1] }),
       "OP01");
   });
 
   describe("With a rate defined", async function () {
     beforeEach(async function () {
-      await provider.defineRate(aWEICHFSample);
+      await provider.defineRate(CHF, aWEICHFSample);
     });
 
     it("should convert CHF Cent to 0", async function () {
-      const amountWEI = await provider.convertCHFCentToWEI(1000);
+      const amountWEI = await provider.convertToWEI(CHF, 1000);
       assert.equal(amountWEI.toString(), aWEICHFSample + "000", "WEICHFCents");
     });
 
     it("should convert WEI to CHFCent to 0", async function () {
-      const amountCHFCent = await provider.convertWEIToCHFCent(ethToWei);
+      const amountCHFCent = await provider.convertFromWEI(CHF, ethToWei);
       assert.equal(amountCHFCent.toString(), aETHCHFSample, "no rates");
     });
   });

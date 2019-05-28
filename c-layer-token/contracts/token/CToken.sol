@@ -15,19 +15,18 @@ import "../interface/IERC20.sol";
  */
 contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
 
-  string name_;
-  string symbol_;
-  uint256 decimal_;
+  string internal name_;
+  string internal symbol_;
+  uint256 internal decimal_ = 18;
 
   /**
    * @dev constructor
    */
-  constructor(string memory _name, string memory _symbol, uint256 _decimal)
-    TokenWithRules(new IRule[](0)) TokenWithClaims(new IClaimable[](0)) public
+  constructor(string memory _name, string memory _symbol, IRule[] memory _rules)
+    public TokenWithRules(_rules) TokenWithClaims(new IClaimable[](0))
   {
     name_ = _name;
     symbol_ = _symbol;
-    decimal_ = _decimal;
   }
 
   function name() public view returns (string memory) {
