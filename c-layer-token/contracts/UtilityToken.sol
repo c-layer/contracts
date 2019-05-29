@@ -4,11 +4,11 @@ import "./token/MintableCToken.sol";
 
 
 /**
- * @title PaymentToken
- * @dev PaymentToken contract
+ * @title UtilityToken
+ * @dev UtilityToken contract
  * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
  */
-contract PaymentToken is MintableCToken {
+contract UtilityToken is MintableCToken {
 
   /**
    * @dev constructor

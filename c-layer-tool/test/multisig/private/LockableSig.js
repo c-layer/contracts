@@ -7,7 +7,7 @@
 const assertRevert = require("../../helpers/assertRevert");
 const signer = require("../../helpers/signer");
 const LockableSig = artifacts.require("../contracts/multisig/private/LockableSig.sol");
-const Token = artifacts.require("token/Token.sol");
+const Token = artifacts.require("token/ERC20.sol");
 
 contract("LockableSig", function (accounts) {
   const DATA_TO_SIGN = web3.utils.sha3("LOCK");
@@ -18,7 +18,7 @@ contract("LockableSig", function (accounts) {
     beforeEach(async function () {
       lockableSig = await LockableSig.new([ accounts[1] ], 1);
       signer.multiSig = lockableSig;
-      token = await Token.new(lockableSig.address, 1000);
+      token = await Token.new("Test", "TST", lockableSig.address, 1000);
       request = {
         "params": [{
           "to": token.address,

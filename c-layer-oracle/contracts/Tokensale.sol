@@ -32,12 +32,13 @@ import "./util/governance/Operable.sol";
  * TOS14: Must refund ETH unspent
  * TOS15: Must withdraw ETH to vaultETH
  * TOS16: Cannot invest onchain and offchain at the same time
- * TOS17: A ETHCHF rate must exist to invest
+ * TOS17: A ETH rate must exist to invest
  * TOS18: User must be valid
  * TOS19: Cannot invest if no more tokens
  * TOS20: Investment is below the minimal investment
- * TOS21: Cannot unspent more CHF than BASE_TOKEN_PRICE_CHF
+ * TOS21: Cannot unspent more CHF than basePrice
  * TOS22: Token transfer must be successfull
+ * TOS23: Bonus is a percentage
  */
 contract Tokensale is ITokensale, Operable, Pausable {
   using SafeMath for uint256;
@@ -57,24 +58,29 @@ contract Tokensale is ITokensale, Operable, Pausable {
   IUserRegistry internal userRegistry_;
   IRatesProvider internal ratesProvider_;
 
+  uint256 internal basePrice_;
+  IRatesProvider.Currency internal baseCurrency_;
   uint256 internal minimalBalance_ = MINIMAL_BALANCE;
   bytes32 internal sharePurchaseAgreementHash_;
+  uint256 internal bonus_;
+  uint256 internal bonusUntil_;
 
   uint256 internal startAt_ = 4102441200;
   uint256 internal endAt_ = 4102441200;
   uint256 internal raisedETH_;
-  uint256 internal raisedCHF_;
-  uint256 internal totalRaisedCHF_;
+  uint256 internal raisedBase_;
+  uint256 internal totalRaised_;
   uint256 internal totalUnspentETH_;
   uint256 internal totalRefundedETH_;
   uint256 internal allocatedTokens_;
 
   struct Investor {
     uint256 unspentETH;
-    uint256 investedCHF;
+    uint256 investedBase;
     bool acceptedSPA;
     uint256 allocations;
     uint256 tokens;
+    uint256 bonus;
   }
   mapping(uint256 => Investor) investors;
   mapping(uint256 => uint256) investorLimits;
@@ -112,7 +118,13 @@ contract Tokensale is ITokensale, Operable, Pausable {
     IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
     address _vaultERC20,
-    address payable _vaultETH
+    address payable _vaultETH,
+    uint256 _basePrice,
+    IRatesProvider.Currency _baseCurrency,
+    uint256 _bonus,
+    uint256 _bonusUntil,
+    uint256 _startAt,
+    uint256 _endAt
   ) public
   {
     token_ = _token;
@@ -120,6 +132,11 @@ contract Tokensale is ITokensale, Operable, Pausable {
     ratesProvider_ = _ratesProvider;
     vaultERC20_ = _vaultERC20;
     vaultETH_ = _vaultETH;
+    basePrice_ = _basePrice;
+    baseCurrency_ = _baseCurrency;
+
+    updateBonus(_bonus, _bonusUntil);
+    updateSchedule(_startAt, _endAt);
   }
 
   /**
@@ -163,6 +180,14 @@ contract Tokensale is ITokensale, Operable, Pausable {
     return sharePurchaseAgreementHash_;
   }
 
+  function bonus() public view returns (uint256) {
+    return bonus_;
+  }
+
+  function bonusUntil() public view returns (uint256) {
+    return bonusUntil_;
+  }
+
   /* Sale status */
   function startAt() public view returns (uint256) {
     return startAt_;
@@ -176,12 +201,12 @@ contract Tokensale is ITokensale, Operable, Pausable {
     return raisedETH_;
   }
 
-  function raisedCHF() public view returns (uint256) {
-    return raisedCHF_;
+  function raisedBase() public view returns (uint256) {
+    return raisedBase_;
   }
 
-  function totalRaisedCHF() public view returns (uint256) {
-    return totalRaisedCHF_;
+  function totalRaised() public view returns (uint256) {
+    return totalRaised_;
   }
 
   function totalUnspentETH() public view returns (uint256) {
@@ -209,10 +234,10 @@ contract Tokensale is ITokensale, Operable, Pausable {
     return investors[_investorId].unspentETH;
   }
 
-  function investorInvestedCHF(uint256 _investorId)
+  function investorInvestedBase(uint256 _investorId)
     public view returns (uint256)
   {
-    return investors[_investorId].investedCHF;
+    return investors[_investorId].investedBase;
   }
 
   function investorAcceptedSPA(uint256 _investorId)
@@ -229,6 +254,10 @@ contract Tokensale is ITokensale, Operable, Pausable {
 
   function investorTokens(uint256 _investorId) public view returns (uint256) {
     return investors[_investorId].tokens;
+  }
+
+  function investorBonus(uint256 _investorId) public view returns (uint256) {
+    return investors[_investorId].bonus;
   }
 
   function investorCount() public view returns (uint256) {
@@ -254,10 +283,17 @@ contract Tokensale is ITokensale, Operable, Pausable {
   }
 
   /**
-   * @dev minimal balance
+   * @dev base price
    */
-  function basePriceCHFCent() public view returns (uint256) {
-    return BASE_PRICE_CHF_CENT;
+  function basePrice() public view returns (uint256) {
+    return basePrice_;
+  }
+
+  /**
+   * @dev base currency
+   */
+  function baseCurrency() public view returns (IRatesProvider.Currency) {
+    return baseCurrency_;
   }
 
   /**
@@ -274,7 +310,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
       limit = (investorLimits[_investorId] > 0
         ) ? investorLimits[_investorId] : contributionLimits[4];
     }
-    return limit.sub(investors[_investorId].investedCHF);
+    return limit.sub(investors[_investorId].investedBase);
   }
 
   /**
@@ -340,10 +376,22 @@ contract Tokensale is ITokensale, Operable, Pausable {
   /**
    * @dev add off chain investment
    */
-  function addOffChainInvestment(address _investor, uint256 _amountCHF)
+  function addOffChainInvestment(address _investor, uint256 _amountBase)
     public onlyOperator
   {
-    investInternal(_investor, 0, _amountCHF);
+    investInternal(_investor, 0, _amountBase);
+  }
+
+  /* Bonus */ 
+  /**
+   * @dev update Bonus
+   */
+  function updateBonus(uint256 _bonus, uint256 _bonusUntil)
+    public onlyOperator beforeSaleIsOpened
+  {
+    require(_bonus < 100, "TOS23");
+    bonus_ = _bonus.add(100);
+    bonusUntil_ = _bonusUntil;
   }
 
   /* Schedule */ 
@@ -444,21 +492,30 @@ contract Tokensale is ITokensale, Operable, Pausable {
    * @dev allowed token investment
    */
   function allowedTokenInvestment(
-    uint256 _investorId, uint256 _contributionCHF)
-    public view returns (uint256)
+    uint256 _investorId, uint256 _contributionBase)
+    public view returns (uint256, uint256)
   {
     uint256 tokens = 0;
-    uint256 allowedContributionCHF = contributionLimit(_investorId);
-    if (_contributionCHF < allowedContributionCHF) {
-      allowedContributionCHF = _contributionCHF;
+    uint256 tokensBonus = 0;
+    uint256 allowedContributionBase = contributionLimit(_investorId);
+    if (_contributionBase < allowedContributionBase) {
+      allowedContributionBase = _contributionBase;
     }
-    tokens = allowedContributionCHF.div(BASE_PRICE_CHF_CENT);
+    tokens = allowedContributionBase.div(basePrice_);
+
+    if(currentTime() < bonusUntil_) {
+      tokensBonus = tokens.mul(bonus_).div(100);
+    }
+
     uint256 availableTokens = availableSupply().sub(
       allocatedTokens_).add(investors[_investorId].allocations);
     if (tokens > availableTokens) {
       tokens = availableTokens;
     }
-    return tokens;
+    if (tokensBonus > availableTokens) {
+      tokensBonus = availableTokens;
+    }
+    return (tokens, tokensBonus);
   }
 
   /**
@@ -479,53 +536,52 @@ contract Tokensale is ITokensale, Operable, Pausable {
    * @dev invest internal
    */
   function investInternal(
-    address _investor, uint256 _amountETH, uint256 _amountCHF)
+    address _investor, uint256 _amountETH, uint256 _amountBase)
     private
   {
     // investment with _amountETH is decentralized
-    // investment with _amountCHF is centralized
+    // investment with _amountBase is centralized
     // They are mutually exclusive
     bool isInvesting = (
-        _amountETH != 0 && _amountCHF == 0
+        _amountETH != 0 && _amountBase == 0
       ) || (
-      _amountETH == 0 && _amountCHF != 0
+      _amountETH == 0 && _amountBase != 0
       );
     require(isInvesting, "TOS16");
-    IRatesProvider.Currency chf = IRatesProvider.Currency.CHF;
-    require(ratesProvider_.rate(chf) != 0, "TOS17");
+    require(ratesProvider_.rate(baseCurrency_) != 0, "TOS17");
     uint256 investorId = userRegistry_.userId(_investor);
     require(userRegistry_.isValid(investorId), "TOS18");
 
     Investor storage investor = investors[investorId];
 
-    uint256 contributionCHF = ratesProvider_.convertFromWEI(
-      chf, investor.unspentETH);
+    uint256 contributionBase = ratesProvider_.convertFromWEI(
+      baseCurrency_, investor.unspentETH);
 
     if (_amountETH > 0) {
-      contributionCHF = contributionCHF.add(
-        ratesProvider_.convertFromWEI(chf, _amountETH));
+      contributionBase = contributionBase.add(
+        ratesProvider_.convertFromWEI(baseCurrency_, _amountETH));
     }
-    if (_amountCHF > 0) {
-      contributionCHF = contributionCHF.add(_amountCHF);
+    if (_amountBase > 0) {
+      contributionBase = contributionBase.add(_amountBase);
     }
 
-    uint256 tokens = allowedTokenInvestment(investorId, contributionCHF);
+    (uint256 tokens, uint256 tokensBonus) = allowedTokenInvestment(investorId, contributionBase);
     require(tokens != 0, "TOS19");
     require(tokens >= MINIMAL_INVESTMENT, "TOS20");
 
     /** Calculating unspentETH value **/
-    uint256 investedCHF = tokens.mul(BASE_PRICE_CHF_CENT);
-    uint256 unspentContributionCHF = contributionCHF.sub(investedCHF);
+    uint256 investedBase = tokens.mul(basePrice_);
+    uint256 unspentContributionBase = contributionBase.sub(investedBase);
 
     uint256 unspentETH = 0;
-    if (unspentContributionCHF != 0) {
-      if (_amountCHF > 0) {
-        // Prevent CHF investment LARGER than available supply
+    if (unspentContributionBase != 0) {
+      if (_amountBase > 0) {
+        // Prevent Base investment LARGER than available supply
         // from creating a too large and dangerous unspentETH value
-        require(unspentContributionCHF < BASE_PRICE_CHF_CENT, "TOS21");
+        require(unspentContributionBase < basePrice_, "TOS21");
       }
       unspentETH = ratesProvider_.convertToWEI(
-        chf, unspentContributionCHF);
+        baseCurrency_, unspentContributionBase);
     }
 
     /** Spent ETH **/
@@ -537,12 +593,12 @@ contract Tokensale is ITokensale, Operable, Pausable {
         ? unspentETH.sub(investor.unspentETH)
         : investor.unspentETH.sub(unspentETH);
 
-      if (_amountCHF > 0) {
+      if (_amountBase > 0) {
         if (unspentETH < investor.unspentETH) {
           spentETH = unspentETHDiff;
         }
         // if unspentETH > investor.unspentETH
-        // then CHF has been converted into ETH
+        // then Base has been converted into ETH
         // and no ETH were spent
       }
       if (_amountETH > 0) {
@@ -555,28 +611,29 @@ contract Tokensale is ITokensale, Operable, Pausable {
     totalUnspentETH_ = totalUnspentETH_.sub(
       investor.unspentETH).add(unspentETH);
     investor.unspentETH = unspentETH;
-    investor.investedCHF = investor.investedCHF.add(investedCHF);
+    investor.investedBase = investor.investedBase.add(investedBase);
     investor.tokens = investor.tokens.add(tokens);
-    raisedCHF_ = raisedCHF_.add(_amountCHF);
+    investor.bonus = investor.bonus.add(tokensBonus);
+    raisedBase_ = raisedBase_.add(_amountBase);
     raisedETH_ = raisedETH_.add(spentETH);
-    totalRaisedCHF_ = totalRaisedCHF_.add(investedCHF);
+    totalRaised_ = totalRaised_.add(investedBase);
 
     allocatedTokens_ = allocatedTokens_.sub(investor.allocations);
     investor.allocations = (investor.allocations > tokens)
       ? investor.allocations.sub(tokens) : 0;
     allocatedTokens_ = allocatedTokens_.add(investor.allocations);
     require(
-      token_.transferFrom(vaultERC20_, _investor, tokens),
+      token_.transferFrom(vaultERC20_, _investor, tokensBonus),
       "TOS22");
 
     if (spentETH > 0) {
-      emit ChangeETHCHF(
+      emit ChangeETH(
         _investor,
         spentETH,
-        ratesProvider_.convertFromWEI(chf, spentETH),
-        ratesProvider_.rate(chf));
+        ratesProvider_.convertFromWEI(baseCurrency_, spentETH),
+        ratesProvider_.rate(baseCurrency_));
     }
-    emit Investment(investorId, investedCHF);
+    emit Investment(investorId, investedBase);
   }
 
   /* Util */

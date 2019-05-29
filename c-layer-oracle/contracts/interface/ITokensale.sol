@@ -20,12 +20,12 @@ contract ITokensale {
   uint256 constant public MINIMAL_AUTO_WITHDRAW = 0.5 ether;
   uint256 constant public MINIMAL_BALANCE = 0.5 ether;
   uint256 constant public MINIMAL_INVESTMENT = 50; // tokens
-  uint256 constant public BASE_PRICE_CHF_CENT = 500;
   uint256 constant public KYC_LEVEL_KEY = 1;
 
   function minimalAutoWithdraw() public view returns (uint256);
   function minimalBalance() public view returns (uint256);
-  function basePriceCHFCent() public view returns (uint256);
+  function basePrice() public view returns (uint256);
+  function baseCurrency() public view returns (IRatesProvider.Currency);
 
   /* General sale details */
   function token() public view returns (IERC20);
@@ -39,8 +39,8 @@ contract ITokensale {
   function startAt() public view returns (uint256);
   function endAt() public view returns (uint256);
   function raisedETH() public view returns (uint256);
-  function raisedCHF() public view returns (uint256);
-  function totalRaisedCHF() public view returns (uint256);
+  function raisedBase() public view returns (uint256);
+  function totalRaised() public view returns (uint256);
   function totalUnspentETH() public view returns (uint256);
   function totalRefundedETH() public view returns (uint256);
   function availableSupply() public view returns (uint256);
@@ -49,7 +49,7 @@ contract ITokensale {
   function investorUnspentETH(uint256 _investorId)
     public view returns (uint256);
 
-  function investorInvestedCHF(uint256 _investorId)
+  function investorInvestedBase(uint256 _investorId)
     public view returns (uint256);
 
   function investorAcceptedSPA(uint256 _investorId)
@@ -72,7 +72,7 @@ contract ITokensale {
 
   /* Investment */
   function investETH() public payable;
-  function addOffChainInvestment(address _investor, uint256 _amountCHF)
+  function addOffChainInvestment(address _investor, uint256 _amountBase)
     public;
 
   /* Schedule */
@@ -98,9 +98,9 @@ contract ITokensale {
   );
   event Investment(
     uint256 investorId,
-    uint256 spentCHF
+    uint256 spentBase
   );
-  event ChangeETHCHF(
+  event ChangeETH(
     address investor,
     uint256 amount,
     uint256 converted,

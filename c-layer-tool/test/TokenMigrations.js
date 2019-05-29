@@ -5,7 +5,7 @@
  */
 
 const assertRevert = require("./helpers/assertRevert");
-const Token = artifacts.require("token/Token.sol");
+const Token = artifacts.require("token/ERC20.sol");
 const TokenMigrations = artifacts.require("TokenMigrations.sol");
 
 contract("TokenMigrations", function (accounts) {
@@ -16,8 +16,8 @@ contract("TokenMigrations", function (accounts) {
   let migrations, token, badToken;
 
   beforeEach(async function () {
-    badToken = await Token.new(accounts[0], 666);
-    token = await Token.new(accounts[0], supply);
+    badToken = await Token.new("BadToken", "BAD", accounts[0], 666);
+    token = await Token.new("Goodtoken", "GOOD", accounts[0], supply);
     await token.transfer(accounts[1], account1Supply);
     migrations = await TokenMigrations.new(token.address);
   });
@@ -49,7 +49,7 @@ contract("TokenMigrations", function (accounts) {
   });
 
   it("should upgrade the initial token", async function () {
-    const newToken = await Token.new(migrations.address, supply);
+    const newToken = await Token.new("NewToken", "NEW", migrations.address, supply);
     const tx = await migrations.upgrade(newToken.address);
     assert.ok(tx.receipt.status, "status");
     assert.equal(tx.logs.length, 1);
@@ -62,12 +62,12 @@ contract("TokenMigrations", function (accounts) {
   });
 
   it("should fail upgrade with insufficient tokens", async function () {
-    const newToken = await Token.new(migrations.address, supply - 1);
+    const newToken = await Token.new("NewToken", "NEW", migrations.address, supply - 1);
     await assertRevert(migrations.upgrade(newToken.address), "TM02");
   });
 
   it("should fail upgrade with too many tokens", async function () {
-    const newToken = await Token.new(migrations.address, supply + 1);
+    const newToken = await Token.new("NewToken", "NEW", migrations.address, supply + 1);
     await assertRevert(migrations.upgrade(newToken.address), "TM02");
   });
 
@@ -83,7 +83,7 @@ contract("TokenMigrations", function (accounts) {
     let newToken;
 
     beforeEach(async function () {
-      newToken = await Token.new(migrations.address, supply);
+      newToken = await Token.new("NewToken", "NEW", migrations.address, supply);
       await migrations.upgrade(newToken.address);
     });
 
@@ -119,7 +119,7 @@ contract("TokenMigrations", function (accounts) {
     });
 
     it("should upgrade the token again", async function () {
-      const newToken2 = await Token.new(migrations.address, supply);
+      const newToken2 = await Token.new("NewToken2", "NEW", migrations.address, supply);
       const tx = await migrations.upgrade(newToken2.address);
       assert.ok(tx.receipt.status, "status");
     });

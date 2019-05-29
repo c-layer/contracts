@@ -19,7 +19,7 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 contract("RatesProvider", function (accounts) {
   let provider;
 
-  const CHF = 4;
+  const CHF = 5;
   const ethToWei = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "4825789016504";
   const aETHCHFSample = "207220";

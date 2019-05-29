@@ -11,7 +11,7 @@ const signer = require("../../helpers/signer");
 // Hence the use of a mock witth a constructor for the test
 const DelegateSig = artifacts.require("../contracts/mock/DelegateSigMock.sol");
 
-const Token = artifacts.require("token/Token.sol");
+const Token = artifacts.require("token/ERC20.sol");
 
 contract("DelegateSig", function (accounts) {
   const DATA_TO_SIGN = web3.utils.sha3("GRANT");
@@ -22,7 +22,7 @@ contract("DelegateSig", function (accounts) {
     beforeEach(async function () {
       delegateSig = await DelegateSig.new([ accounts[1] ], 1);
       signer.multiSig = delegateSig;
-      token = await Token.new(delegateSig.address, 1000);
+      token = await Token.new("Test", "TST", delegateSig.address, 1000);
       await token.approve(accounts[0], 500);
       request1 = {
         "params": [{

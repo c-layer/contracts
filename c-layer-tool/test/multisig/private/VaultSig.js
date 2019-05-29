@@ -7,7 +7,7 @@
 const assertRevert = require("../../helpers/assertRevert");
 const signer = require("../../helpers/signer");
 const VaultSig = artifacts.require("../contracts/multisig/private/VaultSig.sol");
-const Token = artifacts.require("token/Token.sol");
+const Token = artifacts.require("token/ERC20.sol");
 
 contract("VaultSig", function (accounts) {
   let vaultSig;
@@ -17,7 +17,7 @@ contract("VaultSig", function (accounts) {
     beforeEach(async function () {
       vaultSig = await VaultSig.new([ accounts[1] ], 2);
       signer.multiSig = vaultSig;
-      token = await Token.new(vaultSig.address, 1000);
+      token = await Token.new("Test", "TST", vaultSig.address, 1000);
       request = {
         "params": [{
           "to": token.address,
@@ -39,7 +39,7 @@ contract("VaultSig", function (accounts) {
     beforeEach(async function () {
       vaultSig = await VaultSig.new([ accounts[1] ], 1);
       signer.multiSig = vaultSig;
-      token = await Token.new(vaultSig.address, 1000);
+      token = await Token.new("Test", "TST", vaultSig.address, 1000);
       request = {
         "params": [{
           "to": token.address,

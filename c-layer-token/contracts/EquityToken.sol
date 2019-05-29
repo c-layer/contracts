@@ -11,7 +11,7 @@ import "./token/MintableCToken.sol";
 contract EquityToken is MintableCToken {
 
   // Equities are non divisible assets
-  uint256 internal decimal_ = 0;
+  uint256 internal decimals_ = 0;
 
   /**
    * @dev constructor

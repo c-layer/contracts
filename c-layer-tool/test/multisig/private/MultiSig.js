@@ -7,13 +7,13 @@
 const assertRevert = require("../../helpers/assertRevert");
 const signer = require("../../helpers/signer");
 const MultiSig = artifacts.require("../contracts/multisig/private/MultiSig.sol");
-const Token = artifacts.require("token/Token.sol");
+const Token = artifacts.require("token/ERC20.sol");
 
 contract("MultiSig", function (accounts) {
   let multiSig, token, request;
 
   before(async function () {
-    token = await Token.new(accounts[0], 10000);
+    token = await Token.new("Test", "TST", accounts[0], 10000);
     request = {
      "params": [{
       "to": token.address,

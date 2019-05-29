@@ -17,7 +17,7 @@ contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
 
   string internal name_;
   string internal symbol_;
-  uint256 internal decimal_ = 18;
+  uint256 internal decimals_ = 18;
 
   /**
    * @dev constructor
@@ -37,7 +37,7 @@ contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
     return symbol_;
   }
 
-  function decimal() public view returns (uint256) {
-    return decimal_;
+  function decimals() public view returns (uint256) {
+    return decimals_;
   }
 }

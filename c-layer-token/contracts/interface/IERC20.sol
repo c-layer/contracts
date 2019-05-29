@@ -9,7 +9,7 @@ pragma solidity >=0.5.0 <0.6.0;
 contract IERC20 {
   function name() public view returns (string memory);
   function symbol() public view returns (string memory);
-  function decimal() public view returns (uint256);
+  function decimals() public view returns (uint256);
   function totalSupply() public view returns (uint256);
   function balanceOf(address who) public view returns (uint256);
   function transfer(address to, uint256 value) public returns (bool);

@@ -39,6 +39,18 @@ contract LockRule is IRule, Operable {
   );
 
   /**
+   * @dev constructor
+   */
+  constructor(
+    Direction _restriction,
+    uint256 _startAt, uint256 _endAt, bool _scheduleInverted,
+    address[] memory _passAddresses) public
+  {
+    scheduleLock(_restriction,
+      _startAt, _endAt, _scheduleInverted, _passAddresses);  
+  }
+ 
+  /**
    * @dev hasSendDirection
    */
   function hasSendDirection(Direction _direction) public pure returns (bool) {
@@ -123,23 +135,23 @@ contract LockRule is IRule, Operable {
   /**
    * @dev allow owner to provide a pass to an address
    */
-  function definePass(address _address, uint256 _lock)
+  function definePass(address _address, Direction _restriction)
     public onlyOperator returns (bool)
   {
-    individualPasses[_address] = Direction(_lock);
-    emit PassDefinition(_address, Direction(_lock));
+    individualPasses[_address] = _restriction;
+    emit PassDefinition(_address, _restriction);
     return true;
   }
 
   /**
    * @dev allow owner to provide addresses with lock passes
    */
-  function defineManyPasses(address[] memory _addresses, uint256 _lock)
+  function defineManyPasses(address[] memory _addresses, Direction _restriction)
     public onlyOperator returns (bool)
   {
     bool result = true;
     for (uint256 i = 0; i < _addresses.length && result; i++) {
-      result = definePass(_addresses[i], _lock);
+      result = definePass(_addresses[i], _restriction);
     }
     return result;
   }
@@ -149,7 +161,8 @@ contract LockRule is IRule, Operable {
    */
   function scheduleLock(
     Direction _restriction,
-    uint256 _startAt, uint256 _endAt, bool _scheduleInverted)
+    uint256 _startAt, uint256 _endAt, bool _scheduleInverted,
+    address[] memory _passAddresses)
     public onlyOperator returns (bool)
   {
     require(_startAt <= _endAt, "LOR01");
@@ -159,8 +172,11 @@ contract LockRule is IRule, Operable {
       _endAt,
       _scheduleInverted
     );
+
     emit LockDefinition(
       lock.restriction, lock.startAt, lock.endAt, lock.scheduleInverted);
+
+    return defineManyPasses(_passAddresses, _restriction);
   }
 
   /**

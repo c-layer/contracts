@@ -21,7 +21,7 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 contract("Tokensale", function (accounts) {
   let sale, token, userRegistry, ratesProvider;
 
-  const CHF = 4;
+  const CHF = 5;
   const KYC_LEVEL_KEY = 1;
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[0];
@@ -44,7 +44,18 @@ contract("Tokensale", function (accounts) {
 
   beforeEach(async function () {
     token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
-    sale = await Tokensale.new(token.address, userRegistry.address, ratesProvider.address, vaultERC20, vaultETH);
+    sale = await Tokensale.new(
+      token.address,
+      userRegistry.address,
+      ratesProvider.address,
+      vaultERC20,
+      vaultETH,
+      500,
+      CHF,
+      25,
+      4102441200,
+      4102441200,
+      4102441201);
     await token.approve(sale.address, 1000000, { from: accounts[1] });
   });
 
@@ -69,9 +80,9 @@ contract("Tokensale", function (accounts) {
     assert.equal(minimalBalance.toString(), web3.utils.toWei("5", "ether"), "minimalBalance");
   });
 
-  it("should have a basePriceCHFCent", async function () {
-    const basePriceCHFCent = await sale.basePriceCHFCent();
-    assert.equal(basePriceCHFCent.toString(), "500", "basePriceCHFCent");
+  it("should have a basePrice", async function () {
+    const basePrice = await sale.basePrice();
+    assert.equal(basePrice.toString(), "500", "basePrice");
   });
 
   it("should have a contribution limit Lvl0", async function () {
@@ -101,47 +112,56 @@ contract("Tokensale", function (accounts) {
 
   it("should have no allowedTokenInvestment Lvl0", async function () {
     const allowedTokenInvestmentLvl0 = await sale.allowedTokenInvestment(1, 50000);
-    assert.equal(allowedTokenInvestmentLvl0.toString(), 0, "allowedTokenInvestment lvl0");
+    assert.equal(allowedTokenInvestmentLvl0[0].toString(), 0, "allowedTokenInvestment lvl0");
+    assert.equal(allowedTokenInvestmentLvl0[1].toString(), 0, "allowedTokenInvestment lvl0 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl1 with low amount", async function () {
     const allowedTokenInvestmentLvl1 = await sale.allowedTokenInvestment(2, 50000);
-    assert.equal(allowedTokenInvestmentLvl1.toString(), 100, "allowedTokenInvestment lvl1");
+    assert.equal(allowedTokenInvestmentLvl1[0].toString(), 100, "allowedTokenInvestment lvl1");
+    assert.equal(allowedTokenInvestmentLvl1[1].toString(), 125, "allowedTokenInvestment lvl1 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl2 with low amount", async function () {
     const allowedTokenInvestmentLvl2 = await sale.allowedTokenInvestment(3, 50000);
-    assert.equal(allowedTokenInvestmentLvl2.toString(), 100, "allowedTokenInvestment lvl2");
+    assert.equal(allowedTokenInvestmentLvl2[0].toString(), 100, "allowedTokenInvestment lvl2");
+    assert.equal(allowedTokenInvestmentLvl2[1].toString(), 125, "allowedTokenInvestment lvl2 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl3 with low amount", async function () {
     const allowedTokenInvestmentLvl3 = await sale.allowedTokenInvestment(4, 50000);
-    assert.equal(allowedTokenInvestmentLvl3.toString(), 100, "allowedTokenInvestment lvl3");
+    assert.equal(allowedTokenInvestmentLvl3[0].toString(), 100, "allowedTokenInvestment lvl3");
+    assert.equal(allowedTokenInvestmentLvl3[1].toString(), 125, "allowedTokenInvestment lvl3 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl4 with low amount", async function () {
     const allowedTokenInvestmentLvl4 = await sale.allowedTokenInvestment(5, 50000);
-    assert.equal(allowedTokenInvestmentLvl4.toString(), 100, "allowedTokenInvestment lvl4");
+    assert.equal(allowedTokenInvestmentLvl4[0].toString(), 100, "allowedTokenInvestment lvl4");
+    assert.equal(allowedTokenInvestmentLvl4[1].toString(), 125, "allowedTokenInvestment lvl4 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl1 with too big amount", async function () {
     const allowedTokenInvestmentLvl1 = await sale.allowedTokenInvestment(2, 100000000);
-    assert.equal(allowedTokenInvestmentLvl1.toString(), 1000, "allowedTokenInvestment lvl1");
+    assert.equal(allowedTokenInvestmentLvl1[0].toString(), 1000, "allowedTokenInvestment lvl1");
+    assert.equal(allowedTokenInvestmentLvl1[1].toString(), 1250, "allowedTokenInvestment lvl1 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl2 with too big amount", async function () {
     const allowedTokenInvestmentLvl2 = await sale.allowedTokenInvestment(3, 100000000);
-    assert.equal(allowedTokenInvestmentLvl2.toString(), 3000, "allowedTokenInvestment lvl2");
+    assert.equal(allowedTokenInvestmentLvl2[0].toString(), 3000, "allowedTokenInvestment lvl2");
+    assert.equal(allowedTokenInvestmentLvl2[1].toString(), 3750, "allowedTokenInvestment lvl2 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl3 with too big amount", async function () {
     const allowedTokenInvestmentLvl3 = await sale.allowedTokenInvestment(4, 100000000);
-    assert.equal(allowedTokenInvestmentLvl3.toString(), 20000, "allowedTokenInvestment lvl3");
+    assert.equal(allowedTokenInvestmentLvl3[0].toString(), 20000, "allowedTokenInvestment lvl3");
+    assert.equal(allowedTokenInvestmentLvl3[1].toString(), 25000, "allowedTokenInvestment lvl3 bonus");
   });
 
   it("should have allowedTokenInvestment Lvl4 with too big amount", async function () {
     const allowedTokenInvestmentLvl4 = await sale.allowedTokenInvestment(5, 100000000);
-    assert.equal(allowedTokenInvestmentLvl4.toString(), 50000, "allowedTokenInvestment lvl4");
+    assert.equal(allowedTokenInvestmentLvl4[0].toString(), 50000, "allowedTokenInvestment lvl4");
+    assert.equal(allowedTokenInvestmentLvl4[1].toString(), 62500, "allowedTokenInvestment lvl4 bonus");
   });
 
   it("should have a token", async function () {
@@ -190,13 +210,13 @@ contract("Tokensale", function (accounts) {
   });
 
   it("should have raised 0 CHF", async function () {
-    const raisedCHF = await sale.raisedCHF();
-    assert.equal(raisedCHF.toString(), 0, "raisedCHF");
+    const raised = await sale.raisedBase();
+    assert.equal(raised.toString(), 0, "raised");
   });
 
   it("should have total raised CHF", async function () {
-    const totalRaisedCHF = await sale.totalRaisedCHF();
-    assert.equal(totalRaisedCHF.toString(), 0, "totalRaisedCHF");
+    const totalRaised = await sale.totalRaised();
+    assert.equal(totalRaised.toString(), 0, "totalRaised");
   });
 
   it("should have unspentETH 0 ETH", async function () {
@@ -247,7 +267,8 @@ contract("Tokensale", function (accounts) {
 
     it("should have allowedTokenInvestment Lvl5", async function () {
       const allowedTokenInvestmentLvl5 = await sale.allowedTokenInvestment(6, 100000000);
-      assert.equal(allowedTokenInvestmentLvl5.toString(), 160000, "allowedTokenInvestment lvl5");
+      assert.equal(allowedTokenInvestmentLvl5[0].toString(), 160000, "allowedTokenInvestment lvl5");
+      assert.equal(allowedTokenInvestmentLvl5[1].toString(), 200000, "allowedTokenInvestment lvl5 bonus");
     });
 
     it("should let owner define SPA", async function () {
@@ -398,7 +419,7 @@ contract("Tokensale", function (accounts) {
         assert.equal(tx.logs.length, 1, "events");
         assert.equal(tx.logs[0].event, "Investment", "event");
         assert.equal(tx.logs[0].args.investorId.toString(), 2, "investorId");
-        assert.equal(tx.logs[0].args.spentCHF.toString(), 25000, "tokens");
+        assert.equal(tx.logs[0].args.spentBase.toString(), 25000, "tokens");
       });
 
       it("should allow off chain investment over allocations", async function () {
@@ -407,7 +428,7 @@ contract("Tokensale", function (accounts) {
         assert.equal(tx.logs.length, 1, "events");
         assert.equal(tx.logs[0].event, "Investment", "event");
         assert.equal(tx.logs[0].args.investorId.toString(), 6, "investorId");
-        assert.equal(tx.logs[0].args.spentCHF.toString(), 10000000, "tokens");
+        assert.equal(tx.logs[0].args.spentBase.toString(), 10000000, "tokens");
       });
 
       it("should allow accept SPA with value and above allocations", async function () {
@@ -415,14 +436,14 @@ contract("Tokensale", function (accounts) {
           { from: accounts[2], value: web3.utils.toWei("0.1", "ether") });
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs.length, 2);
-        assert.equal(tx.logs[0].event, "ChangeETHCHF", "event");
+        assert.equal(tx.logs[0].event, "ChangeETH", "event");
         assert.equal(tx.logs[0].args.investor, accounts[2], "investor");
         assert.equal(formatETH(tx.logs[0].args.amount), 0.099, "amount change");
         assert.equal(tx.logs[0].args.converted.toString(), 207000, "converted");
         assert.equal(tx.logs[0].args.rate.toString(), 482547930279, "rate");
         assert.equal(tx.logs[1].event, "Investment", "event");
         assert.equal(tx.logs[1].args.investorId.toString(), 2, "investorId");
-        assert.equal(tx.logs[1].args.spentCHF.toString(), 207000, "spentCHF");
+        assert.equal(tx.logs[1].args.spentBase.toString(), 207000, "spentBase");
       });
 
       it("should allow accept SPA with value and below allocations", async function () {
@@ -430,14 +451,14 @@ contract("Tokensale", function (accounts) {
           { from: accounts[2], value: web3.utils.toWei("0.1", "ether") });
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs.length, 2);
-        assert.equal(tx.logs[0].event, "ChangeETHCHF", "event");
+        assert.equal(tx.logs[0].event, "ChangeETH", "event");
         assert.equal(tx.logs[0].args.investor, accounts[2], "investor");
         assert.equal(formatETH(tx.logs[0].args.amount), 0.099, "amount change");
         assert.equal(tx.logs[0].args.converted.toString(), 207000, "converted");
         assert.equal(tx.logs[0].args.rate.toString(), 482547930279, "rate");
         assert.equal(tx.logs[1].event, "Investment", "event");
         assert.equal(tx.logs[1].args.investorId.toString(), 2, "investorId");
-        assert.equal(tx.logs[1].args.spentCHF.toString(), 207000, "spentCHF");
+        assert.equal(tx.logs[1].args.spentBase.toString(), 207000, "spentBase");
       });
 
       it("should allow accept SPA with value and no allocations", async function () {
@@ -446,14 +467,14 @@ contract("Tokensale", function (accounts) {
 
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs.length, 2);
-        assert.equal(tx.logs[0].event, "ChangeETHCHF", "event");
+        assert.equal(tx.logs[0].event, "ChangeETH", "event");
         assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
         assert.equal(formatETH(tx.logs[0].args.amount), 0.099, "amount change");
         assert.equal(tx.logs[0].args.converted.toString(), 207000, "converted");
         assert.equal(tx.logs[0].args.rate.toString(), 482547930279, "rate");
         assert.equal(tx.logs[1].event, "Investment", "event");
         assert.equal(tx.logs[1].args.investorId.toString(), 3, "investorId");
-        assert.equal(tx.logs[1].args.spentCHF.toString(), 207000, "spentCHF");
+        assert.equal(tx.logs[1].args.spentBase.toString(), 207000, "spentBase");
       });
  
       describe("and some investment already done", async function () {
@@ -483,7 +504,7 @@ contract("Tokensale", function (accounts) {
 
         it("should have availableSupply", async function () {
           const availableSupply = await sale.availableSupply();
-          assert.equal(availableSupply.toString(), 979758, "availableSupply");
+          assert.equal(availableSupply.toString(), "974698", "availableSupply");
         });
 
         it("should have allocatedTokens", async function () {
@@ -496,9 +517,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(raisedETH), 0.299, "raisedETH");
         });
 
-        it("should have raised CHF", async function () {
-          const raisedCHF = await sale.raisedCHF();
-          assert.equal(raisedCHF.toString(), 9500000, "raisedCHF");
+        it("should have raised", async function () {
+          const raised = await sale.raisedBase();
+          assert.equal(raised.toString(), 9500000, "raised");
         });
 
         it("should have total unspentETH", async function () {
@@ -508,9 +529,9 @@ contract("Tokensale", function (accounts) {
             0, "total unspentETH");
         });
 
-        it("should have total raised CHF", async function () {
-          const totalRaisedCHF = await sale.totalRaisedCHF();
-          assert.equal(totalRaisedCHF.toString(), 10121000, "totalRaisedCHF");
+        it("should have total raised", async function () {
+          const totalRaised = await sale.totalRaised();
+          assert.equal(totalRaised.toString(), 10121000, "totalRaised");
         });
 
         it("should have refunded ETH", async function () {
@@ -523,9 +544,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH, "ether"), 0, "unspentETH 4");
         });
 
-        it("should have investor investedCHF for accounts2", async function () {
-          const investedCHF = await sale.investorInvestedCHF(4);
-          assert.equal(investedCHF.toString(), 9707000, "invested CHF 4");
+        it("should have investor investedBase for accounts2", async function () {
+          const investedBase = await sale.investorInvestedBase(4);
+          assert.equal(investedBase.toString(), 9707000, "invested Base 4");
         });
 
         it("should have investor acceptedSPA for accounts2", async function () {
@@ -543,6 +564,11 @@ contract("Tokensale", function (accounts) {
           assert.equal(tokens.toString(), 19414, "tokens 4");
         });
 
+        it("should have investorBonus for account4", async function () {
+          const bonus = await sale.investorBonus(4);
+          assert.equal(bonus.toString(), 24267, "tokens 4");
+        });
+
         it("should have investorLimit for account4", async function () {
           const investorLimit = await sale.investorLimit(4);
           assert.equal(investorLimit.toString(), 0, "limit 4");
@@ -553,9 +579,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH), 0, "unspentETH 3");
         });
 
-        it("should have investor investedCHF for accounts3", async function () {
-          const investedCHF = await sale.investorInvestedCHF(3);
-          assert.equal(investedCHF.toString(), 414000, "invested CHF 3");
+        it("should have investor investedBase for accounts3", async function () {
+          const investedBase = await sale.investorInvestedBase(3);
+          assert.equal(investedBase.toString(), 414000, "invested Base 3");
         });
 
         it("should have investor acceptedSPA for accounts3", async function () {
@@ -631,7 +657,7 @@ contract("Tokensale", function (accounts) {
 
         it("should have availableSupply", async function () {
           const availableSupply = await sale.availableSupply();
-          assert.equal(availableSupply.toString(), 977000, "availableSupply");
+          assert.equal(availableSupply.toString(), "971251", "availableSupply");
         });
 
         it("should have allocatedTokens", async function () {
@@ -644,14 +670,14 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(raisedETH), 0.241, "raisedETH");
         });
 
-        it("should have raised CHF", async function () {
-          const raisedCHF = await sale.raisedCHF();
-          assert.equal(raisedCHF.toString(), 10999999, "raisedCHF");
+        it("should have raised", async function () {
+          const raised = await sale.raisedBase();
+          assert.equal(raised.toString(), 10999999, "raised");
         });
 
-        it("should have total raised CHF", async function () {
-          const totalRaisedCHF = await sale.totalRaisedCHF();
-          assert.equal(totalRaisedCHF.toString(), 11500000, "totalRaisedCHF");
+        it("should have total raised", async function () {
+          const totalRaised = await sale.totalRaised();
+          assert.equal(totalRaised.toString(), 11500000, "totalRaised");
         });
 
         it("should have total unspentETH", async function () {
@@ -671,9 +697,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH), 0.003, "unspentETH 4");
         });
 
-        it("should have investor investedCHF for accounts4", async function () {
-          const investedCHF = await sale.investorInvestedCHF(4);
-          assert.equal(investedCHF.toString(), 10000000, "invested CHF 4");
+        it("should have investor invested for accounts4", async function () {
+          const investedBase = await sale.investorInvestedBase(4);
+          assert.equal(investedBase.toString(), 10000000, "invested Base 4");
         });
 
         it("should have investor acceptedSPA for accounts4", async function () {
@@ -701,9 +727,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH), 0.055, "unspentETH 3");
         });
 
-        it("should have investor investedCHF for accounts3", async function () {
-          const investedCHF = await sale.investorInvestedCHF(3);
-          assert.equal(investedCHF.toString(), 1500000, "invested CHF 3");
+        it("should have investor investedBase for accounts3", async function () {
+          const investedBase = await sale.investorInvestedBase(3);
+          assert.equal(investedBase.toString(), 1500000, "invested Base 3");
         });
 
         it("should have investor acceptedSPA for accounts3", async function () {
@@ -776,14 +802,14 @@ contract("Tokensale", function (accounts) {
             const tx = await sale.investETH({ from: accounts[5], value: web3.utils.toWei("5", "ether") });
             assert.ok(tx.receipt.status, "Status");
             assert.equal(tx.logs.length, 3);
-            assert.equal(tx.logs[0].event, "ChangeETHCHF", "event");
+            assert.equal(tx.logs[0].event, "ChangeETH", "event");
             assert.equal(tx.logs[0].args.investor, accounts[5], "investor");
             assert.equal(formatETH(tx.logs[0].args.amount), 4.999, "amount change");
             assert.equal(tx.logs[0].args.converted.toString(), 10361500, "converted");
             assert.equal(tx.logs[0].args.rate.toString(), 482547930279, "rate");
             assert.equal(tx.logs[1].event, "Investment", "event");
             assert.equal(tx.logs[1].args.investorId.toString(), 5, "investorId");
-            assert.equal(tx.logs[1].args.spentCHF.toString(), 10361500, "spentCHF");
+            assert.equal(tx.logs[1].args.spentBase.toString(), 10361500, "spentBase");
             assert.equal(tx.logs[2].event, "WithdrawETH", "event");
             assert.equal(tx.logs[2].args.receiver, vaultETH, "vaultETH");
             assert.equal(formatETH(tx.logs[2].args.amount), 6.8, "amount withdraw");
@@ -819,7 +845,7 @@ contract("Tokensale", function (accounts) {
     });
   });
 
-  describe("scenario 1: CHF investor Kyc Lvl5", async function () {
+  describe("scenario 1: investor Kyc Lvl5", async function () {
     beforeEach(async function () {
       await sale.updateInvestorLimits([ 6 ], 80000000);
       await sale.updateSchedule(dayMinusOneTime, dayPlusOneTime);
@@ -842,9 +868,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH), 0.051, "unspentETH");
         });
 
-        it("should have investor investedCHF for accounts3", async function () {
-          const investedCHF = await sale.investorInvestedCHF(6);
-          assert.equal(investedCHF.toString(), 80000000, "invested CHF");
+        it("should have investor invested for accounts3", async function () {
+          const investedBase = await sale.investorInvestedBase(6);
+          assert.equal(investedBase.toString(), 80000000, "invested");
         });
 
         it("should have total unspentETH", async function () {
@@ -873,9 +899,9 @@ contract("Tokensale", function (accounts) {
           assert.equal(formatETH(unspentETH), 0, "unspentETH");
         });
 
-        it("should have investor investedCHF for accounts3", async function () {
-          const investedCHF = await sale.investorInvestedCHF(6);
-          assert.equal(investedCHF.toString(), 40207000, "invested CHF");
+        it("should have investor invested for accounts3", async function () {
+          const investedBase = await sale.investorInvestedBase(6);
+          assert.equal(investedBase.toString(), 40207000, "invested");
         });
 
         it("should have total unspentETH", async function () {

@@ -26,7 +26,7 @@ contract("Operable", function (accounts) {
     const tx = await operable.removeOperator(accounts[0]);
     assert.ok(tx.receipt.status, "status");
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "OperatorCleared");
+    assert.equal(tx.logs[0].event, "OperatorRemoved");
     assert.equal(tx.logs[0].args.address_, accounts[0]);
   });
 

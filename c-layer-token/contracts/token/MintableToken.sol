@@ -12,10 +12,11 @@ import "../interface/IMintable.sol";
  *
  * Error messages
  * MT01: Token is already minted
-*/
+ * MT02: Parameters must be same length
+ */
 contract MintableToken is IMintable, Operable, BaseToken {
 
-  bool public mintingFinished_ = false;
+  bool internal mintingFinished_ = false;
 
   function mintingFinished() public view returns (bool) {
     return mintingFinished_;
@@ -56,16 +57,22 @@ contract MintableToken is IMintable, Operable, BaseToken {
 
   /**
    * @dev Function to mint all tokens at once
-   * @param _to The address that will receive the minted tokens.
-   * @param _amount The amount of tokens to mint.
+   * @param _recipients The addresses that will receive the minted tokens.
+   * @param _amounts The amounts of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
   function mintAtOnce(
-    address _to,
-    uint256 _amount
+    address[] memory _recipients,
+    uint256[] memory _amounts
   ) public canMint onlyOperator returns (bool)
   {
-    return mint(_to, _amount) && finishMinting();
+    require(_recipients.length == _amounts.length, "MT02");
+
+    bool result = true;
+    for(uint256 i=0; i<_recipients.length; i++) {
+      result = result && mint(_recipients[i], _amounts[i]);
+    }
+    return result && finishMinting();
   }
 
   event Mint(address indexed to, uint256 amount);

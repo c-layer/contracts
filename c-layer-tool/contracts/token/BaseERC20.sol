@@ -8,7 +8,7 @@ import "../math/SafeMath.sol";
  * @dev Base token default implementation
  * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
  */
-contract BaseToken {
+contract BaseERC20 {
   using SafeMath for uint256;
 
   uint256 internal totalSupply_;

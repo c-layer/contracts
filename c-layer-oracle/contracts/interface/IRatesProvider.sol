@@ -10,8 +10,8 @@ pragma solidity >=0.5.0 <0.6.0;
 contract IRatesProvider {
 
   // ETH is always the base currency
-  enum Currency { ETH, BTC, GBP, USD, CHF, EUR, CNY, JPY, CAD, AUD }
-  uint256 constant public CURRENCIES = 10;
+  enum Currency { ETH, BTC, EOS, GBP, USD, CHF, EUR, CNY, JPY, CAD, AUD }
+  uint256 constant public CURRENCIES = 11;
 
   function convertRate(uint256 _rate, uint256 _rateETHDecimal)
     public pure returns (uint256);
