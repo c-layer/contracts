@@ -34,6 +34,14 @@ contract Operable is Ownable {
   }
 
   /**
+   * @dev isOperator
+   * @param _address operator address
+   */
+  function isOperator(address _address) public view returns (bool) {
+    return operators_[_address];
+  }
+
+  /**
    * @dev removeOperator
    * @param _address operator address
    */

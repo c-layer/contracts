@@ -22,6 +22,16 @@ contract("Operable", function (accounts) {
     await assertRevert(operable.testOnlyOperator({ from: accounts[1] }), "OP01");
   });
 
+  it("should returns owner is operator", async function() {
+    const isOperator = await operable.isOperator(accounts[0]);
+    assert.ok(isOperator, "isOperator");
+  });
+
+  it("should returns non owner is not operator", async function() {
+    const isOperator = await operable.isOperator(accounts[1]);
+    assert.ok(!isOperator, "isOperator");
+  });
+
   it("should allow owner to remove an operator", async function () {
     const tx = await operable.removeOperator(accounts[0]);
     assert.ok(tx.receipt.status, "status");
@@ -62,6 +72,16 @@ contract("Operable", function (accounts) {
 
     it("should not allow non operator through onlyOperator modifier", async function () {
       await assertRevert(operable.testOnlyOperator({ from: accounts[2] }), "OP01");
+    });
+
+    it("should returns owner is operator", async function() {
+      const isOperator = await operable.isOperator(accounts[0]);
+      assert.ok(isOperator, "isOperator");
+    });
+
+    it("should returns new operator is now operator", async function() {
+      const isOperator = await operable.isOperator(accounts[1]);
+      assert.ok(isOperator, "isOperator");
     });
 
     it("should not allow non owner operator to remove a new operator", async function () {
