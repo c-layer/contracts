@@ -11,7 +11,7 @@ import "./governance/Ownable.sol";
  * Both the generation and the verification are off chain processes.
  * It is done through a versioning of the document hash
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * DO01: Document associated address must be provided

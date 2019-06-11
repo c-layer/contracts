@@ -3,7 +3,7 @@ pragma solidity >=0.5.0 <0.6.0;
 /**
  * @title MultiSig
  * @dev MultiSig contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * MS01: Valid signatures below threshold

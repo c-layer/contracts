@@ -15,7 +15,7 @@ import "../../interface/IPublicMultiSig.sol";
  * With a threshold of 0, approval is not required any more.
  * Only participants can approved transaction based on their weight
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * PMS01: Transaction is expired

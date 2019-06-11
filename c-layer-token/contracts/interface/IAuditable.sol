@@ -3,7 +3,7 @@ pragma solidity >=0.5.0 <0.6.0;
 /**
  * @title IAuditable
  * @dev IAuditable interface describing the audited data
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract IAuditable {
   function lastTransactionAt(address _address) public view returns (uint256);

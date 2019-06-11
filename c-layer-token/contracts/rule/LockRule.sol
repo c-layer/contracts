@@ -9,7 +9,7 @@ import "../interface/IRule.sol";
  * @dev LockRule contract
  * This rule allows to lock assets for a period of time
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * LOR01: startAt must be before or equal to endAt

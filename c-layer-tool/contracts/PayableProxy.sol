@@ -13,7 +13,7 @@ import "./governance/Ownable.sol";
  *
  * To avoid abuse the configuration need to be locked before the redirection is active
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * PP01: configuration is locked

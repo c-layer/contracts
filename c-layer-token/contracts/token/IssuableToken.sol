@@ -8,7 +8,7 @@ import "../interface/IIssuable.sol";
 /**
  * @title IssuableToken
  * @dev BasicToken contract which implement an issuing mechanism.
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract IssuableToken is IIssuable, Operable, BaseToken {
 

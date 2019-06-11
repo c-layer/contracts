@@ -8,7 +8,7 @@ import "./Operable.sol";
  * @dev The OperableAs contract enable the restrictions of operations to a set of operators
  * @dev It relies on another Operable contract and reuse the same list of operators
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * OA01: Message sender must be an operator

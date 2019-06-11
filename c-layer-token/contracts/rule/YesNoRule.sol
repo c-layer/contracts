@@ -9,7 +9,7 @@ import "../interface/IRule.sol";
  * The rule always answer the same response through isValid
  * Usefull for testing IWithRule implementation
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract YesNoRule is IRule {
   bool public yesNo;

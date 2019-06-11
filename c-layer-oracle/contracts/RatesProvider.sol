@@ -9,7 +9,7 @@ import "./util/governance/Operable.sol";
  * @title RatesProvider
  * @dev RatesProvider interface
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  *   RP01: No rates exists for the base currency ETH
@@ -17,16 +17,21 @@ import "./util/governance/Operable.sol";
 contract RatesProvider is IRatesProvider, Operable {
   using SafeMath for uint256;
 
+  string internal name_;
+
   // WEI are used to maximized storage precision
   // FIAT used cents as their currency unit
-  uint256[] internal rates_ = new uint256[](CURRENCIES);
+  uint256[] internal rates_ = new uint256[](CURRENCIES-1);
+  uint256 internal updatedAt_;
 
-  modifier noETH(Currency _currency) {
-    require(_currency != Currency.ETH, "RP01");
-    _;
+  /*
+   * @dev constructor
+   */
+  constructor(string memory _name) public {
+    name_ = _name;
   }
 
-  /**
+  /*
    * @dev convert rate from ETHCHF to WEICents
    */
   function convertRate(
@@ -44,10 +49,17 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
+   * @dev name
+   */
+  function name() public view returns (string memory) {
+    return name_;
+  }
+
+  /**
    * @dev rate as store for a currency
    */
   function rate(Currency _currency) public view returns (uint256) {
-    return rates_[uint256(_currency)];
+    return rates_[uint256(_currency)-1];
   }
 
   /**
@@ -58,7 +70,7 @@ contract RatesProvider is IRatesProvider, Operable {
   function rateETH(Currency _currency, uint256 _rateETHDecimal)
     public view returns (uint256)
   {
-    return convertRate(rates_[uint256(_currency)], _rateETHDecimal);
+    return convertRate(rate(_currency), _rateETHDecimal);
   }
 
   /**
@@ -69,12 +81,19 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
+   * @dev updatedAt
+   */
+  function updatedAt() public view returns (uint256) {
+    return updatedAt_;
+  }
+
+  /**
    * @dev convert from currency to WEI
    */
   function convertToWEI(Currency _currency, uint256 _amountCurrency)
     public view returns (uint256)
   {
-    return _amountCurrency.mul(rates_[uint256(_currency)]);
+    return _amountCurrency.mul(rate(_currency));
   }
 
   /**
@@ -83,11 +102,8 @@ contract RatesProvider is IRatesProvider, Operable {
   function convertFromWEI(Currency _currency, uint256 _amountWEI)
     public view returns (uint256)
   {
-    if (rates_[uint256(_currency)] == 0) {
-      return 0;
-    }
-
-    return _amountWEI.div(rates_[uint256(_currency)]);
+    uint256 rate_ = rate(_currency);
+    return (rate_ == 0) ? 0 : _amountWEI.div(rate_);
   }
 
   /**
@@ -96,48 +112,26 @@ contract RatesProvider is IRatesProvider, Operable {
   function convertBetween(Currency _a, Currency _b, uint256 _amountA)
     public view returns (uint256)
   {
-    if (rates_[uint256(_b)] == 0) {
-      return 0;
-    }
-
-    return _amountA.mul(rates_[uint256(_a)]).div(rates_[uint256(_b)]);
+    uint256 rateB_ = rate(_b);
+    (rateB_ == 0) ? 0 :  _amountA.mul(rate(_a)).div(rateB_);
   }
   
   /**
-   * @dev define rate
+   * @dev define all rates
    */
-  function defineRate(
-    Currency _currency, uint256 _rate)
-    public onlyOperator noETH(_currency)
-  {
-    rates_[uint256(_currency)] = _rate;
-    emit Rate(currentTime(), _currency, _rate);
-  }
-
-  /**
-   * @dev define many rate
-   */
-  function defineAllRates(uint256[] memory _rates)
+  function defineRates(uint256[] memory _rates)
     public onlyOperator
   {
+    updatedAt_ = currentTime();
     for (uint256 i=0; i < _rates.length; i++) {
-      if (_rates[i+1] != 0) {
-        rates_[i+1] = _rates[i];
-        emit Rate(currentTime(), Currency(i), _rates[i]);
+      if (rates_[i] != _rates[i]) {
+        rates_[i] = _rates[i];
+      }
+
+      if (_rates[i] != 0) {
+        emit Rate(updatedAt_, Currency(i+1), _rates[i]);
       }
     }
-  }
-
-  /**
-   * @dev define rate with decimals
-   */
-  function defineETHRate(
-    Currency _currency, uint256 _rateETH, uint256 _rateETHDecimal)
-    public onlyOperator noETH(_currency)
-  {
-    // The rate is inverted to maximize the decimals stored
-    defineRate(_currency,
-      convertRate(_rateETH, _rateETHDecimal));
   }
 
   /**

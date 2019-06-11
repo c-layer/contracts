@@ -6,7 +6,7 @@ import "./MultiSig.sol";
 /**
  * @title LockableSig
  * @dev LockableSig contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * LS01: Contract must be unlocked to execute

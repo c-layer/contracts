@@ -5,7 +5,7 @@ pragma solidity >=0.5.0 <0.6.0;
  * @title ContractMock
  * @dev ContractMock allows testing of contract interacting
  *
- * @author cyril.lapinte@gmail.com
+ * @author cyril@openfiz.com
  */
 contract ContractMock {
 

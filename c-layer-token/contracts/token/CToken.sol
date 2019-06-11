@@ -11,7 +11,7 @@ import "../interface/IERC20.sol";
 /**
  * @title CToken
  * @dev CToken contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
 

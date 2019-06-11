@@ -8,7 +8,7 @@ import "../interface/ISeizable.sol";
 /**
  * @title SeizableToken
  * @dev Token which allows owner to seize accounts
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * ST01: Operator cannot seize itself

@@ -6,7 +6,7 @@ import "./IRule.sol";
 /**
  * @title IWithRules
  * @dev IWithRules interface
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract IWithRules {
   function rules() public view returns (IRule[] memory);

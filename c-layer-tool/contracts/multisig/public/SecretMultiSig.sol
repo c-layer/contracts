@@ -9,7 +9,7 @@ import "./PublicMultiSig.sol";
  * Use the KECCAK256 to hide the transaction details
  * The details only need to be revealed at the execution time
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * SMS01: Only revealed transaction can be executed

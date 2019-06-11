@@ -10,7 +10,7 @@ import "./MultiSig.sol";
  * The following instruction allows to do it
  * addGrantInternal(contract, bytes4(keccak256(signature), [], 1);
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * DS01: Valid signatures must reach threshold

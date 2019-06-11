@@ -6,7 +6,7 @@ pragma solidity >=0.5.0 <0.6.0;
  * @dev IStateMachine interface
  * Implements a programmable state machine
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract IStateMachine {
   function stepsCount() public view returns (uint256);

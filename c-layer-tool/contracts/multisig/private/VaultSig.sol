@@ -8,7 +8,7 @@ import "./LockableSig.sol";
  * @dev VaultSig contract
  * The vault restrict operation to ETH or ERC20 transfer only
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * VS01: no data is expected when transfer ETH

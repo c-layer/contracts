@@ -26,7 +26,7 @@ const fs = require('fs');
 // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
 const secret = JSON.parse(fs.readFileSync(__dirname + "/../.secret.json"));
 const mnemonic = secret.mnemonic;
-const infuraKey = secret.infuraKey;
+const projectId = secret.projectId;
 
 module.exports = {
   /**
@@ -68,7 +68,7 @@ module.exports = {
     // Useful for deploying to a public network.
     // NB: It's important to wrap the provider as a function.
     ropsten: {
-      provider: () => new HDWalletProvider(mnemonic, 'https://ropsten.infura.io/${infuraKey}'),
+      provider: () => new HDWalletProvider(mnemonic, "https://ropsten.infura.io/v3/"+projectId),
       network_id: 3,       // Ropsten's id
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)

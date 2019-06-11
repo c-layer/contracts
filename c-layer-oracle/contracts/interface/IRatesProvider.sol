@@ -5,7 +5,7 @@ pragma solidity >=0.5.0 <0.6.0;
  * @title IRatesProvider
  * @dev IRatesProvider interface
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract IRatesProvider {
 
@@ -16,8 +16,10 @@ contract IRatesProvider {
   function convertRate(uint256 _rate, uint256 _rateETHDecimal)
     public pure returns (uint256);
 
+  function name() public view returns (string memory);
   function rate(Currency _currency) public view returns (uint256);
   function rates() public view returns (uint256[] memory);
+  function updatedAt() public view returns (uint256);
   function rateETH(Currency _currency, uint256 _rateETHDecimal)
     public view returns (uint256);
 
@@ -28,5 +30,5 @@ contract IRatesProvider {
   function convertBetween(Currency _a, Currency _b, uint256 _amountA)
     public view returns (uint256);
 
-  event Rate(uint256 at, Currency currency, uint256 rateFromWEI);
+  event Rate(uint256 at, Currency indexed currency, uint256 rateFromWEI);
 }

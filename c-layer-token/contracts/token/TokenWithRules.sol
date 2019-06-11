@@ -11,7 +11,7 @@ import "../interface/IRule.sol";
  * TokenWithRules is a token that will apply
  * rules restricting transferability
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract TokenWithRules is WithRules, BaseToken {
 

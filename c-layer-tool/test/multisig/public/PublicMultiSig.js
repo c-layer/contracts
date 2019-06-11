@@ -1,7 +1,7 @@
 "user strict";
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
 const assertJump = require("../../helpers/assertJump");

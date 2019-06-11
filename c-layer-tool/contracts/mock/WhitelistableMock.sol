@@ -7,7 +7,7 @@ import "../Whitelistable.sol";
  * @title WhitelistableMock
  * @dev WhitelistableMock contract
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract WhitelistableMock is Whitelistable {
 

@@ -9,7 +9,7 @@ import "./util/governance/Operable.sol";
  * Configure and manage users
  * Extended may be used externaly to store data within a user context
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * UR01: UserId is invalid
@@ -32,10 +32,13 @@ contract UserRegistry is IUserRegistry, Operable {
   mapping(address => uint256) internal walletOwners;
   uint256 internal userCount_;
 
+  string internal name_;
+
   /**
    * @dev contructor
    **/
-  constructor(address[] memory _addresses, uint256 _validUntilTime) public {
+  constructor(string memory _name, address[] memory _addresses, uint256 _validUntilTime) public {
+    name_ = _name;
     for (uint256 i = 0; i < _addresses.length; i++) {
       registerUserInternal(_addresses[i], _validUntilTime);
     }
@@ -46,6 +49,13 @@ contract UserRegistry is IUserRegistry, Operable {
    */
   function userCount() public view returns (uint256) {
     return userCount_;
+  }
+
+  /**
+   * @dev user registry name
+   */
+  function name() public view returns (string memory) {
+    return name_;
   }
 
   /**

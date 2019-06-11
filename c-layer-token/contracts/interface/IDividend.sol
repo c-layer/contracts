@@ -7,7 +7,7 @@ import "./IERC20.sol";
 /**
  * @title IDividend
  * @dev IDividend interface
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract IDividend {
 

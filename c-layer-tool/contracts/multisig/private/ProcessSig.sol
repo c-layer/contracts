@@ -7,7 +7,7 @@ import "./DelegateSig.sol";
 /**
  * @title ProcessSig
  * @dev ProcessSig contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * E01: ETH transfers not allowed

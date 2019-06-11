@@ -1,8 +1,9 @@
 # Compliance Layer SmartContracts
 
-Compliance Layer (C-Layer) monorepo.
+Welcome to the C-Layer Ethereum monorepo.
 
 ## Purpose
 
-Provide a blockchain layer with a compliance protocol supporting regulated asset classes and services.
+Provide an administrable layer over the ethereum blockchain protocol.
 
+One of the foremost use case is the support of regulated asset classes and financial services.

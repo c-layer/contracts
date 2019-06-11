@@ -4,7 +4,7 @@ pragma solidity >=0.5.0 <0.6.0;
 /**
  * @title Documentation interface
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
 */
 contract IDocumentation {
 

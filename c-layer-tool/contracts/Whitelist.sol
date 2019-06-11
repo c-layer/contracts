@@ -10,7 +10,7 @@ import "./interface/IWhitelist.sol";
  *
  * Whitelist a list of addresses only updatable by the owner
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract Whitelist is IWhitelist, Ownable {
 

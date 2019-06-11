@@ -6,7 +6,7 @@ import "./token/MintableCToken.sol";
 /**
  * @title BondToken
  * @dev BondToken contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract BondToken is MintableCToken {
 

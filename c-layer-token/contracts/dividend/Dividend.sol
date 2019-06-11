@@ -11,7 +11,7 @@ import "../interface/IERC20.sol";
  * @title Dividend
  * @dev Dividend contract
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * DI01: This contract must have access to the funds

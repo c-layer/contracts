@@ -1,15 +1,7 @@
 "user strict";
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@mtpelerin.com>
- *
- * Copyright © 2016 - 2018 Mt Pelerin Group SA - All Rights Reserved
- * This content cannot be used, copied or reproduced in part or in whole
- * without the express and written permission of Mt Pelerin Group SA.
- * Written by *Mt Pelerin Group SA*, <info@mtpelerin.com>
- * All matters regarding the intellectual property of this code or software
- * are subjects to Swiss Law without reference to its conflicts of law rules.
- *
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
 const assertRevert = require("./helpers/assertRevert");
@@ -23,8 +15,13 @@ contract("UserRegistry", function (accounts) {
 
   describe("without an operator", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new([], 0);
+      userRegistry = await UserRegistry.new("Test", [], 0);
       await userRegistry.removeOperator(accounts[0]);
+    });
+
+    it("should have a name", async function () {
+      const name = await userRegistry.name();
+      assert.equal(name, "Test", "name");
     });
 
     it("should not register a user", async function () {
@@ -42,7 +39,7 @@ contract("UserRegistry", function (accounts) {
 
   describe("when empty with an operator", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new([], 0);
+      userRegistry = await UserRegistry.new("Test", [], 0);
     });
 
     it("should have no users", async function () {
@@ -175,7 +172,9 @@ contract("UserRegistry", function (accounts) {
 
   describe("with 4 accounts registred", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new([accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
+      userRegistry = await UserRegistry.new(
+        "Test",
+        [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.attachAddress(1, accounts[4]);
       await userRegistry.attachManyAddresses([ 2, 2 ], [accounts[5], accounts[6]]);
       await userRegistry.updateUser(3, dayMinusOneTime, false);
@@ -345,7 +344,8 @@ contract("UserRegistry", function (accounts) {
  
   describe("with 4 accounts and with 2 accounts suspended", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new([accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
+      userRegistry = await UserRegistry.new("Test",
+        [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.suspendManyUsers([ 2, 3 ]);
     });
 

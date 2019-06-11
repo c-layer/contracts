@@ -9,7 +9,7 @@ import "../rule/WithRules.sol";
  * @title DividendWithRules
  * @dev DividendWithRules contract
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract DividendWithRules is Dividend, WithRules {
 

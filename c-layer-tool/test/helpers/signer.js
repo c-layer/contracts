@@ -1,6 +1,6 @@
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 const abi = web3.eth.abi;
 

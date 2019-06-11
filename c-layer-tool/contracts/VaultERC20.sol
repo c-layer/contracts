@@ -7,7 +7,7 @@ import "./governance/Operable.sol";
 /**
  * @title VaultERC20
  * @dev Vault managing ERC20
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * VLT01: Invalid number of parameters

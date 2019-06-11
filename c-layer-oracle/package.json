@@ -36,9 +36,9 @@
   "author": "Cyril Lapinte",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/c-layer/compliance-layer/issues"
+    "url": "https://github.com/c-layer/c-layer/issues"
   },
-  "homepage": "https://github.com/c-layer/compliance-layer",
+  "homepage": "https://github.com/c-layer/c-layer",
   "devDependencies": {
     "chai": "^4.2.0",
     "coveralls": "^3.0.1",

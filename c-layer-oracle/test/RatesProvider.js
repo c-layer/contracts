@@ -1,15 +1,7 @@
 "user strict";
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@mtpelerin.com>
- *
- * Copyright © 2016 - 2018 Mt Pelerin Group SA - All Rights Reserved
- * This content cannot be used, copied or reproduced in part or in whole
- * without the express and written permission of Mt Pelerin Group SA.
- * Written by *Mt Pelerin Group SA*, <info@mtpelerin.com>
- * All matters regarding the intellectual property of this code or software
- * are subjects to Swiss Law without reference to its conflicts of law rules.
- *
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
 const assertRevert = require("./helpers/assertRevert");
@@ -27,7 +19,12 @@ contract("RatesProvider", function (accounts) {
   const dayMinusOneTime = Math.floor((new Date()).getTime() / 1000) - 3600 * 24;
 
   beforeEach(async function () {
-    provider = await RatesProvider.new();
+    provider = await RatesProvider.new("Test");
+  });
+
+  it("should have a name", async function () {
+    const name = await provider.name();
+    assert.equal(name, "Test", "name");
   });
 
   it("should convert rate from ETHCHF", async function () {
@@ -61,7 +58,7 @@ contract("RatesProvider", function (accounts) {
   });
 
   it("should let operator define a rate", async function () {
-    const tx = await provider.defineRate(CHF, aWEICHFSample);
+    const tx = await provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
@@ -73,29 +70,12 @@ contract("RatesProvider", function (accounts) {
 
   it("should prevent anyone from defining a rate", async function () {
     await assertRevert(
-      provider.defineRate(CHF, aWEICHFSample, { from: accounts[1] }), "OP01");
-  });
-
-  it("should let authority define an ETHCHF rate", async function () {
-    const tx = await provider.defineETHRate(CHF, aETHCHFSample, 2);
-    assert.ok(tx.receipt.status, "Status");
-    assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "Rate", "event");
-    assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
-    assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
-    assert.equal(tx.logs[0].args.currency, CHF, "currency");
-    assert.ok(tx.logs[0].args.rateFromWEI.toString(), aWEICHFSample, "rate");
-  });
-
-  it("should prevent anyone from defining an ETHCHF rate", async function () {
-    await assertRevert(
-      provider.defineETHRate(CHF, aETHCHFSample, 2, { from: accounts[1] }),
-      "OP01");
+      provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ], { from: accounts[1] }), "OP01");
   });
 
   describe("With a rate defined", async function () {
     beforeEach(async function () {
-      await provider.defineRate(CHF, aWEICHFSample);
+      await provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ]);
     });
 
     it("should convert CHF Cent to 0", async function () {

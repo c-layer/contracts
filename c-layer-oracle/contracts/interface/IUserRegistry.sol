@@ -4,7 +4,7 @@ pragma solidity >=0.5.0 <0.6.0;
 /**
  * @title IUserRegistry
  * @dev IUserRegistry interface
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract IUserRegistry {
 
@@ -13,6 +13,7 @@ contract IUserRegistry {
   event AddressDetached(uint256 indexed userId, address address_);
 
   function userCount() public view returns (uint256);
+  function name() public view returns (string memory);
   function userId(address _address) public view returns (uint256);
   function validUserId(address _address) public view returns (uint256);
   function validUntilTime(uint256 _userId) public view returns (uint256);

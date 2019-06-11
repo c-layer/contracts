@@ -6,7 +6,7 @@ import "../governance/Operable.sol";
 /**
  * @title OperableMock
  * @dev Mock the Operable class
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract OperableMock is Operable {
 

@@ -14,7 +14,7 @@ import "./AuditableToken.sol";
  * A proofId is then returned.
  * The proof can later be used to retrieve the amount needed.
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract ProvableOwnershipToken is IProvableOwnership, AuditableToken {
   struct Proof {

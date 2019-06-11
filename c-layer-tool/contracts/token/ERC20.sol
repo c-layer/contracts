@@ -7,7 +7,7 @@ import "../interface/IERC20.sol";
 /**
  * @title ERC20
  * @dev BaseERC20 with supplies
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract ERC20 is IERC20, BaseERC20 {
 

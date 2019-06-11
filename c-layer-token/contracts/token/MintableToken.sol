@@ -8,7 +8,7 @@ import "../interface/IMintable.sol";
 /**
  * @title MintableToken
  * @dev MintableToken contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * MT01: Token is already minted

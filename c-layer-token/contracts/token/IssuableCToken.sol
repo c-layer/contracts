@@ -7,7 +7,7 @@ import "./CToken.sol";
 /**
  * @title IssuableCToken
  * @dev IssuableCToken contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract IssuableCToken is CToken, IssuableToken {
 

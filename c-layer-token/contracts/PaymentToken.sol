@@ -6,7 +6,7 @@ import "./token/MintableCToken.sol";
 /**
  * @title PaymentToken
  * @dev PaymentToken contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract PaymentToken is MintableCToken {
 

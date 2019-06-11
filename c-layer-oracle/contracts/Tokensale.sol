@@ -13,7 +13,7 @@ import "./util/governance/Operable.sol";
  * @title Tokensale
  * @dev Tokensale contract
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * TOS01: It must be before the sale is opened

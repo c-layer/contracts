@@ -9,7 +9,7 @@ import "./interface/IERC20.sol";
  * @dev TokenMigrations contract
  * @dev This version is compatible with all ERC20 tokens
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * TM01: Not enough tokens available to cover supply of previous token contract

@@ -6,7 +6,7 @@ import "./IClaimable.sol";
 /**
  * @title IWithClaims
  * @dev IWithClaims interface
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
 contract IWithClaims {
   function claimables() public view returns (IClaimable[] memory);

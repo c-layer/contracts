@@ -6,7 +6,7 @@ import "./MultiSig.sol";
 /**
  * @title CancellableSig
  * @dev CancellableSig contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  */

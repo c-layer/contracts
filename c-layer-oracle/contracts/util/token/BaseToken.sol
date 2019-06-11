@@ -7,7 +7,7 @@ import "../math/SafeMath.sol";
 /**
  * @title Base token
  * @dev Base token default implementation
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract BaseToken is IERC20 {
   using SafeMath for uint256;

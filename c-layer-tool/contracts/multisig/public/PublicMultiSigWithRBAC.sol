@@ -6,7 +6,7 @@ import "./PublicMultiSig.sol";
 /**
  * @title PublicMultiSigWithRBAC
  * @dev PublicMultiSigWithRBAC contract
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * PMSWR01: msg.sender is not a suggester

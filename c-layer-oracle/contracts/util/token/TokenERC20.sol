@@ -7,7 +7,7 @@ import "./BaseToken.sol";
 /**
  * @title Token ERC20 
  * @dev BaseToken with supplies
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract TokenERC20 is BaseToken {
   string internal name_;

@@ -8,7 +8,7 @@ import "./interface/IWhitelist.sol";
  * @title Whitelistable
  * @dev Whitelistable contract
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * W01: address is not whitelisted

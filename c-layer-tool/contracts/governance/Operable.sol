@@ -7,7 +7,7 @@ import "./Ownable.sol";
  * @title Operable
  * @dev The Operable contract enable the restrictions of operations to a set of operators
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * OP01: Message sender must be an operator

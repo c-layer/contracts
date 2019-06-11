@@ -6,7 +6,7 @@ import "../multisig/private/DelegateSig.sol";
 /**
  * @title DelegateSigMock
  * @dev Mock the DelegateSig class
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 contract DelegateSigMock is DelegateSig {
   /**

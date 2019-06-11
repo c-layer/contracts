@@ -10,7 +10,7 @@ import "./BaseToken.sol";
  * Auditable provides transaction data which can be used
  * in other smart contracts
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  **/
 contract AuditableToken is IAuditable, BaseToken {

@@ -11,7 +11,7 @@ import "../interface/IWithClaims.sol";
  * TokenWithClaims is a token that will create a
  * proofOfOwnership during transfers if a claim can be made.
  * Holder may ask for the claim later using the proofOfOwnership
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * E01: Claimable address must be defined

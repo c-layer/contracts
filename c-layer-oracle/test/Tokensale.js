@@ -1,15 +1,7 @@
 "user strict";
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@mtpelerin.com>
- *
- * Copyright © 2016 - 2018 Mt Pelerin Group SA - All Rights Reserved
- * This content cannot be used, copied or reproduced in part or in whole
- * without the express and written permission of Mt Pelerin Group SA.
- * Written by *Mt Pelerin Group SA*, <info@mtpelerin.com>
- * All matters regarding the intellectual property of this code or software
- * are subjects to Swiss Law without reference to its conflicts of law rules.
- *
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
 const assertRevert = require("./helpers/assertRevert");
@@ -32,6 +24,7 @@ contract("Tokensale", function (accounts) {
 
   before(async function () {
     userRegistry = await UserRegistry.new(
+      "Dummy",
       [ accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6] ], dayPlusOneTime);
     await userRegistry.updateUserExtended(1, KYC_LEVEL_KEY, 0);
     await userRegistry.updateUserExtended(2, KYC_LEVEL_KEY, 1);
@@ -39,7 +32,7 @@ contract("Tokensale", function (accounts) {
     await userRegistry.updateUserExtended(4, KYC_LEVEL_KEY, 3);
     await userRegistry.updateUserExtended(5, KYC_LEVEL_KEY, 4);
     await userRegistry.updateUserExtended(6, KYC_LEVEL_KEY, 5);
-    ratesProvider = await RatesProvider.new();
+    ratesProvider = await RatesProvider.new("Dummy");
   });
 
   beforeEach(async function () {

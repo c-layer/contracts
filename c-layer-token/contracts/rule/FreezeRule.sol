@@ -9,7 +9,7 @@ import "../interface/IRule.sol";
  * @dev FreezeRule contract
  * This rule allow a legal authority to enforce a freeze of assets.
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * E01: The address is frozen

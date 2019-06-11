@@ -15,7 +15,7 @@ import "./interface/IStateMachine.sol";
  * - transitionDelay is not 0 and lower than the delay since
  *   the beginning of the step (ie stepTime)
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  * SM01: No plans are configured

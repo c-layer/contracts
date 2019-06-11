@@ -9,7 +9,7 @@ import "../interface/IRule.sol";
  * @dev RulesPackage contract allows inheriting contract to use a set of validation rules
  * @dev contract owner may add or remove rules
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  **/
