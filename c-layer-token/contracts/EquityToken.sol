@@ -19,5 +19,9 @@ contract EquityToken is MintableCToken {
   constructor(string memory _name, string memory _symbol, IRule[] memory _rules)
     public MintableCToken(_name, _symbol, _rules)
     {} /* solhint-disable no-empty-blocks */
+
+  function decimals() public view returns (uint256) {
+    return decimals_;
+  }
 }
 
