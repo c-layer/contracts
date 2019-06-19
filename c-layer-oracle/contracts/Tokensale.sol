@@ -501,7 +501,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
     if (_contributionBase < allowedContributionBase) {
       allowedContributionBase = _contributionBase;
     }
-    tokens = allowedContributionBase.div(basePrice_);
+    tokens = allowedContributionBase.mul(10 ** (token_.decimals())).div(basePrice_);
 
     if(currentTime() < bonusUntil_) {
       tokensBonus = tokens.mul(bonus_).div(100);
@@ -509,11 +509,9 @@ contract Tokensale is ITokensale, Operable, Pausable {
 
     uint256 availableTokens = availableSupply().sub(
       allocatedTokens_).add(investors[_investorId].allocations);
-    if (tokens > availableTokens) {
-      tokens = availableTokens;
-    }
-    if (tokensBonus > availableTokens) {
-      tokensBonus = availableTokens;
+    if (tokens.add(tokensBonus) > availableTokens) {
+      tokensBonus = availableTokens.mul(100).div(bonus_);
+      tokens = availableTokens.sub(tokensBonus);
     }
     return (tokens, tokensBonus);
   }
@@ -570,7 +568,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
     require(tokens >= MINIMAL_INVESTMENT, "TOS20");
 
     /** Calculating unspentETH value **/
-    uint256 investedBase = tokens.mul(basePrice_);
+    uint256 investedBase = tokens.mul(basePrice_).div(10 ** (token_.decimals()));
     uint256 unspentContributionBase = contributionBase.sub(investedBase);
 
     uint256 unspentETH = 0;
@@ -619,11 +617,12 @@ contract Tokensale is ITokensale, Operable, Pausable {
     totalRaised_ = totalRaised_.add(investedBase);
 
     allocatedTokens_ = allocatedTokens_.sub(investor.allocations);
-    investor.allocations = (investor.allocations > tokens)
-      ? investor.allocations.sub(tokens) : 0;
+    //uint256 tokensWithBonus = tokens.add(tokensBonus);
+    investor.allocations = (investor.allocations > tokens.add(tokensBonus))
+      ? investor.allocations.sub(tokens.add(tokensBonus)) : 0;
     allocatedTokens_ = allocatedTokens_.add(investor.allocations);
     require(
-      token_.transferFrom(vaultERC20_, _investor, tokensBonus),
+      token_.transferFrom(vaultERC20_, _investor, tokens.add(tokensBonus)),
       "TOS22");
 
     if (spentETH > 0) {

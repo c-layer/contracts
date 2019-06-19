@@ -18,6 +18,7 @@ contract("Tokensale", function (accounts) {
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[0];
 
+  let rateWEICHF;
   const sharePurchaseAgreementHash = web3.utils.sha3("SharePurchaseAgreement");
   const dayMinusOneTime = Math.floor((new Date()).getTime() / 1000) - 3600 * 24;
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
@@ -33,6 +34,7 @@ contract("Tokensale", function (accounts) {
     await userRegistry.updateUserExtended(5, KYC_LEVEL_KEY, 4);
     await userRegistry.updateUserExtended(6, KYC_LEVEL_KEY, 5);
     ratesProvider = await RatesProvider.new("Dummy");
+    rateWEICHF = await ratesProvider.convertRate(2072333, 2);
   });
 
   beforeEach(async function () {
@@ -393,7 +395,7 @@ contract("Tokensale", function (accounts) {
 
     describe("with SPA Defined, allocations defined, rate defined", async function () {
       beforeEach(async function () {
-        await ratesProvider.defineETHRate(CHF, 2072333, 2);
+        await ratesProvider.defineRates([ 0, 0, 0, 0, rateWEICHF ]);
         await sale.defineSPA(sharePurchaseAgreementHash);
         await sale.allocateManyTokens([ accounts[2], accounts[3] ], [ 500, 4000 ]);
       });
@@ -497,12 +499,12 @@ contract("Tokensale", function (accounts) {
 
         it("should have availableSupply", async function () {
           const availableSupply = await sale.availableSupply();
-          assert.equal(availableSupply.toString(), "974698", "availableSupply");
+          assert.equal(availableSupply.toString(), "954456", "availableSupply");
         });
 
         it("should have allocatedTokens", async function () {
           const allocatedTokens = await sale.allocatedTokens();
-          assert.equal(allocatedTokens.toString(), 3672, "allocatedTokens");
+          assert.equal(allocatedTokens.toString(), 2637, "allocatedTokens");
         });
 
         it("should have raised ETH", async function () {
@@ -584,7 +586,7 @@ contract("Tokensale", function (accounts) {
 
         it("should have investorAllocations for accounts3", async function () {
           const allocations = await sale.investorAllocations(3);
-          assert.equal(allocations.toString(), 3172, "allocations");
+          assert.equal(allocations.toString(), 2137, "allocations");
         });
 
         it("should have investorTokens for account3", async function () {
@@ -650,12 +652,12 @@ contract("Tokensale", function (accounts) {
 
         it("should have availableSupply", async function () {
           const availableSupply = await sale.availableSupply();
-          assert.equal(availableSupply.toString(), "971251", "availableSupply");
+          assert.equal(availableSupply.toString(), "948251", "availableSupply");
         });
 
         it("should have allocatedTokens", async function () {
           const allocatedTokens = await sale.allocatedTokens();
-          assert.equal(allocatedTokens.toString(), 1500, "allocatedTokens");
+          assert.equal(allocatedTokens.toString(), 500, "allocatedTokens");
         });
 
         it("should have raised ETH", async function () {
@@ -732,7 +734,7 @@ contract("Tokensale", function (accounts) {
 
         it("should have investorAllocations for accounts3", async function () {
           const allocations = await sale.investorAllocations(3);
-          assert.equal(allocations.toString(), 1000, "allocations 3");
+          assert.equal(allocations.toString(), 0, "allocations 3");
         });
 
         it("should have investorTokens for account3", async function () {
@@ -842,7 +844,7 @@ contract("Tokensale", function (accounts) {
     beforeEach(async function () {
       await sale.updateInvestorLimits([ 6 ], 80000000);
       await sale.updateSchedule(dayMinusOneTime, dayPlusOneTime);
-      await ratesProvider.defineETHRate(CHF, 2072333, 2);
+      await ratesProvider.defineRates([ 0, 0, 0, 0, rateWEICHF ]);
     });
 
     describe("invest some CHF", async function () {

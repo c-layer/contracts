@@ -1,13 +1,13 @@
 {
-  "name": "c-layer-tool",
+  "name": "c-layer-oracle",
   "version": "1.0.0",
-  "description": "SmartContract tools for the Compliance Layer Solidity library",
+  "description": "SmartContract oracles for the Compliance Layer Solidity library",
   "files": [
     "build",
     "contracts",
     "test/behaviors",
     "solidity",
-    "tool"
+    "oracle"
   ],
   "scripts": {
     "compile": "truffle compile",
