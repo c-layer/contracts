@@ -13,6 +13,6 @@ contract DelegateSigMock is DelegateSig {
    * @dev constructor
    */
   constructor(address[] memory _signers, uint8 _threshold)
-    MultiSig(_signers, _threshold) public {
-  }
+    public MultiSig(_signers, _threshold)
+  {} // solhint-disable-line no-empty-blocks
 }

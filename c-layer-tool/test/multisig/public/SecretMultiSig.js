@@ -15,10 +15,10 @@ contract("SecretMultiSig", function (accounts) {
   beforeEach(async function () {
     multiSig = await SecretMultiSig.new(100, 3600 * 24, [ accounts[0] ], [ 100 ]);
     request = {
-     "params": [{
-      "to": multiSig.address,
-      "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI()
-     }]
+      "params": [{
+        "to": multiSig.address,
+        "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI(),
+      }],
     };
   });
 

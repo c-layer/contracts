@@ -30,7 +30,7 @@ contract Operable is Ownable {
    * @dev constructor
    */
   constructor() public {
-    defineOperator('Owner', msg.sender);
+    defineOperator("Owner", msg.sender);
   }
 
   /**
@@ -59,9 +59,9 @@ contract Operable is Ownable {
   function defineOperator(string memory _role, address _address)
     public onlyOwner
   {
-     require(!operators_[_address], "OP03");
-     operators_[_address] = true;
-     emit OperatorDefined(_role, _address);
+    require(!operators_[_address], "OP03");
+    operators_[_address] = true;
+    emit OperatorDefined(_role, _address);
   }
 
   event OperatorRemoved(address address_);

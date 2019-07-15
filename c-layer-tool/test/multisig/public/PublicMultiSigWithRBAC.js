@@ -18,10 +18,10 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
       [ true, false, false ], [ false, true, false ], [ false, false, true ]
     );
     request = {
-     "params": [{
-      "to": multiSig.address,
-      "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI()
-     }]
+      "params": [{
+        "to": multiSig.address,
+        "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI(),
+      }],
     };
   });
 
@@ -65,8 +65,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
     });
 
     it("should prevent non suggester to suggest", async function () {
-      await assertRevert(multiSig.suggest(
-        request.params[0].to, 0, request.params[0].data, { from: accounts[1] }),
+      await assertRevert(
+        multiSig.suggest(
+          request.params[0].to, 0, request.params[0].data, { from: accounts[1] }),
         "PMSWR01");
     });
 
@@ -131,9 +132,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
         "params": [{
           "to": multiSig.address,
           "data": multiSig.contract.methods.addParticipant(
-            accounts[5], 100
-          ).encodeABI()
-        }]
+            accounts[5], 100,
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,
@@ -155,9 +156,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
           "to": multiSig.address,
           "data": multiSig.contract.methods.addManyParticipants(
             [ accounts[5], accounts[6] ],
-            [ 100, 50 ]
-          ).encodeABI()
-        }]
+            [ 100, 50 ],
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,
@@ -184,9 +185,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
         "params": [{
           "to": multiSig.address,
           "data": multiSig.contract.methods.addParticipantWithRoles(
-            accounts[5], 50, true, false, true
-          ).encodeABI()
-        }]
+            accounts[5], 50, true, false, true,
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,
@@ -208,9 +209,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
           "to": multiSig.address,
           "data": multiSig.contract.methods.addManyParticipantsWithRoles(
             [ accounts[5], accounts[6] ], [ 50, 50 ],
-            [ true, true ], [ false, true ], [ true, true ]
-          ).encodeABI()
-        }]
+            [ true, true ], [ false, true ], [ true, true ],
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,
@@ -231,9 +232,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
         "params": [{
           "to": multiSig.address,
           "data": multiSig.contract.methods.updateParticipantRoles(
-            accounts[2], true, true, true
-          ).encodeABI()
-        }]
+            accounts[2], true, true, true,
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,
@@ -255,9 +256,9 @@ contract("PublicMultiSigWithRBAC", function (accounts) {
           "to": multiSig.address,
           "data": multiSig.contract.methods.updateManyParticipantsRoles(
             [ accounts[1], accounts[2] ],
-            [ true, true ], [ true, true ], [ true, true ]
-          ).encodeABI()
-        }]
+            [ true, true ], [ true, true ], [ true, true ],
+          ).encodeABI(),
+        }],
       };
       await multiSig.suggest(
         request.params[0].to, 0,

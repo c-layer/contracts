@@ -113,7 +113,7 @@ contract("PayableProxy", function (accounts) {
       });
       assert.ok(receipt.status, "status");
 
-      const events = await contractMock.getPastEvents('LogMsg');
+      const events = await contractMock.getPastEvents("LogMsg");
       assert.equal(events.length, 1);
       assert.equal(events[0].event, "LogMsg");
       assert.equal(events[0].args.sender, payableProxy.address, "sender");
@@ -142,7 +142,7 @@ contract("PayableProxy", function (accounts) {
         });
         assert.ok(receipt.status, "status");
 
-        const events = await contractMock.getPastEvents('LogMsg');
+        const events = await contractMock.getPastEvents("LogMsg");
         assert.equal(events.length, 1);
         assert.equal(events[0].event, "LogMsg");
         assert.equal(events[0].args.sender, payableProxy.address, "sender");

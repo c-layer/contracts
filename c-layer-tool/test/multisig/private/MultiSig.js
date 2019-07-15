@@ -15,10 +15,10 @@ contract("MultiSig", function (accounts) {
   before(async function () {
     token = await Token.new("Test", "TST", accounts[0], 10000);
     request = {
-     "params": [{
-      "to": token.address,
-      "data": token.contract.methods.transfer(accounts[1], 100).encodeABI()
-     }]
+      "params": [{
+        "to": token.address,
+        "data": token.contract.methods.transfer(accounts[1], 100).encodeABI(),
+      }],
     };
   });
 
@@ -182,24 +182,27 @@ contract("MultiSig", function (accounts) {
       });
 
       it("should reject ETH transfer with too few signatures", async function () {
-        await assertRevert(multiSig.execute([ ], [ ], [ ],
-          accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
+        await assertRevert(
+          multiSig.execute([ ], [ ], [ ],
+            accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
           "MS01");
       });
 
       it("should reject ETH transfer with too many signatures", async function () {
         const rsv1 = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[1]);
         const rsv2 = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[2]);
-        await assertRevert(multiSig.execute(
-          [ rsv1.r, rsv2.r ], [ rsv1.s, rsv2.s ], [ rsv1.v, rsv2.v ],
-          accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
+        await assertRevert(
+          multiSig.execute(
+            [ rsv1.r, rsv2.r ], [ rsv1.s, rsv2.s ], [ rsv1.v, rsv2.v ],
+            accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
           "MS01");
       });
 
       it("should reject ETH transfer with wrong signature", async function () {
         const rsv = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[2]);
-        await assertRevert(multiSig.execute([ rsv.r ], [ rsv.s ], [ rsv.v ],
-          accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
+        await assertRevert(
+          multiSig.execute([ rsv.r ], [ rsv.s ], [ rsv.v ],
+            accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
           "MS01");
       });
 
@@ -257,8 +260,9 @@ contract("MultiSig", function (accounts) {
       });
 
       it("should not execute ERC20 transfer with missing signatures", async function () {
-        await assertRevert(multiSig.execute([], [ ], [ ],
-          request.params[0].to, 0, request.params[0].data, 0),
+        await assertRevert(
+          multiSig.execute([], [ ], [ ],
+            request.params[0].to, 0, request.params[0].data, 0),
           "MS01");
       });
 
@@ -276,7 +280,7 @@ contract("MultiSig", function (accounts) {
         const rsv = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[2]);
         await assertRevert(
           multiSig.execute(
-           [ rsv.r ], [ rsv.s ], [ rsv.v ], request.params[0].to, 0, request.params[0].data, 0),
+            [ rsv.r ], [ rsv.s ], [ rsv.v ], request.params[0].to, 0, request.params[0].data, 0),
           "MS01");
       });
 
@@ -322,7 +326,6 @@ contract("MultiSig", function (accounts) {
         [ rsv.r ], [ rsv.s ], [ rsv.v ]);
       assert.equal(review.toNumber(), 1);
     });
-
 
     it("should review correct signatures for account 1 and 2", async function () {
       const rsv1 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
@@ -434,11 +437,12 @@ contract("MultiSig", function (accounts) {
         const rsv2 = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[2]);
         const rsv3 = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[3]);
         const rsv4 = await signer.sign(accounts[0], web3.utils.toWei("1", "milli"), "0x", 0, accounts[4]);
-        await assertRevert(multiSig.execute(
-          [ rsv1.r, rsv2.r, rsv3.r, rsv4.r ],
-          [ rsv1.s, rsv2.s, rsv3.s, rsv4.s ],
-          [ rsv1.v, rsv2.v, rsv3.v, rsv4.v ],
-          accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
+        await assertRevert(
+          multiSig.execute(
+            [ rsv1.r, rsv2.r, rsv3.r, rsv4.r ],
+            [ rsv1.s, rsv2.s, rsv3.s, rsv4.s ],
+            [ rsv1.v, rsv2.v, rsv3.v, rsv4.v ],
+            accounts[0], web3.utils.toWei("1", "milli"), "0x", 0),
           "MS01");
       });
 
@@ -493,9 +497,10 @@ contract("MultiSig", function (accounts) {
 
       it("should reject ERC20 transfer with few signatures", async function () {
         const rsv1 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
-        await assertRevert(multiSig.execute(
-          [ rsv1.r ], [ rsv1.s ], [ rsv1.v ],
-          request.params[0].to, 0, request.params[0].data, 0),
+        await assertRevert(
+          multiSig.execute(
+            [ rsv1.r ], [ rsv1.s ], [ rsv1.v ],
+            request.params[0].to, 0, request.params[0].data, 0),
           "MS01");
       });
 
@@ -504,22 +509,24 @@ contract("MultiSig", function (accounts) {
         const rsv2 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[2]);
         const rsv3 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[3]);
         const rsv4 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[4]);
-        await assertRevert(multiSig.execute(
-          [ rsv1.r, rsv2.r, rsv3.r, rsv4.r ],
-          [ rsv1.s, rsv2.s, rsv3.s, rsv4.s ],
-          [ rsv1.v, rsv2.v, rsv3.v, rsv4.v ],
-          request.params[0].to, 0, request.params[0].data, 0),
+        await assertRevert(
+          multiSig.execute(
+            [ rsv1.r, rsv2.r, rsv3.r, rsv4.r ],
+            [ rsv1.s, rsv2.s, rsv3.s, rsv4.s ],
+            [ rsv1.v, rsv2.v, rsv3.v, rsv4.v ],
+            request.params[0].to, 0, request.params[0].data, 0),
           "MS01");
       });
 
       it("should reject ERC20 transfer with wrong signatures", async function () {
         const rsv1 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
         const rsv4 = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[4]);
-        await assertRevert(multiSig.execute(
-          [ rsv1.r, rsv4.r ],
-          [ rsv1.s, rsv4.s ],
-          [ rsv1.v, rsv4.v ],
-          request.params[0].to, 0, request.params[0].data, 0),
+        await assertRevert(
+          multiSig.execute(
+            [ rsv1.r, rsv4.r ],
+            [ rsv1.s, rsv4.s ],
+            [ rsv1.v, rsv4.v ],
+            request.params[0].to, 0, request.params[0].data, 0),
           "MS01");
       });
 

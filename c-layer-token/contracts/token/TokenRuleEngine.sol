@@ -1,25 +1,25 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./BaseToken.sol";
-import "../rule/WithRules.sol";
+import "./OperableToken.sol";
+import "../rule/RuleEngine.sol";
 import "../interface/IRule.sol";
 
 
 /**
- * @title TokenWithRules
- * @dev TokenWithRules contract
- * TokenWithRules is a token that will apply
+ * @title TokenRuleEngine
+ * @dev TokenRuleEngine contract
+ * TokenRuleEngine is a token that will apply
  * rules restricting transferability
  *
  * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
-contract TokenWithRules is WithRules, BaseToken {
+contract TokenRuleEngine is RuleEngine, OperableToken {
 
   /**
    * @dev Constructor
    */
   constructor(IRule[] memory _rules)
-    public WithRules(_rules) {} /* solhint-disable no-empty-blocks */
+    public RuleEngine(_rules) {} /* solhint-disable no-empty-blocks */
  
   /**
    * @dev Overriden transfer function

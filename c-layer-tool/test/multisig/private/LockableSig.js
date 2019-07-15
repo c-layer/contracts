@@ -22,8 +22,8 @@ contract("LockableSig", function (accounts) {
       request = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI()
-        }]
+          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI(),
+        }],
       };
     });
 

@@ -39,7 +39,7 @@ contract VaultERC20 is Operable {
   {
     require(_spenders.length == _values.length, "VLT01");
     bool result = true;
-    for(uint256 i=0; i<_spenders.length; i++) {
+    for (uint256 i=0; i < _spenders.length; i++) {
       result = result && _token.approve(_spenders[i], _values[i]);
     }
     return result;

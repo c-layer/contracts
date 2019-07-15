@@ -1,13 +1,13 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../util/governance/Operable.sol";
-import "../interface/IWithRules.sol";
+import "../interface/IRuleEngine.sol";
 import "../interface/IRule.sol";
 
 
 /**
- * @title WithRules
- * @dev WithRules contract allows inheriting contract to use a set of validation rules
+ * @title RuleEngine
+ * @dev RuleEngine contract allows inheriting contract to use a set of validation rules
  * @dev contract owner may add or remove rules
  *
  * @author Cyril Lapinte - <cyril@openfiz.com>
@@ -16,7 +16,7 @@ import "../interface/IRule.sol";
  * WR01: The rules rejected this address
  * WR02: The rules rejected the transfer
  **/
-contract WithRules is IWithRules, Operable {
+contract RuleEngine is IRuleEngine, Operable {
 
   IRule[] internal rules_;
 

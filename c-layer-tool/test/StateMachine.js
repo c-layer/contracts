@@ -5,7 +5,7 @@
  */
 
 const assertRevert = require("./helpers/assertRevert");
-const BN = require('bn.js');
+const BN = require("bn.js");
 const StateMachineMock = artifacts.require("../contracts/mock/StateMachineMock.sol");
 
 const MAX_UINT256 = new BN("2").pow(new BN("256")).sub(new BN("1"));
@@ -151,7 +151,7 @@ contract("StateMachine", function (accounts) {
 
       it("should have step 0 end time at now + 3600", async function () {
         const stepEndTime = await machine.stepEndTime(0, 0);
-        assert.equal(stepEndTime.toString(), Math.floor(now + 3600) + '', "stepEndTime");
+        assert.equal(stepEndTime.toString(), Math.floor(now + 3600) + "", "stepEndTime");
       });
 
       it("should have step 1 end time at infinity", async function () {
@@ -165,7 +165,7 @@ contract("StateMachine", function (accounts) {
 
         const startTime = await machine.stepTime(0);
         const stepEndTime = await machine.stepEndTime(0, startTime);
-        assert.equal(stepEndTime.toString(), Math.floor(now + 1200) + '', "stepEndTime");
+        assert.equal(stepEndTime.toString(), Math.floor(now + 1200) + "", "stepEndTime");
       });
 
       it("should not be possible to update current step end time in the past", async function () {
@@ -352,12 +352,12 @@ contract("StateMachine", function (accounts) {
 
       it("should have step 0 at now+500", async function () {
         const stepEndTime = await machine.stepEndTime(0, 0);
-        assert.equal(stepEndTime.toString(), (now + 500) + '', "stepEndTime");
+        assert.equal(stepEndTime.toString(), (now + 500) + "", "stepEndTime");
       });
 
       it("should have step 1 end time at now + 1500", async function () {
         const stepEndTime = await machine.stepEndTime(1, now + 500);
-        assert.equal(stepEndTime.toString(), (now + 1500) + '', "stepEndTime");
+        assert.equal(stepEndTime.toString(), (now + 1500) + "", "stepEndTime");
       });
 
       it("should have step 2 end time at infinity", async function () {

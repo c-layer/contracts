@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./BaseToken.sol";
-import "../util/governance/Operable.sol";
+import "./OperableToken.sol";
 import "../interface/IMintable.sol";
 
 
@@ -14,7 +13,7 @@ import "../interface/IMintable.sol";
  * MT01: Token is already minted
  * MT02: Parameters must be same length
  */
-contract MintableToken is IMintable, Operable, BaseToken {
+contract MintableToken is IMintable, OperableToken {
 
   bool internal mintingFinished_ = false;
 
@@ -69,7 +68,7 @@ contract MintableToken is IMintable, Operable, BaseToken {
     require(_recipients.length == _amounts.length, "MT02");
 
     bool result = true;
-    for(uint256 i=0; i<_recipients.length; i++) {
+    for (uint256 i=0; i < _recipients.length; i++) {
       result = result && mint(_recipients[i], _amounts[i]);
     }
     return result && finishMinting();

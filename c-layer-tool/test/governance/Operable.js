@@ -22,12 +22,12 @@ contract("Operable", function (accounts) {
     await assertRevert(operable.testOnlyOperator({ from: accounts[1] }), "OP01");
   });
 
-  it("should returns owner is operator", async function() {
+  it("should returns owner is operator", async function () {
     const isOperator = await operable.isOperator(accounts[0]);
     assert.ok(isOperator, "isOperator");
   });
 
-  it("should returns non owner is not operator", async function() {
+  it("should returns non owner is not operator", async function () {
     const isOperator = await operable.isOperator(accounts[1]);
     assert.ok(!isOperator, "isOperator");
   });
@@ -54,11 +54,11 @@ contract("Operable", function (accounts) {
   });
 
   it("should not allow non owner to set a new operator", async function () {
-    await assertRevert(operable.defineOperator("OPERATOR" , accounts[2], { from: accounts[4] }));
+    await assertRevert(operable.defineOperator("OPERATOR", accounts[2], { from: accounts[4] }));
   });
 
   it("should not allow owner to define twice the same operator", async function () {
-    await assertRevert(operable.defineOperator("OPERATOR" , accounts[0]), "OP03");
+    await assertRevert(operable.defineOperator("OPERATOR", accounts[0]), "OP03");
   });
 
   describe("with another operator defined", function () {
@@ -74,12 +74,12 @@ contract("Operable", function (accounts) {
       await assertRevert(operable.testOnlyOperator({ from: accounts[2] }), "OP01");
     });
 
-    it("should returns owner is operator", async function() {
+    it("should returns owner is operator", async function () {
       const isOperator = await operable.isOperator(accounts[0]);
       assert.ok(isOperator, "isOperator");
     });
 
-    it("should returns new operator is now operator", async function() {
+    it("should returns new operator is now operator", async function () {
       const isOperator = await operable.isOperator(accounts[1]);
       assert.ok(isOperator, "isOperator");
     });
@@ -89,7 +89,7 @@ contract("Operable", function (accounts) {
     });
 
     it("should not allow non owner operator to define a new operator", async function () {
-      await assertRevert(operable.defineOperator("OPERATOR" , accounts[2], { from: accounts[1] }));
+      await assertRevert(operable.defineOperator("OPERATOR", accounts[2], { from: accounts[1] }));
     });
   });
 });

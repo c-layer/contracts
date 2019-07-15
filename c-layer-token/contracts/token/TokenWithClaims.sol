@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./ProvableOwnershipToken.sol";
-import "../util/governance/Operable.sol";
 import "../interface/IWithClaims.sol";
 
 
@@ -18,7 +17,7 @@ import "../interface/IWithClaims.sol";
  * E02: Claimables parameter must not be empty
  * E03: Claimable does not exist
 **/
-contract TokenWithClaims is IWithClaims, Operable, ProvableOwnershipToken {
+contract TokenWithClaims is IWithClaims, ProvableOwnershipToken {
 
   IClaimable[] internal claimables_;
 

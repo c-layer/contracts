@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./BaseToken.sol";
-import "../util/governance/Operable.sol";
+import "./OperableToken.sol";
 import "../interface/ISeizable.sol";
 
 
@@ -13,7 +12,7 @@ import "../interface/ISeizable.sol";
  * Error messages
  * ST01: Operator cannot seize itself
 */
-contract SeizableToken is ISeizable, Operable, BaseToken {
+contract SeizableToken is ISeizable, OperableToken {
 
   // Although very unlikely, the value below may overflow.
   // This contract and his childs should expect it to happened and consider

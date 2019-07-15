@@ -27,20 +27,20 @@ contract("DelegateSig", function (accounts) {
       request1 = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI()
-        }]
+          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI(),
+        }],
       };
       request2 = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.approve(accounts[1], 500).encodeABI()
-        }]
+          "data": token.contract.methods.approve(accounts[1], 500).encodeABI(),
+        }],
       };
       request3 = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.transferFrom(delegateSig.address, accounts[0], 100).encodeABI()
-        }]
+          "data": token.contract.methods.transferFrom(delegateSig.address, accounts[0], 100).encodeABI(),
+        }],
       };
     });
 
@@ -196,9 +196,10 @@ contract("DelegateSig", function (accounts) {
 
       it("should not be possible to executeOnBehalf", async function () {
         const rsv1 = await signer.sign(request1.params[0].to, 0, request1.params[0].data, 0, accounts[2]);
-        await assertRevert(delegateSig.executeOnBehalf(
-          [ rsv1.r ], [ rsv1.s ], [ rsv1.v ],
-          request1.params[0].to, 0, request1.params[0].data),
+        await assertRevert(
+          delegateSig.executeOnBehalf(
+            [ rsv1.r ], [ rsv1.s ], [ rsv1.v ],
+            request1.params[0].to, 0, request1.params[0].data),
           "DS02"
         );
       });

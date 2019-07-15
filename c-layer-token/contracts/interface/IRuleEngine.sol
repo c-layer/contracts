@@ -4,11 +4,11 @@ import "./IRule.sol";
 
 
 /**
- * @title IWithRules
- * @dev IWithRules interface
+ * @title IRuleEngine
+ * @dev IRuleEngine interface
  * @author Cyril Lapinte - <cyril@openfiz.com>
  **/
-contract IWithRules {
+contract IRuleEngine {
   function rules() public view returns (IRule[] memory);
   function validateAddress(address _address) public view returns (bool);
   function validateTransfer(address _from, address _to, uint256 _amount)

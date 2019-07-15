@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../interface/IAuditable.sol";
-import "./BaseToken.sol";
+import "./OperableToken.sol";
 
 
 /**
@@ -13,7 +13,7 @@ import "./BaseToken.sol";
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  **/
-contract AuditableToken is IAuditable, BaseToken {
+contract AuditableToken is IAuditable, OperableToken {
 
    // Although very unlikely, the following values below may overflow:
    //   receivedCount, sentCount, totalReceivedAmount, totalSentAmount

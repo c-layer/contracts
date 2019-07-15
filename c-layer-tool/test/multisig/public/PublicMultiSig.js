@@ -16,10 +16,10 @@ contract("PublicMultiSig", function (accounts) {
   beforeEach(async function () {
     multiSig = await PublicMultiSig.new(100, 3600 * 24, [ accounts[0] ], [ 100 ]);
     request = {
-     "params": [{
-      "to": multiSig.address,
-      "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI()
-     }]
+      "params": [{
+        "to": multiSig.address,
+        "data": multiSig.contract.methods.updateConfiguration(50, 3600 * 24 * 7).encodeABI(),
+      }],
     };
   });
 
@@ -156,9 +156,9 @@ contract("PublicMultiSig", function (accounts) {
     it("should not allow to execute to be reentrant", async function () {
       const request = {
         "params": [{
-        "to": multiSig.address,
-        "data": multiSig.contract.methods.execute(0).encodeABI()
-       }]
+          "to": multiSig.address,
+          "data": multiSig.contract.methods.execute(0).encodeABI(),
+        }],
       };
       await multiSig.suggest(request.params[0].to, 0, request.params[0].data);
       await multiSig.approve(0);

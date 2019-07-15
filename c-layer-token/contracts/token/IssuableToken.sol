@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./BaseToken.sol";
-import "../util/governance/Operable.sol";
+import "./OperableToken.sol";
 import "../interface/IIssuable.sol";
 
 
@@ -10,7 +9,7 @@ import "../interface/IIssuable.sol";
  * @dev BasicToken contract which implement an issuing mechanism.
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
-contract IssuableToken is IIssuable, Operable, BaseToken {
+contract IssuableToken is IIssuable, OperableToken {
 
   // Overflow on attributes below is an expected behavior
   // The contract should not be locked because

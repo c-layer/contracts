@@ -2,22 +2,22 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "../token/ProvableOwnershipToken.sol";
 import "./Dividend.sol";
-import "../rule/WithRules.sol";
+import "../rule/RuleEngine.sol";
 
 
 /**
- * @title DividendWithRules
- * @dev DividendWithRules contract
+ * @title DividendRuleEngine
+ * @dev DividendRuleEngine contract
  *
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
-contract DividendWithRules is Dividend, WithRules {
+contract DividendRuleEngine is Dividend, RuleEngine {
 
   /**
    * @dev constructor
    */
   constructor(ProvableOwnershipToken _token, IRule[] memory _rules) public
-    Dividend(_token) WithRules(_rules)
+    Dividend(_token) RuleEngine(_rules)
   {} /* solhint-disable no-empty-blocks */
 
   /**

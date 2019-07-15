@@ -21,16 +21,17 @@ contract("VaultSig", function (accounts) {
       request = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI()
-        }]
+          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI(),
+        }],
       };
     });
 
     it("should not execute ERC20 transfer", async function () {
       const rsv = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
 
-      await assertRevert(vaultSig.execute([ rsv.r ], [ rsv.s ], [ rsv.v ],
-        request.params[0].to, 0, request.params[0].data, 0),
+      await assertRevert(
+        vaultSig.execute([ rsv.r ], [ rsv.s ], [ rsv.v ],
+          request.params[0].to, 0, request.params[0].data, 0),
         "MS01");
     });
   });
@@ -43,8 +44,8 @@ contract("VaultSig", function (accounts) {
       request = {
         "params": [{
           "to": token.address,
-          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI()
-        }]
+          "data": token.contract.methods.transfer(accounts[0], 100).encodeABI(),
+        }],
       };
       await new Promise(
         (resolve, reject) => web3.eth.sendTransaction({

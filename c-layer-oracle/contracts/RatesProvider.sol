@@ -9,7 +9,7 @@ import "./util/governance/Operable.sol";
  * @title RatesProvider
  * @dev RatesProvider interface
  *
- * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
  *   RP01: No rates exists for the base currency ETH
@@ -113,7 +113,7 @@ contract RatesProvider is IRatesProvider, Operable {
     public view returns (uint256)
   {
     uint256 rateB_ = rate(_b);
-    (rateB_ == 0) ? 0 :  _amountA.mul(rate(_a)).div(rateB_);
+    return (rateB_ == 0) ? 0 : _amountA.mul(rate(_a)).div(rateB_);
   }
   
   /**

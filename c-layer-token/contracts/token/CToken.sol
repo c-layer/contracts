@@ -2,7 +2,7 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "./SeizableToken.sol";
 import "./TokenWithClaims.sol";
-import "./TokenWithRules.sol";
+import "./TokenRuleEngine.sol";
 import "../interface/IRule.sol";
 import "../interface/IClaimable.sol";
 import "../interface/IERC20.sol";
@@ -13,7 +13,7 @@ import "../interface/IERC20.sol";
  * @dev CToken contract
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
-contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
+contract CToken is IERC20, TokenRuleEngine, TokenWithClaims, SeizableToken {
 
   string internal name_;
   string internal symbol_;
@@ -23,7 +23,7 @@ contract CToken is IERC20, TokenWithRules, TokenWithClaims, SeizableToken {
    * @dev constructor
    */
   constructor(string memory _name, string memory _symbol, IRule[] memory _rules)
-    public TokenWithRules(_rules) TokenWithClaims(new IClaimable[](0))
+    public TokenRuleEngine(_rules) TokenWithClaims(new IClaimable[](0))
   {
     name_ = _name;
     symbol_ = _symbol;
