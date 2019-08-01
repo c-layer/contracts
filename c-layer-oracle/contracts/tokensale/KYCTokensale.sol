@@ -19,10 +19,10 @@ contract KYCTokensale is Tokensale {
 
   uint32[5] internal contributionLimits = [
     0,
-    500000,
+    300000,
     1500000,
     10000000,
-    25000000
+    100000000
   ];
 
   mapping(uint256 => Investor) internal investorIds;
