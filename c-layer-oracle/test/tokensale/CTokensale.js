@@ -24,6 +24,11 @@ contract("CTokensale", function (accounts) {
   const supply = "1000000";
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
 
+  const start = 4102444800;
+  const end = 7258118400;
+  const bonuses = [ 10 ];
+  const bonusUntil = (end - start) / 2;
+
   before(async function () {
     userRegistry = await UserRegistry.new(
       "Dummy",
@@ -45,9 +50,13 @@ contract("CTokensale", function (accounts) {
       vaultERC20,
       vaultETH,
       tokenPrice,
-      userRegistry.address,
       CHF,
+      userRegistry.address,
       ratesProvider.address,
+      start,
+      end,
+      bonuses,
+      bonusUntil
     );
     await token.approve(sale.address, supply, { from: accounts[1] });
   });

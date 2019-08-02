@@ -11,6 +11,7 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 contract("RatesProvider", function (accounts) {
   let provider;
 
+  const now = new Date().getTime() / 1000;
   const CHF = 5;
   const ethToWei = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "4825789016504";
@@ -25,6 +26,11 @@ contract("RatesProvider", function (accounts) {
   it("should have a name", async function () {
     const name = await provider.name();
     assert.equal(name, "Test", "name");
+  });
+
+  it("should have an update date", async function () {
+    const updatedAt = await provider.updatedAt();
+    assert.equal(updatedAt.toString(), "0", "updatedAt");
   });
 
   it("should convert rate from ETHCHF", async function () {
@@ -73,9 +79,14 @@ contract("RatesProvider", function (accounts) {
       provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ], { from: accounts[1] }), "OP01");
   });
 
-  describe("With a rate defined", async function () {
+  describe("With a rates defined", async function () {
     beforeEach(async function () {
       await provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ]);
+    });
+
+    it("should have an update date", async function () {
+      const updatedAt = await provider.updatedAt();
+      assert.ok(updatedAt > now, "updatedAt");
     });
 
     it("should convert CHF Cent to 0", async function () {

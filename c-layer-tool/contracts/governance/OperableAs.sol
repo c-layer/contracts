@@ -31,4 +31,19 @@ contract OperableAs {
   constructor(Operable _operable) public {
     operable_ = _operable;
   }
+
+  /**
+   * @dev isOperator
+   */
+  function operable() public view returns (Operable) {
+    return operable_;
+  }
+
+  /**
+   * @dev isOperator
+   * @param _address operator address
+   */
+  function isOperator(address _address) public view returns (bool) {
+    return operable_.isOperator(_address);
+  }
 }

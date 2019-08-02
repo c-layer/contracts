@@ -1,8 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "./BonusTokensale.sol";
 import "./KYCTokensale.sol";
 import "./ChangeTokensale.sol";
-import "./SchedulableTokensale.sol";
 
 
 /**
@@ -13,7 +13,7 @@ import "./SchedulableTokensale.sol";
  *
  * Error messages
  */
-contract CTokensale is ChangeTokensale, KYCTokensale, SchedulableTokensale {
+contract CTokensale is ChangeTokensale, KYCTokensale, BonusTokensale {
 
   /**
    * @dev constructor
@@ -23,12 +23,19 @@ contract CTokensale is ChangeTokensale, KYCTokensale, SchedulableTokensale {
     address _vaultERC20,
     address payable _vaultETH,
     uint256 _tokenPrice,
-    IUserRegistry _userRegistry,
     IRatesProvider.Currency _baseCurrency,
-    IRatesProvider _ratesProvider
+    IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider,
+    uint256 _start,
+    uint256 _end,
+    uint256[] memory _bonuses,
+    uint256 _bonusUntil
   ) public
     Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
     KYCTokensale(_userRegistry)
     ChangeTokensale(_baseCurrency, _ratesProvider)
-  {} /* solhint-disable no-empty-blocks */
+  {
+    updateSchedule(_start, _end);
+    defineBonus(_bonuses, BonusMode.EARLY, _bonusUntil);
+  }
 }

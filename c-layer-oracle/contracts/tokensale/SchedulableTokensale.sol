@@ -18,8 +18,8 @@ import "./Tokensale.sol";
  */
 contract SchedulableTokensale is Tokensale {
 
-  uint256 internal startAt = 0;
-  uint256 internal endAt = 0;
+  uint256 internal startAt = ~uint256(0);
+  uint256 internal endAt = ~uint256(0);
 
   /**
    * @dev Throws if sale is not open

@@ -56,7 +56,7 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
-   * @dev rate as store for a currency
+   * @dev rate for a currency
    */
   function rate(Currency _currency) public view returns (uint256) {
     return rates_[uint256(_currency)-1];
