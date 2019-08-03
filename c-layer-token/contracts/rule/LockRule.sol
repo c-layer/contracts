@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../util/governance/Operable.sol";
-import "../interface/IRule.sol";
+import "../interface/ILockRule.sol";
 
 
 /**
@@ -14,14 +14,7 @@ import "../interface/IRule.sol";
  * Error messages
  * LOR01: startAt must be before or equal to endAt
  */
-contract LockRule is IRule, Operable {
-
-  enum Direction {
-    NONE,
-    RECEIVE,
-    SEND,
-    BOTH
-  }
+contract LockRule is ILockRule, Operable {
 
   struct ScheduledLock {
     Direction restriction;
@@ -194,12 +187,4 @@ contract LockRule is IRule, Operable {
   {
     return (canSend(_from) && canReceive(_to));
   }
-
-  event LockDefinition(
-    Direction restriction,
-    uint256 startAt,
-    uint256 endAt,
-    bool scheduleInverted
-  );
-  event PassDefinition(address _address, Direction pass);
 }

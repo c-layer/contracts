@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../util/governance/Operable.sol";
-import "../interface/IRule.sol";
+import "../interface/IFreezeRule.sol";
 
 
 /**
@@ -14,7 +14,7 @@ import "../interface/IRule.sol";
  * Error messages
  * E01: The address is frozen
  */
-contract FreezeRule is IRule, Operable {
+contract FreezeRule is IFreezeRule, Operable {
 
   mapping(address => uint256) internal freezer;
   uint256 internal allFreezedUntil;
@@ -86,7 +86,4 @@ contract FreezeRule is IRule, Operable {
   {
     return !isFrozen() && (!isAddressFrozen(_from) && !isAddressFrozen(_to));
   }
-
-  event FreezeAll(uint256 until);
-  event Freeze(address _address, uint256 until);
 }
