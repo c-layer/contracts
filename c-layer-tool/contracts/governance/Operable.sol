@@ -1,6 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./Ownable.sol";
+import "../interface/IOperable.sol";
 
 
 /**
@@ -14,7 +15,7 @@ import "./Ownable.sol";
  * OP02: Address must be an operator
  * OP03: Address must not be an operator
  */
-contract Operable is Ownable {
+contract Operable is IOperable, Ownable {
 
   mapping (address => bool) private operators_;
 
@@ -45,10 +46,11 @@ contract Operable is Ownable {
    * @dev removeOperator
    * @param _address operator address
    */
-  function removeOperator(address _address) public onlyOwner {
+  function removeOperator(address _address) public onlyOwner returns (bool) {
     require(operators_[_address], "OP02");
     operators_[_address] = false;
     emit OperatorRemoved(_address);
+    return true;
   }
 
   /**
@@ -57,16 +59,11 @@ contract Operable is Ownable {
    * @param _address operator address
    */
   function defineOperator(string memory _role, address _address)
-    public onlyOwner
+    public onlyOwner returns (bool)
   {
     require(!operators_[_address], "OP03");
     operators_[_address] = true;
     emit OperatorDefined(_role, _address);
+    return true;
   }
-
-  event OperatorRemoved(address address_);
-  event OperatorDefined(
-    string role,
-    address address_
-  );
 }
