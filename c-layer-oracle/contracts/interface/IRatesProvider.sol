@@ -30,5 +30,7 @@ contract IRatesProvider {
   function convertBetween(Currency _a, Currency _b, uint256 _amountA)
     public view returns (uint256);
 
+  function defineRates(uint256[] memory _rates) public returns (bool);
+
   event Rate(uint256 at, Currency indexed currency, uint256 rateFromWEI);
 }

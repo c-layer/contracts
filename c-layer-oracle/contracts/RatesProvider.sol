@@ -120,7 +120,7 @@ contract RatesProvider is IRatesProvider, Operable {
    * @dev define all rates
    */
   function defineRates(uint256[] memory _rates)
-    public onlyOperator
+    public onlyOperator returns (bool)
   {
     updatedAt_ = currentTime();
     for (uint256 i=0; i < _rates.length; i++) {
@@ -132,6 +132,7 @@ contract RatesProvider is IRatesProvider, Operable {
         emit Rate(updatedAt_, Currency(i+1), _rates[i]);
       }
     }
+    return true;
   }
 
   /**

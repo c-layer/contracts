@@ -19,7 +19,7 @@ import "./util/governance/Operable.sol";
  * UR05: Sender is not the wallet owner
  * UR06: User is already suspended
  * UR07: User is not suspended
- * UR08: Keys length must match values length
+ * UR08: Extended keys must exists for values
 */
 contract UserRegistry is IUserRegistry, Operable {
 
@@ -162,7 +162,7 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256 _validUntilTime,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     registerUserInternal(_address, _validUntilTime);
     updateUserExtendedInternal(userCount_, _values);
     return true;
@@ -176,7 +176,7 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256 _validUntilTime,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _addresses.length; i++) {
       registerUserInternal(_addresses[i], _validUntilTime);
       updateUserExtendedInternal(userCount_, _values);
@@ -359,7 +359,7 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256 _userId,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     updateUserExtendedInternal(_userId, _values);
     return true;
   }
@@ -371,7 +371,7 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256[] memory _userIds,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _userIds.length; i++) {
       updateUserExtendedInternal(_userIds[i], _values);
     }
@@ -387,7 +387,7 @@ contract UserRegistry is IUserRegistry, Operable {
     bool _suspended,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     updateUser(_userId, _validUntilTime, _suspended);
     updateUserExtendedInternal(_userId, _values);
     return true;
@@ -402,7 +402,7 @@ contract UserRegistry is IUserRegistry, Operable {
     bool _suspended,
     uint256[] memory _values) public onlyOperator returns (bool)
   {
-    require(_values.length == extendedKeys_.length, "UR08");
+    require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _userIds.length; i++) {
       updateUser(_userIds[i], _validUntilTime, _suspended);
       updateUserExtendedInternal(_userIds[i], _values);
@@ -431,7 +431,7 @@ contract UserRegistry is IUserRegistry, Operable {
     internal
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
-    for (uint256 i = 0; i < extendedKeys_.length; i++) {
+    for (uint256 i = 0; i < _values.length; i++) {
       users[_userId].extended[extendedKeys_[i]] = _values[i];
     }
   }
