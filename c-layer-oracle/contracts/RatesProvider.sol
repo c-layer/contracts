@@ -93,7 +93,8 @@ contract RatesProvider is IRatesProvider, Operable {
   function convertToWEI(Currency _currency, uint256 _amountCurrency)
     public view returns (uint256)
   {
-    return _amountCurrency.mul(rate(_currency));
+    return (_currency == Currency.ETH) ?
+      _amountCurrency : _amountCurrency.mul(rate(_currency));
   }
 
   /**
@@ -102,8 +103,8 @@ contract RatesProvider is IRatesProvider, Operable {
   function convertFromWEI(Currency _currency, uint256 _amountWEI)
     public view returns (uint256)
   {
-    uint256 rate_ = rate(_currency);
-    return (rate_ == 0) ? 0 : _amountWEI.div(rate_);
+    return (_currency == Currency.ETH) ?
+      _amountWEI : _amountWEI.div(rate(_currency));
   }
 
   /**
@@ -113,7 +114,7 @@ contract RatesProvider is IRatesProvider, Operable {
     public view returns (uint256)
   {
     uint256 rateB_ = rate(_b);
-    return (rateB_ == 0) ? 0 : _amountA.mul(rate(_a)).div(rateB_);
+    return (_a == _b) ? _amountA : _amountA.mul(rate(_a)).div(rateB_);
   }
   
   /**
