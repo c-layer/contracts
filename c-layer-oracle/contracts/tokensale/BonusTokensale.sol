@@ -10,17 +10,40 @@ import "./SchedulableTokensale.sol";
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
+ * BT01: BonusUntil must be defined if bonuses exist
+ * BT02: BonusUntil must be within the sale
  */
 contract BonusTokensale is SchedulableTokensale {
 
   enum BonusMode { EARLY, FIRST }
 
-  BonusMode internal mode_;
+  BonusMode internal bonusMode_;
   uint256 internal bonusUntil_;
   uint256[] internal bonuses_;
-  
+
   /**
-   * @dev earlyBonus;
+   * @dev bonusMode
+   */
+  function bonusMode() public view returns (BonusMode) {
+    return bonusMode_;
+  }
+
+  /**
+   * @dev bonusUntil
+   */
+  function bonusUntil() public view returns (uint256) {
+    return bonusUntil_;
+  }
+
+   /**
+   * @dev bonuses
+   */
+  function bonuses() public view returns (uint256[] memory) {
+    return bonuses_;
+  }
+
+  /**
+   * @dev early bonus
    */
   function earlyBonus() public view returns (uint256) {
     if (bonuses_.length != 0) {
@@ -46,13 +69,14 @@ contract BonusTokensale is SchedulableTokensale {
   /**
    * @dev define bonus
    */
-  function defineBonus(uint256[] memory _bonuses, BonusMode _mode, uint256 _bonusUntil)
+  function defineBonus(uint256[] memory _bonuses, BonusMode _bonusMode, uint256 _bonusUntil)
     public onlyOperator beforeSaleIsOpened returns (uint256)
   {
-    require(_bonuses.length == 0 || _bonusUntil != 0, "");
+    require(_bonuses.length == 0 || _bonusUntil != 0, "BT01");
+    require(_bonusUntil >= startAt || _bonusUntil <= endAt, "BT02");
 
     bonuses_ = _bonuses;
-    mode_ = _mode;
+    bonusMode_ = _bonusMode;
     bonusUntil_ = _bonusUntil;
   }
 
@@ -63,7 +87,7 @@ contract BonusTokensale is SchedulableTokensale {
     if (bonuses_.length == 0 || bonusUntil_ == 0) {
       return 0;
     }
-    return (mode_ == BonusMode.EARLY) ? earlyBonus() : firstBonus();
+    return (bonusMode_ == BonusMode.EARLY) ? earlyBonus() : firstBonus();
   }
 
   /**

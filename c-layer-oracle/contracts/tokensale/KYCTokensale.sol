@@ -43,22 +43,39 @@ contract KYCTokensale is Tokensale {
     return userRegistry_;
   }
 
+  function registredInvestorUnspentETH(uint256 _investorId)
+    public view returns (uint256)
+  {
+    return investorIds[_investorId].unspentETH;
+  }
+
+  function registredInvestorInvested(uint256 _investorId)
+    public view returns (uint256)
+  {
+    return investorIds[_investorId].invested;
+  }
+
+  function registredInvestorTokens(uint256 _investorId)
+    public view returns (uint256)
+  {
+    return investorIds[_investorId].tokens;
+  }
+
   /**
    * @dev contributionLimit
    */
-  function contributionLimit(address _investor)
+  function contributionLimit(uint256 _investorId)
     public view returns (uint256)
   {
-    uint256 investorId = userRegistry_.userId(_investor);
-    uint256 kycLevel = userRegistry_.extended(investorId, KYC_LEVEL_KEY);
+   uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
     uint256 amlLimit = 0;
     if (kycLevel < 5) {
       amlLimit = contributionLimits[kycLevel];
     } else {
-      amlLimit = userRegistry_.extended(investorId, AML_LIMIT_KEY);
+      amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
       amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits[4];
     }
-    return amlLimit.sub(investorInternal(_investor).invested);
+    return amlLimit.sub(investorIds[_investorId].invested);
   }
 
   /**
@@ -67,7 +84,8 @@ contract KYCTokensale is Tokensale {
   function tokenInvestment(address _investor, uint256 _amount)
     public view returns (uint256)
   {
-    uint256 amlLimit = contributionLimit(_investor);
+    uint256 investorId = userRegistry_.userId(_investor);
+    uint256 amlLimit = contributionLimit(investorId);
     return super.tokenInvestment(_investor, (_amount < amlLimit) ? _amount : amlLimit);
   }
 

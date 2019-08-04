@@ -193,6 +193,9 @@ contract Tokensale is ITokensale, Operable, Pausable {
     emit FundETH(msg.value);
   }
 
+  /**
+   * @dev investor internal
+   */
   function investorInternal(address _investor)
     internal view returns (Investor storage)
   {
@@ -200,7 +203,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
   }
 
   /**
-   * @dev update unspent ETH
+   * @dev update unspent ETH internal
    */
   function updateUnspentETHInternal(Investor storage _investor, uint256 _unspentETH) internal {
     totalUnspentETH_ = totalUnspentETH_.sub(_investor.unspentETH).add(_unspentETH);
