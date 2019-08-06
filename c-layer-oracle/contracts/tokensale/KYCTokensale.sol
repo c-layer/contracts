@@ -67,7 +67,7 @@ contract KYCTokensale is Tokensale {
   function contributionLimit(uint256 _investorId)
     public view returns (uint256)
   {
-   uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
+    uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
     uint256 amlLimit = 0;
     if (kycLevel < 5) {
       amlLimit = contributionLimits[kycLevel];

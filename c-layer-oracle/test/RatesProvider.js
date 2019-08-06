@@ -12,7 +12,7 @@ contract("RatesProvider", function (accounts) {
   let provider;
 
   const now = new Date().getTime() / 1000;
-  const CHF = 5;
+  const CHF = web3.utils.toHex("CHF");
   const ethToWei = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "4825789016504";
   const aETHCHFSample = "207220";
@@ -28,18 +28,41 @@ contract("RatesProvider", function (accounts) {
     assert.equal(name, "Test", "name");
   });
 
+  it("should have currencies", async function () {
+    let expectedCurrencies = [
+      "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD",
+    ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
+
+    const currencies = await provider.currencies();
+    assert.deepEqual(currencies, expectedCurrencies, "currencies");
+  });
+
+  it("should have decimals", async function () {
+    const decimals = await provider.decimals();
+    assert.deepEqual(decimals.map((d) => d.toString()),
+      [ "9", "4", "2", "2", "2", "2", "2", "2", "2", "2" ],
+      "decimals");
+  });
+
+  it("should not have rates", async function () {
+    const rates = await provider.rates();
+    assert.deepEqual(rates.map((d) => d.toString()),
+      [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+      "rates");
+  });
+
   it("should have an update date", async function () {
     const updatedAt = await provider.updatedAt();
     assert.equal(updatedAt.toString(), "0", "updatedAt");
   });
 
   it("should convert rate from ETHCHF", async function () {
-    const rateWEICHFCent = await provider.convertRate(aETHCHFSample, 2);
+    const rateWEICHFCent = await provider.convertRate(aETHCHFSample, CHF, 2);
     assert.equal(rateWEICHFCent.toString(), aWEICHFSample, "rate from ETHCHF");
   });
 
   it("should convert rate to ETHCHF", async function () {
-    const rateETHCHF = await provider.convertRate(aWEICHFSample, 2);
+    const rateETHCHF = await provider.convertRate(aWEICHFSample, CHF, 2);
     assert.equal(rateETHCHF.toString(), aETHCHFSample, "rate to ETHCHF");
   });
 
@@ -70,7 +93,7 @@ contract("RatesProvider", function (accounts) {
     assert.equal(tx.logs[0].event, "Rate", "event");
     assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
     assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
-    assert.equal(tx.logs[0].args.currency, CHF, "currency");
+    assert.equal(tx.logs[0].args.currency, CHF.padEnd(66, "0"), "currency");
     assert.ok(tx.logs[0].args.rateFromWEI.toString(), aWEICHFSample, "rate");
   });
 

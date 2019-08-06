@@ -9,28 +9,32 @@ pragma solidity >=0.5.0 <0.6.0;
  */
 contract IRatesProvider {
 
-  // ETH is always the base currency
-  enum Currency { ETH, BTC, EOS, GBP, USD, CHF, EUR, CNY, JPY, CAD, AUD }
-  uint256 constant public CURRENCIES = 11;
-
-  function convertRate(uint256 _rate, uint256 _rateETHDecimal)
-    public pure returns (uint256);
-
   function name() public view returns (string memory);
-  function rate(Currency _currency) public view returns (uint256);
+
+  function rate(bytes32 _currency) public view returns (uint256);
+
+  function currencies() public view returns (bytes32[] memory);
+  function decimals() public view returns (uint256[] memory);
   function rates() public view returns (uint256[] memory);
   function updatedAt() public view returns (uint256);
-  function rateETH(Currency _currency, uint256 _rateETHDecimal)
+
+  function convertRate(uint256 _rate, bytes32 _currency, uint256 _rateETHDecimal)
     public view returns (uint256);
 
-  function convertToWEI(Currency _currency, uint256 _amountCurrency)
-    public view returns (uint256);
-  function convertFromWEI(Currency _currency, uint256 _amountWEI)
-    public view returns (uint256);
-  function convertBetween(Currency _a, Currency _b, uint256 _amountA)
+  function rateETH(bytes32 _currency, uint256 _rateETHDecimal)
     public view returns (uint256);
 
+  function convertToWEI(bytes32 _currency, uint256 _amountCurrency)
+    public view returns (uint256);
+  function convertFromWEI(bytes32 _currency, uint256 _amountWEI)
+    public view returns (uint256);
+  function convertBetween(bytes32 _a, bytes32 _b, uint256 _amountA)
+    public view returns (uint256);
+
+  function defineCurrencies(
+    bytes32[] memory _currencies,
+    uint256[] memory _decimals) public returns (bool);
   function defineRates(uint256[] memory _rates) public returns (bool);
 
-  event Rate(uint256 at, Currency indexed currency, uint256 rateFromWEI);
+  event Rate(uint256 at, bytes32 indexed currency, uint256 rateFromWEI);
 }

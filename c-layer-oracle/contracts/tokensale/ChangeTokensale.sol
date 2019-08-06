@@ -17,14 +17,14 @@ import "./Tokensale.sol";
  */
 contract ChangeTokensale is Tokensale {
 
-  IRatesProvider.Currency internal baseCurrency_;
+  bytes32 internal baseCurrency_;
   IRatesProvider internal ratesProvider_;
 
   /**
    * @dev constructor
    */
   constructor(
-    IRatesProvider.Currency _baseCurrency,
+    bytes32 _baseCurrency,
     IRatesProvider _ratesProvider
   ) public
   {
@@ -42,7 +42,7 @@ contract ChangeTokensale is Tokensale {
   /**
    * @dev returns baseCurrency
    */
-  function baseCurrency() public view returns (IRatesProvider.Currency) {
+  function baseCurrency() public view returns (bytes32) {
     return baseCurrency_;
   }
 

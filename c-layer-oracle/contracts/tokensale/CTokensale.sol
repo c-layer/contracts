@@ -23,7 +23,7 @@ contract CTokensale is ChangeTokensale, KYCTokensale, BonusTokensale {
     address _vaultERC20,
     address payable _vaultETH,
     uint256 _tokenPrice,
-    IRatesProvider.Currency _baseCurrency,
+    bytes32 _baseCurrency,
     IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
     uint256 _start,

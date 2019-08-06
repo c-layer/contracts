@@ -15,7 +15,7 @@ contract("CTokensale", function (accounts) {
   let sale, token, userRegistry, ratesProvider;
   let rateWEICHF;
  
-  const CHF = 5;
+  const CHF = web3.utils.toHex("CHF");
   const KYC_LEVEL_KEY = 1;
 
   const vaultERC20 = accounts[1];
@@ -40,7 +40,7 @@ contract("CTokensale", function (accounts) {
     await userRegistry.updateUserExtended(5, KYC_LEVEL_KEY, 4);
     await userRegistry.updateUserExtended(6, KYC_LEVEL_KEY, 5);
     ratesProvider = await RatesProvider.new("Dummy");
-    rateWEICHF = await ratesProvider.convertRate(2072333, 2);
+    rateWEICHF = await ratesProvider.convertRate(2072333, CHF, 2);
   });
 
   beforeEach(async function () {
@@ -88,7 +88,7 @@ contract("CTokensale", function (accounts) {
 
   it("should have a base currency", async function () {
     const baseCurrency = await sale.baseCurrency();
-    assert.equal(baseCurrency, CHF, "baseCurrency");
+    assert.equal(baseCurrency, CHF.padEnd(66, "0"), "baseCurrency");
   });
 
   it("should have a rates provider", async function () {
