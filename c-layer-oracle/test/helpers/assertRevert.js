@@ -4,10 +4,14 @@
  */
 
 module.exports = async function (promise, expectedReasonOrCode) {
+  let success = false;
   try {
     await promise;
-    assert.fail("Expected revert not received");
+    success = true;
   } catch (error) {
+    if (success) {
+      assert.fail("Expected revert not received");
+    }
     if (typeof error == "object") {
       if (Object.keys(error).length > 0) {
         const revertReasonFound =

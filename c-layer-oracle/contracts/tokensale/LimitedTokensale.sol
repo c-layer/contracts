@@ -42,9 +42,9 @@ contract LimitedTokensale is SchedulableTokensale {
   }
 
   /* Investment */
-  function investInternal(address _investor, uint256 _amount) internal
+  function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH) internal
     onlyBoundInvestment(_amount)
   {
-    investInternal(_investor, _amount);
+    investInternal(_investor, _amount, _refundUnspentETH);
   }
 }

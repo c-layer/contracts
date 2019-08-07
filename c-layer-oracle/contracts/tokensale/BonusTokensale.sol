@@ -22,6 +22,19 @@ contract BonusTokensale is SchedulableTokensale {
   uint256[] internal bonuses_;
 
   /**
+   * @dev constructor
+   */
+  constructor(
+    IERC20 _token,
+    address _vaultERC20,
+    address payable _vaultETH,
+    uint256 _tokenPrice
+  ) public
+    SchedulableTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+  {
+  }
+  
+  /**
    * @dev bonusMode
    */
   function bonusMode() public view returns (BonusMode) {

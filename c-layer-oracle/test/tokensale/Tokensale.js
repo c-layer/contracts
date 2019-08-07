@@ -160,7 +160,7 @@ contract("Tokensale", function (accounts) {
   it("should have correct gas estimate for investing  1 micro ETH", async function () {
     const wei = web3.utils.toWei("1", "microether");
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
-    assert.equal(gas, "149189", "gas estimate");
+    assert.equal(gas, "150420", "gas estimate");
   });
 
   it("should invest 1 micro ETH", async function () {

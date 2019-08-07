@@ -68,7 +68,10 @@ contract Tokensale is ITokensale, Operable, Pausable {
   /* Investment */
   function investETH() public payable
   {
-    investInternal(msg.sender, msg.value);
+    Investor storage investor = investorInternal(msg.sender);
+    uint256 amountETH = investor.unspentETH.add(msg.value);
+
+    investInternal(msg.sender, amountETH, true);
   }
 
   /**
@@ -205,9 +208,13 @@ contract Tokensale is ITokensale, Operable, Pausable {
   /**
    * @dev update unspent ETH internal
    */
-  function updateUnspentETHInternal(Investor storage _investor, uint256 _unspentETH) internal {
-    totalUnspentETH_ = totalUnspentETH_.sub(_investor.unspentETH).add(_unspentETH);
-    _investor.unspentETH = _unspentETH;
+  function updateUnspentETHInternal(
+    Investor storage _investor, uint256 _investedETH
+  ) internal
+  {
+    uint256 unspentETH = _investor.unspentETH.add(msg.value).sub(_investedETH);
+    totalUnspentETH_ = totalUnspentETH_.sub(_investor.unspentETH).add(unspentETH);
+    _investor.unspentETH = unspentETH;
   }
 
   /**
@@ -264,23 +271,29 @@ contract Tokensale is ITokensale, Operable, Pausable {
   /**
    * @dev invest internal
    */
-  function investInternal(address _investor, uint256 _amount)
+  function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH)
     internal whenNotPaused
   {
     require(_amount != 0, "TOS04");
 
     Investor storage investor = investorInternal(_investor);
-    uint256 amount = investor.unspentETH.add(_amount);
-    uint256 tokens = tokenInvestment(_investor, amount);
+    uint256 tokens = tokenInvestment(_investor, _amount);
     require(tokens != 0, "TOS05");
 
     uint256 invested = updateInvestorInternal(investor, tokens);
-    updateUnspentETHInternal(investor, amount.sub(invested));
+    if (_refundUnspentETH) {
+      updateUnspentETHInternal(investor, invested);
+    }
 
     emit Investment(_investor, invested);
  
     /* Reentrancy risks: No state change must come below */
     distributeTokensInternal(_investor, tokens);
-    withdrawETHInternal(invested);
+
+    uint256 balance = address(this).balance;
+    uint256 withdrawableETH = balance.sub(totalUnspentETH_);
+    if (withdrawableETH != 0) {
+      withdrawETHInternal(withdrawableETH);
+    }
   }
 }

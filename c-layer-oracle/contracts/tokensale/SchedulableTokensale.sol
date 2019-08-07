@@ -20,12 +20,13 @@ contract SchedulableTokensale is Tokensale {
 
   uint256 internal startAt = ~uint256(0);
   uint256 internal endAt = ~uint256(0);
+  bool internal closed;
 
   /**
    * @dev Throws if sale is not open
    */
   modifier beforeSaleIsOpened {
-    require(currentTime() < startAt, "STS01");
+    require(currentTime() < startAt && !closed, "STS01");
     _;
   }
 
@@ -33,7 +34,11 @@ contract SchedulableTokensale is Tokensale {
    * @dev Throws if sale is not open
    */
   modifier saleIsOpened {
-    require(currentTime() >= startAt && currentTime() <= endAt, "STS02");
+    require(
+      currentTime() >= startAt
+        && currentTime() <= endAt
+        && !closed, "STS02"
+    );
     _;
   }
 
@@ -41,7 +46,7 @@ contract SchedulableTokensale is Tokensale {
    * @dev Throws once the sale is closed
    */
   modifier beforeSaleIsClosed {
-    require(currentTime() <= endAt, "STS03");
+    require(currentTime() <= endAt && !closed, "STS03");
     _;
   }
 
@@ -49,12 +54,35 @@ contract SchedulableTokensale is Tokensale {
    * @dev Throws once the sale is closed
    */
   modifier afterSaleIsClosed {
-    require(currentTime() <= endAt, "STS04");
+    require(isClosed(), "STS04");
     _;
   }
 
+  /**
+   * @dev constructor
+   */
+  constructor(
+    IERC20 _token,
+    address _vaultERC20,
+    address payable _vaultETH,
+    uint256 _tokenPrice
+  ) public
+    Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+  {
+  }
+
+  /**
+   * @dev schedule
+   */
   function schedule() public view returns (uint256, uint256) {
     return (startAt, endAt);
+  }
+
+  /**
+   * @dev isClosed
+   */
+  function isClosed() public view returns (bool) {
+    return currentTime() > endAt || closed;
   }
 
   /**
@@ -68,11 +96,20 @@ contract SchedulableTokensale is Tokensale {
     endAt = _endAt;
   }
 
+  /**
+   * @dev close sale
+   */
+  function closeEarly()
+    public onlyOperator beforeSaleIsClosed
+  {
+    closed = true; 
+  }
+
   /* Investment */
-  function investInternal(address _investor, uint256 _amount) internal
+  function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH) internal
     saleIsOpened
   {
-    investInternal(_investor, _amount);
+    investInternal(_investor, _amount, _refundUnspentETH);
   }
 
   /* Util */

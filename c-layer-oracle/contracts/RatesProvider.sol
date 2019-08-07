@@ -8,17 +8,18 @@ import "./util/governance/Operable.sol";
 /**
  * @title RatesProvider
  * @dev RatesProvider interface
+ * @dev The null value for a rate indicates that the rate is undefined
+ * @dev It is recommended that smart contracts always check against a null rate
  *
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
- *   RP01: No rate exist against ETH
- *   RP02: Rates definition must only target configured currencies
+ *   RP01: Rates definition must only target configured currencies
  */
 contract RatesProvider is IRatesProvider, Operable {
   using SafeMath for uint256;
 
-  bytes32 internal constant ETH = "0x455448";
+  bytes32 internal constant ETH = bytes32("ETH");
   uint256 internal constant ETH_DECIMALS = 18;
 
   string internal name_;
@@ -40,7 +41,7 @@ contract RatesProvider is IRatesProvider, Operable {
   constructor(string memory _name) public {
     name_ = _name;
     for (uint256 i=0; i < currencies_.length; i++) {
-      currenciesMap[currencies_[i]] = i;
+      currenciesMap[currencies_[i]] = i+1;
     }
   }
 
@@ -55,9 +56,12 @@ contract RatesProvider is IRatesProvider, Operable {
    * @dev rate for a currency
    */
   function rate(bytes32 _currency) public view returns (uint256) {
-    require(_currency != ETH, "RP01");
+    if(_currency == ETH) {
+      return 1;
+    }
+    
     uint256 id = currenciesMap[_currency];
-    return rates_[id];
+    return (id > 0) ? rates_[id-1] : 0;
   }
 
   /**
@@ -100,26 +104,32 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /*
-   * @dev convert rate from ETHXXX to WEIBaseXXX
+   * @dev convert rate from ETH_XXX to BaseXXX_WEI and back
+   * @dev BaseXXX is the base unit for the XXX currency (ie cents for most FIAT).
+   * @dev convert between smart contract format and human readable
    */
   function convertRate(
     uint256 _rate,
     bytes32 _currency,
-    uint256 _rateETHDecimal)
+    uint256 _rateDecimal)
     public view returns (uint256)
   {
     if (_rate == 0) {
       return 0;
     }
 
+    uint256 currencyDecimals = 0;
     uint256 id = currenciesMap[_currency];
-    return uint256(
-      10**(_rateETHDecimal.add(ETH_DECIMALS - decimals_[id]))
-    ).div(_rate);
+    if (id > 0) {
+      currencyDecimals = decimals_[id-1];
+    }
+
+    return (id > 0 || _currency == ETH) ? 
+      uint256(10**(_rateDecimal.add(ETH_DECIMALS - currencyDecimals))).div(_rate) : 0;
   }
 
   /**
-   * @dev convert from currency to WEI
+   * @dev convert from currency (base unit) to WEI
    */
   function convertToWEI(bytes32 _currency, uint256 _amountCurrency)
     public view returns (uint256)
@@ -134,7 +144,7 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
-   * @dev convert from WEI to currency
+   * @dev convert from WEI to currency (base unit)
    */
   function convertFromWEI(bytes32 _currency, uint256 _amountWEI)
     public view returns (uint256)
@@ -149,7 +159,7 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
-   * @dev convert between two currency
+   * @dev convert between two currency (base units)
    */
   function convertBetween(bytes32 _currencyA, bytes32 _currencyB, uint256 _amountA)
     public view returns (uint256)
@@ -180,8 +190,8 @@ contract RatesProvider is IRatesProvider, Operable {
 
     for (uint256 i=0; i < _currencies.length; i++) {
       bytes32 currency = _currencies[i];
-      if (currenciesMap[currency] != i) {
-        currenciesMap[currency] = i;
+      if (currenciesMap[currency] != i+1) {
+        currenciesMap[currency] = i+1;
         rates_[i] = 0;
       }
     }
@@ -197,7 +207,7 @@ contract RatesProvider is IRatesProvider, Operable {
   function defineRates(uint256[] memory _rates)
     public onlyOperator returns (bool)
   {
-    require(_rates.length <= currencies_.length, "RP02");
+    require(_rates.length <= currencies_.length, "RP01");
 
     updatedAt_ = currentTime();
     for (uint256 i=0; i < _rates.length; i++) {

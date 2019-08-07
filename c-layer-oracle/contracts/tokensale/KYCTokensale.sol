@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./Tokensale.sol";
+import "./AbstractKYCTokensale.sol";
 import "../interface/IUserRegistry.sol";
 
 
@@ -12,89 +12,21 @@ import "../interface/IUserRegistry.sol";
  *
  * Error messages
  */
-contract KYCTokensale is Tokensale {
-
-  uint256 constant public KYC_LEVEL_KEY = 0;
-  uint256 constant public AML_LIMIT_KEY = 1;
-
-  uint32[5] internal contributionLimits = [
-    0,
-    300000,
-    1500000,
-    10000000,
-    100000000
-  ];
-
-  mapping(uint256 => Investor) internal investorIds;
-  IUserRegistry internal userRegistry_;
+contract KYCTokensale is AbstractKYCTokensale {
 
   /**
    * @dev constructor
    */
-  constructor(IUserRegistry _userRegistry) public
+  constructor(
+    IERC20 _token,
+    address _vaultERC20,
+    address payable _vaultETH,
+    uint256 _tokenPrice,
+    IUserRegistry _userRegistry
+  ) public
+    Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
   {
     userRegistry_ = _userRegistry;
   }
 
-  /**
-   * @dev user registry
-   */
-  function userRegistry() public view returns (IUserRegistry) {
-    return userRegistry_;
-  }
-
-  function registredInvestorUnspentETH(uint256 _investorId)
-    public view returns (uint256)
-  {
-    return investorIds[_investorId].unspentETH;
-  }
-
-  function registredInvestorInvested(uint256 _investorId)
-    public view returns (uint256)
-  {
-    return investorIds[_investorId].invested;
-  }
-
-  function registredInvestorTokens(uint256 _investorId)
-    public view returns (uint256)
-  {
-    return investorIds[_investorId].tokens;
-  }
-
-  /**
-   * @dev contributionLimit
-   */
-  function contributionLimit(uint256 _investorId)
-    public view returns (uint256)
-  {
-    uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
-    uint256 amlLimit = 0;
-    if (kycLevel < 5) {
-      amlLimit = contributionLimits[kycLevel];
-    } else {
-      amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
-      amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits[4];
-    }
-    return amlLimit.sub(investorIds[_investorId].invested);
-  }
-
-  /**
-   * @dev tokenInvestment
-   */
-  function tokenInvestment(address _investor, uint256 _amount)
-    public view returns (uint256)
-  {
-    uint256 investorId = userRegistry_.userId(_investor);
-    uint256 amlLimit = contributionLimit(investorId);
-    return super.tokenInvestment(_investor, (_amount < amlLimit) ? _amount : amlLimit);
-  }
-
-  /**
-   * @dev investor internal
-   */
-  function investorInternal(address _investor)
-    internal view returns (Investor storage)
-  {
-    return investorIds[userRegistry_.userId(_investor)];
-  }
 }

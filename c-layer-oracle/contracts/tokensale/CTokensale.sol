@@ -1,8 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./BonusTokensale.sol";
-import "./KYCTokensale.sol";
-import "./ChangeTokensale.sol";
+import "./AbstractKYCTokensale.sol";
+import "./AbstractChangeTokensale.sol";
 
 
 /**
@@ -13,7 +13,7 @@ import "./ChangeTokensale.sol";
  *
  * Error messages
  */
-contract CTokensale is ChangeTokensale, KYCTokensale, BonusTokensale {
+contract CTokensale is AbstractChangeTokensale, AbstractKYCTokensale, BonusTokensale {
 
   /**
    * @dev constructor
@@ -31,10 +31,12 @@ contract CTokensale is ChangeTokensale, KYCTokensale, BonusTokensale {
     uint256[] memory _bonuses,
     uint256 _bonusUntil
   ) public
-    Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
-    KYCTokensale(_userRegistry)
-    ChangeTokensale(_baseCurrency, _ratesProvider)
+    BonusTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
   {
+    baseCurrency_ = _baseCurrency;
+    userRegistry_ = _userRegistry;
+    ratesProvider_ = _ratesProvider;
+
     updateSchedule(_start, _end);
     defineBonus(_bonuses, BonusMode.EARLY, _bonusUntil);
   }
