@@ -16,7 +16,7 @@ contract("CTokensale", function (accounts) {
   let rateWEICHF;
  
   const CHF = web3.utils.toHex("CHF");
-  const KYC_LEVEL_KEY = 1;
+  const KYC_LEVEL_KEY = 0;
 
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];

@@ -13,7 +13,7 @@ const BN = require("bn.js");
 contract("KYCTokensale", function (accounts) {
   let sale, token, userRegistry;
  
-  const KYC_LEVEL_KEY = 1;
+  const KYC_LEVEL_KEY = 0;
 
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];

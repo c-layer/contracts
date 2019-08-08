@@ -14,8 +14,8 @@ import "../interface/IUserRegistry.sol";
  */
 contract AbstractKYCTokensale is Tokensale {
 
-  uint256 constant public KYC_LEVEL_KEY = 1;
-  uint256 constant public AML_LIMIT_KEY = 2;
+  uint256 constant public KYC_LEVEL_KEY = 0;
+  uint256 constant public AML_LIMIT_KEY = 1;
 
   uint32[5] internal contributionLimits = [
     0,
