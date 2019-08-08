@@ -109,7 +109,7 @@ contract SchedulableTokensale is Tokensale {
   function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH) internal
     saleIsOpened
   {
-    investInternal(_investor, _amount, _refundUnspentETH);
+    super.investInternal(_investor, _amount, _refundUnspentETH);
   }
 
   /* Util */

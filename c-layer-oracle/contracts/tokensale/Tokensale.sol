@@ -17,8 +17,8 @@ import "../util/lifecycle/Pausable.sol";
  * TOS01: No data must be sent while sending ETH
  * TOS02: Token transfer must be successfull
  * TOS03: No ETH to refund
- * TOS04: Cannot invest onchain and offchain at the same time
- * TOS05: Cannot invest if no more tokens
+ * TOS04: Cannot invest 0 tokens
+ * TOS05: Cannot invest if there are no tokens to buy
  */
 contract Tokensale is ITokensale, Operable, Pausable {
   using SafeMath for uint256;

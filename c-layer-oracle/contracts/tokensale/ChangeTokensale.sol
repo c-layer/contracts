@@ -11,9 +11,6 @@ import "./AbstractChangeTokensale.sol";
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
- * CTS01: No data must be sent while sending ETH
- * CTS02: Offchain amount must be positive
- * CTS03: A rates must be defined
  */
 contract ChangeTokensale is AbstractChangeTokensale {
 

@@ -70,7 +70,7 @@ contract SignableTokensale is LimitedTokensale {
   function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH)
     internal whenPurchaseAgreementSigned(_investor)
   {
-    investInternal(_investor, _amount, _refundUnspentETH);
+    super.investInternal(_investor, _amount, _refundUnspentETH);
   }
 
   event PurchaseAgreementHash(bytes32 _hash);

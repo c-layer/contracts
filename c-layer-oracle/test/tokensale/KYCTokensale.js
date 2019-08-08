@@ -69,4 +69,41 @@ contract("KYCTokensale", function (accounts) {
     const saleUserRegistry = await sale.userRegistry();
     assert.equal(saleUserRegistry, userRegistry.address, "userRegistry");
   });
+
+  it("should have investor 1 unspentETH to 0", async function () {
+    const unspentETH = await sale.registredInvestorUnspentETH(1);
+    assert.equal(unspentETH.toString(), 0, "unspentETH");
+  });
+
+  it("should have investor 1 invested to 0", async function () {
+    const invested = await sale.registredInvestorInvested(1);
+    assert.equal(invested.toString(), 0, "tokenPrice");
+  });
+
+  it("should have investor 1 tokens to 0", async function () {
+    const tokens = await sale.registredInvestorTokens(1);
+    assert.equal(tokens.toString(), 0, "userRegistry");
+  });
+
+  it("should have investor 1 contribution limit", async function () {
+    const tokens = await sale.contributionLimit(3);
+    assert.equal(tokens.toString(), 1500000, "contribution");
+  });
+
+  it("should have investor 1 token investment", async function () {
+    const wei = web3.utils.toWei("1", "microether");
+    const tokens = await sale.tokenInvestment(accounts[3], wei);
+    assert.equal(tokens.toString(), 3000, "tokenInvestment");
+  });
+
+  it("should invest 1 micro ETH", async function () {
+    const wei = web3.utils.toWei("1", "microether");
+    const tx = await sale.investETH({ value: wei, from: accounts[3] });
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs[0].event, "Investment", "event");
+    assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
+    assert.equal(tx.logs[0].args.amount.toString(), 1500000, "amount investment");
+    assert.equal(tx.logs[1].event, "WithdrawETH", "event");
+    assert.equal(tx.logs[1].args.amount.toString(), 1500000, "amount withdraw");
+  });
 });

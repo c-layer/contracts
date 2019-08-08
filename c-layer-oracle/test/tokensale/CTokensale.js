@@ -95,4 +95,80 @@ contract("CTokensale", function (accounts) {
     const saleRatesProvider = await sale.ratesProvider();
     assert.equal(saleRatesProvider, ratesProvider.address, "ratesProvider");
   });
+
+  describe("during the sale", async function () {
+
+    beforeEach(async function () {
+      await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
+      await ratesProvider.defineRates([ rateWEICHF ]);
+      sale.updateSchedule(0, end);
+    });
+
+    it("should have token investment", async function () {
+      const tokens = await sale.tokenInvestment(accounts[3], 1000001);
+      assert.equal(tokens.toString(), 2000, "tokenInvestment");
+    });
+
+    it("should add offchain investment", async function () {
+      await sale.addOffchainInvestment(accounts[3], 10000001);
+
+      const invested = await sale.investorInvested(accounts[3]);
+      assert.equal(invested.toString(), 1500000, "invested");
+
+      const unspentETH = await sale.investorUnspentETH(accounts[3]);
+      assert.equal(unspentETH.toString(), 0, "unspentETH");
+
+      const tokens = await sale.investorTokens(accounts[3]);
+      assert.equal(tokens.toString(), 3300, "tokens");
+    });
+
+    it("should let investor invest", async function () {
+      let weiInvestment = new BN(rateWEICHF).mul(new BN(tokenPrice)).mul(new BN(10)).add(new BN(1));
+      await sale.investETH({ from: accounts[3], value: weiInvestment });
+
+      const invested = await sale.investorInvested(accounts[3]);
+      assert.equal(invested.toString(), 5000, "invested");
+
+      const unspentETH = await sale.investorUnspentETH(accounts[3]);
+      assert.equal(unspentETH.toString(), 1, "unspentETH");
+
+      const tokens = await sale.investorTokens(accounts[3]);
+      assert.equal(tokens.toString(), 11, "tokens");
+    });
+
+    describe("with already investments", async function () {
+      beforeEach(async function () {
+        await sale.addOffchainInvestment(accounts[2], 1500001);
+        await sale.addOffchainInvestment(accounts[3], 1000300);
+      });
+
+      it("should have a total raised", async function () {
+        const saleTotalRaised = await sale.totalRaised();
+        assert.equal(saleTotalRaised.toString(), "1300000", "totalRaised");
+      });
+
+      it("should have a total unspent ETH", async function () {
+        const saleTotalUnspentETH = await sale.totalUnspentETH();
+        assert.equal(saleTotalUnspentETH.toString(), "0", "totalUnspentETH");
+      });
+
+      it("should have a total refunded ETH", async function () {
+        const saleTotalRefundedETH = await sale.totalRefundedETH();
+        assert.equal(saleTotalRefundedETH.toString(), "0", "totalRefundedETH");
+      });
+
+      it("should add offchain investment", async function () {
+        await sale.addOffchainInvestment(accounts[3], 1000300);
+
+        const invested = await sale.investorInvested(accounts[3]);
+        assert.equal(invested.toString(), 1500000, "invested");
+
+        const unspentETH = await sale.investorUnspentETH(accounts[3]);
+        assert.equal(unspentETH.toString(), 0, "unspentETH");
+
+        const tokens = await sale.investorTokens(accounts[3]);
+        assert.equal(tokens.toString(), 3300, "tokens");
+      });
+    });
+  });
 });
