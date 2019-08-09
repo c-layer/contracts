@@ -29,6 +29,8 @@ contract Tokensale is ITokensale, Operable, Pausable {
   address internal vaultERC20_;
 
   uint256 internal tokenPrice_;
+  uint256 internal priceUnit_ = 1;
+
   uint256 internal totalRaised_;
   uint256 internal totalUnspentETH_;
   uint256 internal totalRefundedETH_;
@@ -103,6 +105,13 @@ contract Tokensale is ITokensale, Operable, Pausable {
   }
 
   /**
+   * @dev returns price unit
+   */
+  function priceUnit() public view returns (uint256) {
+    return priceUnit_;
+  }
+
+  /**
    * @dev returns total raised
    */
   function totalRaised() public view returns (uint256) {
@@ -156,7 +165,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
     public view returns (uint256)
   {
     uint256 availableSupplyValue = availableSupply();
-    uint256 contribution = _amount.div(tokenPrice_);
+    uint256 contribution = _amount.mul(priceUnit_).div(tokenPrice_);
 
     return (contribution < availableSupplyValue) ? contribution : availableSupplyValue;
   }
@@ -223,7 +232,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
   function updateInvestorInternal(Investor storage _investor, uint256 _tokens)
     internal returns (uint256)
   {
-    uint256 invested = _tokens.mul(tokenPrice_);
+    uint256 invested = _tokens.mul(tokenPrice_).div(priceUnit_);
     _investor.invested = _investor.invested.add(invested);
     _investor.tokens = _investor.tokens.add(_tokens);
     totalRaised_ = totalRaised_.add(invested);

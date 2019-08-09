@@ -21,6 +21,7 @@ contract("ChangeTokensale", function (accounts) {
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];
   const tokenPrice = 500;
+  const priceUnit = 1;
   const supply = "1000000";
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
 
@@ -32,19 +33,17 @@ contract("ChangeTokensale", function (accounts) {
     rateWEICHF = await ratesProvider.convertRate(20723, CHF, 2);
   });
 
-  beforeEach(async function () {
-    token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
-  });
-
   describe("with a sale priced in CHF", async function () {
 
     beforeEach(async function () {
+      token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
       await ratesProvider.defineRates([ 0 ]);
       sale = await ChangeTokensale.new(
         token.address,
         vaultERC20,
         vaultETH,
         tokenPrice,
+        priceUnit,
         CHF,
         ratesProvider.address,
       );
@@ -273,11 +272,13 @@ contract("ChangeTokensale", function (accounts) {
 
   describe("with a sale priced in ETH", async function () {
     beforeEach(async function () {
+      token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
       sale = await ChangeTokensale.new(
         token.address,
         vaultERC20,
         vaultETH,
         tokenPrice,
+        priceUnit,
         ETH,
         ratesProvider.address,
       );

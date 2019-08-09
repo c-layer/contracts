@@ -19,7 +19,7 @@ contract AbstractChangeTokensale is Tokensale {
   bytes32 internal baseCurrency_;
   IRatesProvider internal ratesProvider_;
 
-  uint256 internal totalRaisedETH_;
+  uint256 internal totalRaisedETH_; // TODO
 
   /* Investment */
   function investETH() public payable

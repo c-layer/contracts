@@ -65,6 +65,18 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
+   * @dev decimals for a currency
+   */
+  function decimals(bytes32 _currency) public view returns (uint256) {
+    if(_currency == ETH) {
+      return 18;
+    }
+
+    uint256 id = currenciesMap[_currency];
+    return (id > 0) ? decimals_[id-1] : 0;
+  }
+
+  /**
    * @dev currencies
    */
   function currencies() public view returns (bytes32[] memory) {

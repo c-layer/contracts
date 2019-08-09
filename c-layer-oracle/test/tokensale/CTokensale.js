@@ -21,6 +21,7 @@ contract("CTokensale", function (accounts) {
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];
   const tokenPrice = 500;
+  const priceUnit = 1;
   const supply = "1000000";
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
 
@@ -50,6 +51,7 @@ contract("CTokensale", function (accounts) {
       vaultERC20,
       vaultETH,
       tokenPrice,
+      priceUnit,
       CHF,
       userRegistry.address,
       ratesProvider.address,
