@@ -103,7 +103,7 @@ contract("CTokensale", function (accounts) {
     beforeEach(async function () {
       await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
       await ratesProvider.defineRates([ rateWEICHF ]);
-      sale.updateSchedule(0, end);
+      await sale.updateSchedule(0, end);
     });
 
     it("should have token investment", async function () {

@@ -56,7 +56,7 @@ contract RatesProvider is IRatesProvider, Operable {
    * @dev rate for a currency
    */
   function rate(bytes32 _currency) public view returns (uint256) {
-    if(_currency == ETH) {
+    if (_currency == ETH) {
       return 1;
     }
     
@@ -68,7 +68,7 @@ contract RatesProvider is IRatesProvider, Operable {
    * @dev decimals for a currency
    */
   function decimals(bytes32 _currency) public view returns (uint256) {
-    if(_currency == ETH) {
+    if (_currency == ETH) {
       return 18;
     }
 

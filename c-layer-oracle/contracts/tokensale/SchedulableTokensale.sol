@@ -68,8 +68,7 @@ contract SchedulableTokensale is Tokensale {
     uint256 _tokenPrice
   ) public
     Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
-  {
-  }
+  {} /* solhint-disable no-empty-blocks */
 
   /**
    * @dev schedule

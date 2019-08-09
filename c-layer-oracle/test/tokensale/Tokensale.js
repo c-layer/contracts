@@ -52,6 +52,11 @@ contract("Tokensale", function (accounts) {
     assert.equal(saleTotalRaised.toString(), "0", "totalRaised");
   });
 
+  it("should have a total tokens sold", async function () {
+    const saleTotalTokensSold = await sale.totalTokensSold();
+    assert.equal(saleTotalTokensSold.toString(), "0", "totalTokensSold");
+  });
+
   it("should have a total unspent ETH", async function () {
     const saleTotalUnspentETH = await sale.totalUnspentETH();
     assert.equal(saleTotalUnspentETH.toString(), "0", "totalUnspentETH");
@@ -160,7 +165,7 @@ contract("Tokensale", function (accounts) {
   it("should have correct gas estimate for investing  1 micro ETH", async function () {
     const wei = web3.utils.toWei("1", "microether");
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
-    assert.equal(gas, "151085", "gas estimate");
+    assert.equal(gas, "171305", "gas estimate");
   });
 
   it("should invest 1 micro ETH", async function () {
@@ -342,6 +347,11 @@ contract("Tokensale", function (accounts) {
     it("should have a total raised", async function () {
       const saleTotalRaised = await sale.totalRaised();
       assert.equal(saleTotalRaised.toString(), web3.utils.toWei("1", "ether"), "totalRaised");
+    });
+
+    it("should have a total tokens sold", async function () {
+      const saleTotalTokensSold = await sale.totalTokensSold();
+      assert.equal(saleTotalTokensSold.toString(), supply, "totalTokensSold");
     });
 
     it("should have a total unspent ETH", async function () {

@@ -32,6 +32,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
   uint256 internal priceUnit_ = 1;
 
   uint256 internal totalRaised_;
+  uint256 internal totalTokensSold_;
   uint256 internal totalUnspentETH_;
   uint256 internal totalRefundedETH_;
 
@@ -116,6 +117,13 @@ contract Tokensale is ITokensale, Operable, Pausable {
    */
   function totalRaised() public view returns (uint256) {
     return totalRaised_;
+  }
+
+  /**
+   * @dev returns total tokens sold
+   */
+  function totalTokensSold() public view returns (uint256) {
+    return totalTokensSold_;
   }
 
   /**
@@ -289,6 +297,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
     uint256 tokens = tokenInvestment(_investor, _amount);
     require(tokens != 0, "TOS05");
 
+    totalTokensSold_ = totalTokensSold_ + tokens;
     uint256 invested = updateInvestorInternal(investor, tokens);
     if (_refundUnspentETH) {
       updateUnspentETHInternal(investor, invested);

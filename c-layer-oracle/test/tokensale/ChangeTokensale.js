@@ -80,8 +80,13 @@ contract("ChangeTokensale", function (accounts) {
       assert.equal(saleRatesProvider, ratesProvider.address, "ratesProvider");
     });
 
+    it("should have a total raised ETH", async function () {
+      const saleTotalRaisedETH = await sale.totalRaisedETH();
+      assert.equal(saleTotalRaisedETH.toString(), 0, "totalRaisedETH");
+    });
+
     it("should not let investor invest in ETH when no ETHCHF rates exist", async function () {
-      await assertRevert(sale.investETH({ from: accounts[3], value: investmentWEI }), "CTS02");
+      await assertRevert(sale.investETH({ from: accounts[3], value: investmentWEI }), "CTS01");
     });
 
     it("should prevent non operator to add offchain investment", async function () {
@@ -179,6 +184,11 @@ contract("ChangeTokensale", function (accounts) {
           vaultETHBefore = await web3.eth.getBalance(vaultETH);
           saleBefore = await web3.eth.getBalance(sale.address);
           await sale.investETH({ from: accounts[4], value: investmentWEI });
+        });
+
+        it("should have a total raised ETH", async function () {
+          const saleTotalRaisedETH = await sale.totalRaisedETH();
+          assert.equal(saleTotalRaisedETH.toString(), "989239009795868500", "totalRaisedETH");
         });
 
         it("should let same investor invest again", async function () {
@@ -284,7 +294,7 @@ contract("ChangeTokensale", function (accounts) {
       );
       await token.approve(sale.address, supply, { from: accounts[1] });
     });
- 
+
     it("should have a base currency", async function () {
       const baseCurrency = await sale.baseCurrency();
       assert.equal(baseCurrency, ETH.padEnd(66, "0"), "baseCurrency");
@@ -304,6 +314,17 @@ contract("ChangeTokensale", function (accounts) {
 
     it("should not let operator add offchain investment", async function () {
       await assertRevert(sale.addOffchainInvestment(accounts[3], 1000));  
+    });
+
+    describe("after a first investment", async function () {
+      beforeEach(async function () {
+        await sale.investETH({ from: accounts[3], value: 1000001 });
+      });
+
+      it("should have a total raised ETH", async function () {
+        const saleTotalRaisedETH = await sale.totalRaisedETH();
+        assert.equal(saleTotalRaisedETH.toString(), 1000000, "totalRaisedETH");
+      });
     });
   });
 });

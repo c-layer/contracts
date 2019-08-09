@@ -60,13 +60,9 @@ contract AbstractKYCTokensale is Tokensale {
     public view returns (uint256)
   {
     uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
-    uint256 amlLimit = 0;
-    if (kycLevel < 5) {
-      amlLimit = contributionLimits[kycLevel];
-    } else {
-      amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
-      amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits[4];
-    }
+    uint256 amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
+    amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits[kycLevel];
+
     return amlLimit.sub(investorIds[_investorId].invested);
   }
 
