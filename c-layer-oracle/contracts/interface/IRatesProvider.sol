@@ -12,6 +12,7 @@ contract IRatesProvider {
   function name() public view returns (string memory);
 
   function rate(bytes32 _currency) public view returns (uint256);
+  function decimals(bytes32 _currency) public view returns (uint256);
 
   function currencies() public view returns (bytes32[] memory);
   function decimals() public view returns (uint256[] memory);
