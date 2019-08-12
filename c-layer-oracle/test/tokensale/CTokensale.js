@@ -28,7 +28,7 @@ contract("CTokensale", function (accounts) {
   const start = 4102444800;
   const end = 7258118400;
   const bonuses = [ 10 ];
-  const bonusUntil = (end - start) / 2;
+  const bonusUntil = end;
 
   before(async function () {
     userRegistry = await UserRegistry.new(
@@ -160,7 +160,14 @@ contract("CTokensale", function (accounts) {
       });
 
       it("should add offchain investment", async function () {
-        await sale.addOffchainInvestment(accounts[3], 1000300);
+        const tx = await sale.addOffchainInvestment(accounts[3], 1000300);
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs[0].event, "Investment", "event");
+        assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
+        assert.equal(tx.logs[0].args.invested.toString(), 500000, "amount investment");
+        assert.equal(tx.logs[0].args.tokens.toString(), 1100, "tokens");
+        assert.equal(tx.logs[1].event, "WithdrawETH", "event");
+        assert.equal(tx.logs[1].args.amount.toString(), 0, "amount withdraw");
 
         const invested = await sale.investorInvested(accounts[3]);
         assert.equal(invested.toString(), 1500000, "invested");

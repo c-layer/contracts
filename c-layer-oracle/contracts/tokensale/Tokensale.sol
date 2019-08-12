@@ -302,7 +302,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
     investor.invested = investor.invested.add(invested);
     investor.tokens = investor.tokens.add(tokens);
     totalRaised_ = totalRaised_.add(invested);
-    totalTokensSold_ = totalTokensSold_ + tokens;
+    totalTokensSold_ = totalTokensSold_.add(tokens);
 
     totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
     investor.unspentETH = unspentETH;
