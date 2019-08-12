@@ -33,6 +33,7 @@ contract Tokensale is ITokensale, Operable, Pausable {
 
   uint256 internal totalRaised_;
   uint256 internal totalTokensSold_;
+
   uint256 internal totalUnspentETH_;
   uint256 internal totalRefundedETH_;
 
@@ -223,29 +224,23 @@ contract Tokensale is ITokensale, Operable, Pausable {
   }
 
   /**
-   * @dev update unspent ETH internal
+   * @dev eval unspent ETH internal
    */
-  function updateUnspentETHInternal(
+  function evalUnspentETHInternal(
     Investor storage _investor, uint256 _investedETH
-  ) internal
+  ) internal view returns (uint256)
   {
-    uint256 unspentETH = _investor.unspentETH.add(msg.value).sub(_investedETH);
-    totalUnspentETH_ = totalUnspentETH_.sub(_investor.unspentETH).add(unspentETH);
-    _investor.unspentETH = unspentETH;
+    return _investor.unspentETH.add(msg.value).sub(_investedETH);
   }
 
   /**
-   * @dev update investor internal
+   * @dev eval investment internal
    */
-  function updateInvestorInternal(Investor storage _investor, uint256 _tokens)
-    internal returns (uint256)
+  function evalInvestmentInternal(uint256 _tokens)
+    internal view returns (uint256, uint256)
   {
     uint256 invested = _tokens.mul(tokenPrice_).div(priceUnit_);
-    _investor.invested = _investor.invested.add(invested);
-    _investor.tokens = _investor.tokens.add(_tokens);
-    totalRaised_ = totalRaised_.add(invested);
-
-    return invested;
+    return (invested, _tokens);
   }
 
   /**
@@ -294,16 +289,25 @@ contract Tokensale is ITokensale, Operable, Pausable {
     require(_amount != 0, "TOS04");
 
     Investor storage investor = investorInternal(_investor);
-    uint256 tokens = tokenInvestment(_investor, _amount);
-    require(tokens != 0, "TOS05");
+    uint256 investment = tokenInvestment(_investor, _amount);
+    require(investment != 0, "TOS05");
 
-    totalTokensSold_ = totalTokensSold_ + tokens;
-    uint256 invested = updateInvestorInternal(investor, tokens);
+    (uint256 invested, uint256 tokens) = evalInvestmentInternal(investment);
+    uint256 unspentETH = 0;
     if (_refundUnspentETH) {
-      updateUnspentETHInternal(investor, invested);
+      unspentETH = evalUnspentETHInternal(investor, invested);
     }
 
-    emit Investment(_investor, invested);
+    // Storing values
+    investor.invested = investor.invested.add(invested);
+    investor.tokens = investor.tokens.add(tokens);
+    totalRaised_ = totalRaised_.add(invested);
+    totalTokensSold_ = totalTokensSold_ + tokens;
+
+    totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
+    investor.unspentETH = unspentETH;
+
+    emit Investment(_investor, invested, tokens);
  
     /* Reentrancy risks: No state change must come below */
     distributeTokensInternal(_investor, tokens);

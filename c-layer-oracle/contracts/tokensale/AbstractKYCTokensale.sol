@@ -72,7 +72,7 @@ contract AbstractKYCTokensale is Tokensale {
   function tokenInvestment(address _investor, uint256 _amount)
     public view returns (uint256)
   {
-    uint256 investorId = userRegistry_.userId(_investor);
+    uint256 investorId = userRegistry_.validUserId(_investor);
     uint256 amlLimit = contributionLimit(investorId);
     return super.tokenInvestment(_investor, (_amount < amlLimit) ? _amount : amlLimit);
   }

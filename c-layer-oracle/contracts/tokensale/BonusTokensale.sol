@@ -103,14 +103,14 @@ contract BonusTokensale is SchedulableTokensale {
   }
 
   /**
-   * @dev update investor internal
+   * @dev eval investment internal
    */
-  function updateInvestorInternal(Investor storage _investor, uint256 _tokens)
-    internal returns (uint256)
+  function evalInvestmentInternal(uint256 _tokens)
+    internal view returns (uint256, uint256)
   {
-    uint256 invested = super.updateInvestorInternal(_investor, _tokens);
-    _investor.tokens = _investor.tokens.add(tokenBonusInternal(_tokens));
-    return invested;
+    (uint256 invested, uint256 tokens) = super.evalInvestmentInternal( _tokens);
+    uint256 bonus = tokenBonusInternal(tokens);
+    return (invested, tokens.add(bonus));
   }
 
   /**

@@ -36,5 +36,5 @@ contract ITokensale {
   event RefundETH(address indexed recipient, uint256 amount);
   event WithdrawETH(uint256 amount);
   event FundETH(uint256 amount);
-  event Investment(address indexed investor, uint256 amount);
+  event Investment(address indexed investor, uint256 invested, uint256 tokens);
 }

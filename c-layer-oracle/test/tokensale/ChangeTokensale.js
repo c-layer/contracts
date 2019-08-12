@@ -31,6 +31,7 @@ contract("ChangeTokensale", function (accounts) {
   before(async function () {
     ratesProvider = await RatesProvider.new("Dummy");
     rateWEICHF = await ratesProvider.convertRate(20723, CHF, 2);
+    await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
   });
 
   describe("with a sale priced in CHF", async function () {
@@ -94,7 +95,7 @@ contract("ChangeTokensale", function (accounts) {
     });
 
     it("should prevent operator to add 0 offchain investment", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 0), "CTS01");  
+      await assertRevert(sale.addOffchainInvestment(accounts[3], 0), "TOS04");  
     });
 
     it("should let operator add 100CHF offchain investment", async function () {
@@ -127,8 +128,7 @@ contract("ChangeTokensale", function (accounts) {
 
     describe("when a ETHCHF rate is defined", async function () {
       beforeEach(async function () {
-         await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
-         await ratesProvider.defineRates([ rateWEICHF ]);
+        await ratesProvider.defineRates([ rateWEICHF ]);
       });
 
       it("should let investor to invest in ETH", async function () {
@@ -325,6 +325,54 @@ contract("ChangeTokensale", function (accounts) {
         const saleTotalRaisedETH = await sale.totalRaisedETH();
         assert.equal(saleTotalRaisedETH.toString(), 1000000, "totalRaisedETH");
       });
+   
+      it("should have a total received ETH", async function () {
+        const saleTotalReceivedETH = await sale.totalReceivedETH();
+        assert.equal(saleTotalReceivedETH.toString(), 1000001, "totalReceivedETH");
+      });
+    });
+  });
+
+  describe("with a CHF tokensale on a 18 decimal tokens", async function () {
+    let priceUnit = new BN(10).pow(new BN(18));
+    let supply = new BN(1000000).mul(priceUnit);
+
+    beforeEach(async function () {
+      token = await Token.new("Name", "Symbol", 18, accounts[1], supply);
+      await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
+      await ratesProvider.defineRates([ rateWEICHF ]);
+      sale = await ChangeTokensale.new(
+        token.address,
+        vaultERC20,
+        vaultETH,
+        tokenPrice,
+        priceUnit,
+        CHF,
+        ratesProvider.address,
+      );
+      await token.approve(sale.address, supply, { from: accounts[1] });
+    });
+
+    it("should let investor to invest in ETH", async function () {
+      const tx = await sale.investETH({ from: accounts[3], value: investmentWEI });
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs[0].event, "Investment", "event");
+      assert.equal(tx.logs[0].args.investor.toString(), accounts[3], "investor");
+      assert.equal(tx.logs[0].args.invested.toString(), 20743, "amount investment");
+      assert.equal(tx.logs[0].args.tokens.toString(),
+        "41486000000000000000", "tokens");
+      assert.equal(tx.logs[1].event, "WithdrawETH", "event");
+      assert.equal(tx.logs[1].args.amount, "1000965111229058551", "amount withdraw");
+    });
+
+    it("should let operator add 100CHF offchain investment", async function () {
+      const tx = await sale.addOffchainInvestment(accounts[3], 10000);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs[0].event, "Investment", "event");
+      assert.equal(tx.logs[0].args.investor.toString(), accounts[3], "investor");
+      assert.equal(tx.logs[0].args.invested.toString(), 10000, "amount investment");
+      assert.equal(tx.logs[0].args.tokens.toString(),
+        new BN(20).mul(priceUnit).toString(), "tokens");
     });
   });
 });

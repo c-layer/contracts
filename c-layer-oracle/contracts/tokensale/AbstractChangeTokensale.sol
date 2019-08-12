@@ -18,12 +18,14 @@ contract AbstractChangeTokensale is Tokensale {
   bytes32 internal baseCurrency_;
   IRatesProvider internal ratesProvider_;
 
-  uint256 internal totalRaisedETH_;
+  uint256 internal totalReceivedETH_;
 
   /* Investment */
   function investETH() public payable
   {
     require(ratesProvider_.rate(baseCurrency_) != 0, "CTS01");
+
+    totalReceivedETH_ = totalReceivedETH_.add(msg.value);
 
     Investor storage investor = investorInternal(msg.sender);
     uint256 amountETH = investor.unspentETH.add(msg.value);
@@ -50,7 +52,14 @@ contract AbstractChangeTokensale is Tokensale {
    * @dev returns totalRaisedETH
    */
   function totalRaisedETH() public view returns (uint256) {
-    return totalRaisedETH_;
+    return totalReceivedETH_.sub(totalUnspentETH_).sub(totalRefundedETH_);
+  }
+
+  /**
+   * @dev returns totalReceivedETH
+   */
+  function totalReceivedETH() public view returns (uint256) {
+    return totalReceivedETH_;
   }
 
   /**
@@ -59,22 +68,20 @@ contract AbstractChangeTokensale is Tokensale {
   function addOffchainInvestment(address _investor, uint256 _amount)
     public onlyOperator returns (bool)
   {
-    require(_amount > 0, "CTS01");
     investInternal(_investor, _amount, false);
 
     return true;
   }
 
   /**
-   * @dev update unspent ETH
+   * @dev eval unspent ETH
    */
-  function updateUnspentETHInternal(
+  function evalUnspentETHInternal(
     Investor storage _investor, uint256 _invested
-  ) internal
+  ) internal view returns (uint256)
   {
     uint256 investedETH =
       ratesProvider_.convertToWEI(baseCurrency_, _invested);
-    totalRaisedETH_ = totalRaisedETH_ + investedETH;
-    super.updateUnspentETHInternal(_investor, investedETH);
+    return super.evalUnspentETHInternal(_investor, investedETH);
   }
 }

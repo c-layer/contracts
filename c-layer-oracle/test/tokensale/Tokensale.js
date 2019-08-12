@@ -165,7 +165,7 @@ contract("Tokensale", function (accounts) {
   it("should have correct gas estimate for investing  1 micro ETH", async function () {
     const wei = web3.utils.toWei("1", "microether");
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
-    assert.equal(gas, "171305", "gas estimate");
+    assert.equal(gas, "171615", "gas estimate");
   });
 
   it("should invest 1 micro ETH", async function () {
@@ -174,7 +174,8 @@ contract("Tokensale", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
     assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
-    assert.equal(tx.logs[0].args.amount, wei, "amount investment");
+    assert.equal(tx.logs[0].args.invested, wei, "amount investment");
+    assert.equal(tx.logs[0].args.tokens, 1, "tokens");
     assert.equal(tx.logs[1].event, "WithdrawETH", "event");
     assert.equal(tx.logs[1].args.amount, wei, "amount withdraw");
   });
@@ -185,7 +186,8 @@ contract("Tokensale", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
     assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
-    assert.equal(tx.logs[0].args.amount, wei, "amount investment");
+    assert.equal(tx.logs[0].args.invested.toString(), wei, "amount investment");
+    assert.equal(tx.logs[0].args.tokens.toString(), 1000000, "tokens");
     assert.equal(tx.logs[1].event, "WithdrawETH", "event");
     assert.equal(tx.logs[1].args.amount, wei, "amount withdraw");
   });
@@ -197,7 +199,8 @@ contract("Tokensale", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
     assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
-    assert.equal(tx.logs[0].args.amount.toString(), maxWei, "amount investment");
+    assert.equal(tx.logs[0].args.invested.toString(), maxWei, "amount investment");
+    assert.equal(tx.logs[0].args.tokens.toString(), 1000000, "tokens");
     assert.equal(tx.logs[1].event, "WithdrawETH", "event");
     assert.equal(tx.logs[1].args.amount.toString(), maxWei, "amount withdraw");
   });

@@ -102,7 +102,8 @@ contract("KYCTokensale", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
     assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
-    assert.equal(tx.logs[0].args.amount.toString(), 1500000, "amount investment");
+    assert.equal(tx.logs[0].args.invested.toString(), 1500000, "amount investment");
+    assert.equal(tx.logs[0].args.tokens.toString(), 3000, "tokens");
     assert.equal(tx.logs[1].event, "WithdrawETH", "event");
     assert.equal(tx.logs[1].args.amount.toString(), 1500000, "amount withdraw");
   });
