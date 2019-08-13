@@ -166,8 +166,6 @@ contract("CTokensale", function (accounts) {
         assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
         assert.equal(tx.logs[0].args.invested.toString(), 500000, "amount investment");
         assert.equal(tx.logs[0].args.tokens.toString(), 1100, "tokens");
-        assert.equal(tx.logs[1].event, "WithdrawETH", "event");
-        assert.equal(tx.logs[1].args.amount.toString(), 0, "amount withdraw");
 
         const invested = await sale.investorInvested(accounts[3]);
         assert.equal(invested.toString(), 1500000, "invested");
