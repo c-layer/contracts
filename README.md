@@ -4,7 +4,7 @@ Welcome to the C-Layer Ethereum monorepo.
 
 ## Purpose
 
-Provide an administrable layer over the ethereum blockchain protocol.
+Provide an administrable layer over the Ethereum blockchain protocol.
 
 One of the foremost use case is the support of regulated asset classes and financial services.
 
@@ -12,7 +12,7 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ### C-Layer token
 
-Currently, the C-Layer supports the tokenization of the following assets: Bond, Equity, Payment and Utility.
+Currently, the C-Layer supports the tokenization of the following assets: Bonds, Equity, Payment and Utility.
 All tokens are evolving around the concept of the CToken.
 
 The CToken extends the ERC20 standard with the following features:
@@ -53,10 +53,11 @@ Three oracles are provided:
 
 ### C-Layer tool
 
-Contains notably :
+Contains notably:
   - governance contracts
-  - several multisig implementations,
+  - several multisig implementations
   - an erc20 vault
 
-Multisig a provided here to demonstrate different approaches.
+Multisig are provided here to demonstrate different approaches.
+
 
