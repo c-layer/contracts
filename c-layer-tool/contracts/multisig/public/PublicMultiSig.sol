@@ -80,7 +80,7 @@ contract PublicMultiSig is IPublicMultiSig, Ownable {
     duration_ = _duration;
 
     addManyParticipants(_participants, _weights);
-    owner = address(this);
+    owner_ = address(this);
   }
 
   /**

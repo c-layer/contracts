@@ -1,43 +1,46 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "../interface/IOwnable.sol";
+
 
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
  * functions, this simplifies the implementation of "user permissions".
  */
-contract Ownable {
-  address public owner;
+contract Ownable is IOwnable {
 
-  event OwnershipRenounced(address indexed previousOwner);
-  event OwnershipTransferred(
-    address indexed previousOwner,
-    address indexed newOwner
-  );
-
+  address internal owner_;
 
   /**
    * @dev The Ownable constructor sets the original `owner` of the contract to the sender
    * account.
    */
   constructor() public {
-    owner = msg.sender;
+    owner_ = msg.sender;
   }
 
   /**
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
-    require(msg.sender == owner);
+    require(msg.sender == owner_);
     _;
+  }
+
+  /**
+   * @dev Returns the owner
+   */
+  function owner() public view returns (address) {
+    return owner_;
   }
 
   /**
    * @dev Allows the current owner to relinquish control of the contract.
    */
   function renounceOwnership() public onlyOwner {
-    emit OwnershipRenounced(owner);
-    owner = address(0);
+    emit OwnershipRenounced(owner_);
+    owner_ = address(0);
   }
 
   /**
@@ -54,7 +57,7 @@ contract Ownable {
    */
   function _transferOwnership(address _newOwner) internal {
     require(_newOwner != address(0));
-    emit OwnershipTransferred(owner, _newOwner);
-    owner = _newOwner;
+    emit OwnershipTransferred(owner_, _newOwner);
+    owner_ = _newOwner;
   }
 }
