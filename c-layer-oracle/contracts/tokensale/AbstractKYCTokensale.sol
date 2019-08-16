@@ -53,6 +53,12 @@ contract AbstractKYCTokensale is Tokensale {
     return investorIds[_investorId].tokens;
   }
 
+  function investorCount()
+    public view returns (uint256)
+  {
+    return userRegistry_.userCount();
+  }
+
   /**
    * @dev contributionLimit
    */
