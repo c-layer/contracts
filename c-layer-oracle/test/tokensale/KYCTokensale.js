@@ -14,7 +14,7 @@ contract("KYCTokensale", function (accounts) {
   let sale, token, userRegistry;
  
   const KYC_LEVEL_KEY = 0;
-
+  const CHF = web3.utils.toHex("CHF");
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];
   const tokenPrice = 500;
@@ -23,7 +23,7 @@ contract("KYCTokensale", function (accounts) {
 
   before(async function () {
     userRegistry = await UserRegistry.new(
-      "Dummy",
+      "Dummy", CHF,
       [ accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6] ], dayPlusOneTime);
     await userRegistry.updateUserExtended(1, KYC_LEVEL_KEY, 0);
     await userRegistry.updateUserExtended(2, KYC_LEVEL_KEY, 1);
@@ -68,6 +68,11 @@ contract("KYCTokensale", function (accounts) {
   it("should have a user registry", async function () {
     const saleUserRegistry = await sale.userRegistry();
     assert.equal(saleUserRegistry, userRegistry.address, "userRegistry");
+  });
+
+  it("should have a investor count", async function () {
+    const saleInvestorCount = await sale.investorCount();
+    assert.equal(saleInvestorCount, 6, "investorCount");
   });
 
   it("should have investor 1 unspentETH to 0", async function () {

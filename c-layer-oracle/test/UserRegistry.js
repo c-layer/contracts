@@ -9,19 +9,25 @@ const UserRegistry = artifacts.require("UserRegistry.sol");
 
 contract("UserRegistry", function (accounts) {
   let userRegistry;
+  const CHF = web3.utils.toHex("CHF");
   const dayMinusOneTime = Math.floor((new Date()).getTime() / 1000) - 3600 * 24;
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
   const dayPlusTwoTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 48;
 
   describe("without an operator", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new("Test", [], 0);
+      userRegistry = await UserRegistry.new("Test", CHF, [], 0);
       await userRegistry.removeOperator(accounts[0]);
     });
 
     it("should have a name", async function () {
       const name = await userRegistry.name();
       assert.equal(name, "Test", "name");
+    });
+
+    it("should have a currency", async function () {
+      const name = await userRegistry.currency();
+      assert.equal(name, CHF.padEnd(66, "0"), "currency");
     });
 
     it("should not register a user", async function () {
@@ -39,7 +45,7 @@ contract("UserRegistry", function (accounts) {
 
   describe("when empty with an operator", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new("Test", [], 0);
+      userRegistry = await UserRegistry.new("Test", CHF, [], 0);
     });
 
     it("should have no users", async function () {
@@ -168,12 +174,76 @@ contract("UserRegistry", function (accounts) {
       await assertRevert(
         userRegistry.updateManyUsersExtended([ 1, 2, 3 ], 1, 100), "UR01");
     });
+
+   it("should register a user full", async function () {
+      await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ]);
+
+      const userCount = await userRegistry.userCount();
+      assert.equal(userCount.toNumber(), 1, "userCount");
+      
+      const userId = await userRegistry.userId(accounts[0]);
+      assert.equal(userId.toNumber(), 1, "userId");
+
+      const validUserId = await userRegistry.validUserId(accounts[0]);
+      assert.equal(validUserId.toNumber(), 1, "validUserId");
+
+      const suspended = await userRegistry.suspended(1);
+      assert.equal(suspended, false, "suspended");
+
+      const validUntilTime = await userRegistry.validUntilTime(1);
+      assert.equal(validUntilTime, dayPlusOneTime, "validUntilTime");
+
+      const extend0 = await userRegistry.extended(1, 0);
+      assert.equal(extend0, 4, "extended 0");
+
+      const extend1 = await userRegistry.extended(1, 1);
+      assert.equal(extend1, 100, "extended 1");
+    });
+
+    it("should register many users full", async function () {
+      await userRegistry.registerManyUsersFull(
+        [ accounts[0], accounts[1] ], dayPlusOneTime, [ 4, 100 ]);
+
+      const userCount = await userRegistry.userCount();
+      assert.equal(userCount.toNumber(), 2, "userCount");
+      
+      const userId1 = await userRegistry.userId(accounts[0]);
+      assert.equal(userId1.toNumber(), 1, "userId0");
+      const validUserId1 = await userRegistry.validUserId(accounts[0]);
+      assert.equal(validUserId1.toNumber(), 1, "validUserId0");
+
+      const userId2 = await userRegistry.userId(accounts[1]);
+      assert.equal(userId2, 2, "userId1");
+      const validUserId2 = await userRegistry.validUserId(accounts[1]);
+      assert.equal(validUserId2.toNumber(), 2, "validUserId1");
+
+      const suspended1 = await userRegistry.suspended(1);
+      assert.equal(suspended1, false, "suspended1");
+      const suspended2 = await userRegistry.suspended(2);
+      assert.equal(suspended2, false, "suspended2");
+
+      const validUntilTime1 = await userRegistry.validUntilTime(1);
+      assert.equal(validUntilTime1, dayPlusOneTime, "validUntilTime1");
+      const validUntilTime2 = await userRegistry.validUntilTime(2);
+      assert.equal(validUntilTime2, dayPlusOneTime, "validUntilTime2");
+
+      const extend01 = await userRegistry.extended(1, 0);
+      assert.equal(extend01, 4, "extended 0-1");
+      const extend02 = await userRegistry.extended(2, 0);
+      assert.equal(extend02, 4, "extended 0-2");
+
+      const extend11 = await userRegistry.extended(1, 1);
+      assert.equal(extend11, 100, "extended 1-1");
+      const extend12 = await userRegistry.extended(2, 1);
+      assert.equal(extend12, 100, "extended 1-2");
+    });
   });
 
   describe("with 4 accounts registred", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new(
         "Test",
+        CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.attachAddress(1, accounts[4]);
       await userRegistry.attachManyAddresses([ 2, 2 ], [accounts[5], accounts[6]]);
@@ -344,7 +414,7 @@ contract("UserRegistry", function (accounts) {
  
   describe("with 4 accounts and with 2 accounts suspended", function () {
     beforeEach(async function () {
-      userRegistry = await UserRegistry.new("Test",
+      userRegistry = await UserRegistry.new("Test", CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.suspendManyUsers([ 2, 3 ]);
     });

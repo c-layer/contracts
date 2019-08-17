@@ -14,6 +14,7 @@ contract IUserRegistry {
 
   function userCount() public view returns (uint256);
   function name() public view returns (string memory);
+  function currency() public view returns (bytes32);
   function userId(address _address) public view returns (uint256);
   function validUserId(address _address) public view returns (uint256);
   function validUntilTime(uint256 _userId) public view returns (uint256);

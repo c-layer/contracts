@@ -35,12 +35,19 @@ contract UserRegistry is IUserRegistry, Operable {
   uint256 internal userCount_;
 
   string internal name_;
+  bytes32 internal currency_;
 
   /**
    * @dev contructor
    **/
-  constructor(string memory _name, address[] memory _addresses, uint256 _validUntilTime) public {
+  constructor(
+    string memory _name,
+    bytes32 _currency,
+    address[] memory _addresses,
+    uint256 _validUntilTime) public
+  {
     name_ = _name;
+    currency_ = _currency;
     for (uint256 i = 0; i < _addresses.length; i++) {
       registerUserInternal(_addresses[i], _validUntilTime);
     }
@@ -58,6 +65,13 @@ contract UserRegistry is IUserRegistry, Operable {
    */
   function name() public view returns (string memory) {
     return name_;
+  }
+
+  /**
+   * @dev user registry currency
+   */
+  function currency() public view returns (bytes32) {
+    return currency_;
   }
 
   /**

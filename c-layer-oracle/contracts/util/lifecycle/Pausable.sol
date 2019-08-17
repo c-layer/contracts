@@ -32,7 +32,7 @@ contract Pausable is Operable {
   }
 
   /**
-   * @dev called by the owner to pause, triggers stopped state
+   * @dev called by the operator to pause, triggers stopped state
    */
   function pause() public onlyOperator whenNotPaused {
     paused = true;
@@ -40,7 +40,7 @@ contract Pausable is Operable {
   }
 
   /**
-   * @dev called by the owner to unpause, returns to normal state
+   * @dev called by the operator to unpause, returns to normal state
    */
   function unpause() public onlyOperator whenPaused {
     paused = false;

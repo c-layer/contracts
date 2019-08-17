@@ -32,7 +32,7 @@ contract("CTokensale", function (accounts) {
 
   before(async function () {
     userRegistry = await UserRegistry.new(
-      "Dummy",
+      "Dummy", CHF,
       [ accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6] ], dayPlusOneTime);
     await userRegistry.updateUserExtended(1, KYC_LEVEL_KEY, 0);
     await userRegistry.updateUserExtended(2, KYC_LEVEL_KEY, 1);
