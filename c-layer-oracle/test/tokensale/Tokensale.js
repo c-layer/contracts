@@ -165,7 +165,7 @@ contract("Tokensale", function (accounts) {
   it("should have correct gas estimate for investing  1 micro ETH", async function () {
     const wei = web3.utils.toWei("1", "microether");
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
-    assert.equal(gas, "171712", "gas estimate");
+    assert.equal(gas, "170431", "gas estimate");
   });
 
   it("should invest 1 micro ETH", async function () {
@@ -206,7 +206,7 @@ contract("Tokensale", function (accounts) {
   });
 
   describe("after some investor investments and an ETH refund", async function () {
-    let balanceVaultETHBefore, balanceBeforeRefund;
+    let balanceVaultETHBefore, balanceBeforeRefund, refundCost;
 
     beforeEach(async function () {
       balanceVaultETHBefore = await web3.eth.getBalance(vaultETH);
@@ -227,8 +227,9 @@ contract("Tokensale", function (accounts) {
       assert.ok(tx5.receipt.status, "Status");
 
       balanceBeforeRefund = await web3.eth.getBalance(accounts[4]);
-      const gas = await sale.refundUnspentETH.estimateGas({ from: accounts[4] });
-      balanceBeforeRefund = new BN(balanceBeforeRefund).sub(new BN(gas)).add(new BN("15717"));
+
+      // gas price is 1 WEI
+      refundCost = await sale.refundUnspentETH.estimateGas({ from: accounts[4] });
       const tx6 = await sale.refundUnspentETH({ from: accounts[4] });
       assert.ok(tx6.receipt.status, "Status");
     });
@@ -249,9 +250,17 @@ contract("Tokensale", function (accounts) {
       assert.equal(balanceDiff.toString(), web3.utils.toWei("8", "microether"), "balanceVaultETH");
     });
 
+    it("should have a refund cost", async function() {
+      assert.equal(refundCost.toString(), "62435", "refund gas estimate");
+    });
+
     it("should have account refunded", async function () {
       let balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
-      const balanceDiff = new BN(balanceAfterRefund).sub(new BN(balanceBeforeRefund));
+
+      const memorySpaceFreed = new BN(15722);
+      const realCost = new BN(refundCost).sub(memorySpaceFreed);
+
+      const balanceDiff = new BN(balanceAfterRefund).add(new BN(realCost)).sub(new BN(balanceBeforeRefund));
       assert.equal(balanceDiff.toString(), web3.utils.toWei("0.1", "microether"), "balance refunded");
     });
 

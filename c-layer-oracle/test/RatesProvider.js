@@ -104,7 +104,12 @@ contract("RatesProvider", function (accounts) {
 
   describe("With a rates defined", async function () {
     beforeEach(async function () {
-      await provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ]);
+      await provider.defineRates([ 1, 1, 1, 1, aWEICHFSample, 1, 1, 1, 1 ]);
+    });
+
+    it("should have correct gas estimate for defining rates", async function () {
+      const gas = await provider.defineRates.estimateGas([ 1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2 ]);
+      assert.equal(gas, "66506", "gas estimate");
     });
 
     it("should have an update date", async function () {
