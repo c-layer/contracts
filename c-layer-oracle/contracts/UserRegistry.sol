@@ -3,6 +3,7 @@ pragma solidity >=0.5.0 <0.6.0;
 import "./interface/IUserRegistry.sol";
 import "./util/governance/Operable.sol";
 
+
 /**
  * @title UserRegistry
  * @dev UserRegistry contract
