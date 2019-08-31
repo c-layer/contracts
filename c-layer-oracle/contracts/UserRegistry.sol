@@ -10,7 +10,7 @@ import "./util/governance/Operable.sol";
  * Configure and manage users
  * Extended may be used externaly to store data within a user context
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * UR01: UserId is invalid
@@ -30,7 +30,7 @@ contract UserRegistry is IUserRegistry, Operable {
     mapping(uint256 => uint256) extended;
   }
 
-  uint256[] internal extendedKeys_ = [ 0, 1 ];
+  uint256[] internal extendedKeys_ = [ 0, 1, 2 ];
   mapping(uint256 => User) internal users;
   mapping(address => uint256) internal walletOwners;
   uint256 internal userCount_;
@@ -50,15 +50,8 @@ contract UserRegistry is IUserRegistry, Operable {
     name_ = _name;
     currency_ = _currency;
     for (uint256 i = 0; i < _addresses.length; i++) {
-      registerUserInternal(_addresses[i], _validUntilTime);
+      registerUserPrivate(_addresses[i], _validUntilTime);
     }
-  }
-
-  /**
-   * @dev number of user registered
-   */
-  function userCount() public view returns (uint256) {
-    return userCount_;
   }
 
   /**
@@ -76,6 +69,13 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
+   * @dev number of user registered
+   */
+  function userCount() public view returns (uint256) {
+    return userCount_;
+  }
+
+  /**
    * @dev the userId associated to the provided address
    */
   function userId(address _address) public view returns (uint256) {
@@ -87,24 +87,33 @@ contract UserRegistry is IUserRegistry, Operable {
    */
   function validUserId(address _address) public view returns (uint256) {
     uint256 addressUserId = walletOwners[_address];
-    if (isValidInternal(users[addressUserId])) {
+    if (isValidPrivate(users[addressUserId])) {
       return addressUserId;
     }
     return 0;
   }
 
   /**
-   * @dev returns the time at which user validity ends
+   * @dev the user associated to the provided address if the user is valid
    */
-  function validUntilTime(uint256 _userId) public view returns (uint256) {
-    return users[_userId].validUntilTime;
+  function validUser(address _address, uint256[] memory _keys) public view returns (uint256, uint256[] memory) {
+    uint256 addressUserId = walletOwners[_address];
+    if (isValidPrivate(users[addressUserId])) {
+      uint256[] memory values = new uint256[](_keys.length);
+      for (uint256 i=0; i < _keys.length; i++) {
+        values[i] = users[addressUserId].extended[_keys[i]];
+      }
+      return (addressUserId, values);
+    }
+    return (0, new uint256[](0));
   }
 
   /**
-   * @dev is the user suspended
+   * @dev returns the time at which user validity ends
    */
-  function suspended(uint256 _userId) public view returns (bool) {
-    return users[_userId].suspended;
+  function validity(uint256 _userId) public view returns (uint256, bool) {
+    User memory user = users[_userId];
+    return (user.validUntilTime, user.suspended);
   }
 
   /**
@@ -124,17 +133,29 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
+   * @dev access to extended user data
+   */
+  function manyExtended(uint256 _userId, uint256[] memory _keys)
+    public view returns (uint256[] memory values)
+  {
+    values = new uint256[](_keys.length);
+    for (uint256 i=0; i < _keys.length; i++) {
+      values[i] = users[_userId].extended[_keys[i]];
+    }
+  }
+
+  /**
    * @dev validity of the current user
    */
   function isAddressValid(address _address) public view returns (bool) {
-    return isValidInternal(users[walletOwners[_address]]);
+    return isValidPrivate(users[walletOwners[_address]]);
   }
 
   /**
    * @dev validity of the current user
    */
   function isValid(uint256 _userId) public view returns (bool) {
-    return isValidInternal(users[_userId]);
+    return isValidPrivate(users[_userId]);
   }
 
   /**
@@ -153,18 +174,18 @@ contract UserRegistry is IUserRegistry, Operable {
   function registerUser(address _address, uint256 _validUntilTime)
     public onlyOperator returns (bool)
   {
-    registerUserInternal(_address, _validUntilTime);
+    registerUserPrivate(_address, _validUntilTime);
     return true;
   }
 
   /**
    * @dev register many users
    */
-  function registerManyUsers(address[] memory _addresses, uint256 _validUntilTime)
-    public onlyOperator returns (bool)
+  function registerManyUsers(address[] calldata _addresses, uint256 _validUntilTime)
+    external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _addresses.length; i++) {
-      registerUserInternal(_addresses[i], _validUntilTime);
+      registerUserPrivate(_addresses[i], _validUntilTime);
     }
     return true;
   }
@@ -178,8 +199,8 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256[] memory _values) public onlyOperator returns (bool)
   {
     require(_values.length <= extendedKeys_.length, "UR08");
-    registerUserInternal(_address, _validUntilTime);
-    updateUserExtendedInternal(userCount_, _values);
+    registerUserPrivate(_address, _validUntilTime);
+    updateUserExtendedPrivate(userCount_, _values);
     return true;
   }
 
@@ -187,14 +208,14 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev register many users
    */
   function registerManyUsersFull(
-    address[] memory _addresses,
+    address[] calldata _addresses,
     uint256 _validUntilTime,
-    uint256[] memory _values) public onlyOperator returns (bool)
+    uint256[] calldata _values) external onlyOperator returns (bool)
   {
     require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _addresses.length; i++) {
-      registerUserInternal(_addresses[i], _validUntilTime);
-      updateUserExtendedInternal(userCount_, _values);
+      registerUserPrivate(_addresses[i], _validUntilTime);
+      updateUserExtendedPrivate(userCount_, _values);
     }
     return true;
   }
@@ -216,8 +237,8 @@ contract UserRegistry is IUserRegistry, Operable {
   /**
    * @dev attach many addresses to many users
    */
-  function attachManyAddresses(uint256[] memory _userIds, address[] memory _addresses)
-    public onlyOperator returns (bool)
+  function attachManyAddresses(uint256[] calldata _userIds, address[] calldata _addresses)
+    external onlyOperator returns (bool)
   {
     require(_addresses.length == _userIds.length, "UR03");
     for (uint256 i = 0; i < _addresses.length; i++) {
@@ -232,18 +253,18 @@ contract UserRegistry is IUserRegistry, Operable {
   function detachAddress(address _address)
     public onlyOperator returns (bool)
   {
-    detachAddressInternal(_address);
+    detachAddressPrivate(_address);
     return true;
   }
 
   /**
    * @dev detach many addresses association between addresses and their respective users
    */
-  function detachManyAddresses(address[] memory _addresses)
-    public onlyOperator returns (bool)
+  function detachManyAddresses(address[] calldata _addresses)
+    external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _addresses.length; i++) {
-      detachAddressInternal(_addresses[i]);
+      detachAddressPrivate(_addresses[i]);
     }
     return true;
   }
@@ -252,7 +273,7 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev detach the association between an address and its user
    */
   function detachSelf() public returns (bool) {
-    detachAddressInternal(msg.sender);
+    detachAddressPrivate(msg.sender);
     return true;
   }
 
@@ -264,7 +285,7 @@ contract UserRegistry is IUserRegistry, Operable {
   {
     uint256 senderUserId = walletOwners[msg.sender];
     require(walletOwners[_address] == senderUserId, "UR05");
-    detachAddressInternal(_address);
+    detachAddressPrivate(_address);
     return true;
   }
 
@@ -294,8 +315,8 @@ contract UserRegistry is IUserRegistry, Operable {
   /**
    * @dev suspend many users
    */
-  function suspendManyUsers(uint256[] memory _userIds)
-    public onlyOperator returns (bool)
+  function suspendManyUsers(uint256[] calldata _userIds)
+    external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _userIds.length; i++) {
       suspendUser(_userIds[i]);
@@ -306,8 +327,8 @@ contract UserRegistry is IUserRegistry, Operable {
   /**
    * @dev unsuspend many users
    */
-  function unsuspendManyUsers(uint256[] memory _userIds)
-    public onlyOperator returns (bool)
+  function unsuspendManyUsers(uint256[] calldata _userIds)
+    external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _userIds.length; i++) {
       unsuspendUser(_userIds[i]);
@@ -333,9 +354,9 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev update many users
    */
   function updateManyUsers(
-    uint256[] memory _userIds,
+    uint256[] calldata _userIds,
     uint256 _validUntilTime,
-    bool _suspended) public onlyOperator returns (bool)
+    bool _suspended) external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _userIds.length; i++) {
       updateUser(_userIds[i], _validUntilTime, _suspended);
@@ -358,8 +379,8 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev update many user extended informations
    */
   function updateManyUsersExtended(
-    uint256[] memory _userIds,
-    uint256 _key, uint256 _value) public onlyOperator returns (bool)
+    uint256[] calldata _userIds,
+    uint256 _key, uint256 _value) external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _userIds.length; i++) {
       updateUserExtended(_userIds[i], _key, _value);
@@ -375,7 +396,7 @@ contract UserRegistry is IUserRegistry, Operable {
     uint256[] memory _values) public onlyOperator returns (bool)
   {
     require(_values.length <= extendedKeys_.length, "UR08");
-    updateUserExtendedInternal(_userId, _values);
+    updateUserExtendedPrivate(_userId, _values);
     return true;
   }
 
@@ -383,12 +404,12 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev update many user all extended informations
    */
   function updateManyUsersAllExtended(
-    uint256[] memory _userIds,
-    uint256[] memory _values) public onlyOperator returns (bool)
+    uint256[] calldata _userIds,
+    uint256[] calldata _values) external onlyOperator returns (bool)
   {
     require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _userIds.length; i++) {
-      updateUserExtendedInternal(_userIds[i], _values);
+      updateUserExtendedPrivate(_userIds[i], _values);
     }
     return true;
   }
@@ -404,7 +425,7 @@ contract UserRegistry is IUserRegistry, Operable {
   {
     require(_values.length <= extendedKeys_.length, "UR08");
     updateUser(_userId, _validUntilTime, _suspended);
-    updateUserExtendedInternal(_userId, _values);
+    updateUserExtendedPrivate(_userId, _values);
     return true;
   }
 
@@ -412,24 +433,24 @@ contract UserRegistry is IUserRegistry, Operable {
    * @dev update many users full
    */
   function updateManyUsersFull(
-    uint256[] memory _userIds,
+    uint256[] calldata _userIds,
     uint256 _validUntilTime,
     bool _suspended,
-    uint256[] memory _values) public onlyOperator returns (bool)
+    uint256[] calldata _values) external onlyOperator returns (bool)
   {
     require(_values.length <= extendedKeys_.length, "UR08");
     for (uint256 i = 0; i < _userIds.length; i++) {
       updateUser(_userIds[i], _validUntilTime, _suspended);
-      updateUserExtendedInternal(_userIds[i], _values);
+      updateUserExtendedPrivate(_userIds[i], _values);
     }
     return true;
   }
 
   /**
-   * @dev register a user internal
+   * @dev register a user private
    */
-  function registerUserInternal(address _address, uint256 _validUntilTime)
-    internal
+  function registerUserPrivate(address _address, uint256 _validUntilTime)
+    private
   {
     require(walletOwners[_address] == 0, "UR03");
     users[++userCount_] = User(_validUntilTime, false);
@@ -440,10 +461,10 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev update user extended internal
+   * @dev update user extended private
    */
-  function updateUserExtendedInternal(uint256 _userId, uint256[] memory _values)
-    internal
+  function updateUserExtendedPrivate(uint256 _userId, uint256[] memory _values)
+    private
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
     for (uint256 i = 0; i < _values.length; i++) {
@@ -454,7 +475,7 @@ contract UserRegistry is IUserRegistry, Operable {
   /**
    * @dev detach the association between an address and its user
    */
-  function detachAddressInternal(address _address) internal {
+  function detachAddressPrivate(address _address) private {
     uint256 addressUserId = walletOwners[_address];
     require(addressUserId != 0, "UR04");
     emit AddressDetached(addressUserId, _address);
@@ -464,7 +485,7 @@ contract UserRegistry is IUserRegistry, Operable {
   /**
    * @dev validity of the current user
    */
-  function isValidInternal(User storage user) internal view returns (bool) {
+  function isValidPrivate(User storage user) private view returns (bool) {
     // solhint-disable-next-line not-rely-on-time
     return !user.suspended && user.validUntilTime > now;
   }

@@ -65,11 +65,13 @@ contract("UserRegistry", function (accounts) {
       const validUserId = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId.toNumber(), 1, "validUserId");
 
-      const suspended = await userRegistry.suspended(1);
-      assert.equal(suspended, false, "suspended");
+      const validUser = await userRegistry.validUser(accounts[0], [ 1 ]);
+      assert.equal(validUser[0], 1, "validUser id");
+      assert.equal(validUser[1][0], 0, "validUser key 1");
 
-      const validUntilTime = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime, dayPlusOneTime, "validUntilTime");
+      const validity = await userRegistry.validity(1);
+      assert.equal(validity[0], dayPlusOneTime);
+      assert.equal(validity[1], false);
     });
 
     it("should register many users", async function () {
@@ -88,30 +90,33 @@ contract("UserRegistry", function (accounts) {
       const validUserId2 = await userRegistry.validUserId(accounts[1]);
       assert.equal(validUserId2.toNumber(), 2, "validUserId1");
 
-      const suspended1 = await userRegistry.suspended(1);
-      assert.equal(suspended1, false, "suspended1");
-      const suspended2 = await userRegistry.suspended(2);
-      assert.equal(suspended2, false, "suspended2");
+      const validUser = await userRegistry.validUser(accounts[0], [ 1 ]);
+      assert.equal(validUser[0], 1, "validUser id");
+      assert.equal(validUser[1][0], 0, "validUser key 1");
 
-      const validUntilTime1 = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime1, dayPlusOneTime, "validUntilTime1");
-      const validUntilTime2 = await userRegistry.validUntilTime(2);
-      assert.equal(validUntilTime2, dayPlusOneTime, "validUntilTime2");
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusOneTime, "validUntil1");
+      assert.equal(validity1[1], false, "suspended1");
+      const validity2 = await userRegistry.validity(2);
+      assert.equal(validity2[0], dayPlusOneTime, "validUntil2");
+      assert.equal(validity2[1], false, "suspended2");
     });
 
-    it("should fails to check validUntilTime for user 6", async function () {
-      const validUntilTime = await userRegistry.validUntilTime(6);
-      assert.equal(validUntilTime.toNumber(), 0, "validUntilTime user6");
-    });
-
-    it("should fails to check if user 6 is suspended", async function () {
-      const suspended6 = await userRegistry.suspended(6);
-      assert.ok(!suspended6, "user6 not suspended");
+    it("should fails to check validity for user 6", async function () {
+      const validity = await userRegistry.validity(6);
+      assert.equal(validity[0], 0, "validUntil");
+      assert.equal(validity[1], false, "suspended");
     });
 
     it("should fails at checking user 6 extended keys", async function () {
       const extend0 = await userRegistry.extended(6, 0);
       assert.equal(extend0, 0, "user6 extended");
+    });
+
+    it("should fails at checking user 6 many extended keys", async function () {
+      const manyExtended6 = await userRegistry.manyExtended(6, [ 0, 1 ]);
+      assert.equal(manyExtended6[0], 0, "user6 many extended");
+      assert.equal(manyExtended6[1], 0, "user6 many extended");
     });
 
     it("should return invalid for user 6", async function () {
@@ -175,7 +180,7 @@ contract("UserRegistry", function (accounts) {
         userRegistry.updateManyUsersExtended([ 1, 2, 3 ], 1, 100), "UR01");
     });
 
-   it("should register a user full", async function () {
+    it("should register a user full", async function () {
       await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ]);
 
       const userCount = await userRegistry.userCount();
@@ -187,17 +192,24 @@ contract("UserRegistry", function (accounts) {
       const validUserId = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId.toNumber(), 1, "validUserId");
 
-      const suspended = await userRegistry.suspended(1);
-      assert.equal(suspended, false, "suspended");
+      const validUser = await userRegistry.validUser(accounts[0], [ 0, 1 ]);
+      assert.equal(validUser[0], 1, "validUser id");
+      assert.equal(validUser[1][0], 4, "validUser key0");
+      assert.equal(validUser[1][1], 100, "validUser key1");
 
-      const validUntilTime = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime, dayPlusOneTime, "validUntilTime");
+      const validity = await userRegistry.validity(1);
+      assert.equal(validity[0], dayPlusOneTime, "validUntil");
+      assert.equal(validity[1], false, "suspended");
 
       const extend0 = await userRegistry.extended(1, 0);
       assert.equal(extend0, 4, "extended 0");
 
       const extend1 = await userRegistry.extended(1, 1);
       assert.equal(extend1, 100, "extended 1");
+
+      const manyExtended = await userRegistry.manyExtended(1, [ 0, 1 ]);
+      assert.equal(manyExtended[0], 4, "extended 0");
+      assert.equal(manyExtended[1], 100, "extended 1");
     });
 
     it("should register many users full", async function () {
@@ -212,20 +224,27 @@ contract("UserRegistry", function (accounts) {
       const validUserId1 = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId1.toNumber(), 1, "validUserId0");
 
+      const validUser1 = await userRegistry.validUser(accounts[0], [ 0, 1 ]);
+      assert.equal(validUser1[0], 1, "validUser1 id");
+      assert.equal(validUser1[1][0], 4, "validUser1 key0");
+      assert.equal(validUser1[1][1], 100, "validUser1 key1");
+
       const userId2 = await userRegistry.userId(accounts[1]);
       assert.equal(userId2, 2, "userId1");
       const validUserId2 = await userRegistry.validUserId(accounts[1]);
       assert.equal(validUserId2.toNumber(), 2, "validUserId1");
 
-      const suspended1 = await userRegistry.suspended(1);
-      assert.equal(suspended1, false, "suspended1");
-      const suspended2 = await userRegistry.suspended(2);
-      assert.equal(suspended2, false, "suspended2");
+      const validUser2 = await userRegistry.validUser(accounts[1], [ 0, 1 ]);
+      assert.equal(validUser2[0], 2, "validUser2 id");
+      assert.equal(validUser2[1][0], 4, "validUser2 key0");
+      assert.equal(validUser2[1][1], 100, "validUser2 key1");
 
-      const validUntilTime1 = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime1, dayPlusOneTime, "validUntilTime1");
-      const validUntilTime2 = await userRegistry.validUntilTime(2);
-      assert.equal(validUntilTime2, dayPlusOneTime, "validUntilTime2");
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusOneTime, "validUntil1");
+      assert.equal(validity1[1], false, "suspended1");
+      const validity2 = await userRegistry.validity(2);
+      assert.equal(validity2[0], dayPlusOneTime, "validUntil2");
+      assert.equal(validity2[1], false, "suspended2");
 
       const extend01 = await userRegistry.extended(1, 0);
       assert.equal(extend01, 4, "extended 0-1");
@@ -236,6 +255,14 @@ contract("UserRegistry", function (accounts) {
       assert.equal(extend11, 100, "extended 1-1");
       const extend12 = await userRegistry.extended(2, 1);
       assert.equal(extend12, 100, "extended 1-2");
+
+      const manyExtended1 = await userRegistry.manyExtended(1, [ 0, 1 ]);
+      assert.equal(manyExtended1[0], 4, "extended 0-1");
+      assert.equal(manyExtended1[1], 100, "extended 0-2");
+
+      const manyExtended2 = await userRegistry.manyExtended(2, [ 0, 1 ]);
+      assert.equal(manyExtended2[0], 4, "extended 0-1");
+      assert.equal(manyExtended2[1], 100, "extended 0-2");
     });
   });
 
@@ -261,13 +288,15 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should gives unsuspend for account1", async function () {
-      const isLocked = await userRegistry.suspended(1);
-      assert.ok(!isLocked, "unsuspended");
+      const validity = await userRegistry.validity(1);
+      assert.equal(validity[0], dayPlusOneTime);
+      assert.equal(validity[1], false);
     });
 
     it("should returns unsuspend for non existing user", async function () {
-      const isLocked = await userRegistry.suspended(6);
-      assert.ok(!isLocked, "unsuspended");
+      const validity = await userRegistry.validity(6);
+      assert.equal(validity[0], 0);
+      assert.equal(validity[1], false);
     });
 
     it("should returns valid for account1 addresses", async function () {
@@ -317,8 +346,9 @@ contract("UserRegistry", function (accounts) {
 
     it("should suspend a user", async function () {
       await userRegistry.suspendUser(1);
-      const suspended = await userRegistry.suspended(1);
-      assert.equal(suspended, true, "suspended");
+      const validity = await userRegistry.validity(1);
+      assert.equal(validity[0], dayPlusOneTime);
+      assert.equal(validity[1], true);
     });
 
     it("should not let a suspended user being suspended again", async function () {
@@ -332,10 +362,14 @@ contract("UserRegistry", function (accounts) {
 
     it("should suspend many users", async function () {
       await userRegistry.suspendManyUsers([1, 2]);
-      const suspended1 = await userRegistry.suspended(1);
-      assert.equal(suspended1, true, "suspended0");
-      const suspended2 = await userRegistry.suspended(2);
-      assert.equal(suspended2, true, "suspended1");
+
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusOneTime, "validUntil1");
+      assert.equal(validity1[1], true, "suspended1");
+
+      const validity2 = await userRegistry.validity(2);
+      assert.equal(validity2[0], dayPlusOneTime, "validUntil2");
+      assert.equal(validity2[1], true, "suspended2");
     });
 
     it("should detach an address by the same address", async function () {
@@ -375,24 +409,20 @@ contract("UserRegistry", function (accounts) {
     it("should update user", async function () {
       await userRegistry.updateUser(1, dayPlusTwoTime, true);
 
-      const validUntilTime = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime, dayPlusTwoTime, "validUntilTime");
-      const suspended = await userRegistry.suspended(1);
-      assert.equal(suspended, true, "suspended");
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusTwoTime, "validUntil1");
+      assert.equal(validity1[1], true, "suspended1");
     });
 
     it("should update many users", async function () {
       await userRegistry.updateManyUsers([ 1, 2 ], dayPlusTwoTime, true);
 
-      const validUntilTime1 = await userRegistry.validUntilTime(1);
-      assert.equal(validUntilTime1, dayPlusTwoTime, "validUntilTime");
-      const suspended1 = await userRegistry.suspended(1);
-      assert.equal(suspended1, true, "suspended");
-     
-      const validUntilTime2 = await userRegistry.validUntilTime(2);
-      assert.equal(validUntilTime2, dayPlusTwoTime, "validUntilTime2");
-      const suspended2 = await userRegistry.suspended(2);
-      assert.equal(suspended2, true, "suspended");
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusTwoTime, "validUntil1");
+      assert.equal(validity1[1], true, "suspended1");
+      const validity2 = await userRegistry.validity(2);
+      assert.equal(validity2[0], dayPlusTwoTime, "validUntil2");
+      assert.equal(validity2[1], true, "suspended2");
     });
 
     it("should update user extended", async function () {
@@ -421,17 +451,21 @@ contract("UserRegistry", function (accounts) {
 
     it("should unsuspend a user", async function () {
       await userRegistry.unsuspendUser(2);
-      const suspended = await userRegistry.suspended(2);
-      assert.equal(suspended, false, "suspended");
+      const validity = await userRegistry.validity(2);
+      assert.equal(validity[0], dayPlusOneTime, "validUntil2");
+      assert.equal(validity[1], false, "suspended2");
     });
 
     it("should unsuspend many users", async function () {
       await userRegistry.unsuspendManyUsers([ 2, 3 ]);
 
-      const suspended2 = await userRegistry.suspended(2);
-      assert.equal(suspended2, false, "suspended2");
-      const suspended3 = await userRegistry.suspended(3);
-      assert.equal(suspended3, false, "suspended3"); ;
+      const validity2 = await userRegistry.validity(2);
+      assert.equal(validity2[0], dayPlusOneTime, "validUntil2");
+      assert.equal(validity2[1], false, "suspended2");
+
+      const validity3 = await userRegistry.validity(3);
+      assert.equal(validity3[0], dayPlusOneTime, "validUntil3");
+      assert.equal(validity3[1], false, "suspended3");
     });
   });
 });

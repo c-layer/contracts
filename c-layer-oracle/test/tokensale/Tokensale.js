@@ -250,7 +250,7 @@ contract("Tokensale", function (accounts) {
       assert.equal(balanceDiff.toString(), web3.utils.toWei("8", "microether"), "balanceVaultETH");
     });
 
-    it("should have a refund cost", async function() {
+    it("should have a refund cost", async function () {
       assert.equal(refundCost.toString(), "62435", "refund gas estimate");
     });
 

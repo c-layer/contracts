@@ -7,7 +7,6 @@
 const assertRevert = require("../helpers/assertRevert");
 const BonusTokensale = artifacts.require("tokensale/BonusTokensale.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
-const BN = require("bn.js");
 
 contract("BonusTokensale", function (accounts) {
   let sale, token;
@@ -16,8 +15,6 @@ contract("BonusTokensale", function (accounts) {
   const vaultETH = accounts[2];
   const tokenPrice = 500;
   const supply = "1000000";
-  const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
-
   const start = 4102444800;
   const end = 7258118400;
   const bonuses = [ 10 ];
@@ -68,7 +65,6 @@ contract("BonusTokensale", function (accounts) {
   });
 
   describe("during the sale", async function () {
-
     beforeEach(async function () {
       sale.updateSchedule(0, end);
     });
@@ -93,13 +89,11 @@ contract("BonusTokensale", function (accounts) {
   });
 
   describe("with bonuses", async function () {
-
     beforeEach(async function () {
       await sale.defineBonus(bonuses, bonusMode, bonusUntil);
     });
 
     describe("during the sale", async function () {
-
       beforeEach(async function () {
         sale.updateSchedule(0, end);
       });

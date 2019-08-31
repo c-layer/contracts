@@ -26,6 +26,18 @@ contract LimitedTokensale is SchedulableTokensale {
     _;
   }
 
+  /**
+   * @dev constructor
+   */
+  constructor(
+    IERC20 _token,
+    address _vaultERC20,
+    address payable _vaultETH,
+    uint256 _tokenPrice
+  ) public
+    SchedulableTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+  {} /* solhint-disable no-empty-blocks */
+
   function investmentLimit() public view returns (uint256, uint256) {
     return (investmentMin, investmentMax);
   }

@@ -4,11 +4,9 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const KYCTokensale = artifacts.require("tokensale/KYCTokensale.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");
-const BN = require("bn.js");
 
 contract("KYCTokensale", function (accounts) {
   let sale, token, userRegistry;

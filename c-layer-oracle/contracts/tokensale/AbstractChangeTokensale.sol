@@ -11,7 +11,8 @@ import "./Tokensale.sol";
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
- * CTS01: A rate must be defined
+ * CTS01: message value must be positive
+ * CTS02: A rate must be correctly defined
  */
 contract AbstractChangeTokensale is Tokensale {
 
@@ -23,14 +24,15 @@ contract AbstractChangeTokensale is Tokensale {
   /* Investment */
   function investETH() public payable
   {
-    require(ratesProvider_.rate(baseCurrency_) != 0, "CTS01");
-
+    require(msg.value > 0, "CTS01");
     totalReceivedETH_ = totalReceivedETH_.add(msg.value);
 
     Investor storage investor = investorInternal(msg.sender);
     uint256 amountETH = investor.unspentETH.add(msg.value);
     uint256 amountCurrency =
-      ratesProvider_.convertFromWEI(baseCurrency_, amountETH);
+      ratesProvider_.convert(amountETH, "ETH", baseCurrency_);
+    require(amountCurrency > 0, "CTS02");
+
     investInternal(msg.sender, amountCurrency, true);
   }
 
@@ -81,7 +83,7 @@ contract AbstractChangeTokensale is Tokensale {
   ) internal view returns (uint256)
   {
     uint256 investedETH =
-      ratesProvider_.convertToWEI(baseCurrency_, _invested);
+      ratesProvider_.convert(_invested, baseCurrency_, "ETH");
     return super.evalUnspentETHInternal(_investor, investedETH);
   }
 }

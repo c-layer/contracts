@@ -7,7 +7,6 @@
 const assertRevert = require("../helpers/assertRevert");
 const SchedulableTokensale = artifacts.require("tokensale/SchedulableTokensale.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
-const BN = require("bn.js");
 
 contract("SchedulableTokensale", function (accounts) {
   let sale, token;
@@ -16,8 +15,6 @@ contract("SchedulableTokensale", function (accounts) {
   const vaultETH = accounts[2];
   const tokenPrice = 500;
   const supply = "1000000";
-  const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
-
   const start = 4102444800;
   const end = 7258118400;
   const MAX_UINT256 = web3.utils.toBN("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
@@ -65,7 +62,7 @@ contract("SchedulableTokensale", function (accounts) {
   });
 
   it("should prevent non operator to update the schedule", async function () {
-    await assertRevert(sale.updateSchedule(start, end, { from : accounts[2] }), "OP01");
+    await assertRevert(sale.updateSchedule(start, end, { from: accounts[2] }), "OP01");
   });
 
   it("should let operator to update the schedule", async function () {
@@ -77,7 +74,6 @@ contract("SchedulableTokensale", function (accounts) {
   });
 
   describe("during the sale", async function () {
-
     beforeEach(async function () {
       sale.updateSchedule(0, end);
     });
@@ -89,10 +85,10 @@ contract("SchedulableTokensale", function (accounts) {
       assert.equal(invested.toString(), 1000000, "invested");
 
       const unspentETH = await sale.investorUnspentETH(accounts[3]);
-      assert.equal(invested.toString(), 1000000, "unspentETH");
+      assert.equal(unspentETH.toString(), 1, "unspentETH");
 
       const tokens = await sale.investorTokens(accounts[3]);
-      assert.equal(invested.toString(), 1000000, "tokens");
+      assert.equal(tokens.toString(), 2000, "tokens");
     });
   });
 });

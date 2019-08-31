@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const CTokensale = artifacts.require("tokensale/CTokensale.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");
@@ -15,7 +14,9 @@ contract("CTokensale", function (accounts) {
   let sale, token, userRegistry, ratesProvider;
   let rateWEICHF;
  
+  const ETH = web3.utils.toHex("ETH");
   const CHF = web3.utils.toHex("CHF");
+  const rateOffset = new BN(10).pow(new BN(18));
   const KYC_LEVEL_KEY = 0;
 
   const vaultERC20 = accounts[1];
@@ -24,7 +25,7 @@ contract("CTokensale", function (accounts) {
   const priceUnit = 1;
   const supply = "1000000";
   const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
-
+  
   const start = 4102444800;
   const end = 7258118400;
   const bonuses = [ 10 ];
@@ -41,7 +42,7 @@ contract("CTokensale", function (accounts) {
     await userRegistry.updateUserExtended(5, KYC_LEVEL_KEY, 4);
     await userRegistry.updateUserExtended(6, KYC_LEVEL_KEY, 5);
     ratesProvider = await RatesProvider.new("Dummy");
-    rateWEICHF = await ratesProvider.convertRate(2072333, CHF, 2);
+    rateWEICHF = new BN("20723");
   });
 
   beforeEach(async function () {
@@ -99,9 +100,8 @@ contract("CTokensale", function (accounts) {
   });
 
   describe("during the sale", async function () {
-
     beforeEach(async function () {
-      await ratesProvider.defineCurrencies([ CHF ], [ 2 ]);
+      await ratesProvider.defineCurrencies([ CHF, ETH ], [ 2, 18 ], rateOffset);
       await ratesProvider.defineRates([ rateWEICHF ]);
       await sale.updateSchedule(0, end);
     });
@@ -125,7 +125,7 @@ contract("CTokensale", function (accounts) {
     });
 
     it("should let investor invest", async function () {
-      let weiInvestment = new BN(rateWEICHF).mul(new BN(tokenPrice)).mul(new BN(10)).add(new BN(1));
+      let weiInvestment = rateOffset.mul(new BN(tokenPrice)).mul(new BN(10)).div(new BN(rateWEICHF)).add(new BN(1));
       await sale.investETH({ from: accounts[3], value: weiInvestment });
 
       const invested = await sale.investorInvested(accounts[3]);

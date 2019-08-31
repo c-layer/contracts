@@ -14,25 +14,27 @@ import "./util/governance/Operable.sol";
  * @author Cyril Lapinte - <cyril@openfiz.com>
  *
  * Error messages
- *   RP01: Rates definition must only target configured currencies
+ *   RP01: Currencies must match decimals length
+ *   RP02: rateOffset cannot be null
+ *   RP03: Rates definition must only target configured currencies
  */
 contract RatesProvider is IRatesProvider, Operable {
   using SafeMath for uint256;
 
-  bytes32 internal constant ETH = bytes32("ETH");
-  uint256 internal constant ETH_DECIMALS = 18;
-
   string internal name_;
 
-  // [ BTC, EOS, GBP, USD, CHF, EUR, CNY, JPY, CAD, AUD ]
-  bytes32[] internal currencies_ =
-    [ bytes32("BTC"), "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD" ];
-  mapping(bytes32 => uint256) internal currenciesMap;
-  uint256[] internal decimals_ = [ uint256(9), 4, 2, 2, 2, 2, 2, 2, 2, 2 ];
+  // decimals offset with which rates are stored
+  // this must be high enought to cover worse case
+  // Does not need to be set with ETH or ERC20 which already have 18 decimals
+  uint256 internal rateOffset_ = 1;
 
-  // WEI are used to maximized storage precision
-  // FIAT used cents as their currency unit
-  uint256[] internal rates_ = new uint256[](currencies_.length);
+  // The first currency will be the counter currency
+  bytes32[] internal currencies_ =
+    [ bytes32("ETH"), "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD" ];
+  uint256[] internal decimals_ = [ uint256(18), 9, 4, 2, 2, 2, 2, 2, 2, 2, 2 ];
+
+  mapping(bytes32 => uint256) internal ratesMap;
+  uint256[] internal rates_ = new uint256[](currencies_.length-1);
   uint256 internal updatedAt_;
 
   /*
@@ -41,7 +43,7 @@ contract RatesProvider is IRatesProvider, Operable {
   constructor(string memory _name) public {
     name_ = _name;
     for (uint256 i=0; i < currencies_.length; i++) {
-      currenciesMap[currencies_[i]] = i+1;
+      ratesMap[currencies_[i]] = i;
     }
   }
 
@@ -56,160 +58,78 @@ contract RatesProvider is IRatesProvider, Operable {
    * @dev rate for a currency
    */
   function rate(bytes32 _currency) public view returns (uint256) {
-    if (_currency == ETH) {
-      return 1;
-    }
-    
-    uint256 id = currenciesMap[_currency];
-    return (id > 0) ? rates_[id-1] : 0;
-  }
-
-  /**
-   * @dev decimals for a currency
-   */
-  function decimals(bytes32 _currency) public view returns (uint256) {
-    if (_currency == ETH) {
-      return 18;
-    }
-
-    uint256 id = currenciesMap[_currency];
-    return (id > 0) ? decimals_[id-1] : 0;
+    return ratePrivate(_currency);
   }
 
   /**
    * @dev currencies
    */
-  function currencies() public view returns (bytes32[] memory) {
-    return currencies_;
-  }
-
-  /**
-   * @dev decimals
-   */
-  function decimals() public view returns (uint256[] memory) {
-    return decimals_;
+  function currencies() public view
+    returns (bytes32[] memory, uint256[] memory, uint256)
+  {
+    return (currencies_, decimals_, rateOffset_);
   }
 
   /**
    * @dev rate as store for a currency
    */
-  function rates() public view returns (uint256[] memory) {
-    return rates_;
-  }
-
-  /**
-   * @dev updatedAt
-   */
-  function updatedAt() public view returns (uint256) {
-    return updatedAt_;
-  }
-
-  /**
-   * @dev rate ETH for a currency
-   * @param _currency currency against ETH
-   * @param _rateETHDecimal number of decimal in the result
-   */
-  function rateETH(bytes32 _currency, uint256 _rateETHDecimal)
-    public view returns (uint256)
-  {
-    return convertRate(rate(_currency), _currency, _rateETHDecimal);
-  }
-
-  /*
-   * @dev convert rate from ETH_XXX to BaseXXX_WEI and back
-   * @dev BaseXXX is the base unit for the XXX currency (ie cents for most FIAT).
-   * @dev convert between smart contract format and human readable
-   */
-  function convertRate(
-    uint256 _rate,
-    bytes32 _currency,
-    uint256 _rateDecimal)
-    public view returns (uint256)
-  {
-    if (_rate == 0) {
-      return 0;
-    }
-
-    uint256 currencyDecimals = 0;
-    uint256 id = currenciesMap[_currency];
-    if (id > 0) {
-      currencyDecimals = decimals_[id-1];
-    }
-
-    return (id > 0 || _currency == ETH) ? 
-      uint256(10**(_rateDecimal.add(ETH_DECIMALS - currencyDecimals))).div(_rate) : 0;
-  }
-
-  /**
-   * @dev convert from currency (base unit) to WEI
-   */
-  function convertToWEI(bytes32 _currency, uint256 _amountCurrency)
-    public view returns (uint256)
-  {
-    if (_currency == ETH) {
-      return _amountCurrency;
-    }
-
-    uint256 currencyRate = rate(_currency);
-    return (currencyRate == 0) ?
-      0 : _amountCurrency.mul(currencyRate);
-  }
-
-  /**
-   * @dev convert from WEI to currency (base unit)
-   */
-  function convertFromWEI(bytes32 _currency, uint256 _amountWEI)
-    public view returns (uint256)
-  {
-    if (_currency == ETH) {
-      return _amountWEI;
-    }
-
-    uint256 currencyRate = rate(_currency);
-    return (currencyRate == 0) ?
-      0 : _amountWEI.div(currencyRate);
+  function rates() public view returns (uint256, uint256[] memory) {
+    return (updatedAt_, rates_);
   }
 
   /**
    * @dev convert between two currency (base units)
    */
-  function convertBetween(bytes32 _currencyA, bytes32 _currencyB, uint256 _amountA)
+  function convert(uint256 _amount, bytes32 _fromCurrency, bytes32 _toCurrency)
     public view returns (uint256)
   {
-    if (_currencyA == _currencyB) {
-      return _amountA;
+    if (_fromCurrency == _toCurrency) {
+      return _amount;
     }
 
-    uint256 currencyRateA = rate(_currencyA);
-    uint256 currencyRateB = rate(_currencyB);
-    return (currencyRateA == 0 || currencyRateB == 0) ?
-      0 : _amountA.mul(currencyRateA).div(currencyRateB);
+    uint256 rateFrom = (_fromCurrency != currencies_[0]) ?
+      ratePrivate(_fromCurrency) : rateOffset_;
+    uint256 rateTo = (_toCurrency != currencies_[0]) ?
+      ratePrivate(_toCurrency) : rateOffset_;
+
+    return (rateTo != 0) ?
+      _amount.mul(rateFrom).div(rateTo) : 0;
   }
 
   /**
    * @dev define all currencies
    */
   function defineCurrencies(
-    bytes32[] memory _currencies, uint256[] memory _decimals)
-    public onlyOperator returns (bool)
+    bytes32[] memory _currencies,
+    uint256[] memory _decimals,
+    uint256 _rateOffset) public onlyOperator returns (bool)
   {
-    updatedAt_ = 0;
+    require(_currencies.length == _decimals.length, "RP01");
+    require(_rateOffset != 0, "RP02");
 
-    for (uint256 i=_currencies.length; i < currencies_.length; i++) {
-      delete currenciesMap[currencies_[i]];
+    for (uint256 i= _currencies.length; i < currencies_.length; i++) {
+      delete ratesMap[currencies_[i]];
     }
-    rates_.length = _currencies.length;
+    rates_.length = _currencies.length-1;
 
-    for (uint256 i=0; i < _currencies.length; i++) {
+    for (uint256 i=1; i < _currencies.length; i++) {
       bytes32 currency = _currencies[i];
-      if (currenciesMap[currency] != i+1) {
-        currenciesMap[currency] = i+1;
-        rates_[i] = 0;
+      if (ratesMap[currency] != i) {
+        ratesMap[currency] = i;
+        rates_[i-1] = 0;
       }
     }
 
+    updatedAt_ = 0;
     currencies_ = _currencies;
     decimals_ = _decimals;
+
+    if (rateOffset_ != _rateOffset) {
+      emit RateOffset(_rateOffset);
+      rateOffset_ = _rateOffset;
+    }
+
+    emit Currencies(_currencies, _decimals);
     return true;
   }
   
@@ -219,23 +139,47 @@ contract RatesProvider is IRatesProvider, Operable {
   function defineRates(uint256[] memory _rates)
     public onlyOperator returns (bool)
   {
-    require(_rates.length <= currencies_.length, "RP01");
+    require(_rates.length < currencies_.length, "RP03");
 
-    updatedAt_ = currentTime();
+    // solhint-disable-next-line not-rely-on-time
+    updatedAt_ = now;
     for (uint256 i=0; i < _rates.length; i++) {
       if (rates_[i] != _rates[i]) {
         rates_[i] = _rates[i];
-        emit Rate(updatedAt_, currencies_[i], _rates[i]);
+        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
       }
     }
     return true;
   }
 
   /**
-   * @dev current time
+   * @dev define all rates
    */
-  function currentTime() private view returns (uint256) {
+  function defineRatesExternal(uint256[] calldata _rates)
+    external onlyOperator returns (bool)
+  {
+    require(_rates.length <= currencies_.length, "RP03");
+
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    updatedAt_ = now;
+    for (uint256 i=0; i < _rates.length; i++) {
+      if (rates_[i] != _rates[i]) {
+        rates_[i] = _rates[i];
+        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * @dev rate for a currency
+   */
+  function ratePrivate(bytes32 _currency) private view returns (uint256) {
+    if (_currency == currencies_[0]) {
+      return 1;
+    }
+
+    uint256 id = ratesMap[_currency];
+    return (id > 0) ? rates_[id-1] : 0;
   }
 }
