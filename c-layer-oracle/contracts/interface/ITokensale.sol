@@ -7,7 +7,7 @@ import "../interface/IERC20.sol";
  * @title ITokensale
  * @dev ITokensale interface
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 contract ITokensale {
 

@@ -8,7 +8,7 @@ import "./Tokensale.sol";
  * @title AbstractChangeTokensale
  * @dev AbstractChangeTokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * CTS01: message value must be positive

@@ -7,7 +7,7 @@ import "./SchedulableTokensale.sol";
  * @title BonusTokensale
  * @dev BonusTokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * BT01: BonusUntil must be defined if bonuses exist

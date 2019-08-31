@@ -11,7 +11,7 @@ import "../util/lifecycle/Pausable.sol";
  * @title Tokensale
  * @dev Tokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * TOS01: No data must be sent while sending ETH

@@ -7,7 +7,7 @@ import "./SchedulableTokensale.sol";
  * @title LimitedTokensale
  * @dev LimitedTokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * LTS01: Investment must be within the limit

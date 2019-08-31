@@ -7,7 +7,7 @@ import "./LimitedTokensale.sol";
  * @title SignableTokensale
  * @dev SignableTokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  * STS01: purchase agreement must be signed

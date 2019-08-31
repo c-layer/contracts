@@ -9,7 +9,7 @@ import "./AbstractChangeTokensale.sol";
  * @title CTokensale
  * @dev CTokensale contract
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  */

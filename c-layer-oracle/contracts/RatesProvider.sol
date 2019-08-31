@@ -11,7 +11,7 @@ import "./util/governance/Operable.sol";
  * @dev The null value for a rate indicates that the rate is undefined
  * @dev It is recommended that smart contracts always check against a null rate
  *
- * @author Cyril Lapinte - <cyril@openfiz.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
  *   RP01: Currencies must match decimals length
