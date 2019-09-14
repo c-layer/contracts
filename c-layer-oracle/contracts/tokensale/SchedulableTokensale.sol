@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./Tokensale.sol";
+import "./BaseTokensale.sol";
 
 
 /**
@@ -16,7 +16,7 @@ import "./Tokensale.sol";
  * STS04: It must be after the sale is closed
  * STS05: It must start before it ends.
  */
-contract SchedulableTokensale is Tokensale {
+contract SchedulableTokensale is BaseTokensale {
 
   uint256 internal startAt = ~uint256(0);
   uint256 internal endAt = ~uint256(0);
@@ -67,7 +67,7 @@ contract SchedulableTokensale is Tokensale {
     address payable _vaultETH,
     uint256 _tokenPrice
   ) public
-    Tokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
   {} /* solhint-disable no-empty-blocks */
 
   /**

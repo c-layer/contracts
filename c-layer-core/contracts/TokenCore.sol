@@ -4,7 +4,6 @@ import "./operable/OperableCore.sol";
 import "./TokenStorage.sol";
 import "./TokenProxy.sol";
 import "./interface/ITokenCore.sol";
-import "./delegate/TokenDelegate.sol";
 
 
 /**
@@ -95,15 +94,17 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 allTimeRedeemed,
     uint256 allTimeSeized,
     uint256[2] memory lock,
+    uint256 frozenUntil,
     IRule[] memory rules,
     IClaimable[] memory claims) {
-    TokenData memory tokenData = tokens_[_token];
+    TokenData storage tokenData = tokens_[_token];
 
     mintingFinished = tokenData.mintingFinished;
     allTimeIssued = tokenData.allTimeIssued;
     allTimeRedeemed = tokenData.allTimeRedeemed;
     allTimeSeized = tokenData.allTimeSeized;
     lock = [ tokenData.lock.startAt, tokenData.lock.endAt ];
+    frozenUntil = tokenData.frozenUntils[msg.sender];
     rules = tokenData.rules;
     claims = tokenData.claims;
   }
@@ -134,7 +135,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function redeem(address _token,  uint256)
+  function redeem(address _token, uint256)
     public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
@@ -160,6 +161,20 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
   function seize(address _token, address, uint256)
     public onlyProxyOp(_token) returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function freeze(address _token, address, uint256)
+    public onlyProxyOp(_token) returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function freezeManyAddresses(
+    address _token,
+    address[] memory,
+    uint256) public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
   }

@@ -38,7 +38,7 @@ contract("UserRegistry", function (accounts) {
 
     it("should not register many users", async function () {
       await assertRevert(
-        userRegistry.registerManyUsers([ accounts[0], accounts[1] ], dayPlusOneTime),
+        userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime),
         "OP01");
     });
   });
@@ -75,7 +75,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register many users", async function () {
-      await userRegistry.registerManyUsers([ accounts[0], accounts[1] ], dayPlusOneTime);
+      await userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime);
 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 2, "userCount");
@@ -135,13 +135,13 @@ contract("UserRegistry", function (accounts) {
 
     it("should not attach many addresses to non existing userId", async function () {
       await assertRevert(
-        userRegistry.attachManyAddresses([ 1, 2 ], [ accounts[0], accounts[1] ]),
+        userRegistry.attachManyAddressesExternal([ 1, 2 ], [ accounts[0], accounts[1] ]),
         "UR01");
     });
 
     it("should not attach many addresses if different addresses length than ids", async function () {
       await assertRevert(
-        userRegistry.attachManyAddresses([ 1, 2 ], [ accounts[0] ]),
+        userRegistry.attachManyAddressesExternal([ 1, 2 ], [ accounts[0] ]),
         "UR03");
     });
 
@@ -154,11 +154,11 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should not suspend many non existing users", async function () {
-      await assertRevert(userRegistry.suspendManyUsers([1, 2, 3]), "UR01");
+      await assertRevert(userRegistry.suspendManyUsersExternal([1, 2, 3]), "UR01");
     });
 
     it("should not unsuspend many non existing users", async function () {
-      await assertRevert(userRegistry.unsuspendManyUsers([1, 2, 3]), "UR01");
+      await assertRevert(userRegistry.unsuspendManyUsersExternal([1, 2, 3]), "UR01");
     });
 
     it("should not update non existing user", async function () {
@@ -167,7 +167,7 @@ contract("UserRegistry", function (accounts) {
 
     it("should not update non existing users", async function () {
       await assertRevert(
-        userRegistry.updateManyUsers([ 1, 2, 3 ], dayPlusOneTime, false),
+        userRegistry.updateManyUsersExternal([ 1, 2, 3 ], dayPlusOneTime, false),
         "UR01");
     });
 
@@ -177,7 +177,7 @@ contract("UserRegistry", function (accounts) {
 
     it("should not update non existing extended users", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersExtended([ 1, 2, 3 ], 1, 100), "UR01");
+        userRegistry.updateManyUsersExtendedExternal([ 1, 2, 3 ], 1, 100), "UR01");
     });
 
     it("should register a user full", async function () {
@@ -213,7 +213,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register many users full", async function () {
-      await userRegistry.registerManyUsersFull(
+      await userRegistry.registerManyUsersFullExternal(
         [ accounts[0], accounts[1] ], dayPlusOneTime, [ 4, 100 ]);
 
       const userCount = await userRegistry.userCount();
@@ -273,7 +273,7 @@ contract("UserRegistry", function (accounts) {
         CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.attachAddress(1, accounts[4]);
-      await userRegistry.attachManyAddresses([ 2, 2 ], [accounts[5], accounts[6]]);
+      await userRegistry.attachManyAddressesExternal([ 2, 2 ], [accounts[5], accounts[6]]);
       await userRegistry.updateUser(3, dayMinusOneTime, false);
     });
 
@@ -361,7 +361,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should suspend many users", async function () {
-      await userRegistry.suspendManyUsers([1, 2]);
+      await userRegistry.suspendManyUsersExternal([1, 2]);
 
       const validity1 = await userRegistry.validity(1);
       assert.equal(validity1[0], dayPlusOneTime, "validUntil1");
@@ -397,7 +397,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should detach many addresses", async function () {
-      await userRegistry.detachManyAddresses([accounts[1], accounts[2], accounts[4]]);
+      await userRegistry.detachManyAddressesExternal([accounts[1], accounts[2], accounts[4]]);
       const userId2 = await userRegistry.userId(accounts[1]);
       assert.equal(userId2, 0, "userId2");
       const userId3 = await userRegistry.userId(accounts[2]);
@@ -415,7 +415,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should update many users", async function () {
-      await userRegistry.updateManyUsers([ 1, 2 ], dayPlusTwoTime, true);
+      await userRegistry.updateManyUsersExternal([ 1, 2 ], dayPlusTwoTime, true);
 
       const validity1 = await userRegistry.validity(1);
       assert.equal(validity1[0], dayPlusTwoTime, "validUntil1");
@@ -433,7 +433,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should update many users extended", async function () {
-      await userRegistry.updateManyUsersExtended([ 1, 2 ], 1, 100);
+      await userRegistry.updateManyUsersExtendedExternal([ 1, 2 ], 1, 100);
 
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended1");
@@ -446,7 +446,7 @@ contract("UserRegistry", function (accounts) {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new("Test", CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
-      await userRegistry.suspendManyUsers([ 2, 3 ]);
+      await userRegistry.suspendManyUsersExternal([ 2, 3 ]);
     });
 
     it("should unsuspend a user", async function () {
@@ -457,7 +457,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should unsuspend many users", async function () {
-      await userRegistry.unsuspendManyUsers([ 2, 3 ]);
+      await userRegistry.unsuspendManyUsersExternal([ 2, 3 ]);
 
       const validity2 = await userRegistry.validity(2);
       assert.equal(validity2[0], dayPlusOneTime, "validUntil2");

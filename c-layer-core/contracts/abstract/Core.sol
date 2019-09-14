@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./Storage.sol";
-import "./Factory.sol";
 import "../util/convert/BytesConvert.sol";
 
 
@@ -16,7 +15,7 @@ import "../util/convert/BytesConvert.sol";
  *   CO01: The proxy has no delegates
  *   CO02: Delegatecall should be successfulll
  *   CO03: Invalid delegateId
- *   CO04: Factory was unable to create a proxy
+ *   CO04: Proxy must exist
  **/
 contract Core is Storage {
   using BytesConvert for bytes;
@@ -30,6 +29,7 @@ contract Core is Storage {
   {
     address delegate = proxyDelegates[_proxy];
     require(delegate != address(0), "CO01");
+    // solhint-disable-next-line avoid-low-level-calls
     (status, ) = delegate.delegatecall(msg.data);
     require(status, "CO02");
   }
@@ -46,6 +46,7 @@ contract Core is Storage {
     bool status;
     address delegate = proxyDelegates[_proxy];
     require(delegate != address(0), "CO03");
+    // solhint-disable-next-line avoid-low-level-calls
     (status, result) = delegate.delegatecall(msg.data);
     require(status, "CO02");
   }

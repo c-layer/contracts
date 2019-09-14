@@ -15,7 +15,12 @@ contract TokenStorage is OperableStorage {
   using SafeMath for uint256;
 
   enum TransferCode {
-    UNKNOWN, OK, NO_RECIPIENT, INSUFFICIENT_TOKENS, LOCKED
+    UNKNOWN,
+    OK,
+    NO_RECIPIENT,
+    INSUFFICIENT_TOKENS,
+    LOCKED,
+    FROZEN
   }
 
   struct AuditData {
@@ -48,6 +53,7 @@ contract TokenStorage is OperableStorage {
 
     mapping(address => AuditData) audits;
     mapping(address => uint256[3][]) proofs;
+    mapping(address => uint256) frozenUntils;
 
     Lock lock;
     IRule[] rules;
@@ -77,6 +83,7 @@ contract TokenStorage is OperableStorage {
     uint256 endAt,
     address[] exceptions
   );
+  event Freeze(address _address, uint256 until);
   event RulesDefined(address indexed token, IRule[] rules);
   event ClaimsDefined(address indexed token, IClaimable[] claims);
 }

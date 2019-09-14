@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenDelegate.sol";
+import "./BaseTokenDelegate.sol";
 
 
 /**
@@ -12,7 +12,7 @@ import "./TokenDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  **/
-contract AuditableTokenDelegate is TokenDelegate {
+contract AuditableTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev Overriden transfer function

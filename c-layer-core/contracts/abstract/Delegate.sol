@@ -10,5 +10,5 @@ import "./Storage.sol";
  *
  * Error messages
  **/
-contract Delegate is Storage {
-}
+// solhint-disable-next-line no-empty-blocks
+contract Delegate is Storage { }

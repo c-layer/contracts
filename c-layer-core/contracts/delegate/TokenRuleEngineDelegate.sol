@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../interface/IRule.sol";
-import "./TokenDelegate.sol";
+import "./BaseTokenDelegate.sol";
 
 
 /**
@@ -12,7 +12,7 @@ import "./TokenDelegate.sol";
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  **/
-contract TokenRuleEngineDelegate is TokenDelegate {
+contract TokenRuleEngineDelegate is BaseTokenDelegate {
 
   /**
    * @dev Overriden transfer function

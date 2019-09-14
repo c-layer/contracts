@@ -5,7 +5,7 @@
  */
 
 const assertRevert = require("../helpers/assertRevert");
-const ChangeTokensale = artifacts.require("tokensale/ChangeTokensale.sol");
+const ChangeTokensaleMock = artifacts.require("mock/ChangeTokensaleMock.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
 const RatesProvider = artifacts.require("RatesProvider.sol");
 const BN = require("bn.js");
@@ -35,7 +35,7 @@ contract("ChangeTokensale", function (accounts) {
     beforeEach(async function () {
       token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
       await ratesProvider.defineRates([ 0 ]);
-      sale = await ChangeTokensale.new(
+      sale = await ChangeTokensaleMock.new(
         token.address,
         vaultERC20,
         vaultETH,
@@ -225,7 +225,7 @@ contract("ChangeTokensale", function (accounts) {
   describe("with a sale priced in ETH", async function () {
     beforeEach(async function () {
       token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
-      sale = await ChangeTokensale.new(
+      sale = await ChangeTokensaleMock.new(
         token.address,
         vaultERC20,
         vaultETH,
@@ -282,7 +282,7 @@ contract("ChangeTokensale", function (accounts) {
     beforeEach(async function () {
       token = await Token.new("Name", "Symbol", 18, accounts[1], supply);
       await ratesProvider.defineRates([ rateWEICHF ]);
-      sale = await ChangeTokensale.new(
+      sale = await ChangeTokensaleMock.new(
         token.address,
         vaultERC20,
         vaultETH,

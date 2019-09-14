@@ -55,6 +55,143 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
+   * @dev register many users
+   */
+  function registerManyUsersExternal(address[] calldata _addresses, uint256 _validUntilTime)
+    external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      registerUserPrivate(_addresses[i], _validUntilTime);
+    }
+    return true;
+  }
+
+  /**
+   * @dev register many users
+   */
+  function registerManyUsersFullExternal(
+    address[] calldata _addresses,
+    uint256 _validUntilTime,
+    uint256[] calldata _values) external onlyOperator returns (bool)
+  {
+    require(_values.length <= extendedKeys_.length, "UR08");
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      registerUserPrivate(_addresses[i], _validUntilTime);
+      updateUserExtendedPrivate(userCount_, _values);
+    }
+    return true;
+  }
+
+  /**
+   * @dev attach many addresses to many users
+   */
+  function attachManyAddressesExternal(
+    uint256[] calldata _userIds,
+    address[] calldata _addresses)
+    external onlyOperator returns (bool)
+  {
+    require(_addresses.length == _userIds.length, "UR03");
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      attachAddress(_userIds[i], _addresses[i]);
+    }
+    return true;
+  }
+
+  /**
+   * @dev detach many addresses association between addresses and their respective users
+   */
+  function detachManyAddressesExternal(address[] calldata _addresses)
+    external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      detachAddressPrivate(_addresses[i]);
+    }
+    return true;
+  }
+
+  /**
+   * @dev suspend many users
+   */
+  function suspendManyUsersExternal(uint256[] calldata _userIds)
+    external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      suspendUser(_userIds[i]);
+    }
+    return true;
+  }
+
+  /**
+   * @dev unsuspend many users
+   */
+  function unsuspendManyUsersExternal(uint256[] calldata _userIds)
+    external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      unsuspendUser(_userIds[i]);
+    }
+    return true;
+  }
+
+  /**
+   * @dev update many users
+   */
+  function updateManyUsersExternal(
+    uint256[] calldata _userIds,
+    uint256 _validUntilTime,
+    bool _suspended) external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      updateUser(_userIds[i], _validUntilTime, _suspended);
+    }
+    return true;
+  }
+
+  /**
+   * @dev update many user extended informations
+   */
+  function updateManyUsersExtendedExternal(
+    uint256[] calldata _userIds,
+    uint256 _key, uint256 _value) external onlyOperator returns (bool)
+  {
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      updateUserExtended(_userIds[i], _key, _value);
+    }
+    return true;
+  }
+
+  /**
+   * @dev update many user all extended informations
+   */
+  function updateManyUsersAllExtendedExternal(
+    uint256[] calldata _userIds,
+    uint256[] calldata _values) external onlyOperator returns (bool)
+  {
+    require(_values.length <= extendedKeys_.length, "UR08");
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      updateUserExtendedPrivate(_userIds[i], _values);
+    }
+    return true;
+  }
+
+  /**
+   * @dev update many users full
+   */
+  function updateManyUsersFullExternal(
+    uint256[] calldata _userIds,
+    uint256 _validUntilTime,
+    bool _suspended,
+    uint256[] calldata _values) external onlyOperator returns (bool)
+  {
+    require(_values.length <= extendedKeys_.length, "UR08");
+    for (uint256 i = 0; i < _userIds.length; i++) {
+      updateUser(_userIds[i], _validUntilTime, _suspended);
+      updateUserExtendedPrivate(_userIds[i], _values);
+    }
+    return true;
+  }
+
+  /**
    * @dev user registry name
    */
   function name() public view returns (string memory) {
@@ -179,18 +316,6 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev register many users
-   */
-  function registerManyUsers(address[] calldata _addresses, uint256 _validUntilTime)
-    external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _addresses.length; i++) {
-      registerUserPrivate(_addresses[i], _validUntilTime);
-    }
-    return true;
-  }
-
-  /**
    * @dev register a user full
    */
   function registerUserFull(
@@ -201,22 +326,6 @@ contract UserRegistry is IUserRegistry, Operable {
     require(_values.length <= extendedKeys_.length, "UR08");
     registerUserPrivate(_address, _validUntilTime);
     updateUserExtendedPrivate(userCount_, _values);
-    return true;
-  }
-
-  /**
-   * @dev register many users
-   */
-  function registerManyUsersFull(
-    address[] calldata _addresses,
-    uint256 _validUntilTime,
-    uint256[] calldata _values) external onlyOperator returns (bool)
-  {
-    require(_values.length <= extendedKeys_.length, "UR08");
-    for (uint256 i = 0; i < _addresses.length; i++) {
-      registerUserPrivate(_addresses[i], _validUntilTime);
-      updateUserExtendedPrivate(userCount_, _values);
-    }
     return true;
   }
 
@@ -235,37 +344,12 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev attach many addresses to many users
-   */
-  function attachManyAddresses(uint256[] calldata _userIds, address[] calldata _addresses)
-    external onlyOperator returns (bool)
-  {
-    require(_addresses.length == _userIds.length, "UR03");
-    for (uint256 i = 0; i < _addresses.length; i++) {
-      attachAddress(_userIds[i], _addresses[i]);
-    }
-    return true;
-  }
-
-  /**
    * @dev detach the association between an address and its user
    */
   function detachAddress(address _address)
     public onlyOperator returns (bool)
   {
     detachAddressPrivate(_address);
-    return true;
-  }
-
-  /**
-   * @dev detach many addresses association between addresses and their respective users
-   */
-  function detachManyAddresses(address[] calldata _addresses)
-    external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _addresses.length; i++) {
-      detachAddressPrivate(_addresses[i]);
-    }
     return true;
   }
 
@@ -313,30 +397,6 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev suspend many users
-   */
-  function suspendManyUsers(uint256[] calldata _userIds)
-    external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      suspendUser(_userIds[i]);
-    }
-    return true;
-  }
-
-  /**
-   * @dev unsuspend many users
-   */
-  function unsuspendManyUsers(uint256[] calldata _userIds)
-    external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      unsuspendUser(_userIds[i]);
-    }
-    return true;
-  }
-
-  /**
    * @dev update a user
    */
   function updateUser(
@@ -351,20 +411,6 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev update many users
-   */
-  function updateManyUsers(
-    uint256[] calldata _userIds,
-    uint256 _validUntilTime,
-    bool _suspended) external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      updateUser(_userIds[i], _validUntilTime, _suspended);
-    }
-    return true;
-  }
-
-  /**
    * @dev update user extended information
    */
   function updateUserExtended(uint256 _userId, uint256 _key, uint256 _value)
@@ -372,19 +418,6 @@ contract UserRegistry is IUserRegistry, Operable {
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
     users[_userId].extended[_key] = _value;
-    return true;
-  }
-
-  /**
-   * @dev update many user extended informations
-   */
-  function updateManyUsersExtended(
-    uint256[] calldata _userIds,
-    uint256 _key, uint256 _value) external onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      updateUserExtended(_userIds[i], _key, _value);
-    }
     return true;
   }
 
@@ -401,20 +434,6 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev update many user all extended informations
-   */
-  function updateManyUsersAllExtended(
-    uint256[] calldata _userIds,
-    uint256[] calldata _values) external onlyOperator returns (bool)
-  {
-    require(_values.length <= extendedKeys_.length, "UR08");
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      updateUserExtendedPrivate(_userIds[i], _values);
-    }
-    return true;
-  }
-
-  /**
    * @dev update a user full
    */
   function updateUserFull(
@@ -426,23 +445,6 @@ contract UserRegistry is IUserRegistry, Operable {
     require(_values.length <= extendedKeys_.length, "UR08");
     updateUser(_userId, _validUntilTime, _suspended);
     updateUserExtendedPrivate(_userId, _values);
-    return true;
-  }
-
-  /**
-   * @dev update many users full
-   */
-  function updateManyUsersFull(
-    uint256[] calldata _userIds,
-    uint256 _validUntilTime,
-    bool _suspended,
-    uint256[] calldata _values) external onlyOperator returns (bool)
-  {
-    require(_values.length <= extendedKeys_.length, "UR08");
-    for (uint256 i = 0; i < _userIds.length; i++) {
-      updateUser(_userIds[i], _validUntilTime, _suspended);
-      updateUserExtendedPrivate(_userIds[i], _values);
-    }
     return true;
   }
 

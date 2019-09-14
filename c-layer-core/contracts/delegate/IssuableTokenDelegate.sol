@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenDelegate.sol";
+import "./BaseTokenDelegate.sol";
 import "../TokenProxy.sol";
 
 
@@ -12,7 +12,7 @@ import "../TokenProxy.sol";
  * Error messages
  * IT01: Transfer events must be generated
  */
-contract IssuableTokenDelegate is TokenDelegate {
+contract IssuableTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev called by the owner to increase the supply

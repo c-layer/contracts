@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenDelegate.sol";
+import "./BaseTokenDelegate.sol";
 import "../TokenProxy.sol";
 
 
@@ -13,7 +13,7 @@ import "../TokenProxy.sol";
  * ST01: Transfer events must be generated
  * ST02: Operator cannot seize itself
 */
-contract SeizableTokenDelegate is TokenDelegate {
+contract SeizableTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev called by the owner to seize value from the account

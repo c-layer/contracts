@@ -39,13 +39,13 @@ contract("Operable", function (accounts) {
     assert.equal(owner, accounts[0], "owner");
   });
 
-  it("should have a core with ALL_PRIVILEGES defined", async function () {
-    const allPrivs = await core.ALL_PRIVILEGES_();
+  it("should have a core with allPrivileges defined", async function () {
+    const allPrivs = await core.allPrivileges();
     assert.equal(allPrivs, ALL_PRIVILEGES, "all privileges");
   });
 
-  it("should have a core with ALL_PROXIES defined", async function () {
-    const allProxies = await core.ALL_PROXIES_();
+  it("should have a core with allProxies defined", async function () {
+    const allProxies = await core.allProxies();
     assert.equal(allProxies, ALL_PROXIES_ADDRESS, "all proxies");
   });
 

@@ -86,20 +86,6 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
   }
 
   /**
-   * @dev private function updating contract state after a transfer operation
-   */
-  function transferPostProcessing(
-    address _holder,
-    uint256 _balanceBefore,
-    uint256 _before,
-    bool _proof) private
-  {
-    if (_proof) {
-      createProof(msg.sender, _holder, _balanceBefore, _before);
-    }
-  }
-
-  /**
    * @dev can be used to force create a proof (with a fake amount potentially !)
    * Only usable by child contract internaly
    */
@@ -132,5 +118,19 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
       }
     }
     return 0;
+  }
+
+  /**
+   * @dev private function updating contract state after a transfer operation
+   */
+  function transferPostProcessing(
+    address _holder,
+    uint256 _balanceBefore,
+    uint256 _before,
+    bool _proof) private
+  {
+    if (_proof) {
+      createProof(msg.sender, _holder, _balanceBefore, _before);
+    }
   }
 }

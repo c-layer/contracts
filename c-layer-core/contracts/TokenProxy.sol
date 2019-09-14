@@ -12,7 +12,8 @@ import "./interface/IERC20.sol";
  */
 contract TokenProxy is IERC20, OperableProxy {
 
-  constructor(address _core) OperableProxy(_core) public { }
+  // solhint-disable-next-line no-empty-blocks
+  constructor(address _core) public OperableProxy(_core) { }
 
   function name() public view returns (string memory) {
     return TokenCore(core).tokenName();
@@ -70,19 +71,20 @@ contract TokenProxy is IERC20, OperableProxy {
   }
 
   function canTransfer(address _from, address _to, uint256 _value)
-    public returns (uint256) {
+    public returns (uint256)
+  {
     return TokenCore(core).canTransfer(_from, _to, _value);
   }
 
   function emitTransfer(address _from, address _to, uint256 _value)
-    onlyCore public returns (bool)
+    public onlyCore returns (bool)
   {
     emit Transfer(_from, _to, _value);
     return true;
   }
 
   function emitApproval(address _owner, address _spender, uint256 _value)
-    onlyCore public returns (bool)
+    public onlyCore returns (bool)
   {
     emit Approval(_owner, _spender, _value);
     return true;

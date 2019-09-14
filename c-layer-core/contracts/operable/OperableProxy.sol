@@ -16,7 +16,8 @@ import "../abstract/Proxy.sol";
  */
 contract OperableProxy is Proxy {
 
-  constructor(address _core) Proxy(_core) public { }
+  // solhint-disable-next-line no-empty-blocks
+  constructor(address _core) public Proxy(_core) { }
 
   /**
    * @dev rely on the core configuration for ownership

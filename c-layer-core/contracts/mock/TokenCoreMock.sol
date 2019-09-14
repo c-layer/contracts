@@ -17,7 +17,8 @@ contract TokenCoreMock is TokenCore {
   constructor(
     string memory _name,
     address[] memory _delegates)
-    TokenCore(_name, _delegates) public {}
+    // solhint-disable-next-line no-empty-blocks
+    public TokenCore(_name, _delegates) {}
 
   function defineSupply(address _tokenAddress, uint256 _supply)
     public returns (bool)
@@ -25,7 +26,7 @@ contract TokenCoreMock is TokenCore {
     require(_tokenAddress != address(0), "TCM01");
     TokenData storage token = tokens_[_tokenAddress];
     require(token.totalSupply == 0, "TCM02");
-    token.totalSupply =  _supply;
+    token.totalSupply = _supply;
     token.balances[msg.sender] = _supply;
     return true;
   }

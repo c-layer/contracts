@@ -8,21 +8,21 @@ const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
-const MintableCTokenDelegate = artifacts.require("MintableCTokenDelegate.sol");
+const MintableCTokenDelegate = artifacts.require("MintableCLayerTokenDelegate.sol");
 
 const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
 
-const CORE_GAS_COST = 2602519;
-const DELEGATE_GAS_COST = 1172967;
-const C_DELEGATE_GAS_COST = 2334171;
-const PROXY_GAS_COST = 974714;
+const CORE_GAS_COST = 3004979;
+const DELEGATE_GAS_COST = 1436176;
+const C_DELEGATE_GAS_COST = 3097541;
+const PROXY_GAS_COST = 879840;
 
-const FIRST_TRANSFER_COST = 55937;
-const FIRST_TRANSFER_FROM_COST = 78551;
-const TRANSFER_COST = 40748;
-const C_FIRST_TRANSFER_COST = 130957;
-const C_FIRST_TRANSFER_FROM_COST = 154095;
-const C_TRANSFER_COST = 64892;
+const FIRST_TRANSFER_COST = 58713;
+const FIRST_TRANSFER_FROM_COST = 81404;
+const TRANSFER_COST = 43233;
+const C_FIRST_TRANSFER_COST = 136523;
+const C_FIRST_TRANSFER_FROM_COST = 159746;
+const C_TRANSFER_COST = 69413;
 
 contract("Performance", function (accounts) {
   let core, delegate;

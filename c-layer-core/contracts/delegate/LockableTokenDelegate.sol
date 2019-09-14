@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenDelegate.sol";
+import "./BaseTokenDelegate.sol";
 
 
 /**
@@ -14,7 +14,7 @@ import "./TokenDelegate.sol";
  * LTD01: token is currently locked
  * LTD02: startAt must be before or equal to endAt
  */
-contract LockabkeTokenDelegate is TokenDelegate {
+contract LockableTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev Overriden transfer function
@@ -59,7 +59,7 @@ contract LockabkeTokenDelegate is TokenDelegate {
     require(_startAt < _endAt, "LTD01");
     tokens_[_token].lock = Lock(_startAt, _endAt);
     Lock storage tokenLock = tokens_[_token].lock;
-    for(uint256 i=0; i < _exceptions.length; i++) {
+    for (uint256 i=0; i < _exceptions.length; i++) {
       tokenLock.exceptions[_exceptions[i]] = true;
     }
     emit LockDefined(_token, _startAt, _endAt, _exceptions);
@@ -71,7 +71,10 @@ contract LockabkeTokenDelegate is TokenDelegate {
    */
   function isUnlocked(address _sender) private view returns (bool) {
     Lock storage tokenLock = tokens_[msg.sender].lock;
-    require(tokenLock.endAt <= now || tokenLock.startAt > now
-      || tokenLock.exceptions[_sender], "LTD01");
+    // solhint-disable-next-line not-rely-on-time
+    uint256 currentTime = now;
+    return tokenLock.endAt <= currentTime
+      || tokenLock.startAt > currentTime
+      || tokenLock.exceptions[_sender];
   }
 }

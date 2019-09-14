@@ -23,6 +23,7 @@ contract ITokenCore {
     uint256 allTimeRedeemed,
     uint256 allTimeSeized,
     uint256[2] memory lock,
+    uint256 freezedUntil,
     IRule[] memory,
     IClaimable[] memory);
   function tokenAudits(address _token, address _holder) public view returns (
@@ -46,6 +47,14 @@ contract ITokenCore {
     public returns (bool);
   function mintAtOnce(address, address[] memory, uint256[] memory)
     public returns (bool);
+  function seize(address _token, address, uint256)
+    public returns (bool);
+  function freeze(address _token, address _address, uint256 _until)
+    public returns (bool);
+  function freezeManyAddresses(
+    address _token,
+    address[] memory _addresses,
+    uint256 _until) public returns (bool);
   function createProof(address, address, uint256, uint256)
     public returns (bool);
   function defineLock(address, uint256, uint256, address[] memory)

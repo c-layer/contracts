@@ -22,7 +22,7 @@ contract IUserRegistry {
     external returns (bool);
   function detachManyAddressesExternal(address[] calldata _addresses)
     external returns (bool);
-  function suspendManyUsersExternal(uint256[] calldata _userIds) external returns (bool);
+  function suspendManyUsers(uint256[] calldata _userIds) external returns (bool);
   function unsuspendManyUsersExternal(uint256[] calldata _userIds) external returns (bool);
   function updateManyUsersExternal(
     uint256[] calldata _userIds,

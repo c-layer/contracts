@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenDelegate.sol";
-import "..//TokenProxy.sol";
+import "./BaseTokenDelegate.sol";
+import "../TokenProxy.sol";
 
 
 /**
@@ -14,7 +14,7 @@ import "..//TokenProxy.sol";
  * MT02: Token is already minted
  * MT03: Parameters must be same length
  */
-contract MintableTokenDelegate is TokenDelegate {
+contract MintableTokenDelegate is BaseTokenDelegate {
 
   modifier canMint(address _token) {
     require(!tokens_[_token].mintingFinished, "MT02");

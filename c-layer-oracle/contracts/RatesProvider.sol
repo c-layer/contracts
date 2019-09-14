@@ -48,6 +48,25 @@ contract RatesProvider is IRatesProvider, Operable {
   }
 
   /**
+   * @dev define all rates
+   */
+  function defineRatesExternal(uint256[] calldata _rates)
+    external onlyOperator returns (bool)
+  {
+    require(_rates.length <= currencies_.length, "RP03");
+
+    // solhint-disable-next-line not-rely-on-time
+    updatedAt_ = now;
+    for (uint256 i=0; i < _rates.length; i++) {
+      if (rates_[i] != _rates[i]) {
+        rates_[i] = _rates[i];
+        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
+      }
+    }
+    return true;
+  }
+
+  /**
    * @dev name
    */
   function name() public view returns (string memory) {
@@ -140,25 +159,6 @@ contract RatesProvider is IRatesProvider, Operable {
     public onlyOperator returns (bool)
   {
     require(_rates.length < currencies_.length, "RP03");
-
-    // solhint-disable-next-line not-rely-on-time
-    updatedAt_ = now;
-    for (uint256 i=0; i < _rates.length; i++) {
-      if (rates_[i] != _rates[i]) {
-        rates_[i] = _rates[i];
-        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
-      }
-    }
-    return true;
-  }
-
-  /**
-   * @dev define all rates
-   */
-  function defineRatesExternal(uint256[] calldata _rates)
-    external onlyOperator returns (bool)
-  {
-    require(_rates.length <= currencies_.length, "RP03");
 
     // solhint-disable-next-line not-rely-on-time
     updatedAt_ = now;

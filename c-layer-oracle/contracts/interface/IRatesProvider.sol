@@ -9,6 +9,8 @@ pragma solidity >=0.5.0 <0.6.0;
  */
 contract IRatesProvider {
 
+  function defineRatesExternal(uint256[] calldata _rates) external returns (bool);
+
   function name() public view returns (string memory);
 
   function rate(bytes32 _currency) public view returns (uint256);
@@ -25,7 +27,6 @@ contract IRatesProvider {
     uint256[] memory _decimals,
     uint256 _rateOffset) public returns (bool);
   function defineRates(uint256[] memory _rates) public returns (bool);
-  function defineRatesExternal(uint256[] calldata _rates) external returns (bool);
 
   event RateOffset(uint256 rateOffset);
   event Currencies(bytes32[] currencies, uint256[] decimals);

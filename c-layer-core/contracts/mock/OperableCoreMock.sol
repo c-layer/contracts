@@ -17,22 +17,22 @@ contract OperableCoreMock is OperableCore {
 
   mapping(address => bool) public successfulls;
 
-  function ALL_PRIVILEGES_() public pure returns (bytes32) {
+  function allPrivileges() public pure returns (bytes32) {
     return ALL_PRIVILEGES;
   }
 
-  function ALL_PROXIES_() public pure returns (address) {
+  function allProxies() public pure returns (address) {
     return ALL_PROXIES;
   }
 
   function successAsCoreOp(address _proxy)
-    onlyCoreOp public returns (bool)
+    public onlyCoreOp returns (bool)
   {
     successfulls[_proxy] = true;
   }
 
   function successAsProxyOp(address _proxy)
-    onlyProxyOp(_proxy) public returns (bool)
+    public onlyProxyOp(_proxy) returns (bool)
   {
     successfulls[_proxy] = true;
   }
