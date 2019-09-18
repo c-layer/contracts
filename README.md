@@ -10,12 +10,28 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ## Content
 
-### C-Layer token
+### C-Layer core
 
 Currently, the C-Layer supports the tokenization of the following assets: Bonds, Equity, Payment and Utility.
-All tokens are evolving around the concept of the CToken.
 
-The CToken extends the ERC20 standard with the following features:
+<img src="smartcontracts.core.png" height=500/>
+
+The token is represented by a proxy contract which implements the ERC20 interface.
+The token rely on a core for all operations and in particular transfers.
+
+The core has three roles:
+  - Routing proxy call to the relevant token delegates. A delegate contains the code for operations.
+    One delegate represent one asset class.
+  - Database. All tokens data are stored within the core contract.
+    This ensure that cross tokens operations are inherently safe and consistent in respect to the compliance.
+  - Security. The core responsability is critical.
+    Therefore access control can be precisely defined through a full role base access control.
+
+There is many delegates possible through a combination of existing delegates.
+The primary one will be the C-Layer Delegate Token which contains all the requirements for a regulated asset.
+However, the C-Layer Delegate Token does not define the supply generation and should be associated usualy with either with the Mintable Token Delegate.
+
+Token Delegates include the following features:
   - Operable: provide an owner and ability to delegate restricted features to operators
   - Auditability: track sendings and receiptions
   - Proofs of ownership: store balance history within Ethereum state
@@ -23,18 +39,11 @@ The CToken extends the ERC20 standard with the following features:
   - Claims: provides claims based on token balance or generated proofs of ownership
   - Seize: authorize operators to seize any tokens. Any seizure will emit a Seize events in the Ethereum history.
 
-A CToken supply can be managed in two ways:
-  - either through multiple mint operations followed by a finishMinting to prevent further minting
-  - through successives issuing and redeeming.
-
 Following [ERC-1592](https://github.com/ethereum/EIPs/blob/master/EIPS/eip-1592.md), the token contains a rule engine.
 It allows to plug rules which follow the IRule interface implementations.
 Available rules are:
   - YesNoRule: accept or refuse all transfers (used for testing)
-  - FreezeRule: reject sending and receiving for an address or the token until a specified date,
-  - LockRule: lock the token inside or outside a timeframe while allowing some addresses to have either sending or receiving exceptions,
-  - KYCRule: lock all addresses which are not contains within a specified user registry.
-  - RulesPackage: contains itself a list of sub rules
+  - UserRule: lock all addresses which are not contains within a specified user registry.
 
 ### C-Layer oracle
 
@@ -51,13 +60,6 @@ Three oracles are provided:
       - Onchain SPA aggrement (defined as not mandatory)
       - Bonus provided until a certain dates
 
-### C-Layer tool
-
-Contains notably:
-  - governance contracts
-  - several multisig implementations
-  - an erc20 vault
-
-Multisig are provided here to demonstrate different approaches.
+<img src="smartcontracts.oracle.png" height=500/>
 
 
