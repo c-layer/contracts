@@ -16,6 +16,7 @@ A new monorepo is added "c-layer-tool".
 
 The following changes are planned to be included to the audit-phase-1 for the audit-phase-2:
 - Core: Core should accepts new delegate after deployment. Governance should be documented.
+- Core: Plugable Proxy. Proxy may move from one compliance core to another, or alternatively, core should be made multi compliance oracle.
 - Core: AuditData config should be updatable after token creation to fit compliance changes.
 - Core: Factory, TokenFactory. Provides a governance for the building (proxy) and setup (delegate) of new tokens.
 - Oracle: Multi Tokensale contracts to reduce gas cost for a tokensale launch: a Proxy/Core design without delegates.
