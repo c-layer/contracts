@@ -109,17 +109,55 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     claims = tokenData.claims;
   }
 
-  function tokenAudits(address _token, address _holder) public view returns (
-    uint256 createdAt,
-    uint256 lastTransactionAt,
-    uint256 receivedAmount,
-    uint256 sentAmount)
+  function tokenAuditAll(address _token, uint256 _scopeId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
   {
-    AuditData memory audit = tokens_[_token].audits[_holder];
+    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].all;
     createdAt = audit.createdAt;
     lastTransactionAt = audit.lastTransactionAt;
-    receivedAmount = audit.receivedAmount;
-    sentAmount = audit.sentAmount;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
+  }
+
+  function tokenAuditByUser(address _token, uint256 _scopeId, uint256 _userId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
+  {
+    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].byUser[_userId];
+    createdAt = audit.createdAt;
+    lastTransactionAt = audit.lastTransactionAt;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
+  }
+
+  function tokenAuditByAddress(address _token, uint256 _scopeId, address _holder) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
+  {
+    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].byAddress[_holder];
+    createdAt = audit.createdAt;
+    lastTransactionAt = audit.lastTransactionAt;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
   }
 
   function tokenProofs(address _token, address _holder, uint256 _proofId)

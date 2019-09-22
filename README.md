@@ -10,7 +10,22 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ## Content
 
-### C-Layer core
+### Audit Phase 1 limitations
+
+The Audit Phase 1 concerneed only the Core and the Oracle monorepos.
+In particular the goal of this phase 1 is to audit a limited version of the C-Layer for Payment Token only.
+
+To this regard, the core only accepts in this version a fixed list of delegates defined at the Core deployment time.
+AuditData is also limited to the delegates configuration and cannot be updated.
+
+Remaining tasks to prior to the audit:
+- Review and validates AuditData storage
+- AuditTokenDelegate must read AuditConfig and update AuditStorage accordingly,
+- Rely on token's Audit to eval Tokensale contributions,
+- Add more documentations,
+- Testing. Coverage up to 90% at least.
+
+### C-Layer Core
 
 Currently, the C-Layer supports the tokenization of the following assets: Bonds, Equity, Payment and Utility.
 
@@ -45,7 +60,7 @@ Available rules are:
   - YesNoRule: accept or refuse all transfers (used for testing)
   - UserRule: lock all addresses which are not contains within a specified user registry.
 
-### C-Layer oracle
+### C-Layer Oracle
 
 Three oracles are provided:
   - UserRegistry: contains a list of users alongs with their respective profiling informations.

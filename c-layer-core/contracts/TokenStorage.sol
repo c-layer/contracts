@@ -4,6 +4,8 @@ import "./util/math/SafeMath.sol";
 import "./operable/OperableStorage.sol";
 import "./interface/IRule.sol";
 import "./interface/IClaimable.sol";
+import "./interface/IUserRegistry.sol";
+import "./interface/IRatesProvider.sol";
 
 
 /**
@@ -23,11 +25,47 @@ contract TokenStorage is OperableStorage {
     FROZEN
   }
 
+  struct AuditDataStorage {
+    uint64 createdAt;
+    uint64 lastTransactionAt;
+    uint64 lastEmissionAt;
+    uint64 lastReceptionAt;
+    uint256 cumulatedEmission;
+    uint256 cumulatedReception;
+  }
+
+  struct AuditConfig {
+    /*********************
+     * Audit Mode bitmap *
+     *********************
+     * AuditData storage
+     * 1 bit - core or token scope
+     * 4 bit - scopeId
+     * 1 bit - AuditData.all
+     * 1 bit - AuditData.byUser
+     * 1 bit - AuditData.byAddress
+     *
+     * AuditData fields
+     * 1 bit  - createdAt
+     * 1 bit  - transactionAt
+     * 1 bit  - lastEmissionAt
+     * 1 bit  - lastReceptionAt
+     * 1 bit  - CumulatedEmission
+     * 1 bit  - CumulatedReception
+     *
+     * 1 bit - 0=fromSelector or 1=All
+     * 1 bit - 0=toSelector or 1=All
+     *********************/
+    bytes2 auditMode;
+    mapping (address => bool) fromSelector;
+    mapping (address => bool) toSelector;
+    bytes32 currency;
+  }
+
   struct AuditData {
-    uint256 createdAt;
-    uint256 lastTransactionAt;
-    uint256 receivedAmount; // potential overflow
-    uint256 sentAmount; // potential overflow
+    AuditDataStorage all;
+    mapping(uint256 => AuditDataStorage) byUser;
+    mapping(address => AuditDataStorage) byAddress;
   }
 
   struct Lock {
@@ -51,9 +89,11 @@ contract TokenStorage is OperableStorage {
     uint256 allTimeRedeemed; // potential overflow
     uint256 allTimeSeized; // potential overflow
 
-    mapping(address => AuditData) audits;
-    mapping(address => uint256[3][]) proofs;
-    mapping(address => uint256) frozenUntils;
+    mapping (address => uint256[3][]) proofs;
+    mapping (address => uint256) frozenUntils;
+
+    AuditConfig[] auditConfigs;
+    mapping (uint256 => AuditData) audits;
 
     Lock lock;
     IRule[] rules;
@@ -61,14 +101,18 @@ contract TokenStorage is OperableStorage {
   }
   mapping (address => TokenData) internal tokens_;
 
+  mapping (uint256 => AuditData) internal audits;
+  IUserRegistry internal userRegistry_;
+  IRatesProvider internal ratesProvider_;
+  
   string internal name_;
 
   /**
    * @dev currentTime()
    */
-  function currentTime() internal view returns (uint256) {
+  function currentTime() internal view returns (uint64) {
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    return uint64(now);
   }
 
   event Issue(address indexed token, uint256 amount);

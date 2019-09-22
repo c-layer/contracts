@@ -28,11 +28,13 @@ contract("AuditableToken", function (accounts) {
   });
 
   it("should have token audit", async function () {
-    const audit = await core.tokenAudits(token.address, accounts[1]);
+    const audit = await core.tokenAuditByAddress(token.address, 0, accounts[1]);
     assert.equal(audit.createdAt.toString(), "0", "createdAt");
     assert.equal(audit.lastTransactionAt.toString(), "0", "lastTransactionAt");
-    assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-    assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+    assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+    assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+    assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+    assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
   });
 
   describe("With a first transfer", async function () {
@@ -42,19 +44,23 @@ contract("AuditableToken", function (accounts) {
     });
 
     it("should have token audit for sender", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[0]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[0]);
       assert.ok(audit.createdAt > 0, "createdAt");
       assert.ok(audit.lastTransactionAt > 0, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "3333", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "3333", "cumulatedEmission");
     });
 
     it("should have token audit for receiver", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[1]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[1]);
       assert.ok(audit.createdAt > 0, "createdAt");
       assert.ok(audit.lastTransactionAt > 0, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "3333", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "3333", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
   });
 
@@ -69,19 +75,23 @@ contract("AuditableToken", function (accounts) {
     });
 
     it("should have token audit for sender", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[0]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[0]);
       assert.equal(audit.createdAt, block1Time, "createdAt");
       assert.equal(audit.lastTransactionAt, block2Time, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "6666", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "6666", "cumulatedEmission");
     });
 
     it("should have token audit for receiver", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[1]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[1]);
       assert.equal(audit.createdAt, block1Time, "createdAt");
       assert.equal(audit.lastTransactionAt, block2Time, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "6666", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "6666", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
   });
 
@@ -92,27 +102,33 @@ contract("AuditableToken", function (accounts) {
     });
 
     it("should have token audit for sender", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[1]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[1]);
       assert.equal(audit.createdAt.toString(), "0", "createdAt");
       assert.equal(audit.lastTransactionAt.toString(), "0", "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
 
     it("should have token audit for 'from'", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[0]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[0]);
       assert.ok(audit.createdAt > 0, "createdAt");
       assert.ok(audit.lastTransactionAt > 0, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "3333", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "3333", "cumulatedEmission");
     });
 
     it("should have token audit for 'to'", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[2]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[2]);
       assert.ok(audit.createdAt > 0, "createdAt");
       assert.ok(audit.lastTransactionAt > 0, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "3333", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "3333", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
   });
 
@@ -127,27 +143,33 @@ contract("AuditableToken", function (accounts) {
     });
 
     it("should have token audit for sender", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[1]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[1]);
       assert.equal(audit.createdAt.toString(), "0",  "createdAt");
       assert.equal(audit.lastTransactionAt.toString(), "0", "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
 
     it("should have token audit for 'from'", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[0]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[0]);
       assert.equal(audit.createdAt, block1Time, "createdAt");
       assert.equal(audit.lastTransactionAt, block2Time, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "0", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "6666", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "0", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "6666", "cumulatedEmission");
     });
 
     it("should have token audit for 'to'", async function () {
-      const audit = await core.tokenAudits(token.address, accounts[2]);
+      const audit = await core.tokenAuditByAddress(token.address, 0, accounts[2]);
       assert.equal(audit.createdAt, block1Time, "createdAt");
       assert.equal(audit.lastTransactionAt, block2Time, "lastTransactionAt");
-      assert.equal(audit.receivedAmount.toString(), "6666", "receivedAt");
-      assert.equal(audit.sentAmount.toString(), "0", "sentAt");
+      assert.equal(audit.lastReceptionAt.toString(), "0", "lastReceptionAt");
+      assert.equal(audit.lastEmissionAt.toString(), "0", "lastEmissionAt");
+      assert.equal(audit.cumulatedReception.toString(), "6666", "cumulatedReception");
+      assert.equal(audit.cumulatedEmission.toString(), "0", "cumulatedEmission");
     });
   });
 });

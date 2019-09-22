@@ -26,11 +26,27 @@ contract ITokenCore {
     uint256 freezedUntil,
     IRule[] memory,
     IClaimable[] memory);
-  function tokenAudits(address _token, address _holder) public view returns (
-    uint256 createdAt,
-    uint256 lastTransactionAt,
-    uint256 receivedAmount,
-    uint256 sentAmount);
+  function tokenAuditAll(address _token, uint256 _scopeId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
+  function tokenAuditByUser(address _token, uint256 _scopeId, uint256 _userId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
+  function tokenAuditByAddress(address _token, uint256 _scopeId, address _holder) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
   function tokenProofs(address _token, address _holder, uint256 _proofId)
     public view returns (uint256[3] memory);
   function canTransfer(address, address, uint256)

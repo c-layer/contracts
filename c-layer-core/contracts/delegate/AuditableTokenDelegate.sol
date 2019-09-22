@@ -43,16 +43,16 @@ contract AuditableTokenDelegate is BaseTokenDelegate {
     private returns (uint256)
   {
     // Token audits
-    AuditData storage senderTokenAudit = tokens_[msg.sender].audits[_sender];
+    AuditDataStorage storage senderTokenAudit = tokens_[msg.sender].audits[0].byAddress[_sender];
     senderTokenAudit.lastTransactionAt = currentTime();
-    senderTokenAudit.sentAmount += _value;
+    senderTokenAudit.cumulatedEmission += _value;
     if (senderTokenAudit.createdAt == 0) {
       senderTokenAudit.createdAt = currentTime();
     }
 
-    AuditData storage receiverTokenAudit = tokens_[msg.sender].audits[_receiver];
+    AuditDataStorage storage receiverTokenAudit = tokens_[msg.sender].audits[0].byAddress[_receiver];
     receiverTokenAudit.lastTransactionAt = currentTime();
-    receiverTokenAudit.receivedAmount += _value;
+    receiverTokenAudit.cumulatedReception += _value;
     if (receiverTokenAudit.createdAt == 0) {
       receiverTokenAudit.createdAt = currentTime();
     }
