@@ -1,6 +1,5 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../token/ProvableOwnershipToken.sol";
 import "./Dividend.sol";
 import "../rule/RuleEngine.sol";
 
@@ -16,8 +15,8 @@ contract DividendRuleEngine is Dividend, RuleEngine {
   /**
    * @dev constructor
    */
-  constructor(ProvableOwnershipToken _token, IRule[] memory _rules) public
-    Dividend(_token) RuleEngine(_rules)
+  constructor(IERC20 _token, ITokenCore _tokenCore, IRule[] memory _rules) public
+    Dividend(_token, _tokenCore) RuleEngine(_rules)
   {} /* solhint-disable no-empty-blocks */
 
   /**

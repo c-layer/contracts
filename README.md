@@ -10,6 +10,23 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ## Content
 
+### Audit Phase 1 to Phase 2
+
+A new monorepo is added "c-layer-tools".
+
+The following changes are planned to be included to the audit-phase-1 for the audit-phase-2:
+- Core: Core should accepts new delegate after deployment. Governance should be documented.
+- Core: AuditData config should be updatable after token creation to fit compliance changes.
+- Core: Factory, TokenFactory. Provides a governance for the building (proxy) and setup (delegate) of new tokens.
+- Oracle: MultiTokensale to reduce gas cost for a tokensale launch.
+- Oracle: Add some claims (in particular votes and dividends)
+- Tools: Plumbing (PayableProxy, VaultERC20, VaultETH, ...)
+- Tools: Multisig
+- Core: DynamicTokenDelegate (variable balance following a rate)
+- Core: ERC721 (If feasible within timeframe !)
+
+Please note, that these features are not yet ready in this repository.
+
 ### C-Layer core
 
 Currently, the C-Layer supports the tokenization of the following assets: Bonds, Equity, Payment and Utility.

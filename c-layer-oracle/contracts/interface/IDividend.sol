@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../token/ProvableOwnershipToken.sol";
 import "./IERC20.sol";
+import "./ITokenCore.sol";
 
 
 /**
@@ -11,7 +11,7 @@ import "./IERC20.sol";
  **/
 contract IDividend {
 
-  function token() public view returns (ProvableOwnershipToken);
+  function token() public view returns (IERC20);
   function dividendsCount() public view returns (uint256);
   function dividendPayToken(uint256 dividendId) public view returns (IERC20);
   function dividendAmount(uint256 dividendId) public view returns (uint256);
@@ -31,7 +31,7 @@ contract IDividend {
     uint256 _dividendId,
     address _address,
     uint256 _proofId
-    ) public view returns (uint256);
+    ) public returns (uint256);
 
   function claimDividend(uint256 _dividendId) public;
   function claimDividendWithProof(uint256 _dividendId, uint256 _proofId)
@@ -40,7 +40,7 @@ contract IDividend {
   function createDividend(IERC20 _payToken, address _vault, uint256 _amount)
     public;
 
-  function updateToken(ProvableOwnershipToken _token) public;
+  function updateToken(IERC20 _token, ITokenCore _core) public;
 
   event DividendAdded(uint256 indexed id, address payToken, uint256 amount);
   event DividendClaimed(
@@ -48,5 +48,5 @@ contract IDividend {
   uint256 indexed holder,
   uint256 amount);
 
-  event TokenUpdated(ProvableOwnershipToken token);
+  event TokenUpdated(IERC20 token);
 }

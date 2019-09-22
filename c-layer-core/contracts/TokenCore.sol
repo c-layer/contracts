@@ -81,12 +81,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(msg.sender);
   }
 
-  function canTransfer(address, address, uint256)
-    public onlyProxy returns (uint256)
-  {
-    return delegateCallUint256(msg.sender);
-  }
-
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (
     bool mintingFinished,
@@ -126,6 +120,17 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     public view returns (uint256[3] memory)
   {
     return tokens_[_token].proofs[_holder][_proofId];
+  }
+
+  function checkProof(address _token, address, uint256, uint256)
+    public returns (uint256) {
+    return delegateCallUint256(_token);
+  }
+  
+  function canTransfer(address, address, uint256)
+    public onlyProxy returns (uint256)
+  {
+    return delegateCallUint256(msg.sender);
   }
 
   /***********  TOKEN ADMIN  ***********/

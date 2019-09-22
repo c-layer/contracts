@@ -2,7 +2,7 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "../util/governance/Operable.sol";
 import "../util/math/SafeMath.sol";
-import "../token/ProvableOwnershipToken.sol";
+import "../interface/ITokenCore.sol";
 import "../interface/IDividend.sol";
 import "../interface/IERC20.sol";
 
@@ -21,7 +21,8 @@ contract Dividend is IDividend, Operable {
   using SafeMath for uint256;
 
   // Dividends are distributed proportionnaly to ownership of (token)
-  ProvableOwnershipToken internal token_;
+  IERC20 internal token_;
+  ITokenCore internal tokenCore_;
 
   struct DividendRecord {
     // Token to be distributed as dividend
@@ -43,15 +44,16 @@ contract Dividend is IDividend, Operable {
   /**
    * @dev constructor
    */
-  constructor(ProvableOwnershipToken _token) public { 
+  constructor(IERC20 _token, ITokenCore _tokenCore) public {
     token_ = _token;
+    tokenCore_ = _tokenCore;
   }
 
   /**
    * @dev returns the token representing
    * the part of the dividend to be distributed
    */
-  function token() public view returns (ProvableOwnershipToken) {
+  function token() public view returns (IERC20) {
     return token_;
   }
 
@@ -126,12 +128,12 @@ contract Dividend is IDividend, Operable {
   function dividendAvailableWithProof(
     uint256 _dividendId,
     address _address,
-    uint256 _proofId) public view returns (uint256)
+    uint256 _proofId) public returns (uint256)
   {
     return evalDividendAvailable(
       _dividendId,
       _address,
-      token_.checkProof(_address, _proofId, dividends[_dividendId].createdAt)
+      tokenCore_.checkProof(address(token_), _address, _proofId, dividends[_dividendId].createdAt)
     );
   }
 
@@ -179,8 +181,9 @@ contract Dividend is IDividend, Operable {
   /**
    * @dev number of dividends created
    */
-  function updateToken(ProvableOwnershipToken _token) public onlyOperator {
+  function updateToken(IERC20 _token, ITokenCore _tokenCore) public onlyOperator {
     token_ = _token;
+    tokenCore_ = _tokenCore;
     emit TokenUpdated(token_);
   }
 
@@ -215,7 +218,8 @@ contract Dividend is IDividend, Operable {
     uint256 _addressBalance) private view returns (uint256)
   {
     DividendRecord storage dividend = dividends[_dividendId];
-    if (token_.lastTransactionAt(_address) < dividend.createdAt) {
+    (, uint256 lastTransactionAt, ,) = tokenCore_.tokenAudits(address(token_), _address);
+    if (lastTransactionAt < dividend.createdAt) {
       uint256 alreadyClaimed = dividends[_dividendId].claimed[_address];
       return _addressBalance.mul(dividend.amount)
         .div(dividend.totalSupply).sub(alreadyClaimed);
@@ -224,7 +228,6 @@ contract Dividend is IDividend, Operable {
   }
 
   event DividendAdded(uint256 indexed id, address payToken, uint256 amount);
-  event DividendClaimed(uint256 indexed id, address indexed holder,
-  uint256 amount);
-  event TokenUpdated(ProvableOwnershipToken token_);
+  event DividendClaimed(uint256 indexed id, address indexed holder, uint256 amount);
+  event TokenUpdated(IERC20 token_);
 }
