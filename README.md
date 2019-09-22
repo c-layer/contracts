@@ -12,16 +12,16 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ### Audit Phase 1 to Phase 2
 
-A new monorepo is added "c-layer-tools".
+A new monorepo is added "c-layer-tool".
 
 The following changes are planned to be included to the audit-phase-1 for the audit-phase-2:
 - Core: Core should accepts new delegate after deployment. Governance should be documented.
 - Core: AuditData config should be updatable after token creation to fit compliance changes.
 - Core: Factory, TokenFactory. Provides a governance for the building (proxy) and setup (delegate) of new tokens.
-- Oracle: MultiTokensale to reduce gas cost for a tokensale launch.
+- Oracle: Multi Tokensale contracts to reduce gas cost for a tokensale launch: a Proxy/Core design without delegates.
 - Oracle: Add some claims (in particular votes and dividends)
-- Tools: Plumbing (PayableProxy, VaultERC20, VaultETH, ...)
-- Tools: Multisig
+- Tool: Plumbing (PayableProxy, VaultERC20, VaultETH, ...)
+- Tool: Multisig
 - Core: DynamicTokenDelegate (variable balance following a rate)
 - Core: ERC721 (If feasible within timeframe !)
 
