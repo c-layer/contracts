@@ -39,31 +39,29 @@ contract TokenStorage is OperableStorage {
      * Audit Mode bitmap *
      *********************
      * AuditData storage
-     * 1 bit - core or token scope
-     * 4 bit - scopeId
-     * 1 bit - AuditData.all
-     * 1 bit - AuditData.byUser
-     * 1 bit - AuditData.byAddress
+     * 5 bits - scopeId
+     * 1 bit  - 0=token or 1=core scope
+     * 2 bits - 0=AuditData.shared, 1=AuditData.byUser, 2=AuditData.byAddress
+     *
+     * AuditData filters
+     * 1 bit  - 0=All or 1=fromSelector
+     * 1 bit  - 0=All or 1=toSelector
      *
      * AuditData fields
      * 1 bit  - createdAt
-     * 1 bit  - transactionAt
+     * 1 bit  - lastTransactionAt
      * 1 bit  - lastEmissionAt
      * 1 bit  - lastReceptionAt
      * 1 bit  - CumulatedEmission
      * 1 bit  - CumulatedReception
-     *
-     * 1 bit - 0=fromSelector or 1=All
-     * 1 bit - 0=toSelector or 1=All
      *********************/
     bytes2 auditMode;
     mapping (address => bool) fromSelector;
     mapping (address => bool) toSelector;
-    bytes32 currency;
   }
 
   struct AuditData {
-    AuditDataStorage all;
+    AuditDataStorage shared;
     mapping(uint256 => AuditDataStorage) byUser;
     mapping(address => AuditDataStorage) byAddress;
   }
@@ -91,8 +89,6 @@ contract TokenStorage is OperableStorage {
 
     mapping (address => uint256[3][]) proofs;
     mapping (address => uint256) frozenUntils;
-
-    AuditConfig[] auditConfigs;
     mapping (uint256 => AuditData) audits;
 
     Lock lock;
@@ -101,10 +97,12 @@ contract TokenStorage is OperableStorage {
   }
   mapping (address => TokenData) internal tokens_;
 
+  mapping (address => AuditConfig[]) internal delegateAuditConfigs_;
   mapping (uint256 => AuditData) internal audits;
-  IUserRegistry internal userRegistry_;
-  IRatesProvider internal ratesProvider_;
-  
+  IUserRegistry internal userRegistry;
+  IRatesProvider internal ratesProvider;
+
+  bytes32 internal currency;
   string internal name_;
 
   /**

@@ -18,7 +18,7 @@ contract("ProvableOwnershipToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await ProvableOwnershipTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(

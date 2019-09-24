@@ -15,13 +15,102 @@ import "./interface/ITokenCore.sol";
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
-  constructor(string memory _name, address[] memory _delegates) public {
+  /**
+   * @dev constructor
+   *
+   * @dev It is desired for now:
+   * @dev - that delegates and auditModes cannot be changed once the core has been deployed.
+   * @dev - that auditModes is limited to one per delegates.
+   */
+  constructor(string memory _name, address[] memory _delegates, bytes2[] memory _auditModes) public {
     name_ = _name;
     delegates = _delegates;
+    for (uint256 i=0; i < delegates.length; i++) {
+      delegateAuditConfigs_[delegates[i]].push(
+        AuditConfig(_auditModes[i]));
+    }
   }
 
   function name() public view returns (string memory) {
     return name_;
+  }
+
+  function oracles() public view returns (IUserRegistry, IRatesProvider, bytes32) {
+    return (userRegistry, ratesProvider, currency);
+  }
+
+  function auditModes() public view returns (bytes2[] memory auditModes_) {
+    auditModes_ = new bytes2[](delegates.length);
+    for (uint256 i=0; i < delegates.length; i++) {
+      auditModes_[i] = delegateAuditConfigs_[delegates[i]][0].auditMode;
+    }
+  }
+
+  function auditSelector(
+    address _delegate,
+    uint256 _configId,
+    address[] memory _addresses)
+    public view returns (bool[] memory, bool[] memory)
+  {
+    AuditConfig storage auditConfig = delegateAuditConfigs_[_delegate][_configId];
+    bool[] memory fromSelector = new bool[](_addresses.length);
+    bool[] memory toSelector = new bool[](_addresses.length);
+    for (uint256 i=0; i < _addresses.length; i++) {
+      fromSelector[i] = auditConfig.fromSelector[_addresses[i]];
+      toSelector[i] = auditConfig.toSelector[_addresses[i]];
+    }
+    return (fromSelector, toSelector);
+  }
+
+  function auditShared(uint256 _scopeId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
+  {
+    AuditDataStorage memory audit = audits[_scopeId].shared;
+    createdAt = audit.createdAt;
+    lastTransactionAt = audit.lastTransactionAt;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
+  }
+
+  function auditByUser(uint256 _scopeId, uint256 _userId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
+  {
+    AuditDataStorage memory audit = audits[_scopeId].byUser[_userId];
+    createdAt = audit.createdAt;
+    lastTransactionAt = audit.lastTransactionAt;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
+  }
+
+  function auditByAddress(uint256 _scopeId, address _holder) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission)
+  {
+    AuditDataStorage memory audit = audits[_scopeId].byAddress[_holder];
+    createdAt = audit.createdAt;
+    lastTransactionAt = audit.lastTransactionAt;
+    lastReceptionAt = audit.lastReceptionAt;
+    lastEmissionAt = audit.lastEmissionAt;
+    cumulatedReception = audit.cumulatedReception;
+    cumulatedEmission = audit.cumulatedEmission;
   }
 
   /**************  ERC20  **************/
@@ -109,7 +198,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     claims = tokenData.claims;
   }
 
-  function tokenAuditAll(address _token, uint256 _scopeId) public view returns (
+  function tokenAuditShared(address _token, uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -117,7 +206,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 cumulatedReception,
     uint256 cumulatedEmission)
   {
-    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].all;
+    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].shared;
     createdAt = audit.createdAt;
     lastTransactionAt = audit.lastTransactionAt;
     lastReceptionAt = audit.lastReceptionAt;
@@ -263,6 +352,40 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     removeProxy(_token);
     delete tokens_[_token];
+    return true;
+  }
+
+  function defineOracles(IUserRegistry _userRegistry, IRatesProvider _ratesProvider)
+    public onlyCoreOp returns (bool)
+  {
+    if (currency != bytes32(0)) {
+      // Updating the core currency is not yet supported
+      require(_userRegistry.currency() == currency);
+    } else {
+      currency = _userRegistry.currency();
+    }
+    userRegistry = _userRegistry;
+    ratesProvider = _ratesProvider;
+    
+    emit OraclesDefined(userRegistry, ratesProvider, currency);
+  }
+
+  function defineAuditSelector(
+    address _delegate,
+    uint256 _configId,
+    address[] memory _selectorAddresses,
+    bool[] memory _fromSelectorValues,
+    bool[] memory _toSelectorValues) public onlyCoreOp returns (bool)
+  {
+    AuditConfig storage auditConfig = delegateAuditConfigs_[_delegate][_configId];
+    for(uint256 i=0; i < _selectorAddresses.length; i++) {
+      auditConfig.fromSelector[_selectorAddresses[i]] = _fromSelectorValues[i];
+    }
+
+    for(uint256 i=0; i < _selectorAddresses.length; i++) {
+      auditConfig.toSelector[_selectorAddresses[i]] = _toSelectorValues[i];
+    }
+
     return true;
   }
 }

@@ -16,7 +16,7 @@ contract("Token", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCoreMock.new("Test", [ delegate.address ]);
+    core = await TokenCoreMock.new("Test", [ delegate.address ], [ "0x0000" ]);
   });
 
   describe("With a token defined", async function () {

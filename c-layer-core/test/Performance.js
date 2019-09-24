@@ -12,23 +12,23 @@ const MintableCTokenDelegate = artifacts.require("MintableCLayerTokenDelegate.so
 
 const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
 
-const CORE_GAS_COST = 3004979;
+const CORE_GAS_COST = 3189502;
 const DELEGATE_GAS_COST = 1436176;
-const C_DELEGATE_GAS_COST = 3097541;
+const C_DELEGATE_GAS_COST = 3544221;
 const PROXY_GAS_COST = 879840;
 
-const FIRST_TRANSFER_COST = 58713;
-const FIRST_TRANSFER_FROM_COST = 81404;
-const TRANSFER_COST = 43233;
-const C_FIRST_TRANSFER_COST = 136523;
-const C_FIRST_TRANSFER_FROM_COST = 159746;
-const C_TRANSFER_COST = 69413;
+const FIRST_TRANSFER_COST = 58690;
+const FIRST_TRANSFER_FROM_COST = 81426;
+const TRANSFER_COST = 43210;
+const C_FIRST_TRANSFER_COST = 63409;
+const C_FIRST_TRANSFER_FROM_COST = 86675;
+const C_TRANSFER_COST = 47929;
 
 contract("Performance", function (accounts) {
   let core, delegate;
 
   it("should have a core gas cost at " + CORE_GAS_COST, async function () {
-    const gas = await TokenCore.new.estimateGas("Test", accounts);
+    const gas = await TokenCore.new.estimateGas("Test", accounts, [ "0x0000" ]);
     assert.equal(gas, CORE_GAS_COST, "gas");
   });
 
@@ -43,7 +43,7 @@ contract("Performance", function (accounts) {
   });
 
   it("should have a proxy gas cost at " + PROXY_GAS_COST, async function () {
-    core = await TokenCore.new("Test", []);
+    core = await TokenCore.new("Test", [], []);
     const gas = await TokenProxy.new.estimateGas(core.address);
     assert.equal(gas, PROXY_GAS_COST, "gas");
   });
@@ -53,7 +53,7 @@ contract("Performance", function (accounts) {
 
     beforeEach(async function () {
       delegate = await MintableTokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ]);
+      core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
       token = await TokenProxy.new(core.address);
       defineTx = await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
@@ -92,7 +92,7 @@ contract("Performance", function (accounts) {
 
     beforeEach(async function () {
       delegate = await MintableCTokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ]);
+      core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
       token = await TokenProxy.new(core.address);
       defineTx = await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);

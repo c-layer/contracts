@@ -1,5 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "./IUserRegistry.sol";
+import "./IRatesProvider.sol";
 import "./IRule.sol";
 import "./IClaimable.sol";
 import "../TokenStorage.sol";
@@ -15,7 +17,36 @@ import "../TokenStorage.sol";
 contract ITokenCore {
 
   function name() public view returns (string memory);
+  function oracles() public view returns (IUserRegistry, IRatesProvider, bytes32);
 
+  function auditModes() public view returns (bytes2[] memory auditModes_);
+  function auditSelector(
+    address _delegate,
+    uint256 _configId,
+    address[] memory _addresses)
+    public view returns (bool[] memory, bool[] memory);
+  function auditShared(uint256 _scopeId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
+  function auditByUser(uint256 _scopeId, uint256 _userId) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
+  function auditByAddress(uint256 _scopeId, address _holder) public view returns (
+    uint64 createdAt,
+    uint64 lastTransactionAt,
+    uint64 lastReceptionAt,
+    uint64 lastEmissionAt,
+    uint256 cumulatedReception,
+    uint256 cumulatedEmission);
+ 
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (
     bool mintingFinished,
@@ -26,7 +57,7 @@ contract ITokenCore {
     uint256 freezedUntil,
     IRule[] memory,
     IClaimable[] memory);
-  function tokenAuditAll(address _token, uint256 _scopeId) public view returns (
+  function tokenAuditShared(address _token, uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -79,7 +110,24 @@ contract ITokenCore {
   function defineClaims(address, IClaimable[] memory) public returns (bool);
 
   /************  CORE ADMIN  ************/
+  function defineToken(
+    address _token,
+    uint256 _delegateId,
+    string memory _name,
+    string memory _symbol,
+    uint256 _decimals) public returns (bool);
+  function removeToken(address _token) public returns (bool);
+  function defineOracles(
+    IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider) public returns (bool);
+  function defineAuditSelector(
+    address _delegate,
+    uint256 _configId,
+    address[] memory _selectorAddresses,
+    bool[] memory _fromSelectorValues,
+    bool[] memory _toSelectorValues) public returns (bool);
 
+  event OraclesDefined(IUserRegistry userRegistry, IRatesProvider ratesProvider, bytes32 currency);
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);
