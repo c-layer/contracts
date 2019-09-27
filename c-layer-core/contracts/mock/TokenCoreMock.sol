@@ -15,13 +15,11 @@ import "../TokenCore.sol";
 contract TokenCoreMock is TokenCore {
 
   constructor(
-    string memory _name,
-    address[] memory _delegates,
-    bytes2[] memory _auditModes)
+    string memory _name, address[] memory _delegates)
     // solhint-disable-next-line no-empty-blocks
-    public TokenCore(_name, _delegates, _auditModes) {}
+    public TokenCore(_name, _delegates) {}
 
-  function defineSupply(address _tokenAddress, uint256 _supply)
+  function defineSupplyMock(address _tokenAddress, uint256 _supply)
     public returns (bool)
   {
     require(_tokenAddress != address(0), "TCM01");
@@ -32,7 +30,19 @@ contract TokenCoreMock is TokenCore {
     return true;
   }
 
-  function emitTransfer(
+  /**
+   * @dev Update audit data
+   */
+  function updateAuditMock(
+    address _token,
+    address[] memory, uint256[] memory,
+    uint256[] memory, uint256[] memory, uint256[] memory,
+    uint256[] memory, uint256[] memory) public returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function emitTransferMock(
     address _token,
     address _from,
     address _to,
@@ -40,7 +50,7 @@ contract TokenCoreMock is TokenCore {
     TokenProxy(_token).emitTransfer(_from, _to, _amount);
   }
 
-  function emitApproval(
+  function emitApprovalMock(
     address _token,
     address _owner,
     address _spender,

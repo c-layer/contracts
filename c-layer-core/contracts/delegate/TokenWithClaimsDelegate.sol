@@ -113,7 +113,7 @@ contract TokenWithClaimsDelegate is ProvableOwnershipTokenDelegate {
    * to be made at this time for the _holder
    */
   function hasClaims(address _token, address _holder) public view returns (bool) {
-    uint256 lastTransaction = tokens_[_token].audits[0].byAddress[_holder].lastTransactionAt;
+    uint256 lastTransaction = tokens_[_token].audits[0].addressData[_holder].lastTransactionAt;
     IClaimable[] memory claims_ = tokens_[_token].claims;
     for (uint256 i = 0; i < claims_.length; i++) {
       if (claims_[i].hasClaimsSince(_holder, lastTransaction)) {

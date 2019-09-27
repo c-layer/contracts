@@ -18,51 +18,41 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   /**
    * @dev constructor
    *
-   * @dev It is desired for now:
-   * @dev - that delegates and auditModes cannot be changed once the core has been deployed.
-   * @dev - that auditModes is limited to one per delegates.
+   * @dev It is desired for now that delegates
+   * @dev cannot be changed once the core has been deployed.
    */
-  constructor(string memory _name, address[] memory _delegates, bytes2[] memory _auditModes) public {
+  constructor(string memory _name, address[] memory _delegates) public {
     name_ = _name;
     delegates = _delegates;
-    for (uint256 i=0; i < delegates.length; i++) {
-      delegateAuditConfigs_[delegates[i]].push(
-        AuditConfig(_auditModes[i]));
-    }
   }
 
   function name() public view returns (string memory) {
     return name_;
   }
 
-  function oracles() public view returns (IUserRegistry, IRatesProvider, bytes32) {
-    return (userRegistry, ratesProvider, currency);
-  }
-
-  function auditModes() public view returns (bytes2[] memory auditModes_) {
-    auditModes_ = new bytes2[](delegates.length);
-    for (uint256 i=0; i < delegates.length; i++) {
-      auditModes_[i] = delegateAuditConfigs_[delegates[i]][0].auditMode;
-    }
+  function oracles() public view returns
+    (IUserRegistry, IRatesProvider, bytes32, uint256[] memory)
+  {
+    return (userRegistry, ratesProvider, currency, userKeys);
   }
 
   function auditSelector(
-    address _delegate,
-    uint256 _configId,
+    address _scope,
+    uint256 _scopeId,
     address[] memory _addresses)
-    public view returns (bool[] memory, bool[] memory)
+    public view returns (bool[] memory)
   {
-    AuditConfig storage auditConfig = delegateAuditConfigs_[_delegate][_configId];
-    bool[] memory fromSelector = new bool[](_addresses.length);
-    bool[] memory toSelector = new bool[](_addresses.length);
+    AuditStorage storage auditStorage = audits[_scope][_scopeId];
+    bool[] memory selector = new bool[](_addresses.length);
     for (uint256 i=0; i < _addresses.length; i++) {
-      fromSelector[i] = auditConfig.fromSelector[_addresses[i]];
-      toSelector[i] = auditConfig.toSelector[_addresses[i]];
+      selector[i] = auditStorage.selector[_addresses[i]];
     }
-    return (fromSelector, toSelector);
+    return selector;
   }
 
-  function auditShared(uint256 _scopeId) public view returns (
+  function auditShared(
+    address _scope,
+    uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -70,7 +60,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 cumulatedReception,
     uint256 cumulatedEmission)
   {
-    AuditDataStorage memory audit = audits[_scopeId].shared;
+    AuditData memory audit = audits[_scope][_scopeId].sharedData;
     createdAt = audit.createdAt;
     lastTransactionAt = audit.lastTransactionAt;
     lastReceptionAt = audit.lastReceptionAt;
@@ -79,7 +69,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     cumulatedEmission = audit.cumulatedEmission;
   }
 
-  function auditByUser(uint256 _scopeId, uint256 _userId) public view returns (
+  function auditUser(
+    address _scope,
+    uint256 _scopeId,
+    uint256 _userId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -87,7 +80,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 cumulatedReception,
     uint256 cumulatedEmission)
   {
-    AuditDataStorage memory audit = audits[_scopeId].byUser[_userId];
+    AuditData memory audit = audits[_scope][_scopeId].userData[_userId];
     createdAt = audit.createdAt;
     lastTransactionAt = audit.lastTransactionAt;
     lastReceptionAt = audit.lastReceptionAt;
@@ -96,7 +89,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     cumulatedEmission = audit.cumulatedEmission;
   }
 
-  function auditByAddress(uint256 _scopeId, address _holder) public view returns (
+  function auditAddress(
+    address _scope,
+    uint256 _scopeId,
+    address _holder) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -104,7 +100,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 cumulatedReception,
     uint256 cumulatedEmission)
   {
-    AuditDataStorage memory audit = audits[_scopeId].byAddress[_holder];
+    AuditData memory audit = audits[_scope][_scopeId].addressData[_holder];
     createdAt = audit.createdAt;
     lastTransactionAt = audit.lastTransactionAt;
     lastReceptionAt = audit.lastReceptionAt;
@@ -196,57 +192,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     frozenUntil = tokenData.frozenUntils[msg.sender];
     rules = tokenData.rules;
     claims = tokenData.claims;
-  }
-
-  function tokenAuditShared(address _token, uint256 _scopeId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
-  {
-    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].shared;
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
-  }
-
-  function tokenAuditByUser(address _token, uint256 _scopeId, uint256 _userId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
-  {
-    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].byUser[_userId];
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
-  }
-
-  function tokenAuditByAddress(address _token, uint256 _scopeId, address _holder) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
-  {
-    AuditDataStorage memory audit = tokens_[_token].audits[_scopeId].byAddress[_holder];
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
   }
 
   function tokenProofs(address _token, address _holder, uint256 _proofId)
@@ -355,7 +300,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return true;
   }
 
-  function defineOracles(IUserRegistry _userRegistry, IRatesProvider _ratesProvider)
+  function defineOracles(
+    IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider,
+    uint256[] memory _userKeys)
     public onlyCoreOp returns (bool)
   {
     if (currency != bytes32(0)) {
@@ -366,26 +314,23 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     }
     userRegistry = _userRegistry;
     ratesProvider = _ratesProvider;
-    
-    emit OraclesDefined(userRegistry, ratesProvider, currency);
+    userKeys = _userKeys;
+
+    emit OraclesDefined(userRegistry, ratesProvider, currency, userKeys);
   }
 
   function defineAuditSelector(
-    address _delegate,
-    uint256 _configId,
+    address _scope,
+    uint256 _scopeId,
     address[] memory _selectorAddresses,
-    bool[] memory _fromSelectorValues,
-    bool[] memory _toSelectorValues) public onlyCoreOp returns (bool)
+    bool[] memory _selectorValues) public onlyCoreOp returns (bool)
   {
-    AuditConfig storage auditConfig = delegateAuditConfigs_[_delegate][_configId];
+    AuditStorage storage auditStorage = audits[_scope][_scopeId];
     for(uint256 i=0; i < _selectorAddresses.length; i++) {
-      auditConfig.fromSelector[_selectorAddresses[i]] = _fromSelectorValues[i];
+      auditStorage.selector[_selectorAddresses[i]] = _selectorValues[i];
     }
 
-    for(uint256 i=0; i < _selectorAddresses.length; i++) {
-      auditConfig.toSelector[_selectorAddresses[i]] = _toSelectorValues[i];
-    }
-
+    emit AuditSelectorDefined(_scope, _scopeId, _selectorAddresses, _selectorValues);
     return true;
   }
 }

@@ -8,27 +8,27 @@ const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
-const MintableCTokenDelegate = artifacts.require("MintableCLayerTokenDelegate.sol");
+const TokenDelegate = artifacts.require("TokenDelegate.sol");
 
 const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
 
-const CORE_GAS_COST = 3189502;
+const CORE_GAS_COST = 3784621;
 const DELEGATE_GAS_COST = 1436176;
-const C_DELEGATE_GAS_COST = 3544221;
+const C_DELEGATE_GAS_COST = 4233966;
 const PROXY_GAS_COST = 879840;
 
-const FIRST_TRANSFER_COST = 58690;
-const FIRST_TRANSFER_FROM_COST = 81426;
-const TRANSFER_COST = 43210;
-const C_FIRST_TRANSFER_COST = 63409;
-const C_FIRST_TRANSFER_FROM_COST = 86675;
-const C_TRANSFER_COST = 47929;
+const FIRST_TRANSFER_COST = 58713;
+const FIRST_TRANSFER_FROM_COST = 81382;
+const TRANSFER_COST = 43233;
+const C_FIRST_TRANSFER_COST = 65241;
+const C_FIRST_TRANSFER_FROM_COST = 88455;
+const C_TRANSFER_COST = 49761;
 
 contract("Performance", function (accounts) {
   let core, delegate;
 
   it("should have a core gas cost at " + CORE_GAS_COST, async function () {
-    const gas = await TokenCore.new.estimateGas("Test", accounts, [ "0x0000" ]);
+    const gas = await TokenCore.new.estimateGas("Test", accounts);
     assert.equal(gas, CORE_GAS_COST, "gas");
   });
 
@@ -38,28 +38,28 @@ contract("Performance", function (accounts) {
   });
 
   it("should have a mintable C delegate gas cost at " + DELEGATE_GAS_COST, async function () {
-    const gas = await MintableCTokenDelegate.new.estimateGas();
+    const gas = await TokenDelegate.new.estimateGas();
     assert.equal(gas, C_DELEGATE_GAS_COST, "gas");
   });
 
   it("should have a proxy gas cost at " + PROXY_GAS_COST, async function () {
-    core = await TokenCore.new("Test", [], []);
+    core = await TokenCore.new("Test", []);
     const gas = await TokenProxy.new.estimateGas(core.address);
     assert.equal(gas, PROXY_GAS_COST, "gas");
   });
 
-  describe("With a mintable token defined", async function () {
+  describe("With a mintable token defined", function () {
     let token, defineTx;
 
     beforeEach(async function () {
       delegate = await MintableTokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
+      core = await TokenCore.new("Test", [ delegate.address ]);
       token = await TokenProxy.new(core.address);
       defineTx = await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
     });
 
-    describe("With supplies defined", async function () {
+    describe("With supplies defined", function () {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {
@@ -87,18 +87,18 @@ contract("Performance", function (accounts) {
     });
   });
 
-  describe("With a mintable C token defined", async function () {
+  describe("With a mintable C token defined", function () {
     let token, defineTx;
 
     beforeEach(async function () {
-      delegate = await MintableCTokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
+      delegate = await TokenDelegate.new();
+      core = await TokenCore.new("Test", [ delegate.address ]);
       token = await TokenProxy.new(core.address);
       defineTx = await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
     });
 
-    describe("With supplies defined", async function () {
+    describe("With supplies defined", function () {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {

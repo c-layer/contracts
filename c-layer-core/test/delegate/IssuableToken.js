@@ -4,7 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
+const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const IssuableTokenDelegate = artifacts.require("IssuableTokenDelegate.sol");
@@ -18,7 +18,7 @@ contract("IssuableToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await IssuableTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
+    core = await TokenCore.new("Test", [ delegate.address ]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(

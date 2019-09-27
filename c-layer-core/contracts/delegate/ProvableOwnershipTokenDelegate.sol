@@ -40,13 +40,13 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
     transferPostProcessing(
       _sender,
       token.balances[_sender],
-      token.audits[0].byAddress[_sender].lastTransactionAt,
+      token.audits[0].addressData[_sender].lastTransactionAt,
       _proofSender
     );
     transferPostProcessing(
       _to,
       token.balances[_to],
-      token.audits[0].byAddress[_to].lastTransactionAt,
+      token.audits[0].addressData[_to].lastTransactionAt,
       _proofReceiver
     );
     return true;
@@ -73,13 +73,13 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
     transferPostProcessing(
       _from,
       token.balances[_from],
-      token.audits[0].byAddress[_from].lastTransactionAt,
+      token.audits[0].addressData[_from].lastTransactionAt,
       _proofSender
     );
     transferPostProcessing(
       _to,
       token.balances[_to],
-      token.audits[0].byAddress[_to].lastTransactionAt,
+      token.audits[0].addressData[_to].lastTransactionAt,
       _proofReceiver
     );
     return true;

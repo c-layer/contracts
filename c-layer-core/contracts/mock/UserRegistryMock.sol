@@ -19,6 +19,21 @@ contract UserRegistryMock {
     return currency_;
   }
 
+  function validUserId(address _address) public view returns (uint256)
+  {
+    return userId(_address);
+  }
+
+  function validUser(address _address, uint256[] memory _keys)
+    public view returns (uint256, uint256[] memory)
+  {
+    uint256[] memory values = new uint256[](_keys.length);
+    for(uint256 i=0; i < _keys.length; i++) {
+      values[i] = _keys[i] * (i+1);
+    }
+    return (userId(_address), values);
+  }
+
   function userId(address _address) public view returns (uint256) {
     for(uint256 i=0; i < addresses_.length; i++) {
       if(addresses_[i] == _address) {

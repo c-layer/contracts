@@ -17,29 +17,37 @@ import "../TokenStorage.sol";
 contract ITokenCore {
 
   function name() public view returns (string memory);
-  function oracles() public view returns (IUserRegistry, IRatesProvider, bytes32);
+  function oracles() public view returns 
+    (IUserRegistry, IRatesProvider, bytes32, uint256[] memory);
 
-  function auditModes() public view returns (bytes2[] memory auditModes_);
   function auditSelector(
-    address _delegate,
-    uint256 _configId,
+    address _scope,
+    uint256 _scopeId,
     address[] memory _addresses)
-    public view returns (bool[] memory, bool[] memory);
-  function auditShared(uint256 _scopeId) public view returns (
+    public view returns (bool[] memory);
+  function auditShared(
+    address _scope,
+    uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
     uint64 lastEmissionAt,
     uint256 cumulatedReception,
     uint256 cumulatedEmission);
-  function auditByUser(uint256 _scopeId, uint256 _userId) public view returns (
+  function auditUser(
+    address _scope,
+    uint256 _scopeId,
+    uint256 _userId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
     uint64 lastEmissionAt,
     uint256 cumulatedReception,
     uint256 cumulatedEmission);
-  function auditByAddress(uint256 _scopeId, address _holder) public view returns (
+  function auditAddress(
+    address _scope,
+    uint256 _scopeId,
+    address _holder) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastReceptionAt,
@@ -57,27 +65,6 @@ contract ITokenCore {
     uint256 freezedUntil,
     IRule[] memory,
     IClaimable[] memory);
-  function tokenAuditShared(address _token, uint256 _scopeId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
-  function tokenAuditByUser(address _token, uint256 _scopeId, uint256 _userId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
-  function tokenAuditByAddress(address _token, uint256 _scopeId, address _holder) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
-    uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
   function tokenProofs(address _token, address _holder, uint256 _proofId)
     public view returns (uint256[3] memory);
   function canTransfer(address, address, uint256)
@@ -119,15 +106,21 @@ contract ITokenCore {
   function removeToken(address _token) public returns (bool);
   function defineOracles(
     IUserRegistry _userRegistry,
-    IRatesProvider _ratesProvider) public returns (bool);
+    IRatesProvider _ratesProvider,
+    uint256[] memory _userKeys) public returns (bool);
   function defineAuditSelector(
-    address _delegate,
-    uint256 _configId,
+    address _scope,
+    uint256 _scopeId,
     address[] memory _selectorAddresses,
-    bool[] memory _fromSelectorValues,
-    bool[] memory _toSelectorValues) public returns (bool);
+    bool[] memory _selectorValues) public returns (bool);
 
-  event OraclesDefined(IUserRegistry userRegistry, IRatesProvider ratesProvider, bytes32 currency);
+  event OraclesDefined(
+    IUserRegistry userRegistry,
+    IRatesProvider ratesProvider,
+    bytes32 currency,
+    uint256[] userKeys);
+  event AuditSelectorDefined(
+    address scope, uint256 scopeId, address[] addresses_, bool[] values);
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);
@@ -141,4 +134,5 @@ contract ITokenCore {
     address[] exceptions
   );
   event ClaimsDefined(address indexed token, address[] claims);
+  event AuditSelectorDefined(address indexed token, uint256 _scopeId, address[] selectorAddresses);
 }

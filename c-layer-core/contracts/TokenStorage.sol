@@ -22,10 +22,11 @@ contract TokenStorage is OperableStorage {
     NO_RECIPIENT,
     INSUFFICIENT_TOKENS,
     LOCKED,
-    FROZEN
+    FROZEN,
+    LIMITED
   }
 
-  struct AuditDataStorage {
+  struct AuditData {
     uint64 createdAt;
     uint64 lastTransactionAt;
     uint64 lastEmissionAt;
@@ -34,36 +35,12 @@ contract TokenStorage is OperableStorage {
     uint256 cumulatedReception;
   }
 
-  struct AuditConfig {
-    /*********************
-     * Audit Mode bitmap *
-     *********************
-     * AuditData storage
-     * 5 bits - scopeId
-     * 1 bit  - 0=token or 1=core scope
-     * 2 bits - 0=AuditData.shared, 1=AuditData.byUser, 2=AuditData.byAddress
-     *
-     * AuditData filters
-     * 1 bit  - 0=All or 1=fromSelector
-     * 1 bit  - 0=All or 1=toSelector
-     *
-     * AuditData fields
-     * 1 bit  - createdAt
-     * 1 bit  - lastTransactionAt
-     * 1 bit  - lastEmissionAt
-     * 1 bit  - lastReceptionAt
-     * 1 bit  - CumulatedEmission
-     * 1 bit  - CumulatedReception
-     *********************/
-    bytes2 auditMode;
-    mapping (address => bool) fromSelector;
-    mapping (address => bool) toSelector;
-  }
+  struct AuditStorage {
+    mapping (address => bool) selector;
 
-  struct AuditData {
-    AuditDataStorage shared;
-    mapping(uint256 => AuditDataStorage) byUser;
-    mapping(address => AuditDataStorage) byAddress;
+    AuditData sharedData;
+    mapping(uint256 => AuditData) userData;
+    mapping(address => AuditData) addressData;
   }
 
   struct Lock {
@@ -89,20 +66,21 @@ contract TokenStorage is OperableStorage {
 
     mapping (address => uint256[3][]) proofs;
     mapping (address => uint256) frozenUntils;
-    mapping (uint256 => AuditData) audits;
+    mapping (uint256 => AuditStorage) audits;
 
     Lock lock;
     IRule[] rules;
     IClaimable[] claims;
   }
   mapping (address => TokenData) internal tokens_;
+  mapping (address => mapping (uint256 => AuditStorage)) internal audits;
 
-  mapping (address => AuditConfig[]) internal delegateAuditConfigs_;
-  mapping (uint256 => AuditData) internal audits;
   IUserRegistry internal userRegistry;
   IRatesProvider internal ratesProvider;
 
   bytes32 internal currency;
+  uint256[] internal userKeys;
+
   string internal name_;
 
   /**
@@ -113,6 +91,13 @@ contract TokenStorage is OperableStorage {
     return uint64(now);
   }
 
+  event OraclesDefined(
+    IUserRegistry userRegistry,
+    IRatesProvider ratesProvider,
+    bytes32 currency,
+    uint256[] userKeys);
+  event AuditSelectorDefined(
+    address scope, uint256 scopeId, address[] addresses_, bool[] values);
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);

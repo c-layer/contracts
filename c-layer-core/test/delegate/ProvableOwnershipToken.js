@@ -4,7 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
+const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const ProvableOwnershipTokenDelegate = artifacts.require("ProvableOwnershipTokenDelegate.sol");
@@ -18,12 +18,12 @@ contract("ProvableOwnershipToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await ProvableOwnershipTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ], [ "0x0000" ]);
+    core = await TokenCore.new("Test", [ delegate.address ]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
       token.address, 0, NAME, SYMBOL, DECIMALS);
-    await core.defineSupply(token.address, AMOUNT);
+    await core.defineSupplyMock(token.address, AMOUNT);
   });
 
   it("should transfer from accounts[0] to accounts[1]", async function () {

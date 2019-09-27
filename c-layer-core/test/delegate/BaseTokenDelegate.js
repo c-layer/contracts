@@ -4,19 +4,19 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
+const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCore.sol");
-const TokenDelegate = artifacts.require("TokenDelegate.sol");
+const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
+const BaseTokenDelegate = artifacts.require("BaseTokenDelegate.sol");
 
 const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
 
-contract("Token", function (accounts) {
+contract("BaseToken", function (accounts) {
   let core, delegate;
 
   beforeEach(async function () {
-    delegate = await TokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    delegate = await BaseTokenDelegate.new();
+    core = await TokenCoreMock.new("Test", [ delegate.address ]);
   });
 
   describe("With a token defined", async function () {
@@ -52,7 +52,7 @@ contract("Token", function (accounts) {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {
-        await core.mintAtOnce(token.address, [ accounts[0] ], [ TOTAL_SUPPLY ]);
+        await core.defineSupplyMock(token.address, TOTAL_SUPPLY);
       });
 
       it("should have a total supply for token", async function () {
