@@ -167,7 +167,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
     if (_dataConfig.convertedValue && _value != 0) {
       TokenData memory token = tokens_[msg.sender];
       data.convertedValue = ratesProvider.convert(
-           _value, bytes(token.symbol).toBytes32(), currency);
+        _value, bytes(token.symbol).toBytes32(), currency);
     }
 
     return data;

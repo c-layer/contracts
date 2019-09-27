@@ -21,7 +21,7 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
    * @dev define which fields must be loaded
    */
   function transferDataConfig() internal pure returns (TransferDataConfig memory) {
-    return TransferDataConfig(false, false, false, false, false, false, false);
+    return TransferDataConfig(false, false, false, false, true, true, true);
   }
 
   /**
@@ -62,8 +62,8 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
    * @dev if the receiver is not registred then the limit of non registred will apply (ie userId = 0)
    */
   function belowReceptionLimit(TransferData memory _transferData) private view returns (bool) {
-    AuditData memory auditData = audits[address(0)][0].userData[_transferData.receiverId];
+    AuditData memory auditData = audits[address(this)][0].userData[_transferData.receiverId];
     return auditData.cumulatedReception.add(_transferData.convertedValue)
-      <= _transferData.receiverKeys[ AML_LIMIT_KEY ];
+      <= _transferData.receiverKeys[AML_LIMIT_KEY];
   }
 }

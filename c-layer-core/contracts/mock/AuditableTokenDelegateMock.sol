@@ -18,38 +18,6 @@ import "../delegate/AuditableTokenDelegate.sol";
 contract AuditableTokenDelegateMock is AuditableTokenDelegate {
 
   /**
-   * @dev default audit data config
-   */
-  function auditConfigs() internal pure returns (AuditConfig[] memory) {
-    AuditConfig[] memory auditConfigs_ = new AuditConfig[](4);
-    auditConfigs_[0] = AuditConfig(
-      0, true, // scopes
-      true, true, true, // datas
-      true, false, // selectors
-      true, true, true, true, true, true // fields
-    );
-    auditConfigs_[1] = AuditConfig(
-      1, true, // scopes
-      true, false, false, // datas
-      false, true, // selectors
-      false, false, true, false, true, false // fields
-    );
-    auditConfigs_[2] = AuditConfig(
-      2, true, // scopes
-      false, false, true,
-      true, true, //selectors
-      true, true, false, false, false, false // fields
-    );
-    auditConfigs_[3] = AuditConfig(
-      0, false, // scopes
-      true, false, true, // datas
-      false, false, // selectors
-      true, true, true, true, true, true //fields
-    );
-    return auditConfigs_;
-  }
-
-  /**
    * @dev Update audit data
    */
   function updateAuditMock(
@@ -79,11 +47,43 @@ contract AuditableTokenDelegateMock is AuditableTokenDelegate {
     );
     AuditConfig[] memory definedAuditConfigs = auditConfigs();
     AuditConfig[] memory auditConfigs_ = new AuditConfig[](_configIds.length);
-    for(uint256 i=0; i < _configIds.length; i++) {
+    for (uint256 i=0; i < _configIds.length; i++) {
       auditConfigs_[i] = definedAuditConfigs[_configIds[i]];
     }
 
     updateAuditInternal(transferData_, auditConfigs_);
     return true;
+  }
+
+  /**
+   * @dev default audit data config
+   */
+  function auditConfigs() internal pure returns (AuditConfig[] memory) {
+    AuditConfig[] memory auditConfigs_ = new AuditConfig[](4);
+    auditConfigs_[0] = AuditConfig(
+      0, true, // scopes
+      true, true, true, // datas
+      true, false, // selectors
+      true, true, true, true, true, true // fields
+    );
+    auditConfigs_[1] = AuditConfig(
+      1, true, // scopes
+      true, false, false, // datas
+      false, true, // selectors
+      false, false, true, false, true, false // fields
+    );
+    auditConfigs_[2] = AuditConfig(
+      2, true, // scopes
+      false, false, true,
+      true, true, //selectors
+      true, true, false, false, false, false // fields
+    );
+    auditConfigs_[3] = AuditConfig(
+      0, false, // scopes
+      true, false, true, // datas
+      false, false, // selectors
+      true, true, true, true, true, true //fields
+    );
+    return auditConfigs_;
   }
 }

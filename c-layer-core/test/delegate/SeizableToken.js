@@ -9,11 +9,10 @@ const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const SeizableTokenDelegate = artifacts.require("SeizableTokenDelegate.sol");
 
-const NEXT_YEAR = Math.round(new Date().getTime() / 1000, 0) + (365 * 3600 * 24);
 const AMOUNT = 1000000;
-const CHF = web3.utils.toHex("CHF");
-const NULL_ADDRESS = "0x".padEnd(42, "0");
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
 contract("SeizableToken", function (accounts) {
   let core, delegate, token;
@@ -38,7 +37,7 @@ contract("SeizableToken", function (accounts) {
 
     const tokenEvents = await token.getPastEvents("allEvents", {
       fromBlock: tx.logs[0].blockNumber,
-      toBlock: tx.logs[0].blockNumber
+      toBlock: tx.logs[0].blockNumber,
     });
     assert.equal(tokenEvents.length, 1, "events");
     assert.equal(tokenEvents[0].event, "Transfer", "event");
@@ -56,7 +55,7 @@ contract("SeizableToken", function (accounts) {
 
     const tokenEvents = await token.getPastEvents("allEvents", {
       fromBlock: tx.logs[0].blockNumber,
-      toBlock: tx.logs[0].blockNumber
+      toBlock: tx.logs[0].blockNumber,
     });
     assert.equal(tokenEvents.length, 1, "events");
     assert.equal(tokenEvents[0].event, "Transfer", "event");

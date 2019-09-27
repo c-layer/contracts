@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./TokenWithClaimsDelegate.sol";
-import "./TokenRuleEngineDelegate.sol";
+import "./WithClaimsTokenDelegate.sol";
+import "./RuleEngineTokenDelegate.sol";
 import "./SeizableTokenDelegate.sol";
 import "./FreezableTokenDelegate.sol";
 import "./LockableTokenDelegate.sol";
@@ -13,8 +13,8 @@ import "./LockableTokenDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 // solhint-disable-next-line no-empty-blocks
-contract CLayerTokenDelegate is TokenWithClaimsDelegate,
-  TokenRuleEngineDelegate,
+contract CLayerTokenDelegate is WithClaimsTokenDelegate,
+  RuleEngineTokenDelegate,
   SeizableTokenDelegate,
   FreezableTokenDelegate,
   LockableTokenDelegate { }

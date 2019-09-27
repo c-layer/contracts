@@ -16,14 +16,6 @@ import "../delegate/OracleEnrichedTokenDelegate.sol";
 contract OracleEnrichedTokenDelegateMock is OracleEnrichedTokenDelegate {
 
   /**
-   * @dev base transfer data config
-   * @dev define which fields must be loaded
-   */
-  function transferDataConfig() internal pure returns (TransferDataConfig memory) {
-    return TransferDataConfig(true, true, true, true, true, true, true);
-  }
-
-  /**
    * @dev defineOraclesMock
    */
   function defineOraclesMock(
@@ -69,18 +61,26 @@ contract OracleEnrichedTokenDelegateMock is OracleEnrichedTokenDelegate {
     values[4] = transferData_.convertedValue;
 
     uint256 j=5;
-    for(uint256 i=0; i < transferData_.callerKeys.length; i++) {
+    for (uint256 i=0; i < transferData_.callerKeys.length; i++) {
       values[j++] = transferData_.callerKeys[i];
     }
 
-    for(uint256 i=0; i < transferData_.senderKeys.length; i++) {
+    for (uint256 i=0; i < transferData_.senderKeys.length; i++) {
       values[j++] = transferData_.senderKeys[i];
     }
 
-    for(uint256 i=0; i < transferData_.receiverKeys.length; i++) {
+    for (uint256 i=0; i < transferData_.receiverKeys.length; i++) {
       values[j++] = transferData_.receiverKeys[i];
     }
 
     return (addresses, values);
+  }
+
+  /**
+   * @dev base transfer data config
+   * @dev define which fields must be loaded
+   */
+  function transferDataConfig() internal pure returns (TransferDataConfig memory) {
+    return TransferDataConfig(true, true, true, true, true, true, true);
   }
 }

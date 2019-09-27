@@ -7,23 +7,32 @@
 const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
-const ProvableOwnershipTokenDelegate = artifacts.require("ProvableOwnershipTokenDelegate.sol");
+const LimitableReceptionTokenDelegate = artifacts.require("LimitableReceptionTokenDelegate.sol");
+
+const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
+const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 
 const AMOUNT = 1000000;
-const NULL_ADDRESS = "0x".padEnd(42, "0");
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
-contract("ProvableOwnershipToken", function (accounts) {
-  let core, delegate, token;
+contract("LimitableReceptionTokenDelegate", function (accounts) {
+  let core, delegate, token, userRegistry, ratesProvider;
 
   beforeEach(async function () {
-    delegate = await ProvableOwnershipTokenDelegate.new();
+    delegate = await LimitableReceptionTokenDelegate.new();
     core = await TokenCore.new("Test", [ delegate.address ]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
       token.address, 0, NAME, SYMBOL, DECIMALS);
     await core.defineSupplyMock(token.address, AMOUNT);
+
+    userRegistry = await UserRegistryMock.new(
+      [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+    ratesProvider = await RatesProviderMock.new();
+    await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
   });
 
   it("should transfer from accounts[0] to accounts[1]", async function () {

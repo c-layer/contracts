@@ -61,7 +61,7 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     TransferData memory _transferData,
     AuditConfig[] memory _auditConfigs) internal
   {
-    for(uint256 i=0; i < _auditConfigs.length; i++) {
+    for (uint256 i=0; i < _auditConfigs.length; i++) {
       AuditConfig memory auditConfig = _auditConfigs[i];
 
       /**** AUDIT STORAGE ****/
@@ -70,10 +70,10 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
       )[auditConfig.scopeId];
 
       /**** FILTERS ****/
-      if(auditConfig.selectorSender && !auditStorage.selector[_transferData.sender]) {
+      if (auditConfig.selectorSender && !auditStorage.selector[_transferData.sender]) {
         continue;
       }
-      if(auditConfig.selectorReceiver && !auditStorage.selector[_transferData.receiver]) {
+      if (auditConfig.selectorReceiver && !auditStorage.selector[_transferData.receiver]) {
         continue;
       }
 
@@ -83,11 +83,11 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
         updateReceiverAuditPrivate(auditStorage.sharedData, auditConfig, _transferData);
       }
       if (auditConfig.userData) {
-        if(_transferData.senderId != 0) {
+        if (_transferData.senderId != 0) {
           updateSenderAuditPrivate(auditStorage.userData[_transferData.senderId], auditConfig, _transferData);
         }
 
-        if(_transferData.receiverId != 0) {
+        if (_transferData.receiverId != 0) {
           updateReceiverAuditPrivate(auditStorage.userData[_transferData.receiverId], auditConfig, _transferData);
         }
       }
@@ -104,16 +104,16 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     TransferData memory _transferData
   ) private {
     uint64 currentTime = currentTime();
-    if(_auditConfig.fieldCreatedAt && _senderAudit.createdAt == 0) {
+    if (_auditConfig.fieldCreatedAt && _senderAudit.createdAt == 0) {
       _senderAudit.createdAt = currentTime;
     }
-    if(_auditConfig.fieldLastTransactionAt) {
+    if (_auditConfig.fieldLastTransactionAt) {
       _senderAudit.lastTransactionAt = currentTime;
     }
-    if(_auditConfig.fieldLastEmissionAt) {
+    if (_auditConfig.fieldLastEmissionAt) {
       _senderAudit.lastEmissionAt = currentTime;
     }
-    if(_auditConfig.fieldCumulatedEmission) {
+    if (_auditConfig.fieldCumulatedEmission) {
       // may overflow
       _senderAudit.cumulatedEmission += (_auditConfig.scopeCore) ?
         _transferData.convertedValue : _transferData.value;
@@ -126,16 +126,16 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     TransferData memory _transferData
   ) private {
     uint64 currentTime = currentTime();
-    if(_auditConfig.fieldCreatedAt && _receiverAudit.createdAt == 0) {
+    if (_auditConfig.fieldCreatedAt && _receiverAudit.createdAt == 0) {
       _receiverAudit.createdAt = currentTime;
     }
-    if(_auditConfig.fieldLastTransactionAt) {
+    if (_auditConfig.fieldLastTransactionAt) {
       _receiverAudit.lastTransactionAt = currentTime;
     }
-    if(_auditConfig.fieldLastReceptionAt) {
+    if (_auditConfig.fieldLastReceptionAt) {
       _receiverAudit.lastReceptionAt = currentTime;
     }
-    if(_auditConfig.fieldCumulatedReception) {
+    if (_auditConfig.fieldCumulatedReception) {
       // may overflow
       _receiverAudit.cumulatedReception += (_auditConfig.scopeCore) ?
         _transferData.convertedValue : _transferData.value;

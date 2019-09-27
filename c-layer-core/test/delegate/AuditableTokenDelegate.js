@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
 const AuditableTokenDelegate = artifacts.require("AuditableTokenDelegate.sol");
@@ -13,23 +12,23 @@ const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 
 const AMOUNT = 1000000;
-const NULL_ADDRESS = "0x".padEnd(42, "0");
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
-const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
-const evalAudit = function(audit, expected) {
+const evalAudit = function (audit, expected) {
   assert.equal(audit.createdAt.toString(), expected[0], "createdAt");
   assert.equal(audit.lastTransactionAt.toString(), expected[1], "lastTransactionAt");
   assert.equal(audit.lastEmissionAt.toString(), expected[2], "lastEmissionAt");
   assert.equal(audit.lastReceptionAt.toString(), expected[3], "lastReceptionAt");
   assert.equal(audit.cumulatedEmission.toString(), expected[4], "cumulatedEmission");
   assert.equal(audit.cumulatedReception.toString(), expected[5], "cumulatedReception");
-}
+};
 
 contract("AuditableToken", function (accounts) {
   let core, delegate, token, userRegistry, ratesProvider;
 
-  describe("with a token and no audits", function() {
+  describe("with a token and no audits", function () {
     beforeEach(async function () {
       delegate = await AuditableTokenDelegate.new();
       core = await TokenCoreMock.new("Test", [ delegate.address ]);
@@ -57,8 +56,7 @@ contract("AuditableToken", function (accounts) {
     });
 
     describe("With a transfer", function () {
-
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transfer(accounts[1], "3333");
       });
 
@@ -74,8 +72,7 @@ contract("AuditableToken", function (accounts) {
     });
 
     describe("With a transferFrom", function () {
-
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
       });
 
@@ -96,10 +93,10 @@ contract("AuditableToken", function (accounts) {
     });
   });
 
-  describe("with a mocked delegate", function() {
+  describe("with a mocked delegate", function () {
     let block1Time;
 
-    beforeEach(async function() {
+    beforeEach(async function () {
       delegate = await AuditableTokenDelegateMock.new();
       core = await TokenCoreMock.new("Test", [ delegate.address ]);
 
@@ -117,7 +114,7 @@ contract("AuditableToken", function (accounts) {
           [ accounts[0], accounts[1], accounts[2] ], [ 1, 2, 3 ],
           [ 1, 4, 9 ], [ 2, 5, 10 ], [ 3, 6, 11 ],
           [ "42", "63" ], [ 0 ]);
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have core 0 shared data", async function () {
@@ -165,7 +162,7 @@ contract("AuditableToken", function (accounts) {
           [ accounts[0], accounts[1], accounts[2] ], [ 1, 2, 3 ],
           [ 1, 4, 9 ], [ 2, 5, 10 ], [ 3, 6, 11 ],
           [ "42", "63" ], [ 1 ]);
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have core 1 shared data", async function () {
@@ -200,7 +197,7 @@ contract("AuditableToken", function (accounts) {
 
       it("should have core 1 address data receiver", async function () {
         const audit = await core.auditAddress(core.address, 1, accounts[2]);
-         evalAudit(audit, [ "0", "0", "0", "0", "0", "0" ]);
+        evalAudit(audit, [ "0", "0", "0", "0", "0", "0" ]);
       });
     });
 
@@ -213,7 +210,7 @@ contract("AuditableToken", function (accounts) {
           [ accounts[0], accounts[1], accounts[2] ], [ 1, 2, 3 ],
           [ 1, 4, 9 ], [ 2, 5, 10 ], [ 3, 6, 11 ],
           [ "42", "63" ], [ 2 ]);
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have core 2 shared data", async function () {
@@ -259,7 +256,7 @@ contract("AuditableToken", function (accounts) {
           [ accounts[0], accounts[1], accounts[2] ], [ 1, 2, 3 ],
           [ 1, 4, 9 ], [ 2, 5, 10 ], [ 3, 6, 11 ],
           [ "42", "63" ], [ 3 ]);
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have token 0 shared data", async function () {
@@ -299,7 +296,7 @@ contract("AuditableToken", function (accounts) {
     });
   });
 
-  describe("with a token and many audits", function() {
+  describe("with a token and many audits", function () {
     beforeEach(async function () {
       delegate = await AuditableTokenDelegateMock.new();
       core = await TokenCoreMock.new("Test", [ delegate.address ]);
@@ -310,7 +307,8 @@ contract("AuditableToken", function (accounts) {
       await core.defineSupplyMock(token.address, AMOUNT);
       await token.approve(accounts[1], AMOUNT);
 
-      userRegistry = await UserRegistryMock.new([ accounts[0], accounts[1], accounts[2] ]);
+      userRegistry = await UserRegistryMock.new(
+        [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
       ratesProvider = await RatesProviderMock.new();
       await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
     });
@@ -318,9 +316,9 @@ contract("AuditableToken", function (accounts) {
     describe("With a first transfer", function () {
       let block1Time;
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transfer(accounts[1], "3333");
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have token audit for sender address", async function () {
@@ -332,7 +330,8 @@ contract("AuditableToken", function (accounts) {
         const audit = await core.auditAddress(token.address, 0, accounts[1]);
         evalAudit(audit, [ block1Time, block1Time, "0", block1Time, "0", "3333" ]);
       });
-       it("should have token audit for sender address", async function () {
+
+      it("should have token audit for sender address", async function () {
         const audit = await core.auditAddress(token.address, 0, accounts[0]);
         evalAudit(audit, [ block1Time, block1Time, block1Time, "0", "3333", "0" ]);
       });
@@ -346,11 +345,11 @@ contract("AuditableToken", function (accounts) {
     describe("With two transfers", function () {
       let block1Time, block2Time;
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transfer(accounts[1], "3333");
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
         await token.transfer(accounts[1], "3333");
-        block2Time = (await web3.eth.getBlock('latest')).timestamp;
+        block2Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have token audit for sender", async function () {
@@ -367,9 +366,9 @@ contract("AuditableToken", function (accounts) {
     describe("With a first transferFrom", function () {
       let block1Time;
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
       });
 
       it("should have token audit for sender", async function () {
@@ -377,7 +376,7 @@ contract("AuditableToken", function (accounts) {
         evalAudit(audit, [ "0", "0", "0", "0", "0", "0" ]);
       });
 
-     it("should have token audit for 'from'", async function () {
+      it("should have token audit for 'from'", async function () {
         const audit = await core.auditAddress(token.address, 0, accounts[0]);
         evalAudit(audit, [ block1Time, block1Time, block1Time, "0", "3333", "0" ]);
       });
@@ -391,12 +390,12 @@ contract("AuditableToken", function (accounts) {
     describe("With two transferFrom", function () {
       let block1Time, block2Time;
 
-      beforeEach(async function() {
+      beforeEach(async function () {
         await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
-        block1Time = (await web3.eth.getBlock('latest')).timestamp;
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
         await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
-        block2Time = (await web3.eth.getBlock('latest')).timestamp;
-     });
+        block2Time = (await web3.eth.getBlock("latest")).timestamp;
+      });
  
       it("should have token audit for sender", async function () {
         const audit = await core.auditAddress(token.address, 0, accounts[1]);

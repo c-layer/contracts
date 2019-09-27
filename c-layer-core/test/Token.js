@@ -9,7 +9,9 @@ const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const TokenDelegate = artifacts.require("TokenDelegate.sol");
 
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
 contract("Token", function (accounts) {
   let core, delegate;
@@ -20,11 +22,11 @@ contract("Token", function (accounts) {
   });
 
   describe("With a token defined", async function () {
-    let token, defineTx;
+    let token;
 
     beforeEach(async function () {
       token = await TokenProxy.new(core.address);
-      defineTx = await core.defineToken(
+      await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
     });
 
@@ -105,7 +107,6 @@ contract("Token", function (accounts) {
       });
 
       describe("With an allowance from accounts[0] to accounts[1]", function () {
-
         beforeEach(async function () {
           await token.approve(accounts[1], "3333");
         });
@@ -165,7 +166,7 @@ contract("Token", function (accounts) {
 
         it("should prevent decrease approval too much from accounts[0]", async function () {
           await assertRevert(token.decreaseApproval(accounts[0], "3334"), "XX");
-        })
+        });
       });
     });
   });

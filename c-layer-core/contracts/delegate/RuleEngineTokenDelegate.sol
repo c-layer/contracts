@@ -5,14 +5,14 @@ import "./BaseTokenDelegate.sol";
 
 
 /**
- * @title TokenRuleEngineDelegate
- * @dev TokenRuleEngineDelegate contract
+ * @title RuleEngineTokenDelegate
+ * @dev RuleEngineTokenDelegate contract
  * TokenRuleEngine is a token that will apply
  * rules restricting transferability
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  **/
-contract TokenRuleEngineDelegate is BaseTokenDelegate {
+contract RuleEngineTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev Overriden transfer function

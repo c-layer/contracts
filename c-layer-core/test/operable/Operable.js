@@ -157,7 +157,7 @@ contract("Operable", function (accounts) {
         web3.utils.sha3("assignOperators(bytes32,address[])").substr(0, 10),
         web3.utils.sha3("revokeOperators(address[])").substr(0, 10) ]);
       await core.defineRole(ROLE_DESIGNER, [
-        web3.utils.sha3("defineRole(bytes32,bytes4[])").substr(0, 10)
+        web3.utils.sha3("defineRole(bytes32,bytes4[])").substr(0, 10),
       ]);
       await core.assignOperators(ROLE_OP_ASSIGNER, [ accounts[1], accounts[2] ]);
       await core.assignOperators(ROLE_DESIGNER, [ accounts[2], accounts[3] ]);
@@ -288,30 +288,30 @@ contract("Operable", function (accounts) {
     });
 
     it("should prevent proxy1 operator to operate core", async function () {
-      await assertRevert(core.successAsCoreOp(proxy1.address, { from: accounts[2] }), "OC02"); 
+      await assertRevert(core.successAsCoreOp(proxy1.address, { from: accounts[2] }), "OC02");
     });
 
     it("should prevent core operator to operate proxy1 and proxy2", async function () {
-      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[1] }), "OC03"); 
-      await assertRevert(core.successAsProxyOp(proxy2.address, { from: accounts[1] }), "OC03"); 
+      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[1] }), "OC03");
+      await assertRevert(core.successAsProxyOp(proxy2.address, { from: accounts[1] }), "OC03");
     });
 
     it("should let proxy1 operator to operate proxy1 but not proxy2", async function () {
       const tx1 = await core.successAsProxyOp(proxy1.address, { from: accounts[2] });
       assert.ok(tx1.receipt.status, "Status proxy1");
-      await assertRevert(core.successAsProxyOp(proxy2.address, { from: accounts[2] }), "OC03"); 
+      await assertRevert(core.successAsProxyOp(proxy2.address, { from: accounts[2] }), "OC03");
     });
 
     it("should let proxy2 operator to operate proxy2 but not proxy1", async function () {
-      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[3] }), "OC03"); 
+      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[3] }), "OC03");
       const tx2 = await core.successAsProxyOp(proxy2.address, { from: accounts[3] });
       assert.ok(tx2.receipt.status, "Status proxy2");
     });
 
     it("should let core but restricted for proxy1 operator to operate proxy2 but not proxy1", async function () {
-      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[4] }), "OC03"); 
+      await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[4] }), "OC03");
       const tx2 = await core.successAsProxyOp(proxy2.address, { from: accounts[4] });
       assert.ok(tx2.receipt.status, "Status proxy2");
     });
-  }); 
+  });
 });

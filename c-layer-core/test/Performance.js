@@ -4,13 +4,14 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
 const TokenDelegate = artifacts.require("TokenDelegate.sol");
 
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
 const CORE_GAS_COST = 3784621;
 const DELEGATE_GAS_COST = 1436176;
@@ -49,13 +50,13 @@ contract("Performance", function (accounts) {
   });
 
   describe("With a mintable token defined", function () {
-    let token, defineTx;
+    let token;
 
     beforeEach(async function () {
       delegate = await MintableTokenDelegate.new();
       core = await TokenCore.new("Test", [ delegate.address ]);
       token = await TokenProxy.new(core.address);
-      defineTx = await core.defineToken(
+      await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
     });
 
@@ -88,13 +89,13 @@ contract("Performance", function (accounts) {
   });
 
   describe("With a mintable C token defined", function () {
-    let token, defineTx;
+    let token;
 
     beforeEach(async function () {
       delegate = await TokenDelegate.new();
       core = await TokenCore.new("Test", [ delegate.address ]);
       token = await TokenProxy.new(core.address);
-      defineTx = await core.defineToken(
+      await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
     });
 

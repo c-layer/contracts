@@ -11,9 +11,11 @@ const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
 
 const AMOUNT = 1000000;
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const NAME = "Token", SYMBOL = "TKN", DECIMALS = 18;
+const NAME = "Token";
+const SYMBOL = "TKN";
+const DECIMALS = 18;
 
-contract("MintableToken", function (accounts) {
+contract("MintableTokenDelegate", function (accounts) {
   let core, delegate, token;
 
   beforeEach(async function () {
@@ -34,7 +36,7 @@ contract("MintableToken", function (accounts) {
 
     const tokenEvents = await token.getPastEvents("allEvents", {
       fromBlock: tx.logs[0].blockNumber,
-      toBlock: tx.logs[0].blockNumber
+      toBlock: tx.logs[0].blockNumber,
     });
     assert.equal(tokenEvents.length, 1, "events");
     assert.equal(tokenEvents[0].event, "Transfer", "event");
@@ -59,7 +61,7 @@ contract("MintableToken", function (accounts) {
 
     const tokenEvents = await token.getPastEvents("allEvents", {
       fromBlock: tx.logs[0].blockNumber,
-      toBlock: tx.logs[0].blockNumber
+      toBlock: tx.logs[0].blockNumber,
     });
     assert.equal(tokenEvents.length, 3, "token events");
  

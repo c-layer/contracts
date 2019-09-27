@@ -326,7 +326,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     bool[] memory _selectorValues) public onlyCoreOp returns (bool)
   {
     AuditStorage storage auditStorage = audits[_scope][_scopeId];
-    for(uint256 i=0; i < _selectorAddresses.length; i++) {
+    for (uint256 i=0; i < _selectorAddresses.length; i++) {
       auditStorage.selector[_selectorAddresses[i]] = _selectorValues[i];
     }
 

@@ -5,8 +5,8 @@ import "../interface/IClaimable.sol";
 
 
 /**
- * @title TokenWithClaimsDelegate
- * @dev TokenWithClaimsDelegate contract
+ * @title WithClaimsTokenDelegate
+ * @dev WithClaimsTokenDelegate contract
  * TokenWithClaims is a token that will create a
  * proofOfOwnership during transfers if a claim can be made.
  * Holder may ask for the claim later using the proofOfOwnership
@@ -17,7 +17,7 @@ import "../interface/IClaimable.sol";
  * E02: Claimables parameter must not be empty
  * E03: Claimable does not exist
 **/
-contract TokenWithClaimsDelegate is ProvableOwnershipTokenDelegate {
+contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 
   /**
    * @dev Override the transfer function with transferWithProofs
