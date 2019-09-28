@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for contracts/delegate/FreezableTokenDelegate.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../../prettify.css" />
+    <link rel="stylesheet" href="../../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/delegate/</a> FreezableTokenDelegate.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">46.67% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>7/15</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>2/4</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">50% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>3/6</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">46.67% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>7/15</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
+&nbsp;
+import "./BaseTokenDelegate.sol";
+&nbsp;
+&nbsp;
+/**
+ * @title FreezableTokenDelegate
+ * @dev FreezableTokenDelegate contract
+ * This rule allow a legal authority to enforce a freeze of assets.
+ *
+ * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
+ *
+ * Error messages
+ * FTD01: The address is frozen
+ */
+contract FreezableTokenDelegate is BaseTokenDelegate {
+&nbsp;
+  /**
+   * @dev Overriden transfer function
+   */
+  function transfer(address _sender, address _to, uint256 _value)
+    public returns (bool)
+  {
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(areNotFrozen(_sender, _to), "FTD01");
+    return super.transfer(_sender, _to, _value);
+  }
+&nbsp;
+  /**
+   * @dev Overriden transferFrom function
+   */
+  function transferFrom(
+    address _sender, address _from, address _to, uint256 _value)
+    public returns (bool)
+  {
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(areNotFrozen(_from, _to), "FTD01");
+    return super.transferFrom(_sender, _from, _to, _value);
+  }
+&nbsp;
+  /**
+   * @dev can transfer
+   */
+<span class="fstat-no" title="function not covered" >  function canTransfer(</span>
+    address _from,
+    address _to,
+    uint256 _value) public view returns (TransferCode)
+  {
+<span class="cstat-no" title="statement not covered" >    return areNotFrozen(_from, _to) ?</span>
+      super.canTransfer(_from, _to, _value) : TransferCode.FROZEN;
+  }
+&nbsp;
+  /**
+   * @dev allow owner to freeze the address
+   * @param _until allows to auto unlock if the frozen time is known initially.
+   * otherwise infinity can be used
+   */
+<span class="fstat-no" title="function not covered" >  function freezeAddress(address _token, address _address, uint256 _until)</span>
+    public returns (bool)
+  {
+<span class="cstat-no" title="statement not covered" >    mapping(address =&gt; uint256) storage frozenUntils = tokens_[_token].frozenUntils;</span>
+<span class="cstat-no" title="statement not covered" >    frozenUntils[_address] = _until</span>;
+<span class="cstat-no" title="statement not covered" >    emit Freeze(_address, _until);</span>
+  }
+&nbsp;
+  /**
+   * @dev allow owner to freeze several addresses
+   * @param _until allows to auto unlock if the frozen time is known initially.
+   * otherwise infinity can be used
+   */
+<span class="fstat-no" title="function not covered" >  function freezeManyAddresses(</span>
+    address _token,
+    address[] memory _addresses,
+    uint256 _until) public returns (bool)
+  {
+<span class="cstat-no" title="statement not covered" >    mapping(address =&gt; uint256) storage frozenUntils = tokens_[_token].frozenUntils;</span>
+<span class="cstat-no" title="statement not covered" >    for (uint256 i = 0; i &lt; _addresses.length; i++) {</span>
+<span class="cstat-no" title="statement not covered" >      frozenUntils[_addresses[i]] = _until</span>;
+<span class="cstat-no" title="statement not covered" >      emit Freeze(_addresses[i], _until);</span>
+    }
+  }
+&nbsp;
+  /**
+   * @dev areNotFrozen
+   */
+  function areNotFrozen(address _from, address _to) private view returns (bool) {
+    mapping(address =&gt; uint256) storage frozenUntils = tokens_[msg.sender].frozenUntils;
+    // solhint-disable-next-line not-rely-on-time
+    uint256 currentTime = now;
+    return (frozenUntils[msg.sender] &lt; currentTime
+      &amp;&amp; frozenUntils[_from] &lt; currentTime
+      &amp;&amp; frozenUntils[_to] &lt; currentTime);
+  }
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Sep 28 2019 11:38:34 GMT+0000 (Coordinated Universal Time)
+</div>
+</div>
+<script src="../../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../../sorter.js"></script>
+</body>
+</html>

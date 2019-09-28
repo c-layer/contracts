@@ -77,4 +77,9 @@ Three oracles are provided:
 
 <img src="smartcontracts.oracle.png" height=500/>
 
+### Coverage
+
+The latest coverage result may be found below:
+  - [Core](https://c-layer.github.io/contracts/c-layer-core/coverage/)
+  - [Oracle](https://c-layer.github.io/contracts/c-layer-oracle/coverage/)
 
