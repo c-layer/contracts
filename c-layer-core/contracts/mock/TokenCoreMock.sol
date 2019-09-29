@@ -9,8 +9,6 @@ import "../TokenCore.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * TCM01: invalid token address
- * TCM02: supplies already exist for the token
  **/
 contract TokenCoreMock is TokenCore {
 
@@ -22,9 +20,7 @@ contract TokenCoreMock is TokenCore {
   function defineSupplyMock(address _tokenAddress, uint256 _supply)
     public returns (bool)
   {
-    require(_tokenAddress != address(0), "TCM01");
     TokenData storage token = tokens_[_tokenAddress];
-    require(token.totalSupply == 0, "TCM02");
     token.totalSupply = _supply;
     token.balances[msg.sender] = _supply;
     return true;
@@ -56,5 +52,11 @@ contract TokenCoreMock is TokenCore {
     address _spender,
     uint256 _amount) public returns (bool) {
     TokenProxy(_token).emitApproval(_owner, _spender, _amount);
+  }
+
+  function removeProxyMock(address _proxy)
+    internal returns (bool)
+  {
+    return removeProxy(_proxy);
   }
 }

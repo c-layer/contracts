@@ -38,13 +38,13 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
     it("should fail to read transfer data with user registry enrichement", async function () {
       await assertRevert(delegate.readTransferDataMock(
         delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-        [ true, true, true, true, true, true, false ]), "CO02");
+        [ true, true, true, true, true, true, false ]), "CO03");
     });
 
     it("should fail to read transfer data with rates provider enrichement", async function () {
       await assertRevert(delegate.readTransferDataMock(
         delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-        [ false, false, false, false, false, false, true ]), "CO02");
+        [ false, false, false, false, false, false, true ]), "CO03");
     });
 
     describe("with user registry defined", function () {
@@ -87,7 +87,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
       it("should fail to read transfer data with rates provider enrichement", async function () {
         await assertRevert(delegate.readTransferDataMock(
           delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ false, false, false, false, false, false, true ]), "CO02");
+          [ false, false, false, false, false, false, true ]), "CO03");
       });
     });
 
@@ -112,7 +112,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
       it("should fail to read transfer data with user registry enrichement", async function () {
         await assertRevert(delegate.readTransferDataMock(
           delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ true, true, true, true, true, true, false ]), "CO02");
+          [ true, true, true, true, true, true, false ]), "CO03");
       });
 
       it("should read transfer data with rates provider enrichement", async function () {
@@ -203,7 +203,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
       });
 
       it("should prevent transfer too much from accounts[0]", async function () {
-        await assertRevert(token.transfer(accounts[1], "1000001"), "CO02");
+        await assertRevert(token.transfer(accounts[1], "1000001"), "CO03");
       });
 
       it("should let accounts[0] provide allowance to accounts[1]", async function () {
@@ -243,7 +243,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
         });
 
         it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO02");
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO03");
         });
       });
     });

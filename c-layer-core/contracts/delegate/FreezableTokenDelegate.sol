@@ -49,19 +49,6 @@ contract FreezableTokenDelegate is BaseTokenDelegate {
   }
 
   /**
-   * @dev allow owner to freeze the address
-   * @param _until allows to auto unlock if the frozen time is known initially.
-   * otherwise infinity can be used
-   */
-  function freezeAddress(address _token, address _address, uint256 _until)
-    public returns (bool)
-  {
-    mapping(address => uint256) storage frozenUntils = tokens_[_token].frozenUntils;
-    frozenUntils[_address] = _until;
-    emit Freeze(_address, _until);
-  }
-
-  /**
    * @dev allow owner to freeze several addresses
    * @param _until allows to auto unlock if the frozen time is known initially.
    * otherwise infinity can be used

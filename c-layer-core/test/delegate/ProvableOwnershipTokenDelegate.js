@@ -41,4 +41,35 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
     const balance1 = await token.balanceOf(accounts[1]);
     assert.equal(balance1.toString(), "3333", "balance");
   });
+
+  it("should have no proof id=0 for account 0", async function () {
+    const proof = await core.tokenProofs(token.address, accounts[0], 0);
+    assert.deepEqual(Object.values(proof).map(x => x.toString()),
+      [ "0", "0", "0" ], "no proofs id 0"); 
+  });
+
+  it("should let create proof for account 0", async function () {
+    const tx = await core.createProof(token.address, accounts[0])
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, "ProofCreated", "event");
+    assert.equal(tx.logs[0].args.token, token.address, "token");
+    assert.equal(tx.logs[0].args.holder, accounts[0], "holder");
+    assert.equal(tx.logs[0].args.proofId, 0, "proofId");
+  });
+
+  describe("With a proof created for account 0", function () {
+    let block1Time;
+
+    beforeEach(async function () {
+      await core.createProof(token.address, accounts[0]);
+      block1Time = (await web3.eth.getBlock("latest")).timestamp;
+    });
+
+    it("should have a proof", async function () {
+      const proof = await core.tokenProofs(token.address, accounts[0], 0)
+      assert.deepEqual(Object.values(proof).map(x => x.toString()),
+        [ String(AMOUNT), "0", String(block1Time) ], "no proofs id 0");
+    });
+  });
 });

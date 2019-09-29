@@ -4,5 +4,6 @@ module.exports = {
   compileCommand: 'node --max-old-space-size=4096 /home/node/.yarn-global/bin/truffle compile --network coverage',
   skipFiles: [ 
     'mock',
+    'util'
   ]
 }

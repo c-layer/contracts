@@ -8,6 +8,7 @@ import "./Core.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
+ *   PR01: Only accessible by core
  **/
 contract Proxy {
 
@@ -17,7 +18,7 @@ contract Proxy {
    * @dev Throws if called by any account other than a proxy
    */
   modifier onlyCore {
-    require(core == msg.sender);
+    require(core == msg.sender, "PR01");
     _;
   }
 

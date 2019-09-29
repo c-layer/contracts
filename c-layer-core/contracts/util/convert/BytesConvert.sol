@@ -4,6 +4,8 @@ pragma solidity >=0.5.0 <0.6.0;
 /**
  * @title BytesConvert
  * @dev Convert bytes into different types
+ *
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 library BytesConvert {
 

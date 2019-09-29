@@ -9,6 +9,7 @@ const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const TokenDelegate = artifacts.require("TokenDelegate.sol");
 
+const NULL_ADDRESS = "0x".padEnd(42, "0");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
@@ -35,6 +36,21 @@ contract("Token", function (accounts) {
       assert.equal(coreAddress, core.address, "core");
     });
 
+    it("should have a name for token", async function () {
+      const name = await token.name();
+      assert.equal(name, NAME, "name");
+    });
+
+    it("should have a symbol for token", async function () {
+      const symbol = await token.symbol();
+      assert.equal(symbol, SYMBOL, "symbol");
+    });
+
+    it("should have decimals for token", async function () {
+      const decimals = await token.decimals();
+      assert.equal(decimals, DECIMALS, "decimals");
+    });
+
     it("should have no total supply for token", async function () {
       const supply = await token.totalSupply();
       assert.equal(supply.toString(), 0, "supply");
@@ -48,6 +64,21 @@ contract("Token", function (accounts) {
     it("should have no allowance for accounts[0] to accounts[1]", async function () {
       const allowance = await token.allowance(accounts[0], accounts[1]);
       assert.equal(allowance.toString(), 0, "allowance");
+    });
+
+    it("should eval canTransfer Ok from acconuts[0] to accounts[1]", async function () {
+      const result = await token.canTransfer.call(accounts[0], accounts[1], 0);
+      assert.equal(result, 1, "canTransfer");
+    });
+
+    it("should eval canTransfer 0 from acconuts[0] to no one", async function () {
+      const result = await token.canTransfer.call(accounts[0], NULL_ADDRESS, 0);
+      assert.equal(result, 2, "canTransfer");
+    });
+
+    it("should eval canTransfer 100 from acconuts[0] to accounts[1]", async function () {
+      const result = await token.canTransfer.call(accounts[0], accounts[1], 100);
+      assert.equal(result, 3, "canTransfer");
     });
 
     describe("With supplies defined", async function () {
@@ -90,7 +121,7 @@ contract("Token", function (accounts) {
       });
 
       it("should prevent transfer too much from accounts[0]", async function () {
-        await assertRevert(token.transfer(accounts[1], "1000001"), "CO02");
+        await assertRevert(token.transfer(accounts[1], "1000001"), "CO03");
       });
 
       it("should let accounts[0] provide allowance to accounts[1]", async function () {
@@ -135,7 +166,7 @@ contract("Token", function (accounts) {
         });
 
         it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO02");
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO03");
         });
 
         it("should let accounts[0] increase approval between accounts[0] and accounts[1]", async function () {

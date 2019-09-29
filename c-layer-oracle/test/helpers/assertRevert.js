@@ -13,7 +13,7 @@ module.exports = async function (promise, expectedReasonOrCode) {
       assert.fail("Expected revert not received");
     }
     if (typeof error == "object") {
-      if (Object.keys(error).length > 0) {
+      if (Object.keys(error).length > 1) {
         const revertReasonFound =
           (error.reason && error.reason === expectedReasonOrCode) ||
             (error.code && error.code === expectedReasonOrCode);

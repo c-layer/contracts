@@ -24,7 +24,15 @@ const fs = require('fs');
 
 // Secret file format is:
 // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
-const secret = JSON.parse(fs.readFileSync(__dirname + "/../.secret.json"));
+const path = [ "~/.secret.json", "../.secret.json", "../../.secret.json" ];
+let secretPath;
+for (let i=0; i < path.length && !secretPath; i++) {
+  if (fs.existsSync(path[i])) {
+    secretPath = path[i];
+  }
+}
+
+const secret = JSON.parse(fs.readFileSync(secretPath));
 const mnemonic = secret.mnemonic;
 const projectId = secret.projectId;
 

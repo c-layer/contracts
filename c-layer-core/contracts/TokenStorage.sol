@@ -23,7 +23,14 @@ contract TokenStorage is OperableStorage {
     INSUFFICIENT_TOKENS,
     LOCKED,
     FROZEN,
+    RULE,
     LIMITED
+  }
+
+  struct Proof {
+    uint256 amount;
+    uint64 startAt;
+    uint64 endAt;
   }
 
   struct AuditData {
@@ -64,13 +71,13 @@ contract TokenStorage is OperableStorage {
     uint256 allTimeRedeemed; // potential overflow
     uint256 allTimeSeized; // potential overflow
 
-    mapping (address => uint256[3][]) proofs;
+    mapping (address => Proof[]) proofs;
     mapping (address => uint256) frozenUntils;
     mapping (uint256 => AuditStorage) audits;
 
     Lock lock;
     IRule[] rules;
-    IClaimable[] claims;
+    IClaimable[] claimables;
   }
   mapping (address => TokenData) internal tokens_;
   mapping (address => mapping (uint256 => AuditStorage)) internal audits;
@@ -97,20 +104,27 @@ contract TokenStorage is OperableStorage {
     bytes32 currency,
     uint256[] userKeys);
   event AuditSelectorDefined(
-    address scope, uint256 scopeId, address[] addresses_, bool[] values);
+    address indexed scope, uint256 scopeId, address[] addresses, bool[] values);
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
-  event Seize(address indexed token, address account, uint256 amount);
   event ProofCreated(address indexed token, address holder, uint256 proofId);
+  event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
-    address _token,
+    address indexed token,
     uint256 startAt,
     uint256 endAt,
     address[] exceptions
   );
-  event Freeze(address _address, uint256 until);
-  event RulesDefined(address indexed token, IRule[] rules);
-  event ClaimsDefined(address indexed token, IClaimable[] claims);
+  event Seize(address indexed token, address account, uint256 amount);
+  event Freeze(address address_, uint256 until);
+  event ClaimablesDefined(address indexed token, IClaimable[] claimables);
+  event TokenDefined(
+    address indexed token,
+    uint256 delegateId,
+    string name,
+    string symbol,
+    uint256 decimals);
+  event TokenRemoved(address indexed token);
 }

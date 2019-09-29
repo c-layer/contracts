@@ -66,7 +66,7 @@ contract ITokenCore {
     IRule[] memory,
     IClaimable[] memory);
   function tokenProofs(address _token, address _holder, uint256 _proofId)
-    public view returns (uint256[3] memory);
+    public view returns (uint256, uint64, uint64);
   function canTransfer(address, address, uint256)
     public returns (uint256);
 
@@ -89,12 +89,12 @@ contract ITokenCore {
     address _token,
     address[] memory _addresses,
     uint256 _until) public returns (bool);
-  function createProof(address, address, uint256, uint256)
+  function createProof(address, address)
     public returns (bool);
   function defineLock(address, uint256, uint256, address[] memory)
     public returns (bool);
   function defineRules(address, IRule[] memory) public returns (bool);
-  function defineClaims(address, IClaimable[] memory) public returns (bool);
+  function defineClaimables(address, IClaimable[] memory) public returns (bool);
 
   /************  CORE ADMIN  ************/
   function defineToken(
@@ -114,25 +114,34 @@ contract ITokenCore {
     address[] memory _selectorAddresses,
     bool[] memory _selectorValues) public returns (bool);
 
+
   event OraclesDefined(
     IUserRegistry userRegistry,
     IRatesProvider ratesProvider,
     bytes32 currency,
     uint256[] userKeys);
   event AuditSelectorDefined(
-    address scope, uint256 scopeId, address[] addresses_, bool[] values);
+    address indexed scope, uint256 scopeId, address[] addresses, bool[] values);
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
   event ProofCreated(address indexed token, address holder, uint256 proofId);
-  event RulesDefined(address indexed token, address[] rules);
-  event LockDefinition(
-    address _token,
+  event RulesDefined(address indexed token, IRule[] rules);
+  event LockDefined(
+    address indexed token,
     uint256 startAt,
     uint256 endAt,
     address[] exceptions
   );
-  event ClaimsDefined(address indexed token, address[] claims);
-  event AuditSelectorDefined(address indexed token, uint256 _scopeId, address[] selectorAddresses);
+  event Seize(address indexed token, address account, uint256 amount);
+  event Freeze(address address_, uint256 until);
+  event ClaimablesDefined(address indexed token, IClaimable[] claimables);
+  event TokenDefined(
+    address indexed token,
+    uint256 delegateId,
+    string name,
+    string symbol,
+    uint256 decimals);
+  event TokenRemoved(address indexed token);
 }

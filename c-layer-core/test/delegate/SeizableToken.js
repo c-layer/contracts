@@ -64,11 +64,11 @@ contract("SeizableToken", function (accounts) {
     assert.equal(tokenEvents[0].args.value, AMOUNT, "value");
   });
 
-  it("should prevent operator to mint too many tokens", async function () {
-    await assertRevert(core.seize(token.address, accounts[1], AMOUNT + 1), "CO02");
+  it("should prevent operator to seize too many tokens", async function () {
+    await assertRevert(core.seize(token.address, accounts[1], AMOUNT + 1), "CO03");
   });
 
-  it("should prevent non operator to mint", async function () {
+  it("should prevent non operator to seize", async function () {
     await assertRevert(
       core.seize(token.address, accounts[1], 1, { from: accounts[2] }),
       "OC03");
@@ -85,7 +85,7 @@ contract("SeizableToken", function (accounts) {
     });
 
     it("should prevent operator to seize itself", async function () {
-      await assertRevert(core.seize(token.address, accounts[0], 1, { from: accounts[0] }), "CO02");
+      await assertRevert(core.seize(token.address, accounts[0], 1, { from: accounts[0] }), "CO03");
     });
 
     it("should have the same total supply", async function () {

@@ -30,10 +30,21 @@ contract RuleEngineTokenDelegate is BaseTokenDelegate {
   function transferFrom(
     address _sender, address _from, address _to, uint256 _value)
     public whenTransferRulesAreValid(_from, _to, _value)
-    whenAddressRulesAreValid(_sender)
     returns (bool)
   {
     return super.transferFrom(_sender, _from, _to, _value);
+  }
+
+  /**
+   * @dev can transfer
+   */
+  function canTransfer(
+    address _from,
+    address _to,
+    uint256 _value) public view returns (TransferCode)
+  {
+    return validateTransfer(_from, _to, _value) ?
+      super.canTransfer(_from, _to, _value) : (TransferCode.RULE);
   }
 
   /**

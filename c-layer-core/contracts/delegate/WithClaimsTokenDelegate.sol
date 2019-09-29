@@ -21,102 +21,57 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 
   /**
    * @dev Override the transfer function with transferWithProofs
-   * A proof of ownership will be made if any claims can be made by the participants
+   * A proof of ownership will be made if any claimables can be made by the participants
    */
   function transfer(
     address _sender, address _to, uint256 _value)
     public returns (bool)
   {
-    bool proofFrom = hasClaims(msg.sender, _sender);
-    bool proofTo = hasClaims(msg.sender, _to);
+    if (super.transfer(_sender, _to, _value)) {
+      if (hasClaims(msg.sender, _sender)) {
+        createProof(msg.sender, _sender);
+      }
 
-    return super.transferWithProofs(
-      _sender,
-      _to,
-      _value,
-      proofFrom,
-      proofTo
-    );
+      if (hasClaims(msg.sender, _to)) {
+        createProof(msg.sender, _to);
+      }
+
+      return true;
+    }
+    return false;
   }
 
   /**
    * @dev Override the transfer function with transferWithProofs
-   * A proof of ownership will be made if any claims can be made by the participants
+   * A proof of ownership will be made if any claimables can be made by the participants
    */
   function transferFrom(
     address _sender, address _from, address _to, uint256 _value)
     public returns (bool)
   {
-    bool proofFrom = hasClaims(msg.sender, _from);
-    bool proofTo = hasClaims(msg.sender, _to);
+    if (super.transferFrom(_sender, _from, _to, _value)) {
+      if (hasClaims(msg.sender, _from)) {
+        createProof(msg.sender, _from);
+      }
 
-    return super.transferFromWithProofs(
-      _sender,
-      _from,
-      _to,
-      _value,
-      proofFrom,
-      proofTo
-    );
-  }
+      if (hasClaims(msg.sender, _to)) {
+        createProof(msg.sender, _to);
+      }
 
-  /**
-   * @dev transfer with proofs
-   */
-  function transferWithProofs(
-    address _sender,
-    address _to,
-    uint256 _value,
-    bool _proofFrom,
-    bool _proofTo
-  ) public returns (bool)
-  {
-    bool proofFrom = _proofFrom || hasClaims(msg.sender, _sender);
-    bool proofTo = _proofTo || hasClaims(msg.sender, _to);
-
-    return super.transferWithProofs(
-      _sender,
-      _to,
-      _value,
-      proofFrom,
-      proofTo
-    );
-  }
+      return true;
+    }
+    return false;
+   }
 
   /**
-   * @dev transfer from with proofs
-   */
-  function transferFromWithProofs(
-    address _sender,
-    address _from,
-    address _to,
-    uint256 _value,
-    bool _proofFrom,
-    bool _proofTo
-  ) public returns (bool)
-  {
-    bool proofFrom = _proofFrom || hasClaims(msg.sender, _from);
-    bool proofTo = _proofTo || hasClaims(msg.sender, _to);
-
-    return super.transferFromWithProofs(
-      _sender,
-      _from,
-      _to,
-      _value,
-      proofFrom,
-      proofTo
-    );
-  }
-
-  /**
-   * @dev Returns true if there are any claims associated to this token
+   * @dev Returns true if there are any claimables associated to this token
    * to be made at this time for the _holder
    */
   function hasClaims(address _token, address _holder) public view returns (bool) {
     uint256 lastTransaction = tokens_[_token].audits[0].addressData[_holder].lastTransactionAt;
-    IClaimable[] memory claims_ = tokens_[_token].claims;
-    for (uint256 i = 0; i < claims_.length; i++) {
-      if (claims_[i].hasClaimsSince(_holder, lastTransaction)) {
+    IClaimable[] memory claimables_ = tokens_[_token].claimables;
+    for (uint256 i = 0; i < claimables_.length; i++) {
+      if (claimables_[i].hasClaimsSince(_holder, lastTransaction)) {
         return true;
       }
     }
@@ -124,14 +79,14 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
   }
 
   /**
-   * @dev define claims contract to this token
+   * @dev define claimables contract to this token
    */
-  function defineClaims(
-    address _token, IClaimable[] memory _claims)
+  function defineClaimables(
+    address _token, IClaimable[] memory _claimables)
     public returns (bool)
   {
-    tokens_[_token].claims = _claims;
-    emit ClaimsDefined(_token, _claims);
+    tokens_[_token].claimables = _claimables;
+    emit ClaimablesDefined(_token, _claimables);
     return true;
   }
 }

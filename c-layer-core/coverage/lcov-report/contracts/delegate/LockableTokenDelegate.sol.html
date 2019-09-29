@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">46.67% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>7/15</span>
+        <span class='fraction'>15/15</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">33.33% </span>
+        <span class="strong">66.67% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>2/6</span>
+        <span class='fraction'>4/6</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">60% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>3/5</span>
+        <span class='fraction'>5/5</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">46.67% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/15</span>
+        <span class='fraction'>15/15</span>
       </div>
     </div>
   </div>
-  <div class='status-line low'></div>
+  <div class='status-line high'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -147,8 +147,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">19×</span>
+<span class="cline-any cline-yes">17×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,7 +168,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -181,24 +181,24 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">8×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">11×</span>
+<span class="cline-any cline-yes">11×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">13×</span>
-<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">29×</span>
+<span class="cline-any cline-yes">29×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -227,7 +227,7 @@ contract LockableTokenDelegate is BaseTokenDelegate {
   function transfer(address _sender, address _to, uint256 _value)
     public returns (bool)
   {
-    <span class="missing-if-branch" title="else path not taken" >E</span>require(isUnlocked(_sender), "LTD01");
+    require(isUnlocked(_sender), "LTD01");
     return super.transfer(_sender, _to, _value);
   }
 &nbsp;
@@ -245,30 +245,30 @@ contract LockableTokenDelegate is BaseTokenDelegate {
   /**
    * @dev can transfer
    */
-<span class="fstat-no" title="function not covered" >  function canTransfer(address _from, address _to, uint256 _value)</span>
+  function canTransfer(address _from, address _to, uint256 _value)
     public view returns (TransferCode)
   {
-<span class="cstat-no" title="statement not covered" >    return isUnlocked(_from) ?</span>
+    return isUnlocked(_from) ?
       super.canTransfer(_from, _to, _value) : TransferCode.LOCKED;
   }
 &nbsp;
   /**
    * @dev define lock
    */
-<span class="fstat-no" title="function not covered" >  function defineLock(</span>
+  function defineLock(
     address _token,
     uint256 _startAt,
     uint256 _endAt,
     address[] memory _exceptions) public returns (bool)
   {
-<span class="cstat-no" title="statement not covered" >    require(_startAt &lt; _endAt, "LTD01")</span>;
-<span class="cstat-no" title="statement not covered" >    tokens_[_token].lock = Lock(_startAt, _endAt)</span>;
-<span class="cstat-no" title="statement not covered" >    Lock storage tokenLock = tokens_[_token].lock;</span>
-<span class="cstat-no" title="statement not covered" >    for (uint256 i=0; i &lt; _exceptions.length; i++) {</span>
-<span class="cstat-no" title="statement not covered" >      tokenLock.exceptions[_exceptions[i]] = true</span>;
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(_startAt &lt; _endAt, "LTD01");
+    tokens_[_token].lock = Lock(_startAt, _endAt);
+    Lock storage tokenLock = tokens_[_token].lock;
+    for (uint256 i=0; i &lt; _exceptions.length; i++) {
+      tokenLock.exceptions[_exceptions[i]] = true;
     }
-<span class="cstat-no" title="statement not covered" >    emit LockDefined(_token, _startAt, _endAt, _exceptions);</span>
-<span class="cstat-no" title="statement not covered" >    return true;</span>
+    emit LockDefined(_token, _startAt, _endAt, _exceptions);
+    return true;
   }
 &nbsp;
   /**
@@ -289,7 +289,7 @@ contract LockableTokenDelegate is BaseTokenDelegate {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sat Sep 28 2019 11:38:34 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Sep 29 2019 21:12:11 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

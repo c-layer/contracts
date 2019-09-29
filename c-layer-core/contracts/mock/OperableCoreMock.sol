@@ -11,7 +11,6 @@ import "../operable/OperableCore.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * OP01: Message sender must be authorized
  */
 contract OperableCoreMock is OperableCore {
 

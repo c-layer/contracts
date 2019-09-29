@@ -12,6 +12,7 @@ import "./interface/ITokenCore.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
+ *   TC01: Currency stored values must remain consistent
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
@@ -181,7 +182,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256[2] memory lock,
     uint256 frozenUntil,
     IRule[] memory rules,
-    IClaimable[] memory claims) {
+    IClaimable[] memory claimables) {
     TokenData storage tokenData = tokens_[_token];
 
     mintingFinished = tokenData.mintingFinished;
@@ -191,13 +192,18 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     lock = [ tokenData.lock.startAt, tokenData.lock.endAt ];
     frozenUntil = tokenData.frozenUntils[msg.sender];
     rules = tokenData.rules;
-    claims = tokenData.claims;
+    claimables = tokenData.claimables;
   }
 
   function tokenProofs(address _token, address _holder, uint256 _proofId)
-    public view returns (uint256[3] memory)
+    public view returns (uint256, uint64, uint64)
   {
-    return tokens_[_token].proofs[_holder][_proofId];
+    Proof[] storage proofs = tokens_[_token].proofs[_holder];
+    if (_proofId < proofs.length) {
+      Proof storage proof = proofs[_proofId];
+      return (proof.amount, proof.startAt, proof.endAt);
+    }
+    return (uint256(0), uint64(0), uint64(0));
   }
 
   /***********  TOKEN ADMIN  ***********/
@@ -251,7 +257,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function createProof(address _token, address, uint256, uint256)
+  function createProof(address _token, address)
     public returns (bool)
   {
     return delegateCall(_token);
@@ -269,7 +275,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function defineClaims(address _token, IClaimable[] memory)
+  function defineClaimables(address _token, IClaimable[] memory)
     public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
@@ -289,6 +295,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     tokenData.name = _name;
     tokenData.symbol = _symbol;
     tokenData.decimals = _decimals;
+
+    emit TokenDefined(_token, _delegateId, _name, _symbol, _decimals);
     return true;
   }
 
@@ -297,6 +305,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     removeProxy(_token);
     delete tokens_[_token];
+
+    emit TokenRemoved(_token);
     return true;
   }
 
@@ -308,7 +318,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     if (currency != bytes32(0)) {
       // Updating the core currency is not yet supported
-      require(_userRegistry.currency() == currency);
+      require(_userRegistry.currency() == currency, "TC01");
     } else {
       currency = _userRegistry.currency();
     }

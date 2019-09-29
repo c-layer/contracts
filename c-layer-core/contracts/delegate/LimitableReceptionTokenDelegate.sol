@@ -33,7 +33,7 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
       0, true, // scopeId
       false, true, false, // userData
       true, false, // selectorSender
-      true, true, true, true, true, true // all fields
+      false, false, false, false, false, true // only cumulated reception
     );
     return auditConfigs_;
   }
