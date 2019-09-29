@@ -243,12 +243,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function freeze(address _token, address, uint256)
-    public onlyProxyOp(_token) returns (bool)
-  {
-    return delegateCall(_token);
-  }
-
   function freezeManyAddresses(
     address _token,
     address[] memory,

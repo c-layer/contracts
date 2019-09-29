@@ -83,8 +83,6 @@ contract ITokenCore {
     public returns (bool);
   function seize(address _token, address, uint256)
     public returns (bool);
-  function freeze(address _token, address _address, uint256 _until)
-    public returns (bool);
   function freezeManyAddresses(
     address _token,
     address[] memory _addresses,
