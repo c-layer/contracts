@@ -8,9 +8,16 @@ pragma solidity >=0.5.0 <0.6.0;
  **/
 contract IUserRegistry {
 
-  event UserRegistered(uint256 indexed userId);
+  event UserRegistered(address address_, uint256 validUntilTime);
   event AddressAttached(uint256 indexed userId, address address_);
   event AddressDetached(uint256 indexed userId, address address_);
+  event UserSuspended(uint256 indexed userId);
+  event UserRestored(uint256 indexed userId);
+  event UserValidity(uint256 indexed userId, uint256 validUntilTime);
+  event UserExtendedKey(uint256 indexed userId, uint256 key, uint256 value);
+  event UserExtendedKeys(uint256 indexed userId, uint256[] values);
+
+  event ExtendedKeysDefinition(uint256[] _keys);
 
   function registerManyUsersExternal(address[] calldata _addresses, uint256 _validUntilTime)
     external returns (bool);
@@ -23,7 +30,7 @@ contract IUserRegistry {
   function detachManyAddressesExternal(address[] calldata _addresses)
     external returns (bool);
   function suspendManyUsersExternal(uint256[] calldata _userIds) external returns (bool);
-  function unsuspendManyUsersExternal(uint256[] calldata _userIds) external returns (bool);
+  function restoreManyUsersExternal(uint256[] calldata _userIds) external returns (bool);
   function updateManyUsersExternal(
     uint256[] calldata _userIds,
     uint256 _validUntilTime,
@@ -73,7 +80,7 @@ contract IUserRegistry {
   function detachSelf() public returns (bool);
   function detachSelfAddress(address _address) public returns (bool);
   function suspendUser(uint256 _userId) public returns (bool);
-  function unsuspendUser(uint256 _userId) public returns (bool);
+  function restoreUser(uint256 _userId) public returns (bool);
   function updateUser(uint256 _userId, uint256 _validUntilTime, bool _suspended)
     public returns (bool);
   function updateUserExtended(uint256 _userId, uint256 _key, uint256 _value)

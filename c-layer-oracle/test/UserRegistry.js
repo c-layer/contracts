@@ -54,7 +54,12 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register a user", async function () {
-      await userRegistry.registerUser(accounts[0], dayPlusOneTime);
+      const tx = await userRegistry.registerUser(accounts[0], dayPlusOneTime);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 1, "userCount");
@@ -70,12 +75,21 @@ contract("UserRegistry", function (accounts) {
       assert.equal(validUser[1][0], 0, "validUser key 1");
 
       const validity = await userRegistry.validity(1);
-      assert.equal(validity[0], dayPlusOneTime);
-      assert.equal(validity[1], false);
+      assert.equal(validity[0], dayPlusOneTime, "validUntilTime");
+      assert.equal(validity[1], false, "suspended");
     });
 
     it("should register many users", async function () {
-      await userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime);
+      const tx = await userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
+      assert.equal(tx.logs[1].event, "UserRegistered", "event");
+      assert.equal(tx.logs[1].args.address_, accounts[1], "addressLog");
+      assert.equal(tx.logs[1].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
+
 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 2, "userCount");
@@ -149,16 +163,16 @@ contract("UserRegistry", function (accounts) {
       await assertRevert(userRegistry.suspendUser(1), "UR01");
     });
 
-    it("should not unsuspend a non existing user", async function () {
-      await assertRevert(userRegistry.unsuspendUser(1), "UR01");
+    it("should not restore a non existing user", async function () {
+      await assertRevert(userRegistry.restoreUser(1), "UR01");
     });
 
     it("should not suspend many non existing users", async function () {
       await assertRevert(userRegistry.suspendManyUsersExternal([1, 2, 3]), "UR01");
     });
 
-    it("should not unsuspend many non existing users", async function () {
-      await assertRevert(userRegistry.unsuspendManyUsersExternal([1, 2, 3]), "UR01");
+    it("should not restore many non existing users", async function () {
+      await assertRevert(userRegistry.restoreManyUsersExternal([1, 2, 3]), "UR01");
     });
 
     it("should not update non existing user", async function () {
@@ -181,8 +195,17 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register a user full", async function () {
-      await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ]);
-
+      const tx = await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
+      assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
+      assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
+      assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
+        [ "4", "100" ], "extendedKeysLog");
+ 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 1, "userCount");
       
@@ -213,9 +236,25 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register many users full", async function () {
-      await userRegistry.registerManyUsersFullExternal(
+      const tx = await userRegistry.registerManyUsersFullExternal(
         [ accounts[0], accounts[1] ], dayPlusOneTime, [ 4, 100 ]);
-
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 4);
+      assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
+      assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
+      assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
+      assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
+        [ "4", "100" ], "extendedKeysLog");
+      assert.equal(tx.logs[2].event, "UserRegistered", "event");
+      assert.equal(tx.logs[2].args.address_, accounts[1], "addressLog");
+      assert.equal(tx.logs[2].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
+      assert.equal(tx.logs[3].event, "UserExtendedKeys", "event");
+      assert.equal(tx.logs[3].args.userId, 2, "userIdLog");
+      assert.deepEqual(tx.logs[3].args.values.map((x) => x.toString()),
+        [ "4", "100" ], "extendedKeysLog");
+ 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 2, "userCount");
       
@@ -287,13 +326,13 @@ contract("UserRegistry", function (accounts) {
       assert.equal(userId.toNumber(), 1, "userId");
     });
 
-    it("should gives unsuspend for account1", async function () {
+    it("should gives not suspended for account1", async function () {
       const validity = await userRegistry.validity(1);
       assert.equal(validity[0], dayPlusOneTime);
       assert.equal(validity[1], false);
     });
 
-    it("should returns unsuspend for non existing user", async function () {
+    it("should returns not suspended for non existing user", async function () {
       const validity = await userRegistry.validity(6);
       assert.equal(validity[0], 0);
       assert.equal(validity[1], false);
@@ -345,7 +384,12 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should suspend a user", async function () {
-      await userRegistry.suspendUser(1);
+      const tx = await userRegistry.suspendUser(1);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "UserSuspended", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+
       const validity = await userRegistry.validity(1);
       assert.equal(validity[0], dayPlusOneTime);
       assert.equal(validity[1], true);
@@ -356,12 +400,19 @@ contract("UserRegistry", function (accounts) {
       await assertRevert(userRegistry.suspendUser(1), "UR06");
     });
 
-    it("should not let an unsuspended user being unsuspended again", async function () {
-      await assertRevert(userRegistry.unsuspendUser(1), "UR07");
+    it("should not let a restored user being restored again", async function () {
+      await assertRevert(userRegistry.restoreUser(1), "UR07");
     });
 
     it("should suspend many users", async function () {
-      await userRegistry.suspendManyUsersExternal([1, 2]);
+      const tx = await userRegistry.suspendManyUsersExternal([1, 2]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserSuspended", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[1].event, "UserSuspended", "event");
+      assert.equal(tx.logs[1].args.userId, 2, "userIdLog");
+
 
       const validity1 = await userRegistry.validity(1);
       assert.equal(validity1[0], dayPlusOneTime, "validUntil1");
@@ -373,7 +424,13 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should detach an address by the same address", async function () {
-      await userRegistry.detachSelf({ from: accounts[4] });
+      const tx = await userRegistry.detachSelf({ from: accounts[4] });
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "AddressDetached", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.address_, accounts[4], "addressLog");
+
       const userId = await userRegistry.userId(accounts[4]);
       assert.equal(userId.toNumber(), 0, "userId");
     });
@@ -385,19 +442,43 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should detach an address by the user", async function () {
-      await userRegistry.detachSelfAddress(accounts[4], { from: accounts[0] });
+      const tx = await userRegistry.detachSelfAddress(accounts[4], { from: accounts[0] });
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "AddressDetached", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.address_, accounts[4], "addressLog");
+
       const userId = await userRegistry.userId(accounts[4]);
       assert.equal(userId.toNumber(), 0, "userId");
     });
 
     it("should detach an address", async function () {
-      await userRegistry.detachAddress(accounts[4]);
+      const tx = await userRegistry.detachAddress(accounts[4]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "AddressDetached", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.address_, accounts[4], "addressLog");
+
       const userId = await userRegistry.userId(accounts[4]);
       assert.equal(userId, 0, "userId");
     });
 
     it("should detach many addresses", async function () {
-      await userRegistry.detachManyAddressesExternal([accounts[1], accounts[2], accounts[4]]);
+      const tx = await userRegistry.detachManyAddressesExternal([accounts[1], accounts[2], accounts[4]]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 3);
+      assert.equal(tx.logs[0].event, "AddressDetached", "event");
+      assert.equal(tx.logs[0].args.userId, 2, "userIdLog");
+      assert.equal(tx.logs[0].args.address_, accounts[1], "addressLog");
+      assert.equal(tx.logs[1].event, "AddressDetached", "event");
+      assert.equal(tx.logs[1].args.userId, 3, "userIdLog");
+      assert.equal(tx.logs[1].args.address_, accounts[2], "addressLog");
+      assert.equal(tx.logs[2].event, "AddressDetached", "event");
+      assert.equal(tx.logs[2].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[2].args.address_, accounts[4], "addressLog");
+
       const userId2 = await userRegistry.userId(accounts[1]);
       assert.equal(userId2, 0, "userId2");
       const userId3 = await userRegistry.userId(accounts[2]);
@@ -407,7 +488,14 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should update user", async function () {
-      await userRegistry.updateUser(1, dayPlusTwoTime, true);
+      const tx = await userRegistry.updateUser(1, dayPlusTwoTime, true);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserValidity", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusTwoTime, "validUntilTimeLog");
+      assert.equal(tx.logs[1].event, "UserSuspended", "event");
+      assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
 
       const validity1 = await userRegistry.validity(1);
       assert.equal(validity1[0], dayPlusTwoTime, "validUntil1");
@@ -415,7 +503,19 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should update many users", async function () {
-      await userRegistry.updateManyUsersExternal([ 1, 2 ], dayPlusTwoTime, true);
+      const tx = await userRegistry.updateManyUsersExternal([ 1, 2 ], dayPlusTwoTime, true);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 4);
+      assert.equal(tx.logs[0].event, "UserValidity", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusTwoTime, "validUntilTimeLog");
+      assert.equal(tx.logs[1].event, "UserSuspended", "event");
+      assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[2].event, "UserValidity", "event");
+      assert.equal(tx.logs[2].args.userId, 2, "userIdLog");
+      assert.equal(tx.logs[2].args.validUntilTime, dayPlusTwoTime, "validUntilTimeLog");
+      assert.equal(tx.logs[3].event, "UserSuspended", "event");
+      assert.equal(tx.logs[3].args.userId, 2, "userIdLog");
 
       const validity1 = await userRegistry.validity(1);
       assert.equal(validity1[0], dayPlusTwoTime, "validUntil1");
@@ -426,15 +526,31 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should update user extended", async function () {
-      await userRegistry.updateUserExtended(1, 1, 100);
-
+      const tx = await userRegistry.updateUserExtended(1, 1, 100);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "UserExtendedKey", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.key, 1, "keyLog");
+      assert.equal(tx.logs[0].args.value, 100, "valueLog");
+ 
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended");
     });
 
     it("should update many users extended", async function () {
-      await userRegistry.updateManyUsersExtendedExternal([ 1, 2 ], 1, 100);
-
+      const tx = await userRegistry.updateManyUsersExtendedExternal([ 1, 2 ], 1, 100);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserExtendedKey", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
+      assert.equal(tx.logs[0].args.key, 1, "keyLog");
+      assert.equal(tx.logs[0].args.value, 100, "valueLog");
+      assert.equal(tx.logs[1].event, "UserExtendedKey", "event");
+      assert.equal(tx.logs[1].args.userId, 2, "userIdLog");
+      assert.equal(tx.logs[1].args.key, 1, "keyLog");
+      assert.equal(tx.logs[1].args.value, 100, "valueLog");
+ 
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended1");
       const extended2 = await userRegistry.extended(2, 1);
@@ -449,15 +565,26 @@ contract("UserRegistry", function (accounts) {
       await userRegistry.suspendManyUsersExternal([ 2, 3 ]);
     });
 
-    it("should unsuspend a user", async function () {
-      await userRegistry.unsuspendUser(2);
+    it("should restore a user", async function () {
+      const tx = await userRegistry.restoreUser(2);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "UserRestored", "event");
+      assert.equal(tx.logs[0].args.userId, 2, "userIdLog");
+
       const validity = await userRegistry.validity(2);
       assert.equal(validity[0], dayPlusOneTime, "validUntil2");
       assert.equal(validity[1], false, "suspended2");
     });
 
-    it("should unsuspend many users", async function () {
-      await userRegistry.unsuspendManyUsersExternal([ 2, 3 ]);
+    it("should restore many users", async function () {
+      const tx = await userRegistry.restoreManyUsersExternal([ 2, 3 ]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, "UserRestored", "event");
+      assert.equal(tx.logs[0].args.userId, 2, "userIdLog");
+      assert.equal(tx.logs[1].event, "UserRestored", "event");
+      assert.equal(tx.logs[1].args.userId, 3, "userIdLog");
 
       const validity2 = await userRegistry.validity(2);
       assert.equal(validity2[0], dayPlusOneTime, "validUntil2");

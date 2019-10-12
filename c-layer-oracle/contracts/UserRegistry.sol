@@ -122,13 +122,13 @@ contract UserRegistry is IUserRegistry, Operable {
   }
 
   /**
-   * @dev unsuspend many users
+   * @dev restore many users
    */
-  function unsuspendManyUsersExternal(uint256[] calldata _userIds)
+  function restoreManyUsersExternal(uint256[] calldata _userIds)
     external onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _userIds.length; i++) {
-      unsuspendUser(_userIds[i]);
+      restoreUser(_userIds[i]);
     }
     return true;
   }
@@ -302,6 +302,7 @@ contract UserRegistry is IUserRegistry, Operable {
     public onlyOperator returns (bool)
   {
     extendedKeys_ = _extendedKeys;
+    emit ExtendedKeysDefinition(_extendedKeys);
     return true;
   }
 
@@ -367,8 +368,9 @@ contract UserRegistry is IUserRegistry, Operable {
   function detachSelfAddress(address _address)
     public returns (bool)
   {
-    uint256 senderUserId = walletOwners[msg.sender];
-    require(walletOwners[_address] == senderUserId, "UR05");
+    require(
+      walletOwners[_address] == walletOwners[msg.sender],
+      "UR05");
     detachAddressPrivate(_address);
     return true;
   }
@@ -382,17 +384,20 @@ contract UserRegistry is IUserRegistry, Operable {
     require(_userId > 0 && _userId <= userCount_, "UR01");
     require(!users[_userId].suspended, "UR06");
     users[_userId].suspended = true;
+    emit UserSuspended(_userId);
+    return true;
   }
 
   /**
-   * @dev unsuspend a user
+   * @dev restore a user
    */
-  function unsuspendUser(uint256 _userId)
+  function restoreUser(uint256 _userId)
     public onlyOperator returns (bool)
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
     require(users[_userId].suspended, "UR07");
     users[_userId].suspended = false;
+    emit UserRestored(_userId);
     return true;
   }
 
@@ -405,8 +410,19 @@ contract UserRegistry is IUserRegistry, Operable {
     bool _suspended) public onlyOperator returns (bool)
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
-    users[_userId].validUntilTime = _validUntilTime;
-    users[_userId].suspended = _suspended;
+    if (users[_userId].validUntilTime != _validUntilTime) {
+      users[_userId].validUntilTime = _validUntilTime;
+      emit UserValidity(_userId, _validUntilTime);
+    }
+
+    if (users[_userId].suspended != _suspended) {
+      users[_userId].suspended = _suspended;
+      if (_suspended) {
+        emit UserSuspended(_userId);
+      } else {
+        emit UserRestored(_userId);
+      }
+    }
     return true;
   }
 
@@ -418,6 +434,7 @@ contract UserRegistry is IUserRegistry, Operable {
   {
     require(_userId > 0 && _userId <= userCount_, "UR01");
     users[_userId].extended[_key] = _value;
+    emit UserExtendedKey(_userId, _key, _value);
     return true;
   }
 
@@ -458,8 +475,7 @@ contract UserRegistry is IUserRegistry, Operable {
     users[++userCount_] = User(_validUntilTime, false);
     walletOwners[_address] = userCount_;
 
-    emit UserRegistered(userCount_);
-    emit AddressAttached(userCount_, _address);
+    emit UserRegistered(_address, _validUntilTime);
   }
 
   /**
@@ -472,6 +488,7 @@ contract UserRegistry is IUserRegistry, Operable {
     for (uint256 i = 0; i < _values.length; i++) {
       users[_userId].extended[extendedKeys_[i]] = _values[i];
     }
+    emit UserExtendedKeys(_userId, _values);
   }
 
   /**
