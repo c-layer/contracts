@@ -74,8 +74,6 @@ contract("RatesProvider", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
-    assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
-    assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
     assert.equal(tx.logs[0].args.currency, CHF.padEnd(66, "0"), "currency");
     assert.ok(tx.logs[0].args.rate.toString(), aWEICHFSample, "rate");
   });
@@ -85,8 +83,6 @@ contract("RatesProvider", function (accounts) {
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
-    assert.ok(tx.logs[0].args.at > dayMinusOneTime, "before");
-    assert.ok(tx.logs[0].args.at < dayPlusOneTime, "after");
     assert.equal(tx.logs[0].args.currency, CHF.padEnd(66, "0"), "currency");
     assert.ok(tx.logs[0].args.rate.toString(), aWEICHFSample, "rate");
   });
@@ -118,7 +114,7 @@ contract("RatesProvider", function (accounts) {
 
     it("should have correct gas estimate for defining rates", async function () {
       const gas = await provider.defineRates.estimateGas([ 1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2 ]);
-      assert.equal(gas, "66455", "gas estimate");
+      assert.equal(gas, "64548", "gas estimate");
     });
 
     it("should have an update date", async function () {

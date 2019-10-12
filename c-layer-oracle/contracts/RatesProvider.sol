@@ -60,7 +60,7 @@ contract RatesProvider is IRatesProvider, Operable {
     for (uint256 i=0; i < _rates.length; i++) {
       if (rates_[i] != _rates[i]) {
         rates_[i] = _rates[i];
-        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
+        emit Rate(currencies_[i+1], _rates[i]);
       }
     }
     return true;
@@ -165,7 +165,7 @@ contract RatesProvider is IRatesProvider, Operable {
     for (uint256 i=0; i < _rates.length; i++) {
       if (rates_[i] != _rates[i]) {
         rates_[i] = _rates[i];
-        emit Rate(updatedAt_, currencies_[i+1], _rates[i]);
+        emit Rate(currencies_[i+1], _rates[i]);
       }
     }
     return true;

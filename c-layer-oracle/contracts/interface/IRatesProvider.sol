@@ -30,5 +30,5 @@ contract IRatesProvider {
 
   event RateOffset(uint256 rateOffset);
   event Currencies(bytes32[] currencies, uint256[] decimals);
-  event Rate(uint256 at, bytes32 indexed currency, uint256 rate);
+  event Rate(bytes32 indexed currency, uint256 rate);
 }
