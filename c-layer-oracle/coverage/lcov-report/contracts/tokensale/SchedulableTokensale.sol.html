@@ -20,28 +20,28 @@
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">75% </span>
+        <span class="strong">92.86% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>9/12</span>
+        <span class='fraction'>13/14</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">40% </span>
+        <span class="strong">60% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/10</span>
+        <span class='fraction'>6/10</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">72.73% </span>
+        <span class="strong">90.91% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>8/11</span>
+        <span class='fraction'>10/11</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">68.75% </span>
+        <span class="strong">88.89% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>11/16</span>
+        <span class='fraction'>16/18</span>
       </div>
     </div>
   </div>
-  <div class='status-line medium'></div>
+  <div class='status-line high'></div>
 <pre><table class="coverage">
 <tr><td class="line-count quiet">1
 2
@@ -165,7 +165,12 @@
 120
 121
 122
-123</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+123
+124
+125
+126
+127
+128</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -193,8 +198,11 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">44×</span>
-<span class="cline-any cline-yes">42×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">54×</span>
+<span class="cline-any cline-yes">52×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -213,8 +221,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -248,7 +256,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -257,9 +265,10 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">26×</span>
-<span class="cline-any cline-yes">26×</span>
-<span class="cline-any cline-yes">26×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
+<span class="cline-any cline-yes">32×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -268,7 +277,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -284,7 +294,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">85×</span>
+<span class="cline-any cline-yes">104×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
@@ -311,6 +321,9 @@ contract SchedulableTokensale is BaseTokensale {
   uint256 internal endAt = ~uint256(0);
   bool internal closed;
 &nbsp;
+  event Schedule(uint256 startAt, uint256 endAt);
+  event CloseEarly();
+&nbsp;
   /**
    * @dev Throws if sale is not open
    */
@@ -334,8 +347,8 @@ contract SchedulableTokensale is BaseTokensale {
   /**
    * @dev Throws once the sale is closed
    */
-<span class="fstat-no" title="function not covered" >  modifier beforeSaleIsClosed </span>{
-<span class="cstat-no" title="statement not covered" >    require(currentTime() &lt;= endAt &amp;&amp; !closed, "STS03")</span>;
+  modifier beforeSaleIsClosed {
+    require(currentTime() &lt;= endAt &amp;&amp; !closed, "STS03");
     _;
   }
 &nbsp;
@@ -382,15 +395,17 @@ contract SchedulableTokensale is BaseTokensale {
     <span class="missing-if-branch" title="else path not taken" >E</span>require(_startAt &lt; _endAt, "STS05");
     startAt = _startAt;
     endAt = _endAt;
+    emit Schedule(_startAt, _endAt);
   }
 &nbsp;
   /**
    * @dev close sale
    */
-<span class="fstat-no" title="function not covered" >  function closeEarly()</span>
+  function closeEarly()
     public onlyOperator beforeSaleIsClosed
   {
-<span class="cstat-no" title="statement not covered" >    closed = true</span>; 
+    closed = true; 
+    emit CloseEarly();
   }
 &nbsp;
   /* Investment */
@@ -415,7 +430,7 @@ contract SchedulableTokensale is BaseTokensale {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Sep 29 2019 21:28:52 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Oct 13 2019 08:45:00 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>
