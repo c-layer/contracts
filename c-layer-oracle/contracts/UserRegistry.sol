@@ -475,7 +475,7 @@ contract UserRegistry is IUserRegistry, Operable {
     users[++userCount_] = User(_validUntilTime, false);
     walletOwners[_address] = userCount_;
 
-    emit UserRegistered(_address, _validUntilTime);
+    emit UserRegistered(userCount_, _address, _validUntilTime);
   }
 
   /**

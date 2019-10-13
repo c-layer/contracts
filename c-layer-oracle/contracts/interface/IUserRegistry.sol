@@ -8,7 +8,7 @@ pragma solidity >=0.5.0 <0.6.0;
  **/
 contract IUserRegistry {
 
-  event UserRegistered(address address_, uint256 validUntilTime);
+  event UserRegistered(uint256 indexed userId, address address_, uint256 validUntilTime);
   event AddressAttached(uint256 indexed userId, address address_);
   event AddressDetached(uint256 indexed userId, address address_);
   event UserSuspended(uint256 indexed userId);

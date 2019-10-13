@@ -78,6 +78,7 @@ contract("UserRegistry", function (accounts) {
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
       assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
 
@@ -104,9 +105,11 @@ contract("UserRegistry", function (accounts) {
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
       assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
       assert.equal(tx.logs[1].event, "UserRegistered", "event");
+      assert.equal(tx.logs[1].args.userId, 2, "userIdLog");
       assert.equal(tx.logs[1].args.address_, accounts[1], "addressLog");
       assert.equal(tx.logs[1].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
 
@@ -244,6 +247,7 @@ contract("UserRegistry", function (accounts) {
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
       assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
@@ -293,6 +297,7 @@ contract("UserRegistry", function (accounts) {
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 4);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
+      assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.equal(tx.logs[0].args.address_, accounts[0], "addressLog");
       assert.equal(tx.logs[0].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
@@ -300,6 +305,7 @@ contract("UserRegistry", function (accounts) {
       assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
         [ "4", "100" ], "extendedKeysLog");
       assert.equal(tx.logs[2].event, "UserRegistered", "event");
+      assert.equal(tx.logs[2].args.userId, 2, "userIdLog");
       assert.equal(tx.logs[2].args.address_, accounts[1], "addressLog");
       assert.equal(tx.logs[2].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
       assert.equal(tx.logs[3].event, "UserExtendedKeys", "event");
