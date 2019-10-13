@@ -22,6 +22,9 @@ contract SchedulableTokensale is BaseTokensale {
   uint256 internal endAt = ~uint256(0);
   bool internal closed;
 
+  event Schedule(uint256 startAt, uint256 endAt);
+  event CloseEarly();
+
   /**
    * @dev Throws if sale is not open
    */
@@ -93,6 +96,7 @@ contract SchedulableTokensale is BaseTokensale {
     require(_startAt < _endAt, "STS05");
     startAt = _startAt;
     endAt = _endAt;
+    emit Schedule(_startAt, _endAt);
   }
 
   /**
@@ -102,6 +106,7 @@ contract SchedulableTokensale is BaseTokensale {
     public onlyOperator beforeSaleIsClosed
   {
     closed = true; 
+    emit CloseEarly();
   }
 
   /* Investment */

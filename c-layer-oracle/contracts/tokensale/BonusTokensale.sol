@@ -21,6 +21,8 @@ contract BonusTokensale is SchedulableTokensale {
   uint256 internal bonusUntil_;
   uint256[] internal bonuses_;
 
+  event BonusDefined(uint256[] bonuses, BonusMode bonusMode, uint256 bonusUntil);
+
   /**
    * @dev constructor
    */
@@ -90,6 +92,8 @@ contract BonusTokensale is SchedulableTokensale {
     bonuses_ = _bonuses;
     bonusMode_ = _bonusMode;
     bonusUntil_ = _bonusUntil;
+
+    emit BonusDefined(_bonuses, _bonusMode, _bonusUntil);
   }
 
   /**

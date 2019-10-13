@@ -66,16 +66,44 @@ contract("SchedulableTokensale", function (accounts) {
   });
 
   it("should let operator to update the schedule", async function () {
-    await sale.updateSchedule(start, end);
+    const tx = await sale.updateSchedule(start, end);
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, "Schedule", "event");
+    assert.equal(tx.logs[0].args.startAt, start, "startLog");
+    assert.equal(tx.logs[0].args.endAt, end, "endLog");
 
     const schedule = await sale.schedule();
     assert.equal(schedule[0], start, "schedule start");
     assert.equal(schedule[1], end, "schedule end");
   });
 
+  it("should prevent non operator to close early the schedule", async function () {
+    await assertRevert(sale.closeEarly({ from: accounts[2] }), "OP01");
+  });
+
+  it("should let operator to close early before the sale is started", async function () {
+    const tx = await sale.closeEarly();
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, "CloseEarly", "event");
+  });
+
   describe("during the sale", async function () {
     beforeEach(async function () {
-      sale.updateSchedule(0, end);
+      await sale.updateSchedule(0, end);
+    });
+
+    it("should not be closed", async function () {
+      const isClosed = await sale.isClosed();
+      assert.ok(!isClosed, "isClosed");
+    });
+
+    it("should let operator to close early during the sale is started", async function () {
+      const tx = await sale.closeEarly();
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "CloseEarly", "event");
     });
 
     it("should let investor invest", async function () {
@@ -89,6 +117,21 @@ contract("SchedulableTokensale", function (accounts) {
 
       const tokens = await sale.investorTokens(accounts[3]);
       assert.equal(tokens.toString(), 2000, "tokens");
+    });
+
+    describe("after the sale is closed", async function () {
+      beforeEach(async function () {
+        await sale.closeEarly();
+      });
+
+      it("should be closed", async function () {
+        const isClosed = await sale.isClosed();
+        assert.ok(isClosed, "isClosed");
+      });
+
+      it("should prevent operator to close early the schedule", async function () {
+        await assertRevert(sale.closeEarly(), "STS03");
+      });
     });
   });
 });

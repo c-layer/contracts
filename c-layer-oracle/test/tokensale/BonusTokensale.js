@@ -17,7 +17,7 @@ contract("BonusTokensale", function (accounts) {
   const supply = "1000000";
   const start = 4102444800;
   const end = 7258118400;
-  const bonuses = [ 10 ];
+  const bonuses = [ "10" ];
   const bonusUntil = (end - start) / 2;
   const bonusMode = 0; /* BonusMode.EARLY */
 
@@ -52,13 +52,39 @@ contract("BonusTokensale", function (accounts) {
     assert.equal(saleTokenPrice, tokenPrice, "tokenPrice");
   });
 
+  it("should have bonus mode", async function () {
+    const bonusMode = await sale.bonusMode();
+    assert.equal(bonusMode, 0, "bonusMode");
+  });
+
+  it("should have bonus until", async function () {
+    const bonusUntil = await sale.bonusUntil();
+    assert.equal(bonusUntil, 0, "bonusUntil");
+  });
+
+  it("should have early bonus", async function () {
+    const earlyBonus = await sale.earlyBonus();
+    assert.equal(earlyBonus, 0, "earlyBonus");
+  });
+
+  it("should have first bonus", async function () {
+    const firstBonus = await sale.firstBonus();
+    assert.equal(firstBonus, 0, "firstBonus");
+  });
+
   it("should prevent non operator to define bonuses", async function () {
     await assertRevert(
       sale.defineBonus(bonuses, bonusMode, bonusUntil, { from: accounts[2] }), "OP01");
   });
 
   it("should let operator to define bonuses", async function () {
-    await sale.defineBonus(bonuses, bonusMode, bonusUntil);
+    const tx = await sale.defineBonus(bonuses, bonusMode, bonusUntil);
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, "BonusDefined", "event");
+    assert.deepEqual(tx.logs[0].args.bonuses.map((x) => x.toString()), bonuses, "bonusesLog");
+    assert.equal(tx.logs[0].args.bonusMode, bonusMode, "bonusModeLog");
+    assert.equal(tx.logs[0].args.bonusUntil, bonusUntil, "bonusUntilLog");
     
     const bonusesDefined = await sale.bonuses();
     assert.deepEqual(bonusesDefined.map((i) => i.toString()), [ "10" ], "bonuses");
@@ -93,9 +119,29 @@ contract("BonusTokensale", function (accounts) {
       await sale.defineBonus(bonuses, bonusMode, bonusUntil);
     });
 
+    it("should have bonus mode", async function () {
+      const bonusMode = await sale.bonusMode();
+      assert.equal(bonusMode, 0, "bonusMode");
+    });
+
+    it("should have bonus until", async function () {
+      const bonusUntil = await sale.bonusUntil();
+      assert.equal(bonusUntil, bonusUntil, "bonusUntil");
+    });
+
     describe("during the sale", async function () {
       beforeEach(async function () {
         sale.updateSchedule(0, end);
+      });
+
+      it("should have early bonus", async function () {
+        const earlyBonus = await sale.earlyBonus();
+        assert.equal(earlyBonus, 10, "earlyBonus");
+      });
+
+      it("should have first bonus", async function () {
+        const firstBonus = await sale.firstBonus();
+        assert.equal(firstBonus, 10, "firstBonus");
       });
 
       it("should let investor invest", async function () {
