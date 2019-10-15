@@ -8,7 +8,7 @@ const UserTokensaleMock = artifacts.require("tokensale/UserTokensaleMock.sol");
 const Token = artifacts.require("util/token/TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");
 
-contract("UserTokensaleMock", function (accounts) {
+contract("UserTokensale", function (accounts) {
   let sale, token, userRegistry;
 
   const KYC_LEVEL_KEY = 0;
@@ -38,7 +38,8 @@ contract("UserTokensaleMock", function (accounts) {
       vaultERC20,
       vaultETH,
       tokenPrice,
-      userRegistry.address
+      userRegistry.address,
+      [ 0, 300000, 1500000, 10000000, 100000000 ]
     );
     await token.approve(sale.address, supply, { from: accounts[1] });
   });

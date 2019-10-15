@@ -17,16 +17,25 @@ contract UserTokensale is BaseTokensale {
   uint256 constant public KYC_LEVEL_KEY = 0;
   uint256 constant public AML_LIMIT_KEY = 1;
 
-  uint32[5] internal contributionLimits = [
-    0,
-    300000,
-    1500000,
-    10000000,
-    100000000
-  ];
+  uint256[] internal contributionLimits_;
+  // Default  [ 0, 300000, 1500000, 10000000, 100000000 ];
 
   mapping(uint256 => Investor) internal investorIds;
   IUserRegistry internal userRegistry_;
+
+  /**
+   * @dev constructor
+   */
+  constructor(uint256[] memory _contributionLimits) public {
+    contributionLimits_ = _contributionLimits;
+  }
+
+  /**
+   * @dev contributionsLimit
+   */
+  function contributionLimits() public view returns (uint256[] memory) {
+    return contributionLimits_;
+  }
 
   /**
    * @dev user registry
@@ -67,7 +76,7 @@ contract UserTokensale is BaseTokensale {
   {
     uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
     uint256 amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
-    amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits[kycLevel];
+    amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits_[kycLevel];
 
     return amlLimit.sub(investorIds[_investorId].invested);
   }

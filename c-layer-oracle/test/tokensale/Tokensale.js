@@ -4,8 +4,8 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const Tokensale = artifacts.require("tokensale/Tokensale.sol");
-const Token = artifacts.require("util/token/TokenERC20.sol");
+const Tokensale = artifacts.require("Tokensale.sol");
+const Token = artifacts.require("TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");
 const RatesProvider = artifacts.require("RatesProvider.sol");
 const BN = require("bn.js");
@@ -59,7 +59,8 @@ contract("Tokensale", function (accounts) {
       start,
       end,
       bonuses,
-      bonusUntil
+      bonusUntil,
+      [ 0, 300000, 1500000, 10000000, 100000000 ]
     );
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
