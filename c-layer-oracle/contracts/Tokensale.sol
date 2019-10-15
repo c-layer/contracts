@@ -40,6 +40,6 @@ contract Tokensale is ChangeTokensale, UserTokensale, BonusTokensale {
     ratesProvider_ = _ratesProvider;
 
     updateSchedule(_start, _end);
-    defineBonus(_bonuses, BonusMode.EARLY, _bonusUntil);
+    defineBonuses(_bonuses, BonusMode.EARLY, _bonusUntil);
   }
 }

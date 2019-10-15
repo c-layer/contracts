@@ -10,8 +10,8 @@ import "./SchedulableTokensale.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * BT01: BonusUntil must be defined if bonuses exist
- * BT02: BonusUntil must be within the sale
+ * BT01: BonusUntil must be valid if bonuses exist for first investors
+ * BT02: BonusUntil must be valid if bonuses exist for early investors
  */
 contract BonusTokensale is SchedulableTokensale {
 
@@ -21,7 +21,7 @@ contract BonusTokensale is SchedulableTokensale {
   uint256 internal bonusUntil_;
   uint256[] internal bonuses_;
 
-  event BonusDefined(uint256[] bonuses, BonusMode bonusMode, uint256 bonusUntil);
+  event BonusesDefined(uint256[] bonuses, BonusMode bonusMode, uint256 bonusUntil);
 
   /**
    * @dev constructor
@@ -59,41 +59,46 @@ contract BonusTokensale is SchedulableTokensale {
   /**
    * @dev early bonus
    */
-  function earlyBonus() public view returns (uint256) {
-    if (bonuses_.length != 0) {
-      uint256 split = (bonusUntil_ - startAt) / bonuses_.length;
-      uint256 id = (currentTime() - startAt) / split;
-      return bonuses_[id];
+  function earlyBonus(uint256 _currentTime) public view returns (uint256) {
+    if (bonusMode_ != BonusMode.EARLY || bonuses_.length == 0
+      || _currentTime < startAt || _currentTime >= bonusUntil_) {
+      return 0;
     }
-    return 0;
+
+    uint256 split = (bonusUntil_ - startAt) / bonuses_.length;
+    return (split == 0) ? 0 : bonuses_[(_currentTime - startAt) / split];
   }
 
   /**
    * @dev first bonus
    */
-  function firstBonus() public view returns (uint256) {
-    if (bonuses_.length != 0) {
-      uint256 split = bonusUntil_ / bonuses_.length;
-      uint256 id = totalRaised_ / split;
-      return bonuses_[id];
+  function firstBonus(uint256 _totalRaised) public view returns (uint256) {
+    if (bonusMode_ != BonusMode.FIRST
+      || bonuses_.length == 0 || _totalRaised >= bonusUntil_) {
+      return 0;
     }
-    return 0;
+
+    uint256 split = bonusUntil_ / bonuses_.length;
+    return (split == 0) ? 0 : bonuses_[_totalRaised/split];
   }
 
   /**
    * @dev define bonus
    */
-  function defineBonus(uint256[] memory _bonuses, BonusMode _bonusMode, uint256 _bonusUntil)
+  function defineBonuses(uint256[] memory _bonuses, BonusMode _bonusMode, uint256 _bonusUntil)
     public onlyOperator beforeSaleIsOpened returns (uint256)
   {
-    require(_bonuses.length == 0 || _bonusUntil != 0, "BT01");
-    require(_bonusUntil >= startAt || _bonusUntil <= endAt, "BT02");
+    require(_bonusMode != BonusMode.FIRST
+      || (_bonuses.length > 0 && (_bonusUntil > 0)), "BT01");
+    require(_bonusMode != BonusMode.EARLY
+      || (_bonuses.length > 0
+        && (_bonusUntil > startAt && _bonusUntil <= endAt)), "BT02");
 
     bonuses_ = _bonuses;
     bonusMode_ = _bonusMode;
     bonusUntil_ = _bonusUntil;
 
-    emit BonusDefined(_bonuses, _bonusMode, _bonusUntil);
+    emit BonusesDefined(_bonuses, _bonusMode, _bonusUntil);
   }
 
   /**
@@ -103,7 +108,7 @@ contract BonusTokensale is SchedulableTokensale {
     if (bonuses_.length == 0 || bonusUntil_ == 0) {
       return 0;
     }
-    return (bonusMode_ == BonusMode.EARLY) ? earlyBonus() : firstBonus();
+    return (bonusMode_ == BonusMode.EARLY) ? earlyBonus(currentTime()) : firstBonus(totalRaised_);
   }
 
   /**
