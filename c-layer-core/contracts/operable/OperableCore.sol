@@ -52,7 +52,7 @@ contract OperableCore is Core, OperableStorage {
   /**
    * @dev defineRoles
    * @param _role operator role
-   * @param _privileges operator address
+   * @param _privileges as 4 bytes of the method
    */
   function defineRole(bytes32 _role, bytes4[] memory _privileges)
     public onlySysOp returns (bool)
@@ -67,8 +67,8 @@ contract OperableCore is Core, OperableStorage {
   }
 
   /**
-   * @dev aasignOperators
-   * @param _role operator role
+   * @dev assignOperators
+   * @param _role operator role. May be a role not defined yet.
    * @param _operators addresses
    */
   function assignOperators(bytes32 _role, address[] memory _operators)
@@ -83,7 +83,7 @@ contract OperableCore is Core, OperableStorage {
 
   /**
    * @dev assignProxyOperators
-   * @param _role operator role
+   * @param _role operator role. May be a role not defined yet.
    * @param _operators addresses
    */
   function assignProxyOperators(
