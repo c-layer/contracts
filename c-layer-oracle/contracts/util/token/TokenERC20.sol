@@ -26,6 +26,8 @@ contract TokenERC20 is BaseToken {
     decimals_ = _decimals;
     totalSupply_ = _initialSupply;
     balances[_initialAccount] = _initialSupply;
+
+    emit Transfer(address(0), _initialAccount, _initialSupply);
   }
 
   function name() public view returns (string memory) {
