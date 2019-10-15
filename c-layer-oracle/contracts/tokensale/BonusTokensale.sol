@@ -86,7 +86,7 @@ contract BonusTokensale is SchedulableTokensale {
    * @dev define bonus
    */
   function defineBonuses(uint256[] memory _bonuses, BonusMode _bonusMode, uint256 _bonusUntil)
-    public onlyOperator beforeSaleIsOpened returns (uint256)
+    public onlyOperator beforeSaleIsOpened returns (bool)
   {
     require(_bonusMode != BonusMode.FIRST
       || (_bonuses.length > 0 && (_bonusUntil > 0)), "BT01");
@@ -99,6 +99,7 @@ contract BonusTokensale is SchedulableTokensale {
     bonusUntil_ = _bonusUntil;
 
     emit BonusesDefined(_bonuses, _bonusMode, _bonusUntil);
+    return true;
   }
 
   /**
