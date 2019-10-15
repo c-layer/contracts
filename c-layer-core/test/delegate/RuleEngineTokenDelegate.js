@@ -105,7 +105,7 @@ contract("RuleEngineTokenDelegate", function (accounts) {
 
     it("should have canTransfer returns Rule", async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], "3333");
-      assert.equal(result, 6, "canTransfer");
+      assert.equal(result, 7, "canTransfer");
     });
 
     it("should transferFrom from accounts[0] to accounts[1]", async function () {
@@ -131,7 +131,7 @@ contract("RuleEngineTokenDelegate", function (accounts) {
 
     it("should have canTransfer returns Rule", async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], "3333");
-      assert.equal(result, 6, "canTransfer");
+      assert.equal(result, 7, "canTransfer");
     });
 
     it("should transfer from accounts[0] to accounts[1]", async function () {

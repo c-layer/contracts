@@ -71,14 +71,19 @@ contract("Token", function (accounts) {
       assert.equal(result, 1, "canTransfer");
     });
 
+    it("should eval canTransfer 0 from no one to acconuts[0]", async function () {
+      const result = await token.canTransfer.call(NULL_ADDRESS, accounts[0], 0);
+      assert.equal(result, 2, "canTransfer");
+    });
+
     it("should eval canTransfer 0 from acconuts[0] to no one", async function () {
       const result = await token.canTransfer.call(accounts[0], NULL_ADDRESS, 0);
-      assert.equal(result, 2, "canTransfer");
+      assert.equal(result, 3, "canTransfer");
     });
 
     it("should eval canTransfer 100 from acconuts[0] to accounts[1]", async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], 100);
-      assert.equal(result, 3, "canTransfer");
+      assert.equal(result, 4, "canTransfer");
     });
 
     describe("With supplies defined", async function () {

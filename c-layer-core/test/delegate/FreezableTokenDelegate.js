@@ -69,7 +69,7 @@ contract("FreezableTokenDelegate", function (accounts) {
 
     it("should have canTransfer frozen for account 0 to account 1", async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], 100);
-      assert.equal(result, 5, "canTransfer");
+      assert.equal(result, 6, "canTransfer");
     });
 
     it("should prevent transfer from account 0 to account 1", async function () {

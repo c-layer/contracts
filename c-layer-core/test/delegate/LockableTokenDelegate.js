@@ -95,7 +95,7 @@ contract("LockableToken", function (accounts) {
 
     it("should have canTransfer returns Locked", async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], "3333");
-      assert.equal(result, 4, "canTransfer");
+      assert.equal(result, 5, "canTransfer");
     });
 
     it("should prevent transfer from accounts[0] to accounts[1]", async function () {

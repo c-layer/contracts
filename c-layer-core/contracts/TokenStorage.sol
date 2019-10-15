@@ -19,6 +19,7 @@ contract TokenStorage is OperableStorage {
   enum TransferCode {
     UNKNOWN,
     OK,
+    INVALID_SENDER,
     NO_RECIPIENT,
     INSUFFICIENT_TOKENS,
     LOCKED,

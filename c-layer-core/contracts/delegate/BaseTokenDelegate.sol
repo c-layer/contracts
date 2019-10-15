@@ -111,6 +111,10 @@ contract BaseTokenDelegate is TokenStorage {
   function canTransfer(address _from, address _to, uint256 _value)
     public view returns (TransferCode)
   {
+    if (_from == address(0)) {
+      return TransferCode.INVALID_SENDER;
+    }
+
     if (_to == address(0)) {
       return TransferCode.NO_RECIPIENT;
     }
