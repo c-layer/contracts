@@ -33,7 +33,7 @@ contract ChangeTokensale is BaseTokensale {
       ratesProvider_.convert(amountETH, "ETH", baseCurrency_);
     require(amountCurrency > 0, "CTS02");
 
-    investInternal(msg.sender, amountCurrency, true);
+    investInternal(msg.sender, amountCurrency, false);
   }
 
   /**
@@ -70,7 +70,7 @@ contract ChangeTokensale is BaseTokensale {
   function addOffchainInvestment(address _investor, uint256 _amount)
     public onlyOperator returns (bool)
   {
-    investInternal(_investor, _amount, false);
+    investInternal(_investor, _amount, true);
 
     return true;
   }

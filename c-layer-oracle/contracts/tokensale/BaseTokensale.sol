@@ -19,6 +19,7 @@ import "../util/lifecycle/Pausable.sol";
  * TOS03: No ETH to refund
  * TOS04: Cannot invest 0 tokens
  * TOS05: Cannot invest if there are no tokens to buy
+ * TOS06: Only exact amount is authorized
  */
 contract BaseTokensale is ITokensale, Operable, Pausable {
   using SafeMath for uint256;
@@ -75,7 +76,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     Investor storage investor = investorInternal(msg.sender);
     uint256 amountETH = investor.unspentETH.add(msg.value);
 
-    investInternal(msg.sender, amountETH, true);
+    investInternal(msg.sender, amountETH, false);
   }
 
   /**
@@ -205,6 +206,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   function withdrawAllETHFunds() public onlyOperator returns (bool) {
     uint256 balance = address(this).balance;
     withdrawETHInternal(balance);
+    return true;
   }
 
   /**
@@ -283,7 +285,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   /**
    * @dev invest internal
    */
-  function investInternal(address _investor, uint256 _amount, bool _refundUnspentETH)
+  function investInternal(address _investor, uint256 _amount, bool _exactAmountOnly)
     internal whenNotPaused
   {
     require(_amount != 0, "TOS04");
@@ -293,19 +295,19 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     require(investment != 0, "TOS05");
 
     (uint256 invested, uint256 tokens) = evalInvestmentInternal(investment);
-    uint256 unspentETH = 0;
-    if (_refundUnspentETH) {
-      unspentETH = evalUnspentETHInternal(investor, invested);
+
+    if (_exactAmountOnly) {
+      require(invested == _amount, "TOS06");
+    } else {
+      uint256 unspentETH = evalUnspentETHInternal(investor, invested);
+      totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
+      investor.unspentETH = unspentETH;
     }
 
-    // Storing values
     investor.invested = investor.invested.add(invested);
     investor.tokens = investor.tokens.add(tokens);
     totalRaised_ = totalRaised_.add(invested);
     totalTokensSold_ = totalTokensSold_.add(tokens);
-
-    totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
-    investor.unspentETH = unspentETH;
 
     emit Investment(_investor, invested, tokens);
 

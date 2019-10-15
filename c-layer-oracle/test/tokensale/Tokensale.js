@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
+const assertRevert = require("../helpers/assertRevert");
 const Tokensale = artifacts.require("Tokensale.sol");
 const Token = artifacts.require("TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");
@@ -30,6 +31,7 @@ contract("Tokensale", function (accounts) {
   const end = 7258118400;
   const bonuses = [ 10 ];
   const bonusUntil = end;
+  const contributionLimits = [ 0, 300000, 1500000, 10000000, 100000000 ];
 
   before(async function () {
     userRegistry = await UserRegistry.new(
@@ -60,7 +62,7 @@ contract("Tokensale", function (accounts) {
       end,
       bonuses,
       bonusUntil,
-      [ 0, 300000, 1500000, 10000000, 100000000 ]
+      contributionLimits
     );
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
@@ -112,8 +114,12 @@ contract("Tokensale", function (accounts) {
       assert.equal(tokens.toString(), 2000, "tokenInvestment");
     });
 
+    it("should reject offchain investment if not exact amount", async function () {
+      await assertRevert(sale.addOffchainInvestment(accounts[3], 10000001), "TOS06");
+    });
+
     it("should add offchain investment", async function () {
-      await sale.addOffchainInvestment(accounts[3], 10000001);
+      await sale.addOffchainInvestment(accounts[3], 1500000);
 
       const invested = await sale.investorInvested(accounts[3]);
       assert.equal(invested.toString(), 1500000, "invested");
@@ -141,8 +147,8 @@ contract("Tokensale", function (accounts) {
 
     describe("with already investments", async function () {
       beforeEach(async function () {
-        await sale.addOffchainInvestment(accounts[2], 1500001);
-        await sale.addOffchainInvestment(accounts[3], 1000300);
+        await sale.addOffchainInvestment(accounts[2], 299500);
+        await sale.addOffchainInvestment(accounts[3], 1000500);
       });
 
       it("should have a total raised", async function () {
@@ -161,12 +167,12 @@ contract("Tokensale", function (accounts) {
       });
 
       it("should add offchain investment", async function () {
-        const tx = await sale.addOffchainInvestment(accounts[3], 1000300);
+        const tx = await sale.addOffchainInvestment(accounts[3], 499500);
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs[0].event, "Investment", "event");
         assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
-        assert.equal(tx.logs[0].args.invested.toString(), 500000, "amount investment");
-        assert.equal(tx.logs[0].args.tokens.toString(), 1100, "tokens");
+        assert.equal(tx.logs[0].args.invested.toString(), 499500, "amount investment");
+        assert.equal(tx.logs[0].args.tokens.toString(), 1098, "tokens");
 
         const invested = await sale.investorInvested(accounts[3]);
         assert.equal(invested.toString(), 1500000, "invested");
@@ -175,7 +181,7 @@ contract("Tokensale", function (accounts) {
         assert.equal(unspentETH.toString(), 0, "unspentETH");
 
         const tokens = await sale.investorTokens(accounts[3]);
-        assert.equal(tokens.toString(), 3300, "tokens");
+        assert.equal(tokens.toString(), 3299, "tokens");
       });
     });
   });
