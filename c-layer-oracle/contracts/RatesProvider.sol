@@ -53,7 +53,7 @@ contract RatesProvider is IRatesProvider, Operable {
   function defineRatesExternal(uint256[] calldata _rates)
     external onlyOperator returns (bool)
   {
-    require(_rates.length <= currencies_.length, "RP03");
+    require(_rates.length < currencies_.length, "RP03");
 
     // solhint-disable-next-line not-rely-on-time
     updatedAt_ = now;
