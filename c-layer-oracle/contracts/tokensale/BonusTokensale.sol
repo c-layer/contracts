@@ -66,7 +66,7 @@ contract BonusTokensale is SchedulableTokensale {
     }
 
     uint256 split = (bonusUntil_ - startAt) / bonuses_.length;
-    return (split == 0) ? 0 : bonuses_[(_currentTime - startAt) / split];
+    return bonuses_[(_currentTime - startAt) / split];
   }
 
   /**
@@ -74,12 +74,13 @@ contract BonusTokensale is SchedulableTokensale {
    */
   function firstBonus(uint256 _totalRaised) public view returns (uint256) {
     if (bonusMode_ != BonusMode.FIRST
-      || bonuses_.length == 0 || _totalRaised >= bonusUntil_) {
+      || bonuses_.length == 0 || _totalRaised >= bonusUntil_
+      || bonusUntil_ == 0) {
       return 0;
     }
 
     uint256 split = bonusUntil_ / bonuses_.length;
-    return (split == 0) ? 0 : bonuses_[_totalRaised/split];
+    return bonuses_[_totalRaised/split];
   }
 
   /**
