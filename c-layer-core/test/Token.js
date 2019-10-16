@@ -19,7 +19,7 @@ contract("Token", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
   });
 
   describe("With a token defined", async function () {
@@ -90,7 +90,7 @@ contract("Token", function (accounts) {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {
-        await core.mintAtOnce(token.address, [ accounts[0] ], [ TOTAL_SUPPLY ]);
+        await core.mintAtOnce(token.address, [accounts[0]], [TOTAL_SUPPLY]);
       });
 
       it("should have a total supply for token", async function () {

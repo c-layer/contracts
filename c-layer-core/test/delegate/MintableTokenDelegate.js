@@ -20,7 +20,7 @@ contract("MintableTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await MintableTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -51,8 +51,8 @@ contract("MintableTokenDelegate", function (accounts) {
   });
 
   it("should let operator mintAtOnce", async function () {
-    let recipients = [ accounts[1], accounts[2], accounts[3] ];
-    let amounts = recipients.map((address, i) => AMOUNT * i);
+    const recipients = [accounts[1], accounts[2], accounts[3]];
+    const amounts = recipients.map((address, i) => AMOUNT * i);
 
     const tx = await core.mintAtOnce(token.address, recipients, amounts);
 
@@ -77,12 +77,12 @@ contract("MintableTokenDelegate", function (accounts) {
   });
 
   it("should prevent operator to mintAtOnce with inconsistent parameters", async function () {
-    await assertRevert(core.mintAtOnce(token.address, [ accounts[1] ], [ ]), "CO03");
+    await assertRevert(core.mintAtOnce(token.address, [accounts[1]], []), "CO03");
   });
 
   it("should prevent non operator to mintAtOnce", async function () {
     await assertRevert(
-      core.mintAtOnce(token.address, [ accounts[1] ], [ AMOUNT ], { from: accounts[1] }),
+      core.mintAtOnce(token.address, [accounts[1]], [AMOUNT], { from: accounts[1] }),
       "OC03");
   });
 

@@ -21,7 +21,7 @@ contract("FreezableTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await FreezableTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -46,7 +46,7 @@ contract("FreezableTokenDelegate", function (accounts) {
   });
 
   it("should let freeze many addresses", async function () {
-    const tx = await core.freezeManyAddresses(token.address, [ accounts[1], accounts[2] ], AFTER);
+    const tx = await core.freezeManyAddresses(token.address, [accounts[1], accounts[2]], AFTER);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, "Freeze", "event");
@@ -59,8 +59,8 @@ contract("FreezableTokenDelegate", function (accounts) {
 
   describe("With freezed account 1 in the future and account 2 in the past", function () {
     beforeEach(async function () {
-      await core.freezeManyAddresses(token.address, [ accounts[1] ], AFTER);
-      await core.freezeManyAddresses(token.address, [ accounts[2] ], BEFORE);
+      await core.freezeManyAddresses(token.address, [accounts[1]], AFTER);
+      await core.freezeManyAddresses(token.address, [accounts[2]], BEFORE);
     });
 
     it("should have account 1 frozen", async function () {

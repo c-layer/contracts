@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const TokenDelegate = artifacts.require("TokenDelegate.sol");
@@ -19,13 +18,13 @@ const DECIMALS = 18;
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
 contract("TokenCore", function (accounts) {
-  let core, delegate, userRegistry, ratesProvider;
+  let token, core, delegate, userRegistry, ratesProvider;
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
     userRegistry = await UserRegistryMock.new(
-      [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
     ratesProvider = await RatesProviderMock.new();
   });
 
@@ -43,19 +42,19 @@ contract("TokenCore", function (accounts) {
   });
 
   it("should let define oracles", async function () {
-    const tx = await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
+    const tx = await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "OraclesDefined", "event");
     assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
     assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "rates provider");
     assert.equal(tx.logs[0].args.currency.toString(), CHF, "currency");
-    assert.deepEqual(tx.logs[0].args.userKeys.map((x) => x.toString()), [ "0", "1" ], "keys");
+    assert.deepEqual(tx.logs[0].args.userKeys.map((x) => x.toString()), ["0", "1"], "keys");
   });
 
   describe("With oracles defined", async function () {
     beforeEach(async function () {
-      await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
+      await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
     });
 
     it("should have oracles", async function () {
@@ -64,25 +63,25 @@ contract("TokenCore", function (accounts) {
       assert.equal(oracles[0], userRegistry.address, "user registry");
       assert.equal(oracles[1], ratesProvider.address, "ratesProvider");
       assert.equal(oracles[2], CHF, "currency");
-      assert.deepEqual(oracles[3].map((x) => x.toString()), [ "0", "1" ], "keys");
+      assert.deepEqual(oracles[3].map((x) => x.toString()), ["0", "1"], "keys");
     });
   });
 
   it("should have no audit selector for core scope 0 and account 0 and 1", async function () {
-    const auditSelector = await core.auditSelector(core.address, 0, [ accounts[0], accounts[1] ]);
-    assert.deepEqual(auditSelector, [ false, false ], "auditSelector");
+    const auditSelector = await core.auditSelector(core.address, 0, [accounts[0], accounts[1]]);
+    assert.deepEqual(auditSelector, [false, false], "auditSelector");
   });
 
   it("should let define audit selector for core scope 0 and account 0 and 1", async function () {
     const tx = await core.defineAuditSelector(
-      core.address, 42, [ accounts[0], accounts[1] ],  [ true, true ]);
+      core.address, 42, [accounts[0], accounts[1]], [true, true]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1, "logs");
     assert.equal(tx.logs[0].event, "AuditSelectorDefined", "event");
     assert.equal(tx.logs[0].args.scope, core.address, "scope");
     assert.equal(tx.logs[0].args.scopeId, 42, "scopeId");
-    assert.deepEqual(tx.logs[0].args.addresses, [ accounts[0], accounts[1] ], "addresses");
-    assert.deepEqual(tx.logs[0].args.values, [ true, true ], "values");
+    assert.deepEqual(tx.logs[0].args.addresses, [accounts[0], accounts[1]], "addresses");
+    assert.deepEqual(tx.logs[0].args.values, [true, true], "values");
   });
 
   it("should let define a token", async function () {

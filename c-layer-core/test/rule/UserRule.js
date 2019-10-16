@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const UserRule = artifacts.require("UserRule.sol");
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 
@@ -13,7 +12,7 @@ contract("UserRule", function (accounts) {
 
   beforeEach(async function () {
     userRegistry = await UserRegistryMock.new(
-      [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
     rule = await UserRule.new(userRegistry.address);
   });
 

@@ -17,11 +17,11 @@ contract("Core", function (accounts) {
   beforeEach(async function () {
     proxy = accounts[0];
     delegate = await DelegateMock.new();
-    core = await CoreMock.new([ delegate.address ]);
+    core = await CoreMock.new([delegate.address]);
   });
 
   it("should define a proxy", async function () {
-    const success = await core.defineProxyMock(proxy, 0);
+    await core.defineProxyMock(proxy, 0);
   });
 
   it("should prevent defining a null proxy", async function () {
@@ -59,7 +59,7 @@ contract("Core", function (accounts) {
     it("should delegate call bool", async function () {
       const bytes = await core.delegateCallBytesMock.call(BYTES);
       assert.equal(bytes.length, 194, "bytes length");
-      assert.ok(bytes.indexOf(BYTES.substr(2)) != -1, "bytes ends");
+      assert.ok(bytes.indexOf(BYTES.substr(2)) !== -1, "bytes ends");
     });
 
     it("should let the core remove the proxy", async function () {

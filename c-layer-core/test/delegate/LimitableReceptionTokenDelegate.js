@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const LimitableReceptionTokenDelegate = artifacts.require("LimitableReceptionTokenDelegate.sol");
@@ -22,7 +21,7 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await LimitableReceptionTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -30,9 +29,9 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
     await core.defineSupplyMock(token.address, AMOUNT);
 
     userRegistry = await UserRegistryMock.new(
-      [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
     ratesProvider = await RatesProviderMock.new();
-    await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
+    await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
   });
 
   it("should transfer from accounts[0] to accounts[1]", async function () {

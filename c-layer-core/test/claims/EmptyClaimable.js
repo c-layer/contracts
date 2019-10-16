@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const EmptyClaimable = artifacts.require("EmptyClaimable.sol");
 
 contract("EmptyClaimable", function (accounts) {

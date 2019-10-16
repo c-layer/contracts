@@ -119,11 +119,11 @@ contract("BaseTokensale", function (accounts) {
   });
 
   it("should reject refund many unspent ETH", async function () {
-    await assertRevert(sale.refundManyUnspentETH([ accounts[3] ]), "TOS03");
+    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS03");
   });
 
   it("should reject refund many unspent ETH", async function () {
-    await assertRevert(sale.refundManyUnspentETH([ accounts[3] ]), "TOS03");
+    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS03");
   });
 
   it("should withdraw all ETH funds", async function () {
@@ -245,7 +245,7 @@ contract("BaseTokensale", function (accounts) {
     });
 
     it("should have a vault ETH", async function () {
-      let balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
+      const balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
       const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
       assert.equal(balanceDiff.toString(), web3.utils.toWei("8", "microether"), "balanceVaultETH");
     });
@@ -255,7 +255,7 @@ contract("BaseTokensale", function (accounts) {
     });
 
     it("should have account refunded", async function () {
-      let balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
+      const balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
 
       const memorySpaceFreed = new BN(15722);
       const realCost = new BN(refundCost).sub(memorySpaceFreed);
@@ -292,7 +292,7 @@ contract("BaseTokensale", function (accounts) {
         unspentETHAccount3.toString(),
         unspentETHAccount4.toString(),
         unspentETHAccount5.toString(),
-      ], [ web3.utils.toWei("0.5", "microether"), "0", web3.utils.toWei("0.8", "microether") ],
+      ], [web3.utils.toWei("0.5", "microether"), "0", web3.utils.toWei("0.8", "microether")],
       "saleInvestorUnspentETH");
     });
 
@@ -320,7 +320,7 @@ contract("BaseTokensale", function (accounts) {
         tokensAccount3.toString(),
         tokensAccount4.toString(),
         tokensAccount5.toString(),
-      ], [ "1", "4", "3" ],
+      ], ["1", "4", "3"],
       "saleInvestorTokens");
     });
   });
@@ -351,7 +351,7 @@ contract("BaseTokensale", function (accounts) {
     });
 
     it("should have a vault ETH", async function () {
-      let balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
+      const balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
       const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
       assert.equal(balanceDiff.toString(), web3.utils.toWei("1", "ether"), "balanceVaultETH");
     });
@@ -390,7 +390,7 @@ contract("BaseTokensale", function (accounts) {
     });
 
     it("should refund unspent ETH many", async function () {
-      const tx = await sale.refundManyUnspentETH([ accounts[4] ]);
+      const tx = await sale.refundManyUnspentETH([accounts[4]]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs[0].event, "RefundETH", "event");
       assert.equal(tx.logs[0].args.recipient, accounts[4], "amount");

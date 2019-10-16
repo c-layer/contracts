@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const ProvableOwnershipTokenDelegate = artifacts.require("ProvableOwnershipTokenDelegate.sol");
@@ -19,7 +18,7 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await ProvableOwnershipTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -45,11 +44,11 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
   it("should have no proof id=0 for account 0", async function () {
     const proof = await core.tokenProofs(token.address, accounts[0], 0);
     assert.deepEqual(Object.values(proof).map(x => x.toString()),
-      [ "0", "0", "0" ], "no proofs id 0"); 
+      ["0", "0", "0"], "no proofs id 0");
   });
 
   it("should let create proof for account 0", async function () {
-    const tx = await core.createProof(token.address, accounts[0])
+    const tx = await core.createProof(token.address, accounts[0]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "ProofCreated", "event");
@@ -67,9 +66,9 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
     });
 
     it("should have a proof", async function () {
-      const proof = await core.tokenProofs(token.address, accounts[0], 0)
+      const proof = await core.tokenProofs(token.address, accounts[0], 0);
       assert.deepEqual(Object.values(proof).map(x => x.toString()),
-        [ String(AMOUNT), "0", String(block1Time) ], "no proofs id 0");
+        [String(AMOUNT), "0", String(block1Time)], "no proofs id 0");
     });
   });
 });

@@ -13,17 +13,17 @@ const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
 
-const CORE_GAS_COST = 3975632;
-const DELEGATE_GAS_COST = 1551589;
-const C_DELEGATE_GAS_COST = 4292782;
-const PROXY_GAS_COST = 906251;
+const CORE_GAS_COST = 3987419;
+const DELEGATE_GAS_COST = 1557491;
+const C_DELEGATE_GAS_COST = 4116388;
+const PROXY_GAS_COST = 906187;
 
 const FIRST_TRANSFER_COST = 58713;
-const FIRST_TRANSFER_FROM_COST = 66382;
+const FIRST_TRANSFER_FROM_COST = 66427;
 const TRANSFER_COST = 43233;
-const C_FIRST_TRANSFER_COST = 65217;
-const C_FIRST_TRANSFER_FROM_COST = 73455;
-const C_TRANSFER_COST = 49737;
+const C_FIRST_TRANSFER_COST = 93740;
+const C_FIRST_TRANSFER_FROM_COST = 101469;
+const C_TRANSFER_COST = 62780;
 
 contract("Performance", function (accounts) {
   let core, delegate;
@@ -54,7 +54,7 @@ contract("Performance", function (accounts) {
 
     beforeEach(async function () {
       delegate = await MintableTokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ]);
+      core = await TokenCore.new("Test", [delegate.address]);
       token = await TokenProxy.new(core.address);
       await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);
@@ -93,7 +93,7 @@ contract("Performance", function (accounts) {
 
     beforeEach(async function () {
       delegate = await TokenDelegate.new();
-      core = await TokenCore.new("Test", [ delegate.address ]);
+      core = await TokenCore.new("Test", [delegate.address]);
       token = await TokenProxy.new(core.address);
       await core.defineToken(
         token.address, 0, NAME, SYMBOL, DECIMALS);

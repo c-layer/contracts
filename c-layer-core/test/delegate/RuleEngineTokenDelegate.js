@@ -20,7 +20,7 @@ contract("RuleEngineTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await RuleEngineTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -47,23 +47,23 @@ contract("RuleEngineTokenDelegate", function (accounts) {
   it("should let define rules", async function () {
     yesRule = await YesNoRule.new(true);
     noRule = await YesNoRule.new(false);
-    const tx = await core.defineRules(token.address, [ yesRule.address, noRule.address ]);
+    const tx = await core.defineRules(token.address, [yesRule.address, noRule.address]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "RulesDefined", "event");
     assert.equal(tx.logs[0].args.token, token.address, "token");
-    assert.deepEqual(tx.logs[0].args.rules, [ yesRule.address, noRule.address ], "rules");
-   });
+    assert.deepEqual(tx.logs[0].args.rules, [yesRule.address, noRule.address], "rules");
+  });
 
   describe("With a yes rule defined", function () {
     beforeEach(async function () {
       yesRule = await YesNoRule.new(true);
-      await core.defineRules(token.address, [ yesRule.address ]);
+      await core.defineRules(token.address, [yesRule.address]);
     });
 
     it("should have a rule", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[6], [ yesRule.address ], "rules");
+      assert.deepEqual(tokenData[6], [yesRule.address], "rules");
     });
 
     it("should have canTransfer returns Ok", async function () {
@@ -95,12 +95,12 @@ contract("RuleEngineTokenDelegate", function (accounts) {
   describe("With a no rule defined", function () {
     beforeEach(async function () {
       noRule = await YesNoRule.new(false);
-      await core.defineRules(token.address, [ noRule.address ]);
+      await core.defineRules(token.address, [noRule.address]);
     });
 
     it("should have a no rule", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[6], [ noRule.address ], "rules");
+      assert.deepEqual(tokenData[6], [noRule.address], "rules");
     });
 
     it("should have canTransfer returns Rule", async function () {
@@ -121,12 +121,12 @@ contract("RuleEngineTokenDelegate", function (accounts) {
     beforeEach(async function () {
       yesRule = await YesNoRule.new(true);
       noRule = await YesNoRule.new(false);
-      await core.defineRules(token.address, [ yesRule.address, noRule.address ]);
+      await core.defineRules(token.address, [yesRule.address, noRule.address]);
     });
 
     it("should have 2 rules", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[6], [ yesRule.address, noRule.address ], "rules");
+      assert.deepEqual(tokenData[6], [yesRule.address, noRule.address], "rules");
     });
 
     it("should have canTransfer returns Rule", async function () {

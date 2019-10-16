@@ -16,8 +16,8 @@ module.exports = {
     let encodedParams = 0;
     if (data === "0x") {
       encodedParams = abi.encodeParameters(
-        [ "address", "uint256", "uint256", "bytes32" ],
-        [ destination,
+        ["address", "uint256", "uint256", "bytes32"],
+        [destination,
           this.web3.utils.toHex(value),
           this.web3.utils.toHex(validity),
           replayProtection,
@@ -25,8 +25,8 @@ module.exports = {
       );
     } else {
       encodedParams = abi.encodeParameters(
-        [ "address", "uint256", "bytes", "uint256", "bytes32" ],
-        [ destination,
+        ["address", "uint256", "bytes", "uint256", "bytes32"],
+        [destination,
           this.web3.utils.toHex(value),
           data,
           this.web3.utils.toHex(validity),

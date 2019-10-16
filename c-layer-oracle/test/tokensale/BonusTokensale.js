@@ -17,7 +17,7 @@ contract("BonusTokensale", function (accounts) {
   const supply = "1000000";
   const start = 4102444800;
   const end = 7258118400;
-  const bonuses = [ "20", "10" ];
+  const bonuses = ["20", "10"];
   const bonusUntilEarly = 6000000000;
   const bonusUntilFirst = "500000";
   const bonusModeEarly = 0; /* BonusMode.EARLY */
@@ -76,22 +76,22 @@ contract("BonusTokensale", function (accounts) {
   });
 
   it("should have no early bonus before bonus until", async function () {
-    const earlyBonus = await sale.earlyBonus(bonusUntilEarly-1);
+    const earlyBonus = await sale.earlyBonus(bonusUntilEarly - 1);
     assert.equal(earlyBonus, 0, "earlyBonus");
   });
 
   it("should have no first bonus boefore bonus until", async function () {
-    const firstBonus = await sale.firstBonus(bonusUntilFirst-1);
+    const firstBonus = await sale.firstBonus(bonusUntilFirst - 1);
     assert.equal(firstBonus, 0, "firstBonus");
   });
 
   it("should have no early bonus after bonus until", async function () {
-    const earlyBonus = await sale.earlyBonus(bonusUntilEarly+1);
+    const earlyBonus = await sale.earlyBonus(bonusUntilEarly + 1);
     assert.equal(earlyBonus, 0, "earlyBonus");
   });
 
   it("should have no first bonus after bonus until", async function () {
-    const firstBonus = await sale.firstBonus(bonusUntilFirst+1);
+    const firstBonus = await sale.firstBonus(bonusUntilFirst + 1);
     assert.equal(firstBonus, 0, "firstBonus");
   });
 
@@ -110,7 +110,7 @@ contract("BonusTokensale", function (accounts) {
     assert.equal(tx.logs[0].args.bonusUntil, bonusUntilEarly, "bonusUntilLog");
     
     const bonusesDefined = await sale.bonuses();
-    assert.deepEqual(bonusesDefined.map((i) => i.toString()), [ "20", "10" ], "bonuses");
+    assert.deepEqual(bonusesDefined.map((i) => i.toString()), ["20", "10"], "bonuses");
   });
 
   describe("during the sale", async function () {
@@ -137,12 +137,12 @@ contract("BonusTokensale", function (accounts) {
     });
 
     it("should have no early bonus before bonus until", async function () {
-      const earlyBonus = await sale.earlyBonus(bonusUntilEarly-1);
+      const earlyBonus = await sale.earlyBonus(bonusUntilEarly - 1);
       assert.equal(earlyBonus, 0, "earlyBonus");
     });
 
     it("should have no first bonus at mid sale", async function () {
-      const firstBonus = await sale.firstBonus(bonusUntilFirst-1);
+      const firstBonus = await sale.firstBonus(bonusUntilFirst - 1);
       assert.equal(firstBonus, 0, "firstBonus");
     });
   });
@@ -193,12 +193,12 @@ contract("BonusTokensale", function (accounts) {
     });
 
     it("should have no early bonus after bonus until", async function () {
-      const earlyBonus = await sale.earlyBonus(bonusUntilEarly+1);
+      const earlyBonus = await sale.earlyBonus(bonusUntilEarly + 1);
       assert.equal(earlyBonus, 0, "earlyBonus");
     });
 
     it("should have no first bonus after bonus until", async function () {
-      const firstBonus = await sale.firstBonus(bonusUntilFirst+1);
+      const firstBonus = await sale.firstBonus(bonusUntilFirst + 1);
       assert.equal(firstBonus, 0, "firstBonus");
     });
  
@@ -283,12 +283,12 @@ contract("BonusTokensale", function (accounts) {
     });
 
     it("should have no early bonus after bonus until", async function () {
-      const earlyBonus = await sale.earlyBonus(bonusUntilEarly+1);
+      const earlyBonus = await sale.earlyBonus(bonusUntilEarly + 1);
       assert.equal(earlyBonus, 0, "earlyBonus");
     });
 
     it("should have no first bonus after bonus until", async function () {
-      const firstBonus = await sale.firstBonus(bonusUntilFirst+1);
+      const firstBonus = await sale.firstBonus(bonusUntilFirst + 1);
       assert.equal(firstBonus, 0, "firstBonus");
     });
  

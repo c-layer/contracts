@@ -21,8 +21,6 @@ contract("RatesProvider", function (accounts) {
   const rateOffset = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "48257890165041";
   const aETHCHFSample = "20722";
-  const dayPlusOneTime = Math.floor((new Date()).getTime() / 1000) + 3600 * 24;
-  const dayMinusOneTime = Math.floor((new Date()).getTime() / 1000) - 3600 * 24;
 
   beforeEach(async function () {
     provider = await RatesProvider.new("Test");
@@ -34,14 +32,14 @@ contract("RatesProvider", function (accounts) {
   });
 
   it("should have currencies", async function () {
-    let expectedCurrencies = [
+    const expectedCurrencies = [
       "ETH", "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD",
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
 
     const currencies = await provider.currencies();
     assert.deepEqual(currencies[0], expectedCurrencies, "currencies");
     assert.deepEqual(currencies[1].map((d) => d.toString()),
-      [ "18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2" ],
+      ["18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2"],
       "decimals");
     assert.equal(currencies[2].toString(), 1, "rateOffset");
   });
@@ -50,7 +48,7 @@ contract("RatesProvider", function (accounts) {
     const rates = await provider.rates();
     assert.equal(rates[0].toString(), "0", "updatedAt");
     assert.deepEqual(rates[1].map((d) => d.toString()),
-      [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+      ["0", "0", "0", "0", "0", "0", "0", "0", "0", "0"],
       "rates");
   });
 
@@ -70,7 +68,7 @@ contract("RatesProvider", function (accounts) {
   });
 
   it("should let operator define a rate", async function () {
-    const tx = await provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ]);
+    const tx = await provider.defineRates([0, 0, 0, 0, aWEICHFSample]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
@@ -79,7 +77,7 @@ contract("RatesProvider", function (accounts) {
   });
 
   it("should let operator define a rate external", async function () {
-    const tx = await provider.defineRatesExternal([ 0, 0, 0, 0, aWEICHFSample ]);
+    const tx = await provider.defineRatesExternal([0, 0, 0, 0, aWEICHFSample]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Rate", "event");
@@ -89,31 +87,31 @@ contract("RatesProvider", function (accounts) {
 
   it("should prevent anyone from defining a rate", async function () {
     await assertRevert(
-      provider.defineRates([ 0, 0, 0, 0, aWEICHFSample ], { from: accounts[1] }), "OP01");
+      provider.defineRates([0, 0, 0, 0, aWEICHFSample], { from: accounts[1] }), "OP01");
   });
 
   it("should prevent anyone from defining a rate external", async function () {
     await assertRevert(
-      provider.defineRatesExternal([ 0, 0, 0, 0, aWEICHFSample ], { from: accounts[1] }), "OP01");
+      provider.defineRatesExternal([0, 0, 0, 0, aWEICHFSample], { from: accounts[1] }), "OP01");
   });
 
   it("should prevent operator from defining too many rates external", async function () {
     await assertRevert(
-      provider.defineRates([ 0, 0, 0, 0, aWEICHFSample, 0, 0, 0, 0, 0, 0 ]), "RP03");
+      provider.defineRates([0, 0, 0, 0, aWEICHFSample, 0, 0, 0, 0, 0, 0]), "RP03");
   });
 
   it("should prevent operator from defining too many rates external", async function () {
     await assertRevert(
-      provider.defineRatesExternal([ 0, 0, 0, 0, aWEICHFSample, 0, 0, 0, 0, 0, 0 ]), "RP03");
+      provider.defineRatesExternal([0, 0, 0, 0, aWEICHFSample, 0, 0, 0, 0, 0, 0]), "RP03");
   });
 
   describe("With a rates defined", async function () {
     beforeEach(async function () {
-      await provider.defineRates([ 1, 1, 1, 1, aWEICHFSample, 1, 1, 1, 1 ]);
+      await provider.defineRates([1, 1, 1, 1, aWEICHFSample, 1, 1, 1, 1]);
     });
 
     it("should have correct gas estimate for defining rates", async function () {
-      const gas = await provider.defineRates.estimateGas([ 1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2 ]);
+      const gas = await provider.defineRates.estimateGas([1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2]);
       assert.equal(gas, "64548", "gas estimate");
     });
 
@@ -134,10 +132,10 @@ contract("RatesProvider", function (accounts) {
   });
 
   it("should let operator define new currencies (more)", async function () {
-    let expectedCurrencies = [
+    const expectedCurrencies = [
       "ETH", "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD", "XRP",
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
-    let expectedDecimals = [ "18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2", "6" ];
+    const expectedDecimals = ["18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2", "6"];
 
     const tx = await provider.defineCurrencies(
       expectedCurrencies, expectedDecimals, 1);
@@ -151,7 +149,7 @@ contract("RatesProvider", function (accounts) {
 
   it("should let operator define new currencies (less)", async function () {
     const tx = await provider.defineCurrencies(
-      [ CHF, BTC, ETH ], [ 2, 9, 18 ],
+      [CHF, BTC, ETH], [2, 9, 18],
       rateOffset);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 2);
@@ -159,51 +157,51 @@ contract("RatesProvider", function (accounts) {
     assert.equal(tx.logs[0].args.rateOffset.toString(), rateOffset.toString(), "rateOffset");
  
     assert.equal(tx.logs[1].event, "Currencies", "event 1");
-    let expectedCurrencies = [
+    const expectedCurrencies = [
       "CHF", "BTC", "ETH",
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
     assert.deepEqual(tx.logs[1].args.currencies, expectedCurrencies, "currencies");
     assert.deepEqual(tx.logs[1].args.decimals.map((d) => d.toString()),
-      [ "2", "9", "18" ], "decimals");
+      ["2", "9", "18"], "decimals");
   });
 
   it("should prevent operator from defining inconsistent decimals", async function () {
     await assertRevert(provider.defineCurrencies(
-      [ CHF, BTC, ETH ], [ 2, 9 ],
+      [CHF, BTC, ETH], [2, 9],
       rateOffset), "RP01");
   });
 
   it("should prevent operator from defining null rateOffset", async function () {
     await assertRevert(provider.defineCurrencies(
-      [ CHF, BTC, ETH ], [ 2, 9, 18 ], 0), "RP02");
+      [CHF, BTC, ETH], [2, 9, 18], 0), "RP02");
   });
 
   it("should prevent anyone from defining a rate", async function () {
     await assertRevert(provider.defineCurrencies(
-      [ CHF, BTC, ETH ], [ 2, 9, 18 ],
+      [CHF, BTC, ETH], [2, 9, 18],
       rateOffset, { from: accounts[1] }), "OP01");
   });
 
   describe("With CHF as reference currency and some rates defined", function () {
     const rates = [
       new BN("1002500").mul(new BN(10).pow(new BN(18 - 9))),
-      new BN("20722").mul(new BN(10).pow(new BN(18 - 18))) ];
+      new BN("20722").mul(new BN(10).pow(new BN(18 - 18)))];
     beforeEach(async function () {
       await provider.defineCurrencies(
-        [ CHF, BTC, ETH ], [ 2, 9, 18 ],
+        [CHF, BTC, ETH], [2, 9, 18],
         rateOffset);
       await provider.defineRates(rates);
     });
 
     it("should have currencies", async function () {
-      let expectedCurrencies = [
+      const expectedCurrencies = [
         "CHF", "BTC", "ETH",
       ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
 
       const currencies = await provider.currencies();
       assert.deepEqual(currencies[0], expectedCurrencies, "currencies");
       assert.deepEqual(currencies[1].map((d) => d.toString()),
-        [ "2", "9", "18" ],
+        ["2", "9", "18"],
         "decimals");
       assert.equal(currencies[2].toString(), rateOffset, "rateOffset");
     });

@@ -38,7 +38,7 @@ contract("UserRegistry", function (accounts) {
 
     it("should not register many users", async function () {
       await assertRevert(
-        userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime),
+        userRegistry.registerManyUsersExternal([accounts[0], accounts[1]], dayPlusOneTime),
         "OP01");
     });
   });
@@ -50,22 +50,22 @@ contract("UserRegistry", function (accounts) {
 
     it("should have extendedKeys", async function () {
       const extendedKeys = await userRegistry.extendedKeys();
-      assert.deepEqual(extendedKeys.map((x) => x.toString()), [ "0", "1", "2" ]);
+      assert.deepEqual(extendedKeys.map((x) => x.toString()), ["0", "1", "2"]);
     });
 
     it("should not let non operator to define extended keys", async function () {
       await assertRevert(
-        userRegistry.defineExtendedKeys([ 0, 2, 3, 4], { from: accounts[1] }),
+        userRegistry.defineExtendedKeys([0, 2, 3, 4], { from: accounts[1] }),
         "OP01");
     });
 
     it("should define extended keys", async function () {
-      const tx = await userRegistry.defineExtendedKeys([ 0, 2, 3, 4]);
+      const tx = await userRegistry.defineExtendedKeys([0, 2, 3, 4]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "ExtendedKeysDefinition", "event");
       assert.deepEqual(tx.logs[0].args.keys.map((x) => x.toString()),
-        [ "0", "2", "3", "4" ], "extendedKeysLog");
+        ["0", "2", "3", "4"], "extendedKeysLog");
     });
 
     it("should have no users", async function () {
@@ -91,7 +91,7 @@ contract("UserRegistry", function (accounts) {
       const validUserId = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId.toNumber(), 1, "validUserId");
 
-      const validUser = await userRegistry.validUser(accounts[0], [ 1 ]);
+      const validUser = await userRegistry.validUser(accounts[0], [1]);
       assert.equal(validUser[0], 1, "validUser id");
       assert.equal(validUser[1][0], 0, "validUser key 1");
 
@@ -101,7 +101,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should register many users", async function () {
-      const tx = await userRegistry.registerManyUsersExternal([ accounts[0], accounts[1] ], dayPlusOneTime);
+      const tx = await userRegistry.registerManyUsersExternal([accounts[0], accounts[1]], dayPlusOneTime);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
@@ -112,7 +112,6 @@ contract("UserRegistry", function (accounts) {
       assert.equal(tx.logs[1].args.userId, 2, "userIdLog");
       assert.equal(tx.logs[1].args.address_, accounts[1], "addressLog");
       assert.equal(tx.logs[1].args.validUntilTime, dayPlusOneTime, "validUntilTimeLog");
-
 
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 2, "userCount");
@@ -127,7 +126,7 @@ contract("UserRegistry", function (accounts) {
       const validUserId2 = await userRegistry.validUserId(accounts[1]);
       assert.equal(validUserId2.toNumber(), 2, "validUserId1");
 
-      const validUser = await userRegistry.validUser(accounts[0], [ 1 ]);
+      const validUser = await userRegistry.validUser(accounts[0], [1]);
       assert.equal(validUser[0], 1, "validUser id");
       assert.equal(validUser[1][0], 0, "validUser key 1");
 
@@ -151,7 +150,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should fails at checking user 6 many extended keys", async function () {
-      const manyExtended6 = await userRegistry.manyExtended(6, [ 0, 1 ]);
+      const manyExtended6 = await userRegistry.manyExtended(6, [0, 1]);
       assert.equal(manyExtended6[0], 0, "user6 many extended");
       assert.equal(manyExtended6[1], 0, "user6 many extended");
     });
@@ -172,13 +171,13 @@ contract("UserRegistry", function (accounts) {
 
     it("should not attach many addresses to non existing userId", async function () {
       await assertRevert(
-        userRegistry.attachManyAddressesExternal([ 1, 2 ], [ accounts[0], accounts[1] ]),
+        userRegistry.attachManyAddressesExternal([1, 2], [accounts[0], accounts[1]]),
         "UR01");
     });
 
     it("should not attach many addresses if different addresses length than ids", async function () {
       await assertRevert(
-        userRegistry.attachManyAddressesExternal([ 1, 2 ], [ accounts[0] ]),
+        userRegistry.attachManyAddressesExternal([1, 2], [accounts[0]]),
         "UR03");
     });
 
@@ -204,7 +203,7 @@ contract("UserRegistry", function (accounts) {
 
     it("should not update non existing users", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersExternal([ 1, 2, 3 ], dayPlusOneTime, false),
+        userRegistry.updateManyUsersExternal([1, 2, 3], dayPlusOneTime, false),
         "UR01");
     });
 
@@ -213,37 +212,37 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should not update non existing extended user (all)", async function () {
-      await assertRevert(userRegistry.updateUserAllExtended(1, [ 4, 100 ]), "UR01");
+      await assertRevert(userRegistry.updateUserAllExtended(1, [4, 100]), "UR01");
     });
 
     it("should not update non existing extended users", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersExtendedExternal([ 1, 2, 3 ], 1, 100), "UR01");
+        userRegistry.updateManyUsersExtendedExternal([1, 2, 3], 1, 100), "UR01");
     });
 
     it("should not update non existing user full", async function () {
       await assertRevert(
-        userRegistry.updateUserFull(1, dayPlusOneTime, true, [ 4, 100 ]), "UR01");
+        userRegistry.updateUserFull(1, dayPlusOneTime, true, [4, 100]), "UR01");
     });
 
     it("should not update non existing extended users (all)", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersAllExtendedExternal([ 1, 2, 3 ], 1, 100), "UR01");
+        userRegistry.updateManyUsersAllExtendedExternal([1, 2, 3], 1, 100), "UR01");
     });
 
     it("should not update non existing extended users (full)", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersFullExternal([ 1, 2, 3 ], 1, 100), "UR01");
+        userRegistry.updateManyUsersFullExternal([1, 2, 3], 1, 100), "UR01");
     });
 
     it("should prevent non operator to register user full", async function () {
       await assertRevert(
-        userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ],
+        userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [4, 100],
           { from: accounts[1] }), "OP01");
     });
 
     it("should register a user full", async function () {
-      const tx = await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [ 4, 100 ]);
+      const tx = await userRegistry.registerUserFull(accounts[0], dayPlusOneTime, [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
@@ -253,7 +252,7 @@ contract("UserRegistry", function (accounts) {
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
       assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "extendedKeysLog");
+        ["4", "100"], "extendedKeysLog");
  
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 1, "userCount");
@@ -264,7 +263,7 @@ contract("UserRegistry", function (accounts) {
       const validUserId = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId.toNumber(), 1, "validUserId");
 
-      const validUser = await userRegistry.validUser(accounts[0], [ 0, 1 ]);
+      const validUser = await userRegistry.validUser(accounts[0], [0, 1]);
       assert.equal(validUser[0], 1, "validUser id");
       assert.equal(validUser[1][0], 4, "validUser key0");
       assert.equal(validUser[1][1], 100, "validUser key1");
@@ -279,7 +278,7 @@ contract("UserRegistry", function (accounts) {
       const extend1 = await userRegistry.extended(1, 1);
       assert.equal(extend1, 100, "extended 1");
 
-      const manyExtended = await userRegistry.manyExtended(1, [ 0, 1 ]);
+      const manyExtended = await userRegistry.manyExtended(1, [0, 1]);
       assert.equal(manyExtended[0], 4, "extended 0");
       assert.equal(manyExtended[1], 100, "extended 1");
     });
@@ -287,13 +286,13 @@ contract("UserRegistry", function (accounts) {
     it("should prevent non operator to register many users full", async function () {
       await assertRevert(
         userRegistry.registerManyUsersFullExternal(
-          [ accounts[0], accounts[1] ], dayPlusOneTime, [ 4, 100 ],
+          [accounts[0], accounts[1]], dayPlusOneTime, [4, 100],
         { from: accounts[1] }), "OP01");
     });
 
     it("should register many users full", async function () {
       const tx = await userRegistry.registerManyUsersFullExternal(
-        [ accounts[0], accounts[1] ], dayPlusOneTime, [ 4, 100 ]);
+        [accounts[0], accounts[1]], dayPlusOneTime, [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 4);
       assert.equal(tx.logs[0].event, "UserRegistered", "event");
@@ -303,7 +302,7 @@ contract("UserRegistry", function (accounts) {
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[1].args.userId, 1, "userIdLog");
       assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "extendedKeysLog");
+        ["4", "100"], "extendedKeysLog");
       assert.equal(tx.logs[2].event, "UserRegistered", "event");
       assert.equal(tx.logs[2].args.userId, 2, "userIdLog");
       assert.equal(tx.logs[2].args.address_, accounts[1], "addressLog");
@@ -311,7 +310,7 @@ contract("UserRegistry", function (accounts) {
       assert.equal(tx.logs[3].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[3].args.userId, 2, "userIdLog");
       assert.deepEqual(tx.logs[3].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "extendedKeysLog");
+        ["4", "100"], "extendedKeysLog");
  
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 2, "userCount");
@@ -321,7 +320,7 @@ contract("UserRegistry", function (accounts) {
       const validUserId1 = await userRegistry.validUserId(accounts[0]);
       assert.equal(validUserId1.toNumber(), 1, "validUserId0");
 
-      const validUser1 = await userRegistry.validUser(accounts[0], [ 0, 1 ]);
+      const validUser1 = await userRegistry.validUser(accounts[0], [0, 1]);
       assert.equal(validUser1[0], 1, "validUser1 id");
       assert.equal(validUser1[1][0], 4, "validUser1 key0");
       assert.equal(validUser1[1][1], 100, "validUser1 key1");
@@ -331,7 +330,7 @@ contract("UserRegistry", function (accounts) {
       const validUserId2 = await userRegistry.validUserId(accounts[1]);
       assert.equal(validUserId2.toNumber(), 2, "validUserId1");
 
-      const validUser2 = await userRegistry.validUser(accounts[1], [ 0, 1 ]);
+      const validUser2 = await userRegistry.validUser(accounts[1], [0, 1]);
       assert.equal(validUser2[0], 2, "validUser2 id");
       assert.equal(validUser2[1][0], 4, "validUser2 key0");
       assert.equal(validUser2[1][1], 100, "validUser2 key1");
@@ -353,11 +352,11 @@ contract("UserRegistry", function (accounts) {
       const extend12 = await userRegistry.extended(2, 1);
       assert.equal(extend12, 100, "extended 1-2");
 
-      const manyExtended1 = await userRegistry.manyExtended(1, [ 0, 1 ]);
+      const manyExtended1 = await userRegistry.manyExtended(1, [0, 1]);
       assert.equal(manyExtended1[0], 4, "extended 0-1");
       assert.equal(manyExtended1[1], 100, "extended 0-2");
 
-      const manyExtended2 = await userRegistry.manyExtended(2, [ 0, 1 ]);
+      const manyExtended2 = await userRegistry.manyExtended(2, [0, 1]);
       assert.equal(manyExtended2[0], 4, "extended 0-1");
       assert.equal(manyExtended2[1], 100, "extended 0-2");
     });
@@ -370,7 +369,7 @@ contract("UserRegistry", function (accounts) {
         CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
       await userRegistry.attachAddress(1, accounts[4]);
-      await userRegistry.attachManyAddressesExternal([ 2, 2 ], [accounts[5], accounts[6]]);
+      await userRegistry.attachManyAddressesExternal([2, 2], [accounts[5], accounts[6]]);
       await userRegistry.updateUser(3, dayMinusOneTime, false);
     });
 
@@ -583,12 +582,12 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update user", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersExternal([ 1, 2 ], dayPlusTwoTime, true,
+        userRegistry.updateManyUsersExternal([1, 2], dayPlusTwoTime, true,
         { from: accounts[1] }), "OP01");
     });
 
     it("should update many users", async function () {
-      const tx = await userRegistry.updateManyUsersExternal([ 1, 2 ], dayPlusTwoTime, true);
+      const tx = await userRegistry.updateManyUsersExternal([1, 2], dayPlusTwoTime, true);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 4);
       assert.equal(tx.logs[0].event, "UserValidity", "event");
@@ -631,18 +630,18 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update user all extended", async function () {
       await assertRevert(
-        userRegistry.updateUserAllExtended(1, [ 4, 100 ],
+        userRegistry.updateUserAllExtended(1, [4, 100],
         { from: accounts[1] }), "OP01");
     });
 
     it("should update user all extended", async function () {
-      const tx = await userRegistry.updateUserAllExtended(1, [ 4, 100 ]);
+      const tx = await userRegistry.updateUserAllExtended(1, [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.deepEqual(tx.logs[0].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
   
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended");
@@ -650,18 +649,18 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update user full", async function () {
       await assertRevert(
-        userRegistry.updateUserFull(1, dayPlusOneTime, false, [ 4, 100 ],
+        userRegistry.updateUserFull(1, dayPlusOneTime, false, [4, 100],
         { from: accounts[1] }), "OP01");
     });
 
     it("should update user full", async function () {
-      const tx = await userRegistry.updateUserFull(1, dayPlusOneTime, false, [ 4, 100 ]);
+      const tx = await userRegistry.updateUserFull(1, dayPlusOneTime, false, [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.deepEqual(tx.logs[0].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
  
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended");
@@ -669,12 +668,12 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update many users extended", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersExtendedExternal([ 1, 2 ], 1, 100,
+        userRegistry.updateManyUsersExtendedExternal([1, 2], 1, 100,
         { from: accounts[1] }), "OP01");
     });
 
     it("should update many users extended", async function () {
-      const tx = await userRegistry.updateManyUsersExtendedExternal([ 1, 2 ], 1, 100);
+      const tx = await userRegistry.updateManyUsersExtendedExternal([1, 2], 1, 100);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserExtendedKey", "event");
@@ -694,22 +693,22 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update many users extended (all)", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersAllExtendedExternal([ 1, 2 ], [ 4, 100 ],
+        userRegistry.updateManyUsersAllExtendedExternal([1, 2], [4, 100],
         { from: accounts[1] }), "OP01");
     });
 
     it("should update many users extended (all)", async function () {
-      const tx = await userRegistry.updateManyUsersAllExtendedExternal([ 1, 2 ], [ 4, 100 ]);
+      const tx = await userRegistry.updateManyUsersAllExtendedExternal([1, 2], [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[0].args.userId, 1, "userIdLog");
       assert.deepEqual(tx.logs[0].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[1].args.userId, 2, "userIdLog");
       assert.deepEqual(tx.logs[0].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
  
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended1");
@@ -719,12 +718,12 @@ contract("UserRegistry", function (accounts) {
 
     it("should prevent non operator to update many users full", async function () {
       await assertRevert(
-        userRegistry.updateManyUsersFullExternal([ 1, 2 ], dayPlusOneTime, false, [ 4, 100 ],
+        userRegistry.updateManyUsersFullExternal([1, 2], dayPlusOneTime, false, [4, 100],
         { from: accounts[1] }), "OP01");
     });
 
     it("should update many users full", async function () {
-      const tx = await userRegistry.updateManyUsersFullExternal([ 1, 2 ], dayPlusOneTime, true, [ 4, 100 ]);
+      const tx = await userRegistry.updateManyUsersFullExternal([1, 2], dayPlusOneTime, true, [4, 100]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 4);
       assert.equal(tx.logs[0].event, "UserSuspended", "event");
@@ -732,13 +731,13 @@ contract("UserRegistry", function (accounts) {
       assert.equal(tx.logs[1].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[1].args.userId, 1, "userIdLog1");
       assert.deepEqual(tx.logs[1].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
       assert.equal(tx.logs[2].event, "UserSuspended", "event");
       assert.equal(tx.logs[2].args.userId, 2, "userIdLog2");
       assert.equal(tx.logs[3].event, "UserExtendedKeys", "event");
       assert.equal(tx.logs[3].args.userId, 2, "userIdLog3");
       assert.deepEqual(tx.logs[3].args.values.map((x) => x.toString()),
-        [ "4", "100" ], "valueLog");
+        ["4", "100"], "valueLog");
  
       const extended1 = await userRegistry.extended(1, 1);
       assert.equal(extended1, 100, "extended1");
@@ -751,7 +750,7 @@ contract("UserRegistry", function (accounts) {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new("Test", CHF,
         [accounts[0], accounts[1], accounts[2], accounts[3]], dayPlusOneTime);
-      await userRegistry.suspendManyUsersExternal([ 2, 3 ]);
+      await userRegistry.suspendManyUsersExternal([2, 3]);
     });
 
     it("should restore a user", async function () {
@@ -767,7 +766,7 @@ contract("UserRegistry", function (accounts) {
     });
 
     it("should restore many users", async function () {
-      const tx = await userRegistry.restoreManyUsersExternal([ 2, 3 ]);
+      const tx = await userRegistry.restoreManyUsersExternal([2, 3]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, "UserRestored", "event");

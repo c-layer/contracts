@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const YesNoRule = artifacts.require("YesNoRule.sol");
 
 contract("YesNoRule", function (accounts) {

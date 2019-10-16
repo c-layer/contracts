@@ -22,7 +22,7 @@ contract("LockableToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await LockableTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
 
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -46,24 +46,24 @@ contract("LockableToken", function (accounts) {
   });
 
   it("should let define a lock", async function () {
-    const tx = await core.defineLock(token.address, BEFORE, AFTER, [ accounts[0] ]);
+    const tx = await core.defineLock(token.address, BEFORE, AFTER, [accounts[0]]);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "LockDefined", "event");
     assert.equal(tx.logs[0].args.token, token.address, "token");
     assert.equal(tx.logs[0].args.startAt, BEFORE, "startAt");
     assert.equal(tx.logs[0].args.endAt, AFTER, "endAt");
-    assert.deepEqual(tx.logs[0].args.exceptions, [ accounts[0] ], "exceptions");
+    assert.deepEqual(tx.logs[0].args.exceptions, [accounts[0]], "exceptions");
   });
 
   describe("With a lock defined in the past", function () {
     beforeEach(async function () {
-      await core.defineLock(token.address, BEFORE-1, BEFORE, []);
+      await core.defineLock(token.address, BEFORE - 1, BEFORE, []);
     });
 
     it("Should have a lock", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [ BEFORE-1, BEFORE ], "lock start/end");
+      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [BEFORE - 1, BEFORE], "lock start/end");
     });
 
     it("should have canTransfer returns Ok", async function () {
@@ -85,12 +85,12 @@ contract("LockableToken", function (accounts) {
   describe("With a lock defined and active now, excepts for accounts 2", function () {
     beforeEach(async function () {
       await token.transfer(accounts[2], "3333");
-      core.defineLock(token.address, BEFORE, AFTER, [ accounts[2] ]);
+      core.defineLock(token.address, BEFORE, AFTER, [accounts[2]]);
     });
 
     it("Should have a lock", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [ BEFORE, AFTER ], "lock start/end");
+      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [BEFORE, AFTER], "lock start/end");
     });
 
     it("should have canTransfer returns Locked", async function () {
@@ -115,12 +115,12 @@ contract("LockableToken", function (accounts) {
 
   describe("With a lock defined in the future", function () {
     beforeEach(async function () {
-      core.defineLock(token.address, AFTER, AFTER+1, [ accounts[2] ]);
+      core.defineLock(token.address, AFTER, AFTER + 1, [accounts[2]]);
     });
 
     it("Should have a lock", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [ AFTER, AFTER+1 ], "lock start/end");
+      assert.deepEqual(tokenData[4].map((x) => x.toNumber()), [AFTER, AFTER + 1], "lock start/end");
     });
 
     it("should have canTransfer returns Ok", async function () {
@@ -137,5 +137,5 @@ contract("LockableToken", function (accounts) {
       assert.equal(tx.logs[0].args.to, accounts[1], "to");
       assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
     });
-  }); 
+  });
 });

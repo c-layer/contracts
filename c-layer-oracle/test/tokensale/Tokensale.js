@@ -29,14 +29,14 @@ contract("Tokensale", function (accounts) {
 
   const start = 4102444800;
   const end = 7258118400;
-  const bonuses = [ 10 ];
+  const bonuses = [10];
   const bonusUntil = end;
-  const contributionLimits = [ 0, 300000, 1500000, 10000000, 100000000 ];
+  const contributionLimits = [0, 300000, 1500000, 10000000, 100000000];
 
   before(async function () {
     userRegistry = await UserRegistry.new(
       "Dummy", CHF,
-      [ accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6] ], dayPlusOneTime);
+      [accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6]], dayPlusOneTime);
     await userRegistry.updateUserExtended(1, KYC_LEVEL_KEY, 0);
     await userRegistry.updateUserExtended(2, KYC_LEVEL_KEY, 1);
     await userRegistry.updateUserExtended(3, KYC_LEVEL_KEY, 2);
@@ -104,8 +104,8 @@ contract("Tokensale", function (accounts) {
 
   describe("during the sale", async function () {
     beforeEach(async function () {
-      await ratesProvider.defineCurrencies([ CHF, ETH ], [ 2, 18 ], rateOffset);
-      await ratesProvider.defineRates([ rateWEICHF ]);
+      await ratesProvider.defineCurrencies([CHF, ETH], [2, 18], rateOffset);
+      await ratesProvider.defineRates([rateWEICHF]);
       await sale.updateSchedule(0, end);
     });
 
@@ -132,7 +132,7 @@ contract("Tokensale", function (accounts) {
     });
 
     it("should let investor invest", async function () {
-      let weiInvestment = rateOffset.mul(new BN(tokenPrice)).mul(new BN(10)).div(new BN(rateWEICHF)).add(new BN(1));
+      const weiInvestment = rateOffset.mul(new BN(tokenPrice)).mul(new BN(10)).div(new BN(rateWEICHF)).add(new BN(1));
       await sale.investETH({ from: accounts[3], value: weiInvestment });
 
       const invested = await sale.investorInvested(accounts[3]);

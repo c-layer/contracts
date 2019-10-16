@@ -28,13 +28,13 @@ contract("ChangeTokensale", function (accounts) {
   before(async function () {
     ratesProvider = await RatesProvider.new("Dummy");
     rateWEICHF = new BN("20723");
-    await ratesProvider.defineCurrencies([ CHF, ETH ], [ 2, 18 ], rateOffset);
+    await ratesProvider.defineCurrencies([CHF, ETH], [2, 18], rateOffset);
   });
 
   describe("with a sale priced in CHF", async function () {
     beforeEach(async function () {
       token = await Token.new("Name", "Symbol", 0, accounts[1], 1000000);
-      await ratesProvider.defineRates([ 0 ]);
+      await ratesProvider.defineRates([0]);
       sale = await ChangeTokensaleMock.new(
         token.address,
         vaultERC20,
@@ -128,7 +128,7 @@ contract("ChangeTokensale", function (accounts) {
 
     describe("when an ETHCHF rate is defined", async function () {
       beforeEach(async function () {
-        await ratesProvider.defineRates([ rateWEICHF ]);
+        await ratesProvider.defineRates([rateWEICHF]);
       });
 
       it("should let investor to invest in ETH", async function () {
@@ -276,12 +276,12 @@ contract("ChangeTokensale", function (accounts) {
   });
 
   describe("with a CHF tokensale on a 18 decimal tokens", async function () {
-    let priceUnit = new BN(10).pow(new BN(18));
-    let supply = new BN(1000000).mul(priceUnit);
+    const priceUnit = new BN(10).pow(new BN(18));
+    const supply = new BN(1000000).mul(priceUnit);
 
     beforeEach(async function () {
       token = await Token.new("Name", "Symbol", 18, accounts[1], supply);
-      await ratesProvider.defineRates([ rateWEICHF ]);
+      await ratesProvider.defineRates([rateWEICHF]);
       sale = await ChangeTokensaleMock.new(
         token.address,
         vaultERC20,

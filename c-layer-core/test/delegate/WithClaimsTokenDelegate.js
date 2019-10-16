@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const WithClaimsTokenDelegate = artifacts.require("WithClaimsTokenDelegate.sol");
@@ -20,7 +19,7 @@ contract("WithClaimsTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await WithClaimsTokenDelegate.new();
-    core = await TokenCore.new("Test", [ delegate.address ]);
+    core = await TokenCore.new("Test", [delegate.address]);
     
     token = await TokenProxy.new(core.address);
     await core.defineToken(
@@ -46,7 +45,7 @@ contract("WithClaimsTokenDelegate", function (accounts) {
 
   it("should let define claimables", async function () {
     claimable = await EmptyClaimable.new(true);
-    const tx = await core.defineClaimables(token.address, [ claimable.address ]);
+    const tx = await core.defineClaimables(token.address, [claimable.address]);
     assert.ok(tx.receipt.status, "ClaimablesDefined");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "ClaimablesDefined", "event");
@@ -57,12 +56,12 @@ contract("WithClaimsTokenDelegate", function (accounts) {
   describe("With an inactive claimables defined", function () {
     beforeEach(async function () {
       claimable = await EmptyClaimable.new(false);
-      await core.defineClaimables(token.address, [ claimable.address ]);
+      await core.defineClaimables(token.address, [claimable.address]);
     });
 
     it("should have a claimable", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[7], [ claimable.address ], "claimables");
+      assert.deepEqual(tokenData[7], [claimable.address], "claimables");
     });
 
     it("should transfer from accounts[0] to accounts[1]", async function () {
@@ -106,13 +105,13 @@ contract("WithClaimsTokenDelegate", function (accounts) {
       claimable2 = await EmptyClaimable.new(false);
       claimable3 = await EmptyClaimable.new(false);
       await core.defineClaimables(token.address,
-        [ claimable.address, claimable2.address, claimable3.address ]);
+        [claimable.address, claimable2.address, claimable3.address]);
     });
 
     it("should have a claimable", async function () {
       const tokenData = await core.token(token.address);
       assert.deepEqual(tokenData[7],
-        [ claimable.address, claimable2.address, claimable3.address ], "claimables");
+        [claimable.address, claimable2.address, claimable3.address], "claimables");
     });
 
     it("should transfer from accounts[0] to accounts[1]", async function () {

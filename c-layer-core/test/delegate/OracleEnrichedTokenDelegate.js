@@ -27,102 +27,102 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
 
     it("should read transfer data with no enrichement", async function () {
       const transferData = await delegate.readTransferDataMock(
-        delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-        [ false, false, false, false, false, false, false ]);
+        delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+        [false, false, false, false, false, false, false]);
       assert.deepEqual(transferData[0],
-        [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+        [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
       assert.deepEqual(transferData[1].map((x) => x.toString()),
-        [ "0", "0", "0", "42", "0" ], "transfer data - values");
+        ["0", "0", "0", "42", "0"], "transfer data - values");
     });
 
     it("should fail to read transfer data with user registry enrichement", async function () {
       await assertRevert(delegate.readTransferDataMock(
-        delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-        [ true, true, true, true, true, true, false ]), "CO03");
+        delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+        [true, true, true, true, true, true, false]), "CO03");
     });
 
     it("should fail to read transfer data with rates provider enrichement", async function () {
       await assertRevert(delegate.readTransferDataMock(
-        delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-        [ false, false, false, false, false, false, true ]), "CO03");
+        delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+        [false, false, false, false, false, false, true]), "CO03");
     });
 
     describe("with user registry defined", function () {
       beforeEach(async function () {
         userRegistry = await UserRegistryMock.new(
-          [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
-        await delegate.defineOraclesMock(userRegistry.address, NULL_ADDRESS, [ 0, 1 ]);
+          [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+        await delegate.defineOraclesMock(userRegistry.address, NULL_ADDRESS, [0, 1]);
       });
 
       it("should read transfer data with no enrichement", async function () {
         const transferData = await delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ false, false, false, false, false, false, false ]);
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [false, false, false, false, false, false, false]);
         assert.deepEqual(transferData[0],
-          [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+          [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
         assert.deepEqual(transferData[1].map((x) => x.toString()),
-          [ "0", "0", "0", "42", "0" ], "transfer data - values");
+          ["0", "0", "0", "42", "0"], "transfer data - values");
       });
 
       it("should read transfer data with user registry enrichement for user ids only", async function () {
         const transferData = await delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ true, false, true, false, true, false, false ]);
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [true, false, true, false, true, false, false]);
         assert.deepEqual(transferData[0],
-          [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+          [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
         assert.deepEqual(transferData[1].map((x) => x.toString()),
-          [ "1", "2", "3", "42", "0" ], "transfer data - values");
+          ["1", "2", "3", "42", "0"], "transfer data - values");
       });
 
       it("should read transfer data with user registry enrichement", async function () {
         const transferData = await delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ true, true, true, true, true, true, false ]);
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [true, true, true, true, true, true, false]);
         assert.deepEqual(transferData[0],
-          [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+          [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
         assert.deepEqual(transferData[1].map((x) => x.toString()),
-          [ "1", "2", "3", "42", "0", "5", "5000000", "5", "5000000", "5", "5000000" ], "transfer data - values");
+          ["1", "2", "3", "42", "0", "5", "5000000", "5", "5000000", "5", "5000000"], "transfer data - values");
       });
 
       it("should fail to read transfer data with rates provider enrichement", async function () {
         await assertRevert(delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ false, false, false, false, false, false, true ]), "CO03");
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [false, false, false, false, false, false, true]), "CO03");
       });
     });
 
     describe("with rates provider defined", function () {
       beforeEach(async function () {
         userRegistry = await UserRegistryMock.new(
-          [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+          [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
         ratesProvider = await RatesProviderMock.new();
         await delegate.defineOraclesMock(NULL_ADDRESS, ratesProvider.address, []);
       });
 
       it("should read transfer data with no enrichement", async function () {
         const transferData = await delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ false, false, false, false, false, false, false ]);
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [false, false, false, false, false, false, false]);
         assert.deepEqual(transferData[0],
-          [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+          [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
         assert.deepEqual(transferData[1].map((x) => x.toString()),
-          [ "0", "0", "0", "42", "0" ], "transfer data - values");
+          ["0", "0", "0", "42", "0"], "transfer data - values");
       });
 
       it("should fail to read transfer data with user registry enrichement", async function () {
         await assertRevert(delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ true, true, true, true, true, true, false ]), "CO03");
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [true, true, true, true, true, true, false]), "CO03");
       });
 
       it("should read transfer data with rates provider enrichement", async function () {
         const transferData = await delegate.readTransferDataMock(
-          delegate.address, [ accounts[0], accounts[1], accounts[2] ], "42",
-          [ false, false, false, false, false, false, true ]);
+          delegate.address, [accounts[0], accounts[1], accounts[2]], "42",
+          [false, false, false, false, false, false, true]);
         assert.deepEqual(transferData[0],
-          [ delegate.address, accounts[0], accounts[1], accounts[2] ], "transfer data - address");
+          [delegate.address, accounts[0], accounts[1], accounts[2]], "transfer data - address");
         assert.deepEqual(transferData[1].map((x) => x.toString()),
-          [ "0", "0", "0", "42", "63" ], "transfer data - values");
+          ["0", "0", "0", "42", "63"], "transfer data - values");
       });
     });
   });
@@ -132,11 +132,11 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
 
     beforeEach(async function () {
       delegate = await OracleEnrichedTokenDelegate.new();
-      core = await TokenCoreMock.new("Test", [ delegate.address ]);
+      core = await TokenCoreMock.new("Test", [delegate.address]);
       userRegistry = await UserRegistryMock.new(
-        [ accounts[0], accounts[1], accounts[2] ], [ 5, 5000000 ]);
+        [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
       ratesProvider = await RatesProviderMock.new();
-      await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1 ]);
+      await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
       
       token = await TokenProxy.new(core.address);
       await core.defineToken(

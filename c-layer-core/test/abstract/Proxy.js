@@ -7,8 +7,6 @@
 const assertRevert = require("../helpers/assertRevert");
 const ProxyMock = artifacts.require("ProxyMock.sol");
 
-const NULL_ADDRESS = "0x".padEnd("0x", 66);
-
 contract("Proxy", function (accounts) {
   let core, proxy;
 
