@@ -12,6 +12,11 @@ import "../interface/IClaimable.sol";
  * Holder may ask for the claim later using the proofOfOwnership
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
+ * @notice Beware that claimables should only check if a claims exists
+ * @notice Adding too many claims or too costly claims may prevents
+ * @notice transfers due to a gas cost too high.
+ * @notice Removing claims will resume the situation.
+ *
  * Error messages
  * E01: Claimable address must be defined
  * E02: Claimables parameter must not be empty
@@ -61,7 +66,7 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
       return true;
     }
     return false;
-   }
+  }
 
   /**
    * @dev Returns true if there are any claimables associated to this token
@@ -80,6 +85,8 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 
   /**
    * @dev define claimables contract to this token
+   * @notice Beware do not add too many claimables as gas used in
+   * @notice for transfer will add up through hasClaims calls
    */
   function defineClaimables(
     address _token, IClaimable[] memory _claimables)
