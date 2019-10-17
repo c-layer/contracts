@@ -77,7 +77,7 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
    * with a transfer and transferFrom gas cost reasonable.
    */
   function hasClaims(address _token, address _holder) public view returns (bool) {
-    uint256 lastTransaction = tokens_[_token].audits[0].addressData[_holder].lastTransactionAt;
+    uint256 lastTransaction = audits[_token][0].addressData[_holder].lastTransactionAt;
     IClaimable[] memory claimables_ = tokens_[_token].claimables;
     for (uint256 i = 0; i < claimables_.length; i++) {
       if (claimables_[i].hasClaimsSince(_holder, lastTransaction)) {

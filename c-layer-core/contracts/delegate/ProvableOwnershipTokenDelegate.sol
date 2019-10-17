@@ -29,7 +29,7 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
     TokenData storage token = tokens_[_token];
     proofs.push(Proof(
       token.balances[_holder],
-      token.audits[0].addressData[_holder].lastTransactionAt,
+      audits[_token][0].addressData[_holder].lastTransactionAt,
       currentTime()));
     emit ProofCreated(_token, _holder, proofId);
     return true;

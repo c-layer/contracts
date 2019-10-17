@@ -74,7 +74,6 @@ contract TokenStorage is OperableStorage {
 
     mapping (address => Proof[]) proofs;
     mapping (address => uint256) frozenUntils;
-    mapping (uint256 => AuditStorage) audits;
 
     Lock lock;
     IRule[] rules;
