@@ -71,6 +71,10 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
   /**
    * @dev Returns true if there are any claimables associated to this token
    * to be made at this time for the _holder
+   * @dev the claimables array is unbounded and each claims
+   * may have a complex gas cost estimate. Therefore it is left
+   * to the token operators to ensure that the token remains always operable
+   * with a transfer and transferFrom gas cost reasonable.
    */
   function hasClaims(address _token, address _holder) public view returns (bool) {
     uint256 lastTransaction = tokens_[_token].audits[0].addressData[_holder].lastTransactionAt;

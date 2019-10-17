@@ -59,6 +59,10 @@ contract RuleEngineTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev Check if the rules are valid for an address
+   * @dev the rules array is unbounded and each claims
+   * may have a complex gas cost estimate. Therefore it is left
+   * to the token operators to ensure that the token remains always operable
+   * with a transfer and transferFrom gas cost reasonable.
    */
   function validateAddress(address _token, address _address) public view returns (bool) {
     IRule[] memory rules_ = tokens_[_token].rules;
