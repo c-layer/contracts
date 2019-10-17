@@ -32,18 +32,14 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
     address _sender, address _to, uint256 _value)
     public returns (bool)
   {
-    if (super.transfer(_sender, _to, _value)) {
-      if (hasClaims(msg.sender, _sender)) {
-        createProof(msg.sender, _sender);
-      }
-
-      if (hasClaims(msg.sender, _to)) {
-        createProof(msg.sender, _to);
-      }
-
-      return true;
+    if (hasClaims(msg.sender, _sender)) {
+      createProof(msg.sender, _sender);
     }
-    return false;
+
+    if (hasClaims(msg.sender, _to)) {
+      createProof(msg.sender, _to);
+    }
+    return super.transfer(_sender, _to, _value);
   }
 
   /**
@@ -54,18 +50,14 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
     address _sender, address _from, address _to, uint256 _value)
     public returns (bool)
   {
-    if (super.transferFrom(_sender, _from, _to, _value)) {
-      if (hasClaims(msg.sender, _from)) {
-        createProof(msg.sender, _from);
-      }
-
-      if (hasClaims(msg.sender, _to)) {
-        createProof(msg.sender, _to);
-      }
-
-      return true;
+    if (hasClaims(msg.sender, _from)) {
+      createProof(msg.sender, _from);
     }
-    return false;
+
+    if (hasClaims(msg.sender, _to)) {
+      createProof(msg.sender, _to);
+    }
+    return super.transferFrom(_sender, _from, _to, _value);
   }
 
   /**

@@ -109,7 +109,7 @@ contract TokenStorage is OperableStorage {
   event Redeem(address indexed token, uint256 amount);
   event Mint(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
-  event ProofCreated(address indexed token, address holder, uint256 proofId);
+  event ProofCreated(address indexed token, address indexed holder, uint256 proofId);
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
     address indexed token,

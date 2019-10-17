@@ -68,7 +68,34 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
     it("should have a proof", async function () {
       const proof = await core.tokenProofs(token.address, accounts[0], 0);
       assert.deepEqual(Object.values(proof).map(x => x.toString()),
-        [String(AMOUNT), "0", String(block1Time)], "no proofs id 0");
+        [String(AMOUNT), "0", String(block1Time)], "proof id 0");
+    });
+
+    describe("With a second proof created for account 0 after a transfer", function () {
+      let block2Time, block3Time;
+
+      beforeEach(async function () {
+        const tx = await token.transfer(accounts[1], "3333");
+        block2Time = (await web3.eth.getBlock("latest")).timestamp;
+        await core.createProof(token.address, accounts[0]);
+        block3Time = (await web3.eth.getBlock("latest")).timestamp;
+      });
+
+      it("should let create another proof for account 0", async function () {
+        const tx = await core.createProof(token.address, accounts[0]);
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, "ProofCreated", "event");
+        assert.equal(tx.logs[0].args.token, token.address, "token");
+        assert.equal(tx.logs[0].args.holder, accounts[0], "holder");
+        assert.equal(tx.logs[0].args.proofId, 2, "proofId");
+      });
+
+      it("should have a second proof", async function () {
+        const proof = await core.tokenProofs(token.address, accounts[0], 1);
+        assert.deepEqual(Object.values(proof).map(x => x.toString()),
+          [ String(AMOUNT-3333), String(block2Time), String(block3Time)], "proof id 1");
+      });
     });
   });
 });

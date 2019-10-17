@@ -162,5 +162,34 @@ contract("WithClaimsTokenDelegate", function (accounts) {
       assert.equal(coreEvents[1].returnValues.holder, accounts[2], "holder");
       assert.equal(coreEvents[1].returnValues.proofId, 0, "proofId");
     });
+
+    describe("and after two transfers", async function () {
+      let block1Time, block2Time;
+
+      beforeEach(async function () {
+        await token.transfer(accounts[2], "4555");
+        block1Time = (await web3.eth.getBlock("latest")).timestamp;
+        await token.transfer(accounts[2], "4555");
+        block2Time = (await web3.eth.getBlock("latest")).timestamp;
+      });
+
+      it("should have two proofs for account 0", async function () {
+        const proof0 = await core.tokenProofs(token.address, accounts[0], 0);
+        assert.deepEqual(Object.values(proof0).map(x => x.toString()),
+          [String(AMOUNT), "0", String(block1Time)], "proof id 0");
+        const proof1 = await core.tokenProofs(token.address, accounts[0], 1);
+        assert.deepEqual(Object.values(proof1).map(x => x.toString()),
+          [String(AMOUNT-4555), String(block1Time), String(block2Time)], "proof id 1");
+      });
+
+      it("should have two proofs for account 2", async function () {
+        const proof0 = await core.tokenProofs(token.address, accounts[2], 0);
+        assert.deepEqual(Object.values(proof0).map(x => x.toString()),
+          ["0", "0", String(block1Time)], "proof id 0");
+        const proof1 = await core.tokenProofs(token.address, accounts[2], 1);
+        assert.deepEqual(Object.values(proof1).map(x => x.toString()),
+          [String(4555), String(block1Time), String(block2Time)], "proof id 1");
+      });
+    });
   });
 });
