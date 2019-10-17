@@ -321,6 +321,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     userKeys = _userKeys;
 
     emit OraclesDefined(userRegistry, ratesProvider, currency, userKeys);
+    return true;
   }
 
   function defineAuditSelector(

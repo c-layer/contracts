@@ -63,6 +63,7 @@ contract FreezableTokenDelegate is BaseTokenDelegate {
       frozenUntils[_addresses[i]] = _until;
       emit Freeze(_addresses[i], _until);
     }
+    return true;
   }
 
   /**
