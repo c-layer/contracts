@@ -49,6 +49,8 @@ contract RatesProvider is IRatesProvider, Operable {
 
   /**
    * @dev define all rates
+   * @dev The rates should be defined in the base currency (WEI, Satoshi, cents, ...)
+   * @dev Rates should also account for rateOffset
    */
   function defineRatesExternal(uint256[] calldata _rates)
     external onlyOperator returns (bool)
@@ -117,6 +119,8 @@ contract RatesProvider is IRatesProvider, Operable {
 
   /**
    * @dev define all currencies
+   * @dev @param _rateOffset is to be used when the default currency
+   * @dev does not have enough decimals for sufficient rate precisions
    */
   function defineCurrencies(
     bytes32[] memory _currencies,
@@ -133,7 +137,7 @@ contract RatesProvider is IRatesProvider, Operable {
 
     for (uint256 i=1; i < _currencies.length; i++) {
       bytes32 currency = _currencies[i];
-      if (ratesMap[currency] != i) {
+      if (rateOffset_ != _rateOffset || ratesMap[currency] != i) {
         ratesMap[currency] = i;
         rates_[i-1] = 0;
       }
@@ -154,6 +158,8 @@ contract RatesProvider is IRatesProvider, Operable {
   
   /**
    * @dev define all rates
+   * @dev The rates should be defined in the base currency (WEI, Satoshi, cents, ...)
+   * @dev Rates should also account for rateOffset
    */
   function defineRates(uint256[] memory _rates)
     public onlyOperator returns (bool)
