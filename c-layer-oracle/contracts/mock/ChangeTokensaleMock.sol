@@ -27,9 +27,8 @@ contract ChangeTokensaleMock is ChangeTokensale {
     bytes32 _baseCurrency,
     IRatesProvider _ratesProvider
   ) public
-    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
-    priceUnit_ = _priceUnit;
     baseCurrency_ = _baseCurrency;
     ratesProvider_ = _ratesProvider;
   }

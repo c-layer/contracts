@@ -30,9 +30,11 @@ contract BonusTokensale is SchedulableTokensale {
     IERC20 _token,
     address _vaultERC20,
     address payable _vaultETH,
-    uint256 _tokenPrice
+    uint256 _tokenPrice,
+    uint256 _priceUnit
   ) public
-    SchedulableTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+    SchedulableTokensale(_token,
+      _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {} /* solhint-disable no-empty-blocks */
   
   /**

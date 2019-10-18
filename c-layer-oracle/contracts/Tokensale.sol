@@ -34,9 +34,9 @@ contract Tokensale is ChangeTokensale, UserTokensale, BonusTokensale {
     uint256[] memory _contributionsLimit
   ) public
     UserTokensale(_contributionsLimit)
-    BonusTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+    BonusTokensale(_token,
+      _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
-    priceUnit_ = _priceUnit;
     baseCurrency_ = _baseCurrency;
     userRegistry_ = _userRegistry;
     ratesProvider_ = _ratesProvider;

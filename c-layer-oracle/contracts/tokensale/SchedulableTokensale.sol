@@ -68,9 +68,10 @@ contract SchedulableTokensale is BaseTokensale {
     IERC20 _token,
     address _vaultERC20,
     address payable _vaultETH,
-    uint256 _tokenPrice
+    uint256 _tokenPrice,
+    uint256 _priceUnit
   ) public
-    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice)
+    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {} /* solhint-disable no-empty-blocks */
 
   /**

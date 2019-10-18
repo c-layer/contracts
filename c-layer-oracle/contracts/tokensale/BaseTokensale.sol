@@ -30,7 +30,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   address internal vaultERC20_;
 
   uint256 internal tokenPrice_;
-  uint256 internal priceUnit_ = 1;
+  uint256 internal priceUnit_;
 
   uint256 internal totalRaised_;
   uint256 internal totalTokensSold_;
@@ -52,13 +52,15 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     IERC20 _token,
     address _vaultERC20,
     address payable _vaultETH,
-    uint256 _tokenPrice
+    uint256 _tokenPrice,
+    uint256 _priceUnit
   ) public
   {
     token_ = _token;
     vaultERC20_ = _vaultERC20;
     vaultETH_ = _vaultETH;
     tokenPrice_ = _tokenPrice;
+    priceUnit_ = _priceUnit;
   }
 
   /**
