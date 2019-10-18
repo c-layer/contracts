@@ -140,11 +140,11 @@ contract("UserTokensale", function (accounts) {
 
   it("should revert 1 ETH", async function () {
      const wei = web3.utils.toWei("1", "ether");
-     await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "TOS05");
+     await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "TOS07");
   });
 
   it("should revert 30'000 USD", async function () {
-     await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS05");
+     await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS07");
   });
 
   describe("and with contribution aml limit", function () {
@@ -181,7 +181,7 @@ contract("UserTokensale", function (accounts) {
     });
 
     it("should revert 30'000 USD", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS06");
+      await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS08");
     });
 
     it("should invest 2'700 USD", async function () {

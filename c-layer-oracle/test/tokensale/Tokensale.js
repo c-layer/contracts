@@ -114,13 +114,13 @@ contract("Tokensale", function (accounts) {
     });
 
     it("should add offchain investment", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 1500000), "TOS05");
+      await assertRevert(sale.addOffchainInvestment(accounts[3], 1500000), "TOS07");
     });
 
     it("should let investor invest", async function () {
       await assertRevert(sale.investETH(
         { from: accounts[3], value: web3.utils.toWei("1", "ether") }
-      ), "TOS05");
+      ), "TOS07");
     });
   });
 
@@ -139,7 +139,7 @@ contract("Tokensale", function (accounts) {
     });
 
     it("should reject offchain investment if not exact amount", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 10000001), "TOS06");
+      await assertRevert(sale.addOffchainInvestment(accounts[3], 10000001), "TOS08");
     });
 
     it("should add offchain investment", async function () {

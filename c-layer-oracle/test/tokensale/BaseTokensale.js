@@ -29,6 +29,24 @@ contract("BaseTokensale", function (accounts) {
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
 
+  it("should not create a sale without a token price", async function () {
+    await assertRevert(Tokensale.new(
+      token.address,
+      vaultERC20,
+      vaultETH,
+      0,
+      priceUnit), "TOS01");
+  });
+
+  it("should not create a sale without a price unit", async function () {
+    await assertRevert(Tokensale.new(
+      token.address,
+      vaultERC20,
+      vaultETH,
+      tokenPrice,
+      0), "TOS02");
+  });
+
   it("should have a token", async function () {
     const tokenAddress = await sale.token();
     assert.equal(tokenAddress, token.address, "token");
@@ -47,6 +65,11 @@ contract("BaseTokensale", function (accounts) {
   it("should have a token price", async function () {
     const saleTokenPrice = await sale.tokenPrice();
     assert.equal(saleTokenPrice, tokenPrice, "tokenPrice");
+  });
+
+  it("should have a price unit", async function () {
+    const salePriceUnit = await sale.priceUnit();
+    assert.equal(salePriceUnit, priceUnit, "priceUnit");
   });
 
   it("should have a total raised", async function () {
@@ -117,15 +140,15 @@ contract("BaseTokensale", function (accounts) {
   });
 
   it("should reject refund unspent ETH", async function () {
-    await assertRevert(sale.refundUnspentETH({ form: accounts[3] }), "TOS03");
+    await assertRevert(sale.refundUnspentETH({ form: accounts[3] }), "TOS05");
   });
 
   it("should reject refund many unspent ETH", async function () {
-    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS03");
+    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS05");
   });
 
   it("should reject refund many unspent ETH", async function () {
-    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS03");
+    await assertRevert(sale.refundManyUnspentETH([accounts[3]]), "TOS05");
   });
 
   it("should withdraw all ETH funds", async function () {
@@ -142,7 +165,7 @@ contract("BaseTokensale", function (accounts) {
       to: sale.address,
       value: wei,
       data: "0x1",
-    }), "TOS01");
+    }), "TOS03");
   });
 
   it("should reject value transfer if no ETH is send along", async function () {
@@ -150,7 +173,7 @@ contract("BaseTokensale", function (accounts) {
       from: accounts[0],
       to: sale.address,
       value: "0",
-    }), "TOS04");
+    }), "TOS05");
   });
 
   it("should transfer 1 micro ETH to the sale", async function () {

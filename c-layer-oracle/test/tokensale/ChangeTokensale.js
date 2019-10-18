@@ -95,7 +95,7 @@ contract("ChangeTokensale", function (accounts) {
     });
 
     it("should prevent operator to add 0 offchain investment", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 0), "TOS04");
+      await assertRevert(sale.addOffchainInvestment(accounts[3], 0), "TOS06");
     });
 
     it("should let operator add 100CHF offchain investment", async function () {

@@ -14,12 +14,14 @@ import "../util/lifecycle/Pausable.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * TOS01: No data must be sent while sending ETH
- * TOS02: Token transfer must be successfull
- * TOS03: No ETH to refund
- * TOS04: Cannot invest 0 tokens
- * TOS05: Cannot invest if there are no tokens to buy
- * TOS06: Only exact amount is authorized
+ * TOS01: token price must be strictly positive
+ * TOS02: price unit must be strictly positive
+ * TOS03: No data must be sent while sending ETH
+ * TOS04: Token transfer must be successfull
+ * TOS05: No ETH to refund
+ * TOS06: Cannot invest 0 tokens
+ * TOS07: Cannot invest if there are no tokens to buy
+ * TOS08: Only exact amount is authorized
  */
 contract BaseTokensale is ITokensale, Operable, Pausable {
   using SafeMath for uint256;
@@ -56,6 +58,9 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     uint256 _priceUnit
   ) public
   {
+    require(_tokenPrice > 0, "TOS01");
+    require(_priceUnit > 0, "TOS02");
+
     token_ = _token;
     vaultERC20_ = _vaultERC20;
     vaultETH_ = _vaultETH;
@@ -68,7 +73,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
    */
   //solhint-disable-next-line no-complex-fallback
   function () external payable {
-    require(msg.data.length == 0, "TOS01");
+    require(msg.data.length == 0, "TOS03");
     investETH();
   }
 
@@ -253,7 +258,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   function distributeTokensInternal(address _investor, uint256 _tokens) internal {
     require(
       token_.transferFrom(vaultERC20_, _investor, _tokens),
-      "TOS02");
+      "TOS04");
   }
 
   /**
@@ -261,7 +266,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
    */
   function refundUnspentETHInternal(address payable _investor) internal {
     Investor storage investor = investorInternal(_investor);
-    require(investor.unspentETH > 0, "TOS03");
+    require(investor.unspentETH > 0, "TOS05");
 
     uint256 unspentETH = investor.unspentETH;
     totalRefundedETH_ = totalRefundedETH_.add(unspentETH);
@@ -290,16 +295,16 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   function investInternal(address _investor, uint256 _amount, bool _exactAmountOnly)
     internal whenNotPaused
   {
-    require(_amount != 0, "TOS04");
+    require(_amount != 0, "TOS06");
 
     Investor storage investor = investorInternal(_investor);
     uint256 investment = tokenInvestment(_investor, _amount);
-    require(investment != 0, "TOS05");
+    require(investment != 0, "TOS07");
 
     (uint256 invested, uint256 tokens) = evalInvestmentInternal(investment);
 
     if (_exactAmountOnly) {
-      require(invested == _amount, "TOS06");
+      require(invested == _amount, "TOS08");
     } else {
       uint256 unspentETH = evalUnspentETHInternal(investor, invested);
       totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
