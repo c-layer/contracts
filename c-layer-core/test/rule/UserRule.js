@@ -10,9 +10,11 @@ const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 contract("UserRule", function (accounts) {
   let rule, userRegistry;
 
+  const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
+
   beforeEach(async function () {
     userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
     rule = await UserRule.new(userRegistry.address);
   });
 

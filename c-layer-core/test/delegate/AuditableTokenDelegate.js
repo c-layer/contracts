@@ -15,6 +15,7 @@ const AMOUNT = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
+const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
 const evalAudit = function (audit, expected) {
   assert.equal(audit.createdAt.toString(), expected[0], "createdAt");
@@ -308,7 +309,7 @@ contract("AuditableToken", function (accounts) {
       await token.approve(accounts[1], AMOUNT);
 
       userRegistry = await UserRegistryMock.new(
-        [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
       ratesProvider = await RatesProviderMock.new();
       await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
     });

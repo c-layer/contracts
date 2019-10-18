@@ -8,11 +8,17 @@ pragma solidity >=0.5.0 <0.6.0;
  **/
 contract UserRegistryMock {
 
-  bytes32 private currency_ = bytes32("CHF");
+  bytes32 private currency_;
   address[] private addresses_;
   uint256[] private keyValues_;
 
-  constructor(address[] memory _addresses, uint256[] memory _keyValues) public {
+  constructor(
+    address[] memory _addresses,
+    bytes32 _currency,
+    uint256[] memory _keyValues
+  ) public
+  {
+    currency_ = _currency;
     addresses_ = _addresses;
     keyValues_ = _keyValues;
   }

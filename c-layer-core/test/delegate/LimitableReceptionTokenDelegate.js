@@ -15,6 +15,7 @@ const AMOUNT = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
+const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
 contract("LimitableReceptionTokenDelegate", function (accounts) {
   let core, delegate, token, userRegistry, ratesProvider;
@@ -29,7 +30,7 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
     await core.defineSupplyMock(token.address, AMOUNT);
 
     userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
     ratesProvider = await RatesProviderMock.new();
     await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
   });

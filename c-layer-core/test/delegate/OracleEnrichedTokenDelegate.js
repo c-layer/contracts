@@ -16,6 +16,7 @@ const NULL_ADDRESS = "0x".padEnd(42, "0");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
+const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
 contract("OracleEnrichedTokenDelegate", function (accounts) {
   let core, delegate, userRegistry, ratesProvider;
@@ -50,7 +51,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
     describe("with user registry defined", function () {
       beforeEach(async function () {
         userRegistry = await UserRegistryMock.new(
-          [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+          [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
         await delegate.defineOraclesMock(userRegistry.address, NULL_ADDRESS, [0, 1]);
       });
 
@@ -94,7 +95,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
     describe("with rates provider defined", function () {
       beforeEach(async function () {
         userRegistry = await UserRegistryMock.new(
-          [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+          [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
         ratesProvider = await RatesProviderMock.new();
         await delegate.defineOraclesMock(NULL_ADDRESS, ratesProvider.address, []);
       });
@@ -134,7 +135,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
       delegate = await OracleEnrichedTokenDelegate.new();
       core = await TokenCoreMock.new("Test", [delegate.address]);
       userRegistry = await UserRegistryMock.new(
-        [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
       ratesProvider = await RatesProviderMock.new();
       await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
       

@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
+const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
 const TokenDelegate = artifacts.require("TokenDelegate.sol");
@@ -16,6 +17,7 @@ const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
+const TKN = web3.utils.toHex("TKN").padEnd(66, "0");
 
 contract("TokenCore", function (accounts) {
   let token, core, delegate, userRegistry, ratesProvider;
@@ -24,7 +26,7 @@ contract("TokenCore", function (accounts) {
     delegate = await TokenDelegate.new();
     core = await TokenCore.new("Test", [delegate.address]);
     userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], [5, 5000000]);
+      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
     ratesProvider = await RatesProviderMock.new();
   });
 
@@ -55,6 +57,12 @@ contract("TokenCore", function (accounts) {
   describe("With oracles defined", async function () {
     beforeEach(async function () {
       await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
+    });
+
+    it("should not let define a user registry with a different currency", async function () {
+      userRegistry = await UserRegistryMock.new(
+        [accounts[0], accounts[1], accounts[2]], TKN, [5, 5000000]);
+      await assertRevert(core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]), "TC01");
     });
 
     it("should have oracles", async function () {
