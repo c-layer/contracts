@@ -15,6 +15,7 @@ contract("BaseTokensale", function (accounts) {
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];
   const tokenPrice = web3.utils.toWei("1", "microether");
+  const priceUnit = 2;
   const supply = "1000000";
 
   beforeEach(async function () {
@@ -23,7 +24,8 @@ contract("BaseTokensale", function (accounts) {
       token.address,
       vaultERC20,
       vaultETH,
-      tokenPrice);
+      tokenPrice,
+      priceUnit);
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
 
@@ -94,7 +96,7 @@ contract("BaseTokensale", function (accounts) {
 
   it("should have token investment for 1 micro ETH", async function () {
     const saleTokenInvestment = await sale.tokenInvestment(accounts[3], web3.utils.toWei("1", "microether"));
-    assert.equal(saleTokenInvestment.toString(), "1", "saleTokenInvestment 1 micro ETH");
+    assert.equal(saleTokenInvestment.toString(), "2", "saleTokenInvestment 1 micro ETH");
   });
 
   it("should have token investment for 1 ETH", async function () {
@@ -175,13 +177,13 @@ contract("BaseTokensale", function (accounts) {
     assert.equal(tx.logs[0].event, "Investment", "event");
     assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
     assert.equal(tx.logs[0].args.invested, wei, "amount investment");
-    assert.equal(tx.logs[0].args.tokens, 1, "tokens");
+    assert.equal(tx.logs[0].args.tokens, 2, "tokens");
     assert.equal(tx.logs[1].event, "WithdrawETH", "event");
     assert.equal(tx.logs[1].args.amount, wei, "amount withdraw");
   });
 
   it("should invest 1 ETH", async function () {
-    const wei = web3.utils.toWei("1", "ether");
+    const wei = web3.utils.toWei("0.5", "ether");
     const tx = await sale.investETH({ value: wei, from: accounts[3] });
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
@@ -194,7 +196,7 @@ contract("BaseTokensale", function (accounts) {
 
   it("should invest 2 ETH", async function () {
     const wei = web3.utils.toWei("2", "ether");
-    const maxWei = web3.utils.toWei("1", "ether");
+    const maxWei = web3.utils.toWei("0.5", "ether");
     const tx = await sale.investETH({ value: wei, from: accounts[3] });
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs[0].event, "Investment", "event");
@@ -236,18 +238,18 @@ contract("BaseTokensale", function (accounts) {
 
     it("should have ERC20 transfered", async function () {
       const balanceVaultERC20 = await token.balanceOf(vaultERC20);
-      assert.equal(balanceVaultERC20.toString(), "999992", "balanceVaultERC20");
+      assert.equal(balanceVaultERC20.toString(), "999982", "balanceVaultERC20");
     });
 
     it("should have ETH in tokensale", async function () {
       const balanceSaleETH = await web3.eth.getBalance(sale.address);
-      assert.equal(balanceSaleETH.toString(), web3.utils.toWei("1.3", "microether"), "balanceSaleETH");
+      assert.equal(balanceSaleETH.toString(), web3.utils.toWei("0.3", "microether"), "balanceSaleETH");
     });
 
     it("should have a vault ETH", async function () {
       const balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
       const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
-      assert.equal(balanceDiff.toString(), web3.utils.toWei("8", "microether"), "balanceVaultETH");
+      assert.equal(balanceDiff.toString(), web3.utils.toWei("9", "microether"), "balanceVaultETH");
     });
 
     it("should have a refund cost", async function () {
@@ -266,12 +268,12 @@ contract("BaseTokensale", function (accounts) {
 
     it("should have a total raised", async function () {
       const saleTotalRaised = await sale.totalRaised();
-      assert.equal(saleTotalRaised.toString(), web3.utils.toWei("8", "microether"), "totalRaised");
+      assert.equal(saleTotalRaised.toString(), web3.utils.toWei("9", "microether"), "totalRaised");
     });
 
     it("should have a total unspent ETH", async function () {
       const saleTotalUnspentETH = await sale.totalUnspentETH();
-      assert.equal(saleTotalUnspentETH.toString(), web3.utils.toWei("1.3", "microether"), "totalUnspentETH");
+      assert.equal(saleTotalUnspentETH.toString(), web3.utils.toWei("0.3", "microether"), "totalUnspentETH");
     });
 
     it("should have a total refunded ETH", async function () {
@@ -281,7 +283,7 @@ contract("BaseTokensale", function (accounts) {
 
     it("should have an available supply", async function () {
       const saleAvailableSupply = await sale.availableSupply();
-      assert.equal(saleAvailableSupply.toString(), "999992", "availableSupply");
+      assert.equal(saleAvailableSupply.toString(), "999982", "availableSupply");
     });
 
     it("should have unspent ETH for investors", async function () {
@@ -292,7 +294,7 @@ contract("BaseTokensale", function (accounts) {
         unspentETHAccount3.toString(),
         unspentETHAccount4.toString(),
         unspentETHAccount5.toString(),
-      ], [web3.utils.toWei("0.5", "microether"), "0", web3.utils.toWei("0.8", "microether")],
+      ], ["0", "0", web3.utils.toWei("0.3", "microether")],
       "saleInvestorUnspentETH");
     });
 
@@ -305,9 +307,9 @@ contract("BaseTokensale", function (accounts) {
         investedAccount4.toString(),
         investedAccount5.toString(),
       ], [
-        web3.utils.toWei("1", "microether"),
+        web3.utils.toWei("1.5", "microether"),
         web3.utils.toWei("4", "microether"),
-        web3.utils.toWei("3", "microether"),
+        web3.utils.toWei("3.5", "microether"),
       ],
       "saleInvestorInvested");
     });
@@ -320,7 +322,7 @@ contract("BaseTokensale", function (accounts) {
         tokensAccount3.toString(),
         tokensAccount4.toString(),
         tokensAccount5.toString(),
-      ], ["1", "4", "3"],
+      ], ["3", "8", "7"],
       "saleInvestorTokens");
     });
   });
@@ -331,7 +333,7 @@ contract("BaseTokensale", function (accounts) {
     beforeEach(async function () {
       balanceVaultETHBefore = await web3.eth.getBalance(vaultETH);
 
-      const wei1 = web3.utils.toWei("0.9", "ether");
+      const wei1 = web3.utils.toWei("0.4", "ether");
       const wei2 = web3.utils.toWei("0.2", "ether");
 
       const tx1 = await sale.investETH({ value: wei1, from: accounts[3] });
@@ -353,12 +355,12 @@ contract("BaseTokensale", function (accounts) {
     it("should have a vault ETH", async function () {
       const balanceVaultETHAfter = await web3.eth.getBalance(vaultETH);
       const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
-      assert.equal(balanceDiff.toString(), web3.utils.toWei("1", "ether"), "balanceVaultETH");
+      assert.equal(balanceDiff.toString(), web3.utils.toWei("0.5", "ether"), "balanceVaultETH");
     });
 
     it("should have a total raised", async function () {
       const saleTotalRaised = await sale.totalRaised();
-      assert.equal(saleTotalRaised.toString(), web3.utils.toWei("1", "ether"), "totalRaised");
+      assert.equal(saleTotalRaised.toString(), web3.utils.toWei("0.5", "ether"), "totalRaised");
     });
 
     it("should have a total tokens sold", async function () {

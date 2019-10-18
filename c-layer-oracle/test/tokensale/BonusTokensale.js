@@ -14,6 +14,7 @@ contract("BonusTokensale", function (accounts) {
   const vaultERC20 = accounts[1];
   const vaultETH = accounts[2];
   const tokenPrice = 500;
+  const priceUnit = 1;
   const supply = "1000000";
   const start = 4102444800;
   const end = 7258118400;
@@ -29,7 +30,8 @@ contract("BonusTokensale", function (accounts) {
       token.address,
       vaultERC20,
       vaultETH,
-      tokenPrice
+      tokenPrice,
+      priceUnit
     );
     await token.approve(sale.address, supply, { from: accounts[1] });
     await sale.updateSchedule(start, end);
