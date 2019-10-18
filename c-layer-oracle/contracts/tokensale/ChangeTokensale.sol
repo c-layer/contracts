@@ -12,7 +12,7 @@ import "./BaseTokensale.sol";
  *
  * Error messages
  * CTS01: message value must be positive
- * CTS02: A rate must be correctly defined
+ * CTS02: No investment after currency change.
  */
 contract ChangeTokensale is BaseTokensale {
 

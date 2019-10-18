@@ -24,13 +24,15 @@ contract UserTokensaleMock is UserTokensale {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit,
-    IUserRegistry _userRegistry,
-    uint256[] memory _contributionLimits
+    bytes32 _baseCurrency,
+    IRatesProvider _ratesProvider,
+    IUserRegistry _userRegistry
   ) public
-    UserTokensale(_contributionLimits)
     BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
     userRegistry_ = _userRegistry;
+    baseCurrency_ = _baseCurrency;
+    ratesProvider_ = _ratesProvider;
   }
 
 }

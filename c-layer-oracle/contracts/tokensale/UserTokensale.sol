@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./BaseTokensale.sol";
+import "./ChangeTokensale.sol";
 import "../interface/IUserRegistry.sol";
 
 
@@ -12,22 +12,26 @@ import "../interface/IUserRegistry.sol";
  *
  * Error messages
  */
-contract UserTokensale is BaseTokensale {
+contract UserTokensale is ChangeTokensale {
 
-  uint256 constant public KYC_LEVEL_KEY = 0;
-  uint256 constant public AML_LIMIT_KEY = 1;
+  uint256[] public extendedKeys = [ 0, 1 ]; // KYC Level and AML Limit
 
-  uint256[] internal contributionLimits_;
-  // Default  [ 0, 300000, 1500000, 10000000, 100000000 ];
+  // Default investment based on the KYC Level.
+  // Example [ 0, 300000, 1500000, 10000000, 100000000 ];
+  uint256[] internal contributionLimits_ = new uint256[](0);
 
   mapping(uint256 => Investor) internal investorIds;
   IUserRegistry internal userRegistry_;
 
   /**
-   * @dev constructor
+   * @dev define contributionLimits
    */
-  constructor(uint256[] memory _contributionLimits) public {
+  function defineContributionLimits(uint256[] memory _contributionLimits)
+    public onlyOperator returns (bool)
+  {
     contributionLimits_ = _contributionLimits;
+    emit ContributionLimits(_contributionLimits);
+    return true;
   }
 
   /**
@@ -74,9 +78,20 @@ contract UserTokensale is BaseTokensale {
   function contributionLimit(uint256 _investorId)
     public view returns (uint256)
   {
-    uint256 kycLevel = userRegistry_.extended(_investorId, KYC_LEVEL_KEY);
-    uint256 amlLimit = userRegistry_.extended(_investorId, AML_LIMIT_KEY);
-    amlLimit = (amlLimit > 0) ? amlLimit : contributionLimits_[kycLevel];
+    uint256 amlLimit = 0;
+
+    uint256[] memory extended = userRegistry_.manyExtended(_investorId, extendedKeys);
+    uint256 kycLevel = extended[0];
+    uint256 baseAmlLimit = extended[1];
+
+    if (baseAmlLimit > 0) {
+      amlLimit = ratesProvider_.convert(
+        baseAmlLimit, userRegistry_.currency(), baseCurrency_);
+    }
+
+    if (amlLimit == 0 && kycLevel < contributionLimits_.length) {
+      amlLimit = contributionLimits_[kycLevel];
+    }
 
     return amlLimit.sub(investorIds[_investorId].invested);
   }
@@ -100,4 +115,6 @@ contract UserTokensale is BaseTokensale {
   {
     return investorIds[userRegistry_.userId(_investor)];
   }
+
+  event ContributionLimits(uint256[] contributionLimits);
 }
