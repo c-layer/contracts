@@ -4,7 +4,7 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
+const assertRevert = require("./helpers/assertRevert");
 const Tokensale = artifacts.require("Tokensale.sol");
 const Token = artifacts.require("TokenERC20.sol");
 const UserRegistry = artifacts.require("UserRegistry.sol");

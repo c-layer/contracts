@@ -2,7 +2,6 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "./tokensale/BonusTokensale.sol";
 import "./tokensale/UserTokensale.sol";
-import "./tokensale/ChangeTokensale.sol";
 
 
 /**
@@ -13,7 +12,7 @@ import "./tokensale/ChangeTokensale.sol";
  *
  * Error messages
  */
-contract Tokensale is ChangeTokensale, UserTokensale, BonusTokensale {
+contract Tokensale is UserTokensale, BonusTokensale {
 
   /**
    * @dev constructor
