@@ -7,7 +7,11 @@ import "../governance/Operable.sol";
 /**
  * @title Pausable
  * @dev Base contract which allows children to implement an emergency stop mechanism.
- */
+ *
+ * Error messages
+ * PA01: the contract is paused
+ * PA02: the contract is unpaused
+ **/
 contract Pausable is Operable {
   event Pause();
   event Unpause();
@@ -19,7 +23,7 @@ contract Pausable is Operable {
    * @dev Modifier to make a function callable only when the contract is not paused.
    */
   modifier whenNotPaused() {
-    require(!paused);
+    require(!paused, "PA01");
     _;
   }
 
@@ -27,7 +31,7 @@ contract Pausable is Operable {
    * @dev Modifier to make a function callable only when the contract is paused.
    */
   modifier whenPaused() {
-    require(paused);
+    require(paused, "PA02");
     _;
   }
 

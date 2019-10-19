@@ -230,6 +230,76 @@ contract("BaseTokensale", function (accounts) {
     assert.equal(tx.logs[1].args.amount.toString(), maxWei, "amount withdraw");
   });
 
+  it("should prevent non operator to pause", async function () {
+    await assertRevert(sale.pause({ from: accounts[1] }), "OP01");
+  });
+
+  it("should let operator pause", async function () {
+    const tx = await sale.pause();
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs[0].event, "Pause", "event");
+  });
+
+  describe("when paused", function () {
+    beforeEach(async function () {
+      await sale.pause();
+    });
+
+    it("should prevent non operator to unpause", async function () {
+      await assertRevert(sale.unpause({ from: accounts[1] }), "OP01");
+    });
+
+    it("should let operator unpause", async function () {
+      const tx = await sale.unpause();
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs[0].event, "Unpause", "event");
+    });
+
+    it("should prevent transfer 1 micro ETH to the sale", async function () {
+      const wei = web3.utils.toWei("1", "microether");
+      await assertRevert(web3.eth.sendTransaction({
+        from: accounts[3],
+        to: sale.address,
+        value: wei,
+        gas: 250000,
+      }), "PA01");
+    });
+
+    it("should prevent invest 1 micro ETH", async function () {
+      const wei = web3.utils.toWei("1", "microether");
+      await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "PA01");
+    });
+ 
+    describe("when unpaused", function () {
+      beforeEach(async function () {
+        await sale.unpause();
+      });
+
+      it("should transfer 1 micro ETH to the sale", async function () {
+        const wei = web3.utils.toWei("1", "microether");
+        const tx = await web3.eth.sendTransaction({
+          from: accounts[3],
+          to: sale.address,
+          value: wei,
+          gas: 250000,
+        });
+        assert.ok(tx.status, "Status");
+      });
+
+      it("should invest 1 micro ETH", async function () {
+        const wei = web3.utils.toWei("1", "microether");
+        const tx = await sale.investETH({ value: wei, from: accounts[3] });
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs[0].event, "Investment", "event");
+        assert.equal(tx.logs[0].args.investor, accounts[3], "investor");
+        assert.equal(tx.logs[0].args.invested, wei, "amount investment");
+        assert.equal(tx.logs[0].args.tokens, 2, "tokens");
+        assert.equal(tx.logs[1].event, "WithdrawETH", "event");
+        assert.equal(tx.logs[1].args.amount, wei, "amount withdraw");
+      });
+    });
+  });
+
   describe("after some investor investments and an ETH refund", async function () {
     let balanceVaultETHBefore, balanceBeforeRefund, refundCost;
 
