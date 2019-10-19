@@ -9,9 +9,6 @@ module.exports = async function (promise, expectedReasonOrCode) {
     await promise;
     success = true;
   } catch (error) {
-    if (success) {
-      assert.fail("Expected revert not received");
-    }
     if (typeof error == "object") {
       if (Object.keys(error).length > 1) {
         const revertReasonFound =
@@ -30,6 +27,10 @@ module.exports = async function (promise, expectedReasonOrCode) {
       }
     } else {
       assert(false, "Invalid error format. Revert not found '" + error + "'!");
+    }
+  } finally {
+    if (success) {
+      assert.fail("Expected revert not received");
     }
   }
 };
