@@ -27,9 +27,7 @@ contract Tokensale is UserTokensale, BonusTokensale {
     IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
     uint256 _start,
-    uint256 _end,
-    uint256[] memory _bonuses,
-    uint256 _bonusUntil
+    uint256 _end
   ) public
     BonusTokensale(_token,
       _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
@@ -39,6 +37,5 @@ contract Tokensale is UserTokensale, BonusTokensale {
     ratesProvider_ = _ratesProvider;
 
     updateSchedule(_start, _end);
-    defineBonuses(_bonuses, BonusMode.EARLY, _bonusUntil);
   }
 }

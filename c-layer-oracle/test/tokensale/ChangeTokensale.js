@@ -123,7 +123,7 @@ contract("ChangeTokensale", function (accounts) {
     });
 
     it("should prevent operator to addOffchainInvestment larger than the supply", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 10000000));
+      await assertRevert(sale.addOffchainInvestment(accounts[3], "500000001"), "TOS08");
     });
 
     describe("when an ETHCHF rate is defined", async function () {
@@ -252,10 +252,6 @@ contract("ChangeTokensale", function (accounts) {
 
       const tokens = await sale.investorTokens(accounts[3]);
       assert.equal(tokens.toString(), 2000, "tokens");
-    });
-
-    it("should not let operator add offchain investment", async function () {
-      await assertRevert(sale.addOffchainInvestment(accounts[3], 1000));
     });
 
     describe("after a first investment", async function () {

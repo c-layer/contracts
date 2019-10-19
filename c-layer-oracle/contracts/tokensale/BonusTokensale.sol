@@ -10,18 +10,22 @@ import "./SchedulableTokensale.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * BT01: BonusUntil must be valid if bonuses exist for first investors
- * BT02: BonusUntil must be valid if bonuses exist for early investors
- */
+ * BT01: There must have the same number of bonuses and bonusUntils
+ * BT02: There must be some bonuses
+ * BT03: There cannot be too many bonuses
+ * BT04: BonusUntils must be declared in a progressive order
+ * BT05: There cannot be bonuses with a NONE bonus mode
+ **/
 contract BonusTokensale is SchedulableTokensale {
 
-  enum BonusMode { EARLY, FIRST }
+  enum BonusMode { NONE, EARLY, FIRST }
+  uint256 constant MAX_BONUSES = 10;
 
-  BonusMode internal bonusMode_;
-  uint256 internal bonusUntil_;
+  BonusMode internal bonusMode_ = BonusMode.NONE;
+  uint256[] internal bonusUntils_;
   uint256[] internal bonuses_;
 
-  event BonusesDefined(uint256[] bonuses, BonusMode bonusMode, uint256 bonusUntil);
+  event BonusesDefined(uint256[] bonuses, BonusMode bonusMode, uint256[] bonusUntils);
 
   /**
    * @dev constructor
@@ -37,82 +41,110 @@ contract BonusTokensale is SchedulableTokensale {
       _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {} /* solhint-disable no-empty-blocks */
   
-  /**
-   * @dev bonusMode
-   */
-  function bonusMode() public view returns (BonusMode) {
-    return bonusMode_;
-  }
-
-  /**
-   * @dev bonusUntil
-   */
-  function bonusUntil() public view returns (uint256) {
-    return bonusUntil_;
-  }
-
    /**
    * @dev bonuses
    */
-  function bonuses() public view returns (uint256[] memory) {
-    return bonuses_;
+  function bonuses() public view returns (BonusMode, uint256[] memory, uint256[] memory) {
+    return (bonusMode_, bonuses_, bonusUntils_);
   }
 
   /**
    * @dev early bonus
    */
-  function earlyBonus(uint256 _currentTime) public view returns (uint256) {
-    if (bonusMode_ != BonusMode.EARLY || bonuses_.length == 0
-      || _currentTime < startAt || _currentTime >= bonusUntil_) {
-      return 0;
+  function earlyBonus(uint256 _currentTime)
+    public view returns (uint256 bonus, uint256 remainingAtBonus)
+  {
+    if (bonusMode_ != BonusMode.EARLY
+      || _currentTime < startAt || _currentTime > endAt) {
+      return (uint256(0), uint256(-1));
     }
 
-    uint256 split = (bonusUntil_ - startAt) / bonuses_.length;
-    return bonuses_[(_currentTime - startAt) / split];
+    for(uint256 i=0; i < bonusUntils_.length; i++) {
+      if (_currentTime <= bonusUntils_[i]) {
+        return (bonuses_[i], uint256(-1));
+      }
+    }
+    return (uint256(0), uint256(-1));
   }
 
   /**
    * @dev first bonus
    */
-  function firstBonus(uint256 _totalRaised) public view returns (uint256) {
-    if (bonusMode_ != BonusMode.FIRST
-      || bonuses_.length == 0 || _totalRaised >= bonusUntil_
-      || bonusUntil_ == 0) {
-      return 0;
+  function firstBonus(uint256 _tokensSold)
+    public view returns (uint256 bonus, uint256 remainingAtBonus)
+  {
+    if (bonusMode_ != BonusMode.FIRST) {
+      return (uint256(0), uint256(-1));
     }
 
-    uint256 split = bonusUntil_ / bonuses_.length;
-    return bonuses_[_totalRaised/split];
+    for(uint256 i=0; i < bonusUntils_.length; i++) {
+      if (_tokensSold < bonusUntils_[i]) {
+        return (bonuses_[i], bonusUntils_[i]-_tokensSold);
+      }
+    }
+
+    return (uint256(0), uint256(-1));
   }
 
   /**
    * @dev define bonus
    */
-  function defineBonuses(uint256[] memory _bonuses, BonusMode _bonusMode, uint256 _bonusUntil)
+  function defineBonuses(
+    BonusMode _bonusMode,
+    uint256[] memory _bonuses,
+    uint256[] memory _bonusUntils)
     public onlyOperator beforeSaleIsOpened returns (bool)
   {
-    require(_bonusMode != BonusMode.FIRST
-      || (_bonuses.length > 0 && (_bonusUntil > 0)), "BT01");
-    require(_bonusMode != BonusMode.EARLY
-      || (_bonuses.length > 0
-        && (_bonusUntil > startAt && _bonusUntil <= endAt)), "BT02");
+    require(_bonuses.length == _bonusUntils.length, "BT01");
+
+    if (_bonusMode != BonusMode.NONE) {
+      require(_bonusUntils.length > 0, "BT02");
+      require(_bonusUntils.length < MAX_BONUSES, "BT03");
+
+      uint256 bonusUntil =
+        (_bonusMode == BonusMode.EARLY) ? startAt : 0;
+
+      for(uint256 i=0; i < _bonusUntils.length; i++) {
+        require(_bonusUntils[i] > bonusUntil, "BT04");
+        bonusUntil = _bonusUntils[i];
+      }
+    } else {
+      require(_bonusUntils.length == 0, "BT05");
+    }
 
     bonuses_ = _bonuses;
     bonusMode_ = _bonusMode;
-    bonusUntil_ = _bonusUntil;
+    bonusUntils_ = _bonusUntils;
 
-    emit BonusesDefined(_bonuses, _bonusMode, _bonusUntil);
+    emit BonusesDefined(_bonuses, _bonusMode, _bonusUntils);
     return true;
   }
 
   /**
    * @dev current bonus
    */
-  function currentBonus() public view returns (uint256) {
-    if (bonuses_.length == 0 || bonusUntil_ == 0) {
-      return 0;
-    }
-    return (bonusMode_ == BonusMode.EARLY) ? earlyBonus(currentTime()) : firstBonus(totalRaised_);
+  function tokenBonus(uint256 _tokens)
+    public view returns (uint256 tokenBonus)
+  {
+    uint256 bonus;
+    uint256 remainingAtBonus;
+    uint256 unprocessed = _tokens;
+
+    do {
+      if(bonusMode_ == BonusMode.EARLY) {
+        (bonus, remainingAtBonus) = earlyBonus(currentTime());
+      }
+
+      if(bonusMode_ == BonusMode.FIRST) {
+        (bonus, remainingAtBonus) =
+          firstBonus(totalTokensSold_+_tokens-unprocessed);
+      }
+
+      uint256 tokensAtCurrentBonus =
+        (unprocessed < remainingAtBonus) ? unprocessed : remainingAtBonus;
+      tokenBonus += bonus.mul(tokensAtCurrentBonus).div(100);
+      unprocessed -= tokensAtCurrentBonus;
+    } while(bonus > 0 && unprocessed > 0 && remainingAtBonus > 0);
   }
 
   /**
@@ -122,16 +154,7 @@ contract BonusTokensale is SchedulableTokensale {
     internal view returns (uint256, uint256)
   {
     (uint256 invested, uint256 tokens) = super.evalInvestmentInternal(_tokens);
-    uint256 bonus = tokenBonusInternal(tokens);
+    uint256 bonus = tokenBonus(tokens);
     return (invested, tokens.add(bonus));
-  }
-
-  /**
-   * @dev tokenBonus
-   */
-  function tokenBonusInternal(uint256 _tokens)
-    internal view returns (uint256)
-  {
-    return currentBonus().mul(_tokens).div(100);
   }
 }

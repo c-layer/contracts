@@ -29,8 +29,9 @@ contract("Tokensale", function (accounts) {
 
   const start = 4102444800;
   const end = 7258118400;
+  const bonusMode = 1; // EARLY
   const bonuses = [10];
-  const bonusUntil = end;
+  const bonusUntil = [ end ];
   const contributionLimits = [0, 300000, 1500000, 10000000, 100000000];
 
   before(async function () {
@@ -59,10 +60,9 @@ contract("Tokensale", function (accounts) {
       userRegistry.address,
       ratesProvider.address,
       start,
-      end,
-      bonuses,
-      bonusUntil
+      end
     );
+    await sale.defineBonuses(bonusMode, bonuses, bonusUntil);
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
 
