@@ -132,25 +132,35 @@ contract RatesProvider is IRatesProvider, Operable {
 
     for (uint256 i= _currencies.length; i < currencies_.length; i++) {
       delete ratesMap[currencies_[i]];
+      emit Rate(currencies_[i], 0);
     }
     rates_.length = _currencies.length-1;
 
+    bool hasBaseCurrencyChanged = _currencies[0] != currencies_[0];
     for (uint256 i=1; i < _currencies.length; i++) {
       bytes32 currency = _currencies[i];
-      if (rateOffset_ != _rateOffset || ratesMap[currency] != i) {
+      if (rateOffset_ != _rateOffset
+        || ratesMap[currency] != i
+        || hasBaseCurrencyChanged)
+      {
         ratesMap[currency] = i;
         rates_[i-1] = 0;
+
+        if (i < currencies_.length) {
+          emit Rate(currencies_[i], 0);
+        }
       }
     }
-
-    updatedAt_ = 0;
-    currencies_ = _currencies;
-    decimals_ = _decimals;
 
     if (rateOffset_ != _rateOffset) {
       emit RateOffset(_rateOffset);
       rateOffset_ = _rateOffset;
     }
+
+    // solhint-disable-next-line not-rely-on-time
+    updatedAt_ = now;
+    currencies_ = _currencies;
+    decimals_ = _decimals;
 
     emit Currencies(_currencies, _decimals);
     return true;

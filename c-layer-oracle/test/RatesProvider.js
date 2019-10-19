@@ -152,16 +152,16 @@ contract("RatesProvider", function (accounts) {
       [CHF, BTC, ETH], [2, 8, 18],
       rateOffset);
     assert.ok(tx.receipt.status, "Status");
-    assert.equal(tx.logs.length, 2);
-    assert.equal(tx.logs[0].event, "RateOffset", "event 0");
-    assert.equal(tx.logs[0].args.rateOffset.toString(), rateOffset.toString(), "rateOffset");
+    assert.equal(tx.logs.length, 12);
+    assert.equal(tx.logs[10].event, "RateOffset", "event 0");
+    assert.equal(tx.logs[10].args.rateOffset.toString(), rateOffset.toString(), "rateOffset");
  
-    assert.equal(tx.logs[1].event, "Currencies", "event 1");
+    assert.equal(tx.logs[11].event, "Currencies", "event 1");
     const expectedCurrencies = [
       "CHF", "BTC", "ETH",
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
-    assert.deepEqual(tx.logs[1].args.currencies, expectedCurrencies, "currencies");
-    assert.deepEqual(tx.logs[1].args.decimals.map((d) => d.toString()),
+    assert.deepEqual(tx.logs[11].args.currencies, expectedCurrencies, "currencies");
+    assert.deepEqual(tx.logs[11].args.decimals.map((d) => d.toString()),
       ["2", "8", "18"], "decimals");
   });
 
