@@ -31,7 +31,7 @@ contract RatesProvider is IRatesProvider, Operable {
   // The first currency will be the counter currency
   bytes32[] internal currencies_ =
     [ bytes32("ETH"), "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD" ];
-  uint256[] internal decimals_ = [ uint256(18), 9, 4, 2, 2, 2, 2, 2, 2, 2, 2 ];
+  uint256[] internal decimals_ = [ uint256(18), 8, 4, 2, 2, 2, 2, 2, 2, 2, 2 ];
 
   mapping(bytes32 => uint256) internal ratesMap;
   uint256[] internal rates_ = new uint256[](currencies_.length-1);

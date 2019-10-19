@@ -17,7 +17,7 @@ contract("RatesProvider", function (accounts) {
   const BTC = web3.utils.toHex("BTC");
   const USD = web3.utils.toHex("USD");
   const ethToWei = new BN("10").pow(new BN("18"));
-  const oneBTCinSatoshi = new BN(10).pow(new BN(9));
+  const oneBTCinSatoshi = new BN(10).pow(new BN(8));
   const rateOffset = new BN("10").pow(new BN("18"));
   const aWEICHFSample = "48257890165041";
   const aETHCHFSample = "20722";
@@ -39,7 +39,7 @@ contract("RatesProvider", function (accounts) {
     const currencies = await provider.currencies();
     assert.deepEqual(currencies[0], expectedCurrencies, "currencies");
     assert.deepEqual(currencies[1].map((d) => d.toString()),
-      ["18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2"],
+      ["18", "8", "4", "2", "2", "2", "2", "2", "2", "2", "2"],
       "decimals");
     assert.equal(currencies[2].toString(), 1, "rateOffset");
   });
@@ -135,7 +135,7 @@ contract("RatesProvider", function (accounts) {
     const expectedCurrencies = [
       "ETH", "BTC", "EOS", "GBP", "USD", "CHF", "EUR", "CNY", "JPY", "CAD", "AUD", "XRP",
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
-    const expectedDecimals = ["18", "9", "4", "2", "2", "2", "2", "2", "2", "2", "2", "6"];
+    const expectedDecimals = ["18", "8", "4", "2", "2", "2", "2", "2", "2", "2", "2", "6"];
 
     const tx = await provider.defineCurrencies(
       expectedCurrencies, expectedDecimals, 1);
@@ -149,7 +149,7 @@ contract("RatesProvider", function (accounts) {
 
   it("should let operator define new currencies (less)", async function () {
     const tx = await provider.defineCurrencies(
-      [CHF, BTC, ETH], [2, 9, 18],
+      [CHF, BTC, ETH], [2, 8, 18],
       rateOffset);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 2);
@@ -162,33 +162,33 @@ contract("RatesProvider", function (accounts) {
     ].map((c) => web3.utils.toHex(c).padEnd(66, "0"));
     assert.deepEqual(tx.logs[1].args.currencies, expectedCurrencies, "currencies");
     assert.deepEqual(tx.logs[1].args.decimals.map((d) => d.toString()),
-      ["2", "9", "18"], "decimals");
+      ["2", "8", "18"], "decimals");
   });
 
   it("should prevent operator from defining inconsistent decimals", async function () {
     await assertRevert(provider.defineCurrencies(
-      [CHF, BTC, ETH], [2, 9],
+      [CHF, BTC, ETH], [2, 8],
       rateOffset), "RP01");
   });
 
   it("should prevent operator from defining null rateOffset", async function () {
     await assertRevert(provider.defineCurrencies(
-      [CHF, BTC, ETH], [2, 9, 18], 0), "RP02");
+      [CHF, BTC, ETH], [2, 8, 18], 0), "RP02");
   });
 
   it("should prevent anyone from defining a rate", async function () {
     await assertRevert(provider.defineCurrencies(
-      [CHF, BTC, ETH], [2, 9, 18],
+      [CHF, BTC, ETH], [2, 8, 18],
       rateOffset, { from: accounts[1] }), "OP01");
   });
 
   describe("With CHF as reference currency and some rates defined", function () {
     const rates = [
-      new BN("1002500").mul(new BN(10).pow(new BN(18 - 9))),
+      new BN("1002500").mul(new BN(10).pow(new BN(18 - 8))),
       new BN("20722").mul(new BN(10).pow(new BN(18 - 18)))];
     beforeEach(async function () {
       await provider.defineCurrencies(
-        [CHF, BTC, ETH], [2, 9, 18],
+        [CHF, BTC, ETH], [2, 8, 18],
         rateOffset);
       await provider.defineRates(rates);
     });
@@ -201,7 +201,7 @@ contract("RatesProvider", function (accounts) {
       const currencies = await provider.currencies();
       assert.deepEqual(currencies[0], expectedCurrencies, "currencies");
       assert.deepEqual(currencies[1].map((d) => d.toString()),
-        ["2", "9", "18"],
+        ["2", "8", "18"],
         "decimals");
       assert.equal(currencies[2].toString(), rateOffset, "rateOffset");
     });
@@ -235,7 +235,7 @@ contract("RatesProvider", function (accounts) {
 
     it("should convert WEI to BTCSatoshi", async function () {
       const amountBTCSatoshi = await provider.convert(ethToWei, ETH, BTC);
-      assert.equal(amountBTCSatoshi.toString(), "20670324", "1 ETH in BTCSatoshi");
+      assert.equal(amountBTCSatoshi.toString(), "2067032", "1 ETH in BTCSatoshi");
     });
 
     it("should convert BTCSatoshi to WEI", async function () {
