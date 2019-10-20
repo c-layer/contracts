@@ -19,10 +19,10 @@ contract("BonusTokensale", function (accounts) {
   const start = 4102444800;
   const end = 7258118400;
   const bonuses = ["20", "10"];
-  const bonusUntilsEarly = [ "5051222400", "6000000000" ];
-  const bonusUntilsFirst = [ "500000", "750000" ];
-  const invalidBonusUntilsEarly = [ "6000000000", "5051222400" ];
-  const invalidBonusUntilsFirst = [ "750000", "500000" ];
+  const bonusUntilsEarly = ["5051222400", "6000000000"];
+  const bonusUntilsFirst = ["500000", "750000"];
+  const invalidBonusUntilsEarly = ["6000000000", "5051222400"];
+  const invalidBonusUntilsFirst = ["750000", "500000"];
   const bonusModeNone = 0;
   const bonusModeEarly = 1; /* BonusMode.EARLY */
   const bonusModeFirst = 2;
@@ -254,7 +254,7 @@ contract("BonusTokensale", function (accounts) {
     it("should have bonus", async function () {
       const bonuses = await sale.bonuses();
       assert.equal(bonuses[0], bonusModeEarly, "bonusMode");
-      assert.deepEqual(bonuses[1].map((x) => x.toString()), [ "20", "10" ], "bonusUntils");
+      assert.deepEqual(bonuses[1].map((x) => x.toString()), ["20", "10"], "bonusUntils");
       assert.deepEqual(bonuses[2].map((x) => x.toString()), bonusUntilsEarly, "bonusUntils");
     });
 
@@ -355,7 +355,7 @@ contract("BonusTokensale", function (accounts) {
     it("should have bonus mode", async function () {
       const bonuses = await sale.bonuses();
       assert.equal(bonuses[0], bonusModeFirst, "bonusMode");
-      assert.deepEqual(bonuses[1].map((x) => x.toString()), [ "20", "10" ], "bonuses");
+      assert.deepEqual(bonuses[1].map((x) => x.toString()), ["20", "10"], "bonuses");
       assert.deepEqual(bonuses[2].map((x) => x.toString()), bonusUntilsFirst, "bonusUntil");
     });
 

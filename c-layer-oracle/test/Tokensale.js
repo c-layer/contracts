@@ -31,7 +31,7 @@ contract("Tokensale", function (accounts) {
   const end = 7258118400;
   const bonusMode = 1; // EARLY
   const bonuses = [10];
-  const bonusUntil = [ end ];
+  const bonusUntil = [end];
   const contributionLimits = [0, 300000, 1500000, 10000000, 100000000];
 
   before(async function () {

@@ -75,7 +75,7 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
       let block2Time, block3Time;
 
       beforeEach(async function () {
-        const tx = await token.transfer(accounts[1], "3333");
+        await token.transfer(accounts[1], "3333");
         block2Time = (await web3.eth.getBlock("latest")).timestamp;
         await core.createProof(token.address, accounts[0]);
         block3Time = (await web3.eth.getBlock("latest")).timestamp;
@@ -94,7 +94,7 @@ contract("ProvableOwnershipTokenDelegate", function (accounts) {
       it("should have a second proof", async function () {
         const proof = await core.tokenProofs(token.address, accounts[0], 1);
         assert.deepEqual(Object.values(proof).map(x => x.toString()),
-          [ String(AMOUNT-3333), String(block2Time), String(block3Time)], "proof id 1");
+          [String(AMOUNT - 3333), String(block2Time), String(block3Time)], "proof id 1");
       });
     });
   });

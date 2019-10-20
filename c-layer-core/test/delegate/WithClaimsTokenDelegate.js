@@ -179,7 +179,7 @@ contract("WithClaimsTokenDelegate", function (accounts) {
           [String(AMOUNT), "0", String(block1Time)], "proof id 0");
         const proof1 = await core.tokenProofs(token.address, accounts[0], 1);
         assert.deepEqual(Object.values(proof1).map(x => x.toString()),
-          [String(AMOUNT-4555), String(block1Time), String(block2Time)], "proof id 1");
+          [String(AMOUNT - 4555), String(block1Time), String(block2Time)], "proof id 1");
       });
 
       it("should have two proofs for account 2", async function () {

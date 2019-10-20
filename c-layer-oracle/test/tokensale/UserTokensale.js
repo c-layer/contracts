@@ -33,7 +33,7 @@ contract("UserTokensale", function (accounts) {
   before(async function () {
     ratesProvider = await RatesProvider.new("Dummy");
     await ratesProvider.defineCurrencies([CHF, ETH, USD], [2, 18, 2], rateOffset);
-    await ratesProvider.defineRates([rateWEICHF, rateUSDCHF ]);
+    await ratesProvider.defineRates([rateWEICHF, rateUSDCHF]);
     userRegistry = await UserRegistry.new(
       "Dummy", CHF,
       [accounts[1], accounts[2], accounts[3], accounts[4], accounts[5], accounts[6]], dayPlusOneTime);
@@ -134,17 +134,17 @@ contract("UserTokensale", function (accounts) {
   });
 
   it("should revert 1 micro ETH", async function () {
-     const wei = web3.utils.toWei("1", "microether");
-     await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "CTS02");
+    const wei = web3.utils.toWei("1", "microether");
+    await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "CTS02");
   });
 
   it("should revert 1 ETH", async function () {
-     const wei = web3.utils.toWei("1", "ether");
-     await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "TOS07");
+    const wei = web3.utils.toWei("1", "ether");
+    await assertRevert(sale.investETH({ value: wei, from: accounts[3] }), "TOS07");
   });
 
   it("should revert 30'000 USD", async function () {
-     await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS07");
+    await assertRevert(sale.addOffchainInvestment(accounts[3], "3000000"), "TOS07");
   });
 
   describe("and with contribution aml limit", function () {
@@ -177,7 +177,7 @@ contract("UserTokensale", function (accounts) {
       assert.equal(tx.logs[0].args.invested.toString(), 1500000, "amount investment");
       assert.equal(tx.logs[0].args.tokens.toString(), 3000, "tokens");
       assert.equal(tx.logs[1].event, "WithdrawETH", "event");
-     assert.equal(tx.logs[1].args.amount.toString(), "65145007962167639820", "amount withdraw");
+      assert.equal(tx.logs[1].args.amount.toString(), "65145007962167639820", "amount withdraw");
     });
 
     it("should revert 30'000 USD", async function () {
@@ -219,7 +219,7 @@ contract("UserTokensale", function (accounts) {
       const tokens = await sale.contributionLimit(5);
       assert.equal(tokens.toString(), "555555", "contribution");
     });
-4
+
     it("should have investor 3 token investment", async function () {
       const wei = web3.utils.toWei("1", "microether");
       const tokens = await sale.tokenInvestment(accounts[3], wei);
@@ -235,7 +235,7 @@ contract("UserTokensale", function (accounts) {
       assert.equal(tx.logs[0].args.invested.toString(), "333000", "amount investment");
       assert.equal(tx.logs[0].args.tokens.toString(), "666", "tokens");
       assert.equal(tx.logs[1].event, "WithdrawETH", "event");
-     assert.equal(tx.logs[1].args.amount.toString(), "14462191767601216040", "amount withdraw");
+      assert.equal(tx.logs[1].args.amount.toString(), "14462191767601216040", "amount withdraw");
     });
 
     it("should invest 2'700 USD", async function () {
@@ -274,7 +274,7 @@ contract("UserTokensale", function (accounts) {
       const tokens = await sale.contributionLimit(5);
       assert.equal(tokens.toString(), "555555", "contribution");
     });
-4
+
     it("should have investor 3 token investment", async function () {
       const wei = web3.utils.toWei("1", "ether");
       const tokens = await sale.tokenInvestment(accounts[3], wei);
