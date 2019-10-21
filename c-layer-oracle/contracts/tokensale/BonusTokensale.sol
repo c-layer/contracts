@@ -124,7 +124,7 @@ contract BonusTokensale is SchedulableTokensale {
    * @dev current bonus
    */
   function tokenBonus(uint256 _tokens)
-    public view returns (uint256 tokenBonus)
+    public view returns (uint256 tokenBonus_)
   {
     uint256 bonus;
     uint256 remainingAtBonus;
@@ -142,7 +142,7 @@ contract BonusTokensale is SchedulableTokensale {
 
       uint256 tokensAtCurrentBonus =
         (unprocessed < remainingAtBonus) ? unprocessed : remainingAtBonus;
-      tokenBonus += bonus.mul(tokensAtCurrentBonus).div(100);
+      tokenBonus_ += bonus.mul(tokensAtCurrentBonus).div(100);
       unprocessed -= tokensAtCurrentBonus;
     } while(bonus > 0 && unprocessed > 0 && remainingAtBonus > 0);
   }
