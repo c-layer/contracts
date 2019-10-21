@@ -77,6 +77,13 @@ contract("Operable", function (accounts) {
     assert.equal(role, NO_ROLE, "privileges");
   });
 
+  it("should have no role privilege", async function () {
+    const corePrivilege1 = await core.rolePrivilege(RESTRICTED_ROLE, "0xaaaabbbb");
+    assert.ok(!corePrivilege1, "no core privilege ABCDEF");
+    const corePrivilege2 = await core.rolePrivilege(RESTRICTED_ROLE, "0x11112222");
+    assert.ok(!corePrivilege2, "no core privilege 123456");
+  });
+
   it("should have AllPrivileges role with all core privileges", async function () {
     const corePrivilege1 = await core.roleHasPrivilege(ALL_PRIVILEGES, "0xaaaabbbb");
     assert.ok(corePrivilege1, "core privilege ABCDEF");
@@ -161,6 +168,16 @@ contract("Operable", function (accounts) {
       ]);
       await core.assignOperators(ROLE_OP_ASSIGNER, [accounts[1], accounts[2]]);
       await core.assignOperators(ROLE_DESIGNER, [accounts[2], accounts[3]]);
+    });
+
+    it("should have role with privileges", async function () {
+      const rolePriv1 = await core.rolePrivilege(ROLE_OP_ASSIGNER,
+        web3.utils.sha3("assignOperators(bytes32,address[])").substr(0, 10));
+      assert.ok(rolePriv1, "assignOperators with ROLE_OP_ASSIGNER");
+      
+      const rolePriv2 = await core.rolePrivilege(ROLE_DESIGNER,
+        web3.utils.sha3("defineRole(bytes32,bytes4[])").substr(0, 10));
+      assert.ok(rolePriv2, "defineRole for ROLE_DESIGNER");
     });
 
     it("should let 'OpAssigner 1' to add core operators", async function () {

@@ -12,8 +12,8 @@ One of the foremost use case is the support of regulated asset classes and finan
 
 ### Audit Phase 1 limitations
 
-The Audit Phase 1 concerneed only the Core and the Oracle monorepos.
-In particular the goal of this phase 1 is to audit a limited version of the C-Layer for Payment Token only.
+The Audit Phase 1 concerned the Core and the Oracle monorepos.
+In particular the goal of this phase 1 is to audit a limited version of the C-Layer for standard STO and ICO Tokens only.
 
 To this regard, the core only accepts in this version a fixed list of delegates defined at the Core deployment time.
 AuditData is also limited to the delegates configuration and cannot be updated.
@@ -27,7 +27,7 @@ Remaining tasks to prior to the audit:
 
 ### C-Layer Core
 
-Currently, the C-Layer supports the tokenization of the following assets: Bonds, Equity, Payment and Utility.
+The C-Layer can support the tokenization of the following assets: Bonds, Equity, Payment and Utility.
 
 <img src="smartcontracts.core.png" height=500/>
 
@@ -35,16 +35,16 @@ The token is represented by a proxy contract which implements the ERC20 interfac
 The token rely on a core for all operations and in particular transfers.
 
 The core has three roles:
-  - Routing proxy call to the relevant token delegates. A delegate contains the code for operations.
+  - Routing proxy call to the relevant token delegates. A delegate contains the code for all the operations.
     One delegate represent one asset class.
   - Database. All tokens data are stored within the core contract.
     This ensure that cross tokens operations are inherently safe and consistent in respect to the compliance.
-  - Security. The core responsability is critical.
-    Therefore access control can be precisely defined through a full role base access control.
+  - Security. This core responsability is critical.
+    Access control can be precisely managed through an integrated role base access control.
 
-There is many delegates possible through a combination of existing delegates.
+Many delegates are possible through a combination of existing delegates.
 The primary one will be the C-Layer Delegate Token which contains all the requirements for a regulated asset.
-However, the C-Layer Delegate Token does not define the supply generation and should be associated usualy with either with the Mintable Token Delegate.
+However, the C-Layer Delegate Token does not define the supply generation and may be inherited with the Mintable Token Delegate.
 
 Token Delegates include the following features:
   - Operable: provide an owner and ability to delegate restricted features to operators

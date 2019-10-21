@@ -59,6 +59,19 @@ contract("TokenCore", function (accounts) {
       await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
     });
 
+    it("should let define a user registry with the samet currency", async function () {
+      userRegistry = await UserRegistryMock.new(
+        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
+      const tx = await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "OraclesDefined", "event");
+      assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
+      assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "rates provider");
+      assert.equal(tx.logs[0].args.currency.toString(), CHF, "currency");
+      assert.deepEqual(tx.logs[0].args.userKeys.map((x) => x.toString()), ["0", "1"], "keys");
+    });
+
     it("should not let define a user registry with a different currency", async function () {
       userRegistry = await UserRegistryMock.new(
         [accounts[0], accounts[1], accounts[2]], TKN, [5, 5000000]);
@@ -78,6 +91,11 @@ contract("TokenCore", function (accounts) {
   it("should have no audit selector for core scope 0 and account 0 and 1", async function () {
     const auditSelector = await core.auditSelector(core.address, 0, [accounts[0], accounts[1]]);
     assert.deepEqual(auditSelector, [false, false], "auditSelector");
+  });
+
+  it("should not let define audit selector with invalid values", async function () {
+    await assertRevert(core.defineAuditSelector(
+      core.address, 42, [accounts[0], accounts[1]], [true]), "TC02");
   });
 
   it("should let define audit selector for core scope 0 and account 0 and 1", async function () {

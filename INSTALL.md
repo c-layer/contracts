@@ -4,7 +4,7 @@
 
 ### User Registry
 
-The User Registry maintains users identify on chain and associate some users meta data.
+The User Registry maintains users identity on chain and associate users with some meta data.
 
 ```javascript
 const name = "MyUserRegistry";
@@ -40,10 +40,10 @@ await userRegistry.updateUserFull(1, validity, suspended, [kycLevel, amlLimit]);
 
 ### Rates Provider
 
-The Rates Provider helps contract access to offchain rates.
-It can be used also directly to convert a amount from one currency into a different one
+The Rates Provider provide offchain rates.
+It can be used directly to convert a amount from a currency into a different one
 
-We will create the Token (TKN) later but we can already set its initial connter value here.
+We will create a Token (TKN) later but we can already set its initial countervalue here.
 ```javascript
 let ratesProvider = await RatesProvider.new("Altcoinomy);	
 const currencies = [
@@ -76,7 +76,7 @@ let delegates = await Promise.all([
   TokenDelegate.new(),
 ]);
 
-const coreName = "MyPrettyCore";
+const coreName = "MyComplianceCore";
 let core = await TokenCore.new(coreName, delegates);
 await core.defineOracles(u.address, r.address, [0, 1]);								
 
@@ -85,16 +85,16 @@ const delegateId = 1;
 await core.defineToken(token.address, delegateId, "Token", "TKN", "18");
 
 const DECIMALS18 = "000000000000000000";
-const ERC20Vault = [
+const erc20Vault = [
   "0xB100fFed52b40BC9cf0d96386e287E2Af8C9B38A",
   "0xF9043F5d2ad07755495649cd8ffccBAE5dE01820" ];
-await core.mintAtOnce(token.address,
-  ERC20Vault, [ "1000000000" + DECIMALS18, "1000000000" + DECIMALS18 ]);
+const tokenSupplies = [ "1000000000" + DECIMALS18, "1000000000" + DECIMALS18 ];
+await core.mintAtOnce(token.address, erc20Vault, tokenSupplies);
 
 const lockStart = (new Date().getTime()/1000).toFixed(0);
 const lockEnd = (new Date("2020-08-08").getTime()/1000).toFixed(0);
-const exceptions = [ await core.defineLock(token.address, lockStart, lockEnd, ERC20Vault);
-await core.defineAuditSelector(core.address, 0, ERC20Vault[0], [ true ]);
+const exceptions = [ await core.defineLock(token.address, lockStart, lockEnd, erc20Vault);
+await core.defineAuditSelector(core.address, 0, erc20Vault[0], [ true ]);
 
 let token = await TokenProxy.new(core.address);
 t1 = await Tokensale.new("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820", accounts[0], accounts[0], "77", "100000000000000000000", "0x5553440000000000000000000000000000000000000000000000000000000000", "0x51C0f8B3d5EB7ed7F2F6a400cb5C59BB4DA0E9bd", "0x62C0749F1cF0A9E68B789386aD905544162F18c6", "1571560200", "1571563800")								
@@ -108,14 +108,12 @@ t.approve(t2.address, "8800000000000000000000000000")
 
 ```javascript
 const ethVault = "0xB100fFed52b40BC9cf0d96386e287E2Af8C9B38A";
-const erc20Vault = "0xB100fFed52b40BC9cf0d96386e287E2Af8C9B38A";
-const tokenSupply = ERC20Vault[0];
 const tokenPrice = 1; // price within currency decimals (ie cents/wei/satoshi/...)
 const priceUnit = 10; // number of tokens given for the price
 const priceCurrency = web3.utils.fromAscii("USD").padEnd(66, "0");
 const startAt = (new Date("2020-01-01").getTime()/1000).toFixed(0);
 const endAt = (new Date(i"2020-01-02").getTime()/1000).toFixed(0);;
 let tokensale = await Tokensale.new(token.address,
-  ethVault, erc20Vault  tokenPrice, priceUnit, priceCurrency, userRegistry.address, ratesProvider.address, startAt, endAt);
-await token.approve(tokensale.address, tokenSupply);
+  ethVault, erc20Vault[0], tokenPrice, priceUnit, priceCurrency, userRegistry.address, ratesProvider.address, startAt, endAt);
+await token.approve(tokensale.address, tokenSupplies[0]);
 ```
