@@ -16,36 +16,22 @@ import "./BaseTokenDelegate.sol";
 contract FreezableTokenDelegate is BaseTokenDelegate {
 
   /**
-   * @dev Overriden transfer function
+   * @dev Overriden transferInternal function
    */
-  function transfer(address _sender, address _to, uint256 _value)
-    public returns (bool)
+  function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    require(areNotFrozen(_sender, _to), "FTD01");
-    return super.transfer(_sender, _to, _value);
+    require(areNotFrozen(_transferData.sender, _transferData.receiver), "FTD01");
+    return super.transferInternal(_transferData);
   }
 
   /**
-   * @dev Overriden transferFrom function
+   * @dev Overriden can transferInternal
    */
-  function transferFrom(
-    address _sender, address _from, address _to, uint256 _value)
-    public returns (bool)
+  function canTransferInternal(TransferData memory _transferData)
+    internal view returns (TransferCode)
   {
-    require(areNotFrozen(_from, _to), "FTD01");
-    return super.transferFrom(_sender, _from, _to, _value);
-  }
-
-  /**
-   * @dev can transfer
-   */
-  function canTransfer(
-    address _from,
-    address _to,
-    uint256 _value) public view returns (TransferCode)
-  {
-    return areNotFrozen(_from, _to) ?
-      super.canTransfer(_from, _to, _value) : TransferCode.FROZEN;
+    return areNotFrozen(_transferData.sender, _transferData.receiver) ?
+      super.canTransferInternal(_transferData) : TransferCode.FROZEN;
   }
 
   /**

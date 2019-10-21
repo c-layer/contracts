@@ -18,160 +18,50 @@ import "../util/convert/BytesConvert.sol";
 contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   using BytesConvert for bytes;
 
-  struct TransferDataConfig {
-    bool callerId;
-    bool callerKeys;
-    bool senderId;
-    bool senderKeys;
-    bool receiverId;
-    bool receiverKeys;
-    bool convertedValue;
-  }
-
-  struct TransferData {
-    address token;
-    address caller;
-    address sender;
-    address receiver;
-
-    uint256 callerId;
-    uint256[] callerKeys;
-
-    uint256 senderId;
-    uint256[] senderKeys;
-
-    uint256 receiverId;
-    uint256[] receiverKeys;
-
-    uint256 value;
-    uint256 convertedValue;
-  }
-
   /**
-   * @dev Overriden transfer function
+   * @dev fetchCallerUser
    */
-  function transfer(address _sender, address _receiver, uint256 _value)
-    public returns (bool)
-  {
-    return transferInternal(
-      transferData(msg.sender, address(0), _sender, _receiver, _value,
-        transferDataConfig()));
-  }
-
-  /**
-   * @dev Overriden transferFrom function
-   */
-  function transferFrom(
-    address _caller, address _sender, address _receiver, uint256 _value)
-    public returns (bool)
-  {
-    return transferInternal(
-      transferData(msg.sender, _caller, _sender, _receiver, _value,
-        transferDataConfig()));
-  }
-
-  /**
-   * @dev can transfer
-   */
-  function canTransfer(
-    address _sender,
-    address _receiver,
-    uint256 _value) public view returns (TransferCode)
-  {
-    return canTransferInternal(
-      transferData(msg.sender, address(0), _sender, _receiver, _value,
-        transferDataConfig()));
-  }
-
-  /**
-   * @dev base transfer data config
-   * @dev define which fields must be loaded
-   */
-  function transferDataConfig() internal pure returns (TransferDataConfig memory) {
-    return TransferDataConfig(false, false, false, false, false, false, false);
-  }
-
-  /**
-   * @dev default transfer internal function
-   */
-  function transferInternal(TransferData memory _transferData) internal returns (bool)
-  {
-    if (_transferData.caller == address(0)) {
-      return super.transfer(
-        _transferData.sender,
-        _transferData.receiver,
-        _transferData.value);
-    } else {
-      return super.transferFrom(
-        _transferData.caller,
-        _transferData.sender,
-        _transferData.receiver,
-        _transferData.value);
+  function fetchCallerUser(TransferData memory _transferData) internal view {
+    if (!_transferData.callerFetched) {
+      (_transferData.callerId, _transferData.callerKeys) =
+        userRegistry.validUser(_transferData.caller, userKeys);
+      _transferData.callerFetched = true;
     }
   }
 
   /**
-   * @dev default canTransfer internal function
+   * @dev fetchSenderUser
    */
-  function canTransferInternal(TransferData memory _transferData)
-    internal view returns (TransferCode)
-  {
-    return super.canTransfer(
-      _transferData.sender,
-      _transferData.receiver,
-      _transferData.value);
+  function fetchSenderUser(TransferData memory _transferData) internal view {
+    if (!_transferData.senderFetched) {
+      (_transferData.senderId, _transferData.senderKeys) =
+        userRegistry.validUser(_transferData.sender, userKeys);
+      _transferData.senderFetched = true;
+    }
+  }
+
+
+  /**
+   * @dev fetchReceiverUser
+   */
+  function fetchReceiverUser(TransferData memory _transferData) internal view {
+    if (!_transferData.receiverFetched) {
+      (_transferData.receiverId, _transferData.receiverKeys) =
+        userRegistry.validUser(_transferData.receiver, userKeys);
+      _transferData.receiverFetched = true;
+    }
   }
 
   /**
-   * @dev transferData
+   * @dev fetchConvertedValue
    */
-  function transferData(
-    address _token,
-    address _caller, address _sender, address _receiver,
-    uint256 _value,
-    TransferDataConfig memory _dataConfig
-  ) internal view returns (TransferData memory) {
-    uint256[] memory emptyArray = new uint256[](0);
-    TransferData memory data = TransferData(
-        _token,
-        _caller,
-        _sender,
-        _receiver,
-        0,
-        emptyArray,
-        0,
-        emptyArray,
-        0,
-        emptyArray,
-        _value,
-        0
-    );
-
-    if (_dataConfig.callerKeys) {
-      (data.callerId, data.callerKeys) = userRegistry.validUser(_caller, userKeys);
-    } else {
-      data.callerId = (_dataConfig.callerId) ? userRegistry.validUserId(_caller) : 0;
+  function fetchConvertedValue(TransferData memory _transferData) internal view {
+    uint256 value = _transferData.value;
+    if (_transferData.convertedValue == 0 && value != 0) {
+      TokenData memory token = tokens_[_transferData.token];
+      _transferData.convertedValue = ratesProvider.convert(
+        value, bytes(token.symbol).toBytes32(), currency);
+      require(_transferData.convertedValue != 0, "OET01");
     }
-
-    if (_dataConfig.senderKeys) {
-      (data.senderId, data.senderKeys) = userRegistry.validUser(_sender, userKeys);
-    } else {
-      data.senderId = (_dataConfig.senderId) ? userRegistry.validUserId(_sender) : 0;
-    }
-
-    if (_dataConfig.receiverKeys) {
-      (data.receiverId, data.receiverKeys) = userRegistry.validUser(_receiver, userKeys);
-    } else {
-      data.receiverId = (_dataConfig.receiverId) ? userRegistry.validUserId(_receiver) : 0;
-    }
-
-    if (_dataConfig.convertedValue && _value != 0) {
-      TokenData memory token = tokens_[msg.sender];
-      data.convertedValue = ratesProvider.convert(
-        _value, bytes(token.symbol).toBytes32(), currency);
-      require(data.convertedValue != 0, "OET01");
-    }
-
-    return data;
   }
 }

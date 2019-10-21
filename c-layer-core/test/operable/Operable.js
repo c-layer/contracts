@@ -181,11 +181,6 @@ contract("Operable", function (accounts) {
       assert.equal(tx.logs[0].args.operator, accounts[1], "accounts[1]");
     });
 
-    it("should prevent former 'OpAssigner 2' to add core operators", async function () {
-      await assertRevert(core.assignOperators(
-        ALL_PRIVILEGES, [accounts[4]], { from: accounts[1] }), "OC01");
-    });
-
     it("should prevent non authorized to assign operators", async function () {
       await assertRevert(core.assignOperators(ALL_PRIVILEGES, [accounts[4]], { from: accounts[3] }), "OC01");
     });
@@ -211,7 +206,23 @@ contract("Operable", function (accounts) {
     });
 
     it("should prevent non authorized to define role", async function () {
-      await assertRevert(core.defineRole(ROLE_NEW, ["0xe68fdc5f"], { from: accounts[2] }), "OC01");
+      await assertRevert(core.defineRole(ROLE_NEW, ["0xe68fdc5f"], { from: accounts[1] }), "OC01");
+    });
+
+    describe("And OpAssigner 2 revoked", function () {
+      beforeEach(async function () {
+        await core.revokeOperators([accounts[2]], { from: accounts[1] });
+      });
+
+      it("should prevent former 'OpAssigner 2' to add core operators", async function () {
+        await assertRevert(core.assignOperators(
+          ALL_PRIVILEGES, [accounts[4]], { from: accounts[2] }), "OC01");
+      });
+
+      it("should prevent former 'OpAssigner 2' to revoke core operators", async function () {
+        await assertRevert(core.revokeOperators([accounts[1]],
+          { from: accounts[2] }), "OC01");
+      });
     });
   });
 

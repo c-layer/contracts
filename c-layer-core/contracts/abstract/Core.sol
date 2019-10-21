@@ -14,7 +14,7 @@ import "../util/convert/BytesConvert.sol";
  * Error messages
  *   CO01: Only Proxy may access the function
  *   CO02: The proxy has no delegates
- *   CO03: Delegatecall should be successfulll
+ *   CO03: Delegatecall should be successfull
  *   CO04: Invalid delegateId
  *   CO05: Proxy must exist
  **/

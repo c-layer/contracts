@@ -77,6 +77,16 @@ Three oracles are provided:
 
 <img src="smartcontracts.oracle.png" height=500/>
 
+### Callstacks
+
+#### ERC20 Transfer callstack
+
+<img src="callstack.transfer.png" height=500/>
+
+#### Tokensale invest callstack
+
+<img src="callstack.invest.png" height=500/>
+
 ### Coverage
 
 The latest coverage result may be found below:

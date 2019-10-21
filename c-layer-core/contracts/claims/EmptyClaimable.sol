@@ -18,7 +18,7 @@ contract EmptyClaimable is IClaimable {
   constructor(bool _active) public {
     active = _active;
   }
-  
+
   function hasClaimsSince(address /*_address*/, uint256 /*_at*/)
     public view returns (bool)
   {

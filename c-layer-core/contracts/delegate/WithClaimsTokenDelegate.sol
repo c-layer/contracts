@@ -25,39 +25,18 @@ import "../interface/IClaimable.sol";
 contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 
   /**
-   * @dev Override the transfer function with transferWithProofs
-   * A proof of ownership will be made if any claimables can be made by the participants
+   * @dev Overriden transfer internal function
    */
-  function transfer(
-    address _sender, address _to, uint256 _value)
-    public returns (bool)
+  function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    if (hasClaims(msg.sender, _sender)) {
-      createProof(msg.sender, _sender);
+    if (hasClaims(msg.sender, _transferData.sender)) {
+      createProof(msg.sender, _transferData.sender);
     }
 
-    if (hasClaims(msg.sender, _to)) {
-      createProof(msg.sender, _to);
+    if (hasClaims(msg.sender, _transferData.receiver)) {
+      createProof(msg.sender, _transferData.receiver);
     }
-    return super.transfer(_sender, _to, _value);
-  }
-
-  /**
-   * @dev Override the transfer function with transferWithProofs
-   * A proof of ownership will be made if any claimables can be made by the participants
-   */
-  function transferFrom(
-    address _sender, address _from, address _to, uint256 _value)
-    public returns (bool)
-  {
-    if (hasClaims(msg.sender, _from)) {
-      createProof(msg.sender, _from);
-    }
-
-    if (hasClaims(msg.sender, _to)) {
-      createProof(msg.sender, _to);
-    }
-    return super.transferFrom(_sender, _from, _to, _value);
+    return super.transferInternal(_transferData);
   }
 
   /**

@@ -17,44 +17,59 @@ import "../TokenProxy.sol";
  */
 contract BaseTokenDelegate is TokenStorage {
 
-  /**
-   * @dev transfer
-   */
-  function transfer(
-    address _sender, address _to, uint256 _value)
-    public returns (bool)
-  {
-    require(_to != address(0), "TD01");
-    TokenData storage token = tokens_[msg.sender];
-    require(_value <= token.balances[_sender], "TD02");
+  struct TransferData {
+    address token;
+    address caller;
+    address sender;
+    address receiver;
 
-    token.balances[_sender] = token.balances[_sender].sub(_value);
-    token.balances[_to] = token.balances[_to].add(_value);
-    require(
-      TokenProxy(msg.sender).emitTransfer(_sender, _to, _value),
-      "TD03");
-    return true;
+    uint256 callerId;
+    uint256[] callerKeys;
+    bool callerFetched;
+
+    uint256 senderId;
+    uint256[] senderKeys;
+    bool senderFetched;
+
+    uint256 receiverId;
+    uint256[] receiverKeys;
+    bool receiverFetched;
+
+    uint256 value;
+    uint256 convertedValue;
   }
 
   /**
-   * @dev transfer fromr
+   * @dev Overriden transfer function
    */
-  function transferFrom(
-    address _sender, address _from, address _to, uint256 _value)
+  function transfer(address _sender, address _receiver, uint256 _value)
     public returns (bool)
   {
-    require(_to != address(0), "TD01");
-    TokenData storage token = tokens_[msg.sender];
-    require(_value <= token.balances[_from], "TD02");
-    require(_value <= token.allowed[_from][_sender], "TD04");
+    return transferInternal(
+      transferData(msg.sender, address(0), _sender, _receiver, _value));
+  }
 
-    token.balances[_from] = token.balances[_from].sub(_value);
-    token.balances[_to] = token.balances[_to].add(_value);
-    token.allowed[_from][_sender] = token.allowed[_from][_sender].sub(_value);
-    require(
-      TokenProxy(msg.sender).emitTransfer(_from, _to, _value),
-      "TD03");
-    return true;
+  /**
+   * @dev Overriden transferFrom function
+   */
+  function transferFrom(
+    address _caller, address _sender, address _receiver, uint256 _value)
+    public returns (bool)
+  {
+    return transferInternal(
+      transferData(msg.sender, _caller, _sender, _receiver, _value));
+  }
+
+  /**
+   * @dev can transfer
+   */
+  function canTransfer(
+    address _sender,
+    address _receiver,
+    uint256 _value) public view returns (TransferCode)
+  {
+    return canTransferInternal(
+      transferData(msg.sender, address(0), _sender, _receiver, _value));
   }
 
   /**
@@ -106,24 +121,87 @@ contract BaseTokenDelegate is TokenStorage {
   }
 
   /**
+   * @dev transfer
+   */
+  function transferInternal(TransferData memory _transferData) internal returns (bool)
+  {
+    TokenData storage token = tokens_[_transferData.token];
+    address caller = _transferData.caller;
+    address sender = _transferData.sender;
+    address receiver = _transferData.receiver;
+    uint256 value = _transferData.value;
+
+    require(sender != address(0), "TD01");
+    require(value <= token.balances[sender], "TD02");
+
+    if (caller != address(0)) {
+      require(value <= token.allowed[sender][caller], "TD04");
+      token.allowed[sender][caller] = token.allowed[sender][caller].sub(value);
+    }
+
+    token.balances[sender] = token.balances[sender].sub(value);
+    token.balances[receiver] = token.balances[receiver].add(value);
+    require(
+      TokenProxy(msg.sender).emitTransfer(sender, receiver, value),
+      "TD03");
+    return true;
+  }
+
+  /**
    * @dev can transfer
    */
-  function canTransfer(address _from, address _to, uint256 _value)
-    public view returns (TransferCode)
+  function canTransferInternal(TransferData memory _transferData)
+    internal view returns (TransferCode)
   {
-    if (_from == address(0)) {
+    TokenData storage token = tokens_[_transferData.token];
+    address sender = _transferData.sender;
+    address receiver = _transferData.receiver;
+    uint256 value = _transferData.value;
+
+    if (sender == address(0)) {
       return TransferCode.INVALID_SENDER;
     }
 
-    if (_to == address(0)) {
+    if (receiver == address(0)) {
       return TransferCode.NO_RECIPIENT;
     }
 
-    TokenData storage token = tokens_[msg.sender];
-    if (_value > token.balances[_from]) {
+    if (value > token.balances[sender]) {
       return TransferCode.INSUFFICIENT_TOKENS;
     }
 
     return TransferCode.OK;
+  }
+
+  /**
+   * @dev transferData
+   */
+  function transferData(
+    address _token, address _caller,
+    address _sender, address _receiver, uint256 _value)
+    internal view returns (TransferData memory)
+  {
+    // silence state mutability warning without generating bytecode
+    // see https://github.com/ethereum/solidity/issues/2691
+    this;
+
+    uint256[] memory emptyArray = new uint256[](0);
+    return TransferData(
+        _token,
+        _caller,
+        _sender,
+        _receiver,
+        0,
+        emptyArray,
+        false,
+        0,
+        emptyArray,
+        false,
+        0,
+        emptyArray,
+        false,
+        _value,
+        0
+    );
   }
 }

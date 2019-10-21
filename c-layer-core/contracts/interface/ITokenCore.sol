@@ -17,7 +17,7 @@ import "../TokenStorage.sol";
 contract ITokenCore {
 
   function name() public view returns (string memory);
-  function oracles() public view returns 
+  function oracles() public view returns
     (IUserRegistry, IRatesProvider, bytes32, uint256[] memory);
 
   function auditSelector(
@@ -54,7 +54,7 @@ contract ITokenCore {
     uint64 lastEmissionAt,
     uint256 cumulatedReception,
     uint256 cumulatedEmission);
- 
+
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (
     bool mintingFinished,

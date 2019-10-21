@@ -200,8 +200,17 @@ contract("Token", function (accounts) {
           assert.equal(allowance.toString(), "2099", "allowance");
         });
 
-        it("should prevent decrease approval too much from accounts[0]", async function () {
-          await assertRevert(token.decreaseApproval(accounts[0], "3334"), "XX");
+        it("should let accounts[0] decrease approval too much from accounts[0]", async function () {
+          const tx = await token.decreaseApproval(accounts[1], "3334");
+          assert.ok(tx.receipt.status, "Status");
+          assert.equal(tx.logs.length, 1);
+          assert.equal(tx.logs[0].event, "Approval", "event");
+          assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
+          assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
+          assert.equal(tx.logs[0].args.value.toString(), "0", "value");
+
+          const allowance = await token.allowance(accounts[0], accounts[1]);
+          assert.equal(allowance.toString(), "0", "allowance");
         });
       });
     });

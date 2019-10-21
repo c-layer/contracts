@@ -38,10 +38,13 @@ contract AuditableTokenDelegateMock is AuditableTokenDelegate {
       _holders[2],
       _holdersId[0],
       _callerKeys,
+      true,
       _holdersId[1],
       _senderKeys,
+      true,
       _holdersId[2],
       _receiverKeys,
+      true,
       _values[0],
       _values[1]
     );

@@ -15,36 +15,29 @@ import "./BaseTokenDelegate.sol";
 contract RuleEngineTokenDelegate is BaseTokenDelegate {
 
   /**
-   * @dev Overriden transfer function
+   * @dev Overriden transferInternal function
    */
-  function transfer(address _sender, address _to, uint256 _value)
-    public whenTransferRulesAreValid(_sender, _to, _value)
-    returns (bool)
+  function transferInternal(TransferData memory _transferData) internal
+    whenTransferRulesAreValid(
+      _transferData.sender,
+      _transferData.receiver,
+      _transferData.value) returns (bool)
   {
-    return super.transfer(_sender, _to, _value);
-  }
-
-  /**
-   * @dev Overriden transferFrom function
-   */
-  function transferFrom(
-    address _sender, address _from, address _to, uint256 _value)
-    public whenTransferRulesAreValid(_from, _to, _value)
-    returns (bool)
-  {
-    return super.transferFrom(_sender, _from, _to, _value);
+    return super.transferInternal(_transferData);
   }
 
   /**
    * @dev can transfer
    */
-  function canTransfer(
-    address _from,
-    address _to,
-    uint256 _value) public view returns (TransferCode)
+  function canTransferInternal(TransferData memory _transferData)
+    internal view returns (TransferCode)
   {
-    return validateTransfer(_from, _to, _value) ?
-      super.canTransfer(_from, _to, _value) : (TransferCode.RULE);
+    address sender = _transferData.sender;
+    address receiver = _transferData.receiver;
+    uint256 value = _transferData.value;
+
+    return validateTransfer(sender, receiver, value) ?
+      super.canTransferInternal(_transferData): (TransferCode.RULE);
   }
 
   /**

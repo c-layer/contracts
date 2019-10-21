@@ -25,7 +25,7 @@ contract TokenStorage is OperableStorage {
     LOCKED,
     FROZEN,
     RULE,
-    LIMITED
+    LIMITED_RECEPTION
   }
 
   struct Proof {

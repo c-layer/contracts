@@ -11,18 +11,11 @@ import "./AuditableTokenDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
+ * LR01: receiver must be registered
  */
 contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
 
   uint256 constant private AML_LIMIT_KEY = 1;
-
-  /**
-   * @dev base transfer data config
-   * @dev define which fields must be loaded
-   */
-  function transferDataConfig() internal pure returns (TransferDataConfig memory) {
-    return TransferDataConfig(false, false, false, false, true, true, true);
-  }
 
   /**
    * @dev default audit data config
@@ -54,15 +47,22 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
     internal view returns (TransferCode)
   {
     return belowReceptionLimit(_transferData) ?
-      super.canTransferInternal(_transferData) : TransferCode.LIMITED;
+      super.canTransferInternal(_transferData) : TransferCode.LIMITED_RECEPTION;
   }
 
   /**
    * @dev belowReceptionLimit
-   * @dev if the receiver is not registred then the limit of non registred will apply (ie userId = 0)
    */
   function belowReceptionLimit(TransferData memory _transferData) private view returns (bool) {
-    AuditData memory auditData = audits[address(this)][0].userData[_transferData.receiverId];
+    AuditStorage storage auditStorage = audits[address(this)][0];
+    if (!auditStorage.selector[_transferData.sender]) {
+      return true;
+    }
+
+    fetchReceiverUser(_transferData);
+    fetchConvertedValue(_transferData);
+    require(_transferData.receiverId != 0, "LR01");
+    AuditData memory auditData = auditStorage.userData[_transferData.receiverId];
     return auditData.cumulatedReception.add(_transferData.convertedValue)
       <= _transferData.receiverKeys[AML_LIMIT_KEY];
   }

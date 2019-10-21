@@ -13,6 +13,7 @@ import "./interface/ITokenCore.sol";
  *
  * Error messages
  *   TC01: Currency stored values must remain consistent
+ *   TC02: The audit selector definition requires the same number of addresses and values
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
@@ -76,10 +77,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 _userId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception)
   {
     AuditData memory audit = audits[_scope][_scopeId].userData[_userId];
     createdAt = audit.createdAt;
@@ -330,6 +331,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     address[] memory _selectorAddresses,
     bool[] memory _selectorValues) public onlyCoreOp returns (bool)
   {
+    require(_selectorAddresses.length == _selectorValues.length, "TC02");
+
     AuditStorage storage auditStorage = audits[_scope][_scopeId];
     for (uint256 i=0; i < _selectorAddresses.length; i++) {
       auditStorage.selector[_selectorAddresses[i]] = _selectorValues[i];

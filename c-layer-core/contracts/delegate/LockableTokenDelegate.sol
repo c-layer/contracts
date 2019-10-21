@@ -17,34 +17,22 @@ import "./BaseTokenDelegate.sol";
 contract LockableTokenDelegate is BaseTokenDelegate {
 
   /**
-   * @dev Overriden transfer function
+   * @dev Overriden transferInternal function
    */
-  function transfer(address _sender, address _to, uint256 _value)
-    public returns (bool)
+  function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    require(isUnlocked(_sender), "LTD01");
-    return super.transfer(_sender, _to, _value);
-  }
-
-  /**
-   * @dev Overriden transferFrom function
-   */
-  function transferFrom(
-    address _sender, address _from, address _to, uint256 _value)
-    public returns (bool)
-  {
-    require(isUnlocked(_from), "LTD01");
-    return super.transferFrom(_sender, _from, _to, _value);
+    require(isUnlocked(_transferData.sender), "LTD01");
+    return super.transferInternal(_transferData);
   }
 
   /**
    * @dev can transfer
    */
-  function canTransfer(address _from, address _to, uint256 _value)
-    public view returns (TransferCode)
+  function canTransferInternal(TransferData memory _transferData)
+    internal view returns (TransferCode)
   {
-    return isUnlocked(_from) ?
-      super.canTransfer(_from, _to, _value) : TransferCode.LOCKED;
+    return isUnlocked(_transferData.sender) ?
+      super.canTransferInternal(_transferData) : TransferCode.LOCKED;
   }
 
   /**
