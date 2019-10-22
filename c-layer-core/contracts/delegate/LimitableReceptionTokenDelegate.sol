@@ -62,7 +62,7 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
     fetchReceiverUser(_transferData);
     fetchConvertedValue(_transferData);
     require(_transferData.receiverId != 0, "LR01");
-    AuditData memory auditData = auditStorage.userData[_transferData.receiverId];
+    AuditData storage auditData = auditStorage.userData[_transferData.receiverId];
     return auditData.cumulatedReception.add(_transferData.convertedValue)
       <= _transferData.receiverKeys[AML_LIMIT_KEY];
   }

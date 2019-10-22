@@ -20,7 +20,7 @@ const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
 const CORE_GAS_COST = 4009438;
 const MINTABLE_DELEGATE_GAS_COST = 1629796;
-const DELEGATE_GAS_COST = 3828663;
+const DELEGATE_GAS_COST = 3786484;
 const PROXY_GAS_COST = 906187;
 
 const MINTABLE_FIRST_TRANSFER_COST = 59774;
@@ -29,6 +29,9 @@ const MINTABLE_TRANSFER_COST = 44293;
 const FIRST_TRANSFER_COST = 95282;
 const FIRST_TRANSFER_FROM_COST = 102975;
 const TRANSFER_COST = 64322;
+const AUDITED_FIRST_TRANSFER_COST = 132449;
+const AUDITED_FIRST_TRANSFER_FROM_COST = 140959;
+const AUDITED_TRANSFER_COST = 86009;
 
 contract("Performance", function (accounts) {
   let userRegistry, ratesProvider;
@@ -125,6 +128,29 @@ contract("Performance", function (accounts) {
         await token.transfer(accounts[1], "3333");
         const gas = await token.transfer.estimateGas(accounts[1], "3333");
         assert.equal(gas, TRANSFER_COST, "estimate");
+      });
+
+      describe("With auditSelector", function () {
+        beforeEach(async function () {
+          await core.defineAuditSelector(core.address, 0, [accounts[0]], [true]);
+        });
+
+        it("should estimate a first transfer accounts[0]", async function () {
+          const gas = await token.transfer.estimateGas(accounts[1], "3333");
+          assert.equal(gas, AUDITED_FIRST_TRANSFER_COST, "estimate");
+        });
+
+        it("should estimate a first transfer from accounts[0]", async function () {
+          const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], "3333", { from: accounts[1] });
+          assert.equal(gas, AUDITED_FIRST_TRANSFER_FROM_COST, "estimate");
+        });
+
+        // Later transfer does not have to allocate extra memory and should be cheaper
+        it("should estimate more transfer from accounts[0]", async function () {
+          await token.transfer(accounts[1], "3333");
+          const gas = await token.transfer.estimateGas(accounts[1], "3333");
+          assert.equal(gas, AUDITED_TRANSFER_COST, "estimate");
+        });
       });
     });
   });
