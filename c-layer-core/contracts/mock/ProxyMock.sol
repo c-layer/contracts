@@ -12,8 +12,7 @@ import "../abstract/Proxy.sol";
  */
 contract ProxyMock is Proxy {
 
-  constructor(address _core)
-    public Proxy(_core) {}
+  constructor(address _core) public Proxy(_core) { }
 
   function successOnlyCore(bool _success) public view onlyCore returns (bool) {
     return _success;
