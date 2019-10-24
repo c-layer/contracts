@@ -5,7 +5,7 @@ import "./IRatesProvider.sol";
 import "./IRule.sol";
 import "./IClaimable.sol";
 import "../TokenStorage.sol";
-
+import "./IOperableCore.sol";
 
 /**
  * @title ITokenCore
@@ -14,7 +14,7 @@ import "../TokenStorage.sol";
  *
  * Error messages
  **/
-contract ITokenCore {
+contract ITokenCore is IOperableCore {
 
   function name() public view returns (string memory);
   function oracles() public view returns

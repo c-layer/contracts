@@ -2,6 +2,7 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "./OperableStorage.sol";
 import "../abstract/Core.sol";
+import "../interface/IOperableCore.sol";
 
 
 /**
@@ -16,7 +17,7 @@ import "../abstract/Core.sol";
  *   OC03: Sender is not a proxy operator
  *   OC04: AllPrivileges is a reserved role
  */
-contract OperableCore is Core, OperableStorage {
+contract OperableCore is IOperableCore, Core, OperableStorage {
 
   constructor() public {
     operators[msg.sender].coreRole = ALL_PRIVILEGES;
