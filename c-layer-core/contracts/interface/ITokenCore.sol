@@ -30,30 +30,30 @@ contract ITokenCore is IOperableCore {
     uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception);
   function auditUser(
     address _scope,
     uint256 _scopeId,
     uint256 _userId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception);
   function auditAddress(
     address _scope,
     uint256 _scopeId,
     address _holder) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission);
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception);
 
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (

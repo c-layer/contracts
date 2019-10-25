@@ -4,6 +4,7 @@ import "./abstract/Factory.sol";
 import "./operable/OperableAsCore.sol";
 import "./interface/IERC20.sol";
 import "./interface/ITokenCore.sol";
+import "./interface/ITokenFactory.sol";
 
 
 /**
@@ -22,13 +23,14 @@ import "./interface/ITokenCore.sol";
  *   TF08: The rule must be set
  *   TF09: The token must be locked
  *   TF10: Token must be minted
- *   TF11: Same number of tokensales and allowances must be provided
- *   TF12:
- *   TF13:
- *   TF14:
- *   TF15:
+ *   TF11: The selector must be set
+ *   TF12: The rule must be removed
+ *   TF13: Same number of tokensales and allowances must be provided
+ *   TF14: Exceptions must be added to the lock
+ *   TF15: Allowances must be lower than the token balance
+ *   TF16: Allowance must be successfull
  **/
-contract TokenFactory is OperableAsCore, Factory {
+contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
 
   bytes4[] private REQUIRED_CORE_PRIVILEGES = [
     bytes4(keccak256("assignProxyOperators(address,bytes32,address[])")),
@@ -138,8 +140,8 @@ contract TokenFactory is OperableAsCore, Factory {
     }
 
     ITokenCore tokenCore = ITokenCore(address(core));
-    require(tokenCore.defineAuditSelector(address(core), 0, _auditSelectors, values), "TF15");
-    require(tokenCore.defineRules(_token, new IRule[](0)), "TF15");
+    require(tokenCore.defineAuditSelector(address(core), 0, _auditSelectors, values), "TF11");
+    require(tokenCore.defineRules(_token, new IRule[](0)), "TF12");
     emit TokenReviewed(_token);
     return true;
   }
@@ -152,7 +154,7 @@ contract TokenFactory is OperableAsCore, Factory {
     public onlyProxyOperator(_token) returns (bool)
   {
     require(hasCoreAccess(), "TF01");
-    require(_tokensales.length == _allowances.length, "TF11");
+    require(_tokensales.length == _allowances.length, "TF13");
 
     ITokenCore tokenCore = ITokenCore(address(core));
     (,,,,uint256[2] memory schedule,,,) = tokenCore.token(_token);
@@ -170,14 +172,9 @@ contract TokenFactory is OperableAsCore, Factory {
   {
     uint256 balance = IERC20(_token).balanceOf(address(this));
     for(uint256 i=0; i < _spenders.length; i++) {
-      require(_allowances[i] <= balance, "TF12");
-      require(IERC20(_token).approve(_spenders[i], _allowances[i]), "TF13");
+      require(_allowances[i] <= balance, "TF15");
+      require(IERC20(_token).approve(_spenders[i], _allowances[i]), "TF16");
       emit AllowanceUpdated(_token, _spenders[i], _allowances[i]);
     }
   }
-
-  event TokenDeployed(address token);
-  event TokenReviewed(address token);
-  event TokensalesConfigured(address token, address[] tokensales);
-  event AllowanceUpdated(address token, address spender, uint256 allowance);
 }

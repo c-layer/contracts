@@ -4,7 +4,6 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
 const FactoryMock = artifacts.require("FactoryMock.sol");
 const ProxyMock = artifacts.require("ProxyMock.sol");
 
@@ -18,14 +17,9 @@ contract("Factory", function (accounts) {
   let factory;
 
   beforeEach(async function () {
-    factory = await FactoryMock.new(CORE_ADDRESS);
+    factory = await FactoryMock.new();
     proxyCode = ProxyMock.bytecode;
     proxyCodeHash = web3.utils.sha3(proxyCode);
-  });
-
-  it("should define a core", async function () {
-    const coreAddress = await factory.core();
-    assert.equal(coreAddress, CORE_ADDRESS, "core address");
   });
 
   it("should have no proxy code", async function () {
@@ -34,7 +28,7 @@ contract("Factory", function (accounts) {
   });
 
   it("should define a proxy code", async function () {
-    const tx = await factory.defineProxyCode(proxyCode);
+    const tx = await factory.defineProxyCode(CORE_ADDRESS, proxyCode);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "ProxyCodeDefined", "event");
@@ -42,10 +36,8 @@ contract("Factory", function (accounts) {
   });
 
   describe("With proxy code defined", function () {
-    let proxy;
-
     beforeEach(async function () {
-      await factory.defineProxyCode(proxyCode);
+      await factory.defineProxyCode(CORE_ADDRESS, proxyCode);
     });
 
     it("should have a proxy code", async function () {
@@ -59,7 +51,7 @@ contract("Factory", function (accounts) {
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "ProxyDeployed", "event");
       assert.equal(tx.logs[0].args.proxy.length, 42, "proxy address length");
-      assert.ok(tx.logs[0].args.proxy != NULL_ADDRESS, "proxy address not null");
+      assert.ok(tx.logs[0].args.proxy !== NULL_ADDRESS, "proxy address not null");
     });
 
     describe("With a proxy deployed", function () {
