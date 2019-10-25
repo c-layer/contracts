@@ -17,27 +17,27 @@ const NULL_ADDRESS = "0x".padEnd(42, "0");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
-const LOCK_END = "" + Math.floor((new Date().getTime() + 3600 * 24 * 365)/1000);
+const LOCK_END = "" + Math.floor((new Date().getTime() + 3600 * 24 * 365) / 1000);
 const SUPPLIES_DECIMALS = "000000000000000000";
-const SUPPLIES = [ 42 * 10**6 + SUPPLIES_DECIMALS, 24 * 10**6 + SUPPLIES_DECIMALS ];
-const TOTAL_SUPPLY = 66 * 10**6 + SUPPLIES_DECIMALS;
+const SUPPLIES = [42 * 10 ** 6 + SUPPLIES_DECIMALS, 24 * 10 ** 6 + SUPPLIES_DECIMALS];
+const TOTAL_SUPPLY = 66 * 10 ** 6 + SUPPLIES_DECIMALS;
 
 const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3("assignProxyOperators(address,bytes32,address[])"),
   web3.utils.sha3("defineToken(address,uint256,string,string,uint256)"),
-  web3.utils.sha3("defineAuditSelector(address,uint256,address[],bool[])")
+  web3.utils.sha3("defineAuditSelector(address,uint256,address[],bool[])"),
 ].map((x) => x.substr(0, 10));
 const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3("mintAtOnce(address,address[],uint256[])"),
   web3.utils.sha3("defineLock(address,uint256,uint256,address[])"),
-  web3.utils.sha3("defineRules(address,address[])")
-].map((x) => x.substr(0, 10))
+  web3.utils.sha3("defineRules(address,address[])"),
+].map((x) => x.substr(0, 10));
 const REVIEW_PRIVILEGES = [
-  web3.utils.sha3("reviewToken(address,address[])")
+  web3.utils.sha3("reviewToken(address,address[])"),
 ];
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3("configureTokensales(address,address[],uint256[])"),
-  web3.utils.sha3("updateAllowances(address,address[],uint256[])")
+  web3.utils.sha3("updateAllowances(address,address[],uint256[])"),
 ];
 const FACTORY_CORE_ROLE = web3.utils.fromAscii("FactoryCoreRole").padEnd(66, "0");
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii("FactoryProxyRole").padEnd(66, "0");
@@ -46,13 +46,13 @@ const REVIEWER_PROXY_ROLE = web3.utils.fromAscii("ReviewerProxyRole").padEnd(66,
 
 contract("TokenFactory", function (accounts) {
   let proxyCode, proxyCodeHash;
-  let delegate, core, factory, proxy;
+  let delegate, core, factory;
 
   const VAULTS = [accounts[2], accounts[3]];
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("MyCore", [ delegate.address ]);
+    core = await TokenCore.new("MyCore", [delegate.address]);
     factory = await TokenFactory.new(core.address);
 
     proxyCode = TokenProxy.bytecode;
@@ -79,7 +79,7 @@ contract("TokenFactory", function (accounts) {
   it("should prevent non authorized to define a proxy code", async function () {
     await assertRevert(factory.deployToken(
       0, NAME, SYMBOL, DECIMALS, LOCK_END,
-      [ accounts[0], factory.address], SUPPLIES, [ accounts[0] ]), "TF01");
+      [accounts[0], factory.address], SUPPLIES, [accounts[0]]), "TF01");
   });
 
   describe("With proxy code defined and core authorizations", function () {
@@ -105,7 +105,7 @@ contract("TokenFactory", function (accounts) {
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "TokenDeployed", "event");
       assert.equal(tx.logs[0].args.token.length, 42, "proxy address length");
-      assert.ok(tx.logs[0].args.token != NULL_ADDRESS, "proxy address not null");
+      assert.ok(tx.logs[0].args.token !== NULL_ADDRESS, "proxy address not null");
     });
 
     describe("With a token deployed", function () {
@@ -120,13 +120,13 @@ contract("TokenFactory", function (accounts) {
       });
 
       it("should have a token", async function () {
-        let name = await token.name();
+        const name = await token.name();
         assert.equal(name, NAME, "name");
-        let symbol = await token.symbol();
+        const symbol = await token.symbol();
         assert.equal(symbol, SYMBOL, "symbol");
-        let decimals = await token.decimals();
+        const decimals = await token.decimals();
         assert.equal(decimals, DECIMALS, "decimals");
-        let totalSupply = await token.totalSupply();
+        const totalSupply = await token.totalSupply();
         assert.equal(totalSupply.toString(), TOTAL_SUPPLY, "total supply");
       });
 
@@ -158,15 +158,15 @@ contract("TokenFactory", function (accounts) {
       });
 
       it("should not let non proxy operator to review token", async function () {
-        await assertRevert(factory.reviewToken(token.address,[], { from: accounts[1] }), "OA01");
+        await assertRevert(factory.reviewToken(token.address, [], { from: accounts[1] }), "OA01");
       });
 
       it("should not let non proxy operator to configure tokensale", async function () {
-        await assertRevert(factory.configureTokensales(token.address,[],[]), "OA02");
+        await assertRevert(factory.configureTokensales(token.address, [], []), "OA02");
       });
 
       it("should not let non proxy operator to update allowances", async function () {
-        await assertRevert(factory.updateAllowances(token.address,[],[]), "OA02");
+        await assertRevert(factory.updateAllowances(token.address, [], []), "OA02");
       });
 
       describe("With reviewer authorizations", function () {
@@ -176,7 +176,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with no selectors", async function () {
-          const tx = await factory.reviewToken(token.address,[], { from: accounts[1] });
+          const tx = await factory.reviewToken(token.address, [], { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
@@ -184,7 +184,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with selectors", async function () {
-          const tx = await factory.reviewToken(token.address,[ accounts[0], accounts[1] ], { from: accounts[1] });
+          const tx = await factory.reviewToken(token.address, [accounts[0], accounts[1]], { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
@@ -198,7 +198,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let issuer configure tokensales with no tokensales", async function () {
-          const tx = await factory.configureTokensales(token.address,[],[]);
+          const tx = await factory.configureTokensales(token.address, [], []);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokensalesConfigured", "event");
@@ -208,22 +208,22 @@ contract("TokenFactory", function (accounts) {
 
         it("should let issuer configure tokensales with tokensales", async function () {
           const tx = await factory.configureTokensales(token.address,
-            [accounts[1],accounts[2]],["10000", "20000"]);
+            [accounts[1], accounts[2]], ["10000", "20000"]);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 3);
           assert.equal(tx.logs[2].event, "TokensalesConfigured", "event");
           assert.equal(tx.logs[2].args.token, token.address, "token");
-          assert.deepEqual(tx.logs[2].args.tokensales, [accounts[1],accounts[2]], "tokensales");
+          assert.deepEqual(tx.logs[2].args.tokensales, [accounts[1], accounts[2]], "tokensales");
         });
 
         it("should let issuer update allowances with no spenders", async function () {
-          const tx = await factory.updateAllowances(token.address,[],[]);
+          const tx = await factory.updateAllowances(token.address, [], []);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 0);
         });
 
         it("should let issuer update allowance with spenders", async function () {
-          const tx = await factory.updateAllowances(token.address,[accounts[1], accounts[2]],["0", "100000"]);
+          const tx = await factory.updateAllowances(token.address, [accounts[1], accounts[2]], ["0", "100000"]);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, "AllowanceUpdated", "event1");
