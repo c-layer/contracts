@@ -18,7 +18,7 @@ const DECIMALS = 18;
 const TOTAL_SUPPLY = "1000000";
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
-const CORE_GAS_COST = 4009438;
+const CORE_GAS_COST = 4009106;
 const MINTABLE_DELEGATE_GAS_COST = 1629796;
 const DELEGATE_GAS_COST = 3786484;
 const PROXY_GAS_COST = 906187;
