@@ -128,12 +128,13 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
   /**
    * @dev reviewToken
    */
-  function reviewToken(address _token)
-    public onlyCoreOperator returns (bool)
+  function reviewToken(address _token,
+    address[] memory _auditSelectors) public onlyCoreOperator returns (bool)
   {
     require(hasCoreAccess(), "TF01");
 
     ITokenCore tokenCore = ITokenCore(address(core));
+    require(tokenCore.defineAuditSelector(address(core), 0, _auditSelectors, values), "TF11");
     require(tokenCore.defineRules(_token, new IRule[](0)), "TF12");
     emit TokenReviewed(_token);
     return true;
