@@ -57,10 +57,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 _scopeId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception)
   {
     AuditData memory audit = audits[_scope][_scopeId].sharedData;
     createdAt = audit.createdAt;
@@ -97,10 +97,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     address _holder) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
-    uint64 lastReceptionAt,
     uint64 lastEmissionAt,
-    uint256 cumulatedReception,
-    uint256 cumulatedEmission)
+    uint64 lastReceptionAt,
+    uint256 cumulatedEmission,
+    uint256 cumulatedReception)
   {
     AuditData memory audit = audits[_scope][_scopeId].addressData[_holder];
     createdAt = audit.createdAt;
