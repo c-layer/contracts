@@ -12,8 +12,9 @@ import "./interface/ITokenCore.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- *   TC01: Currency stored values must remain consistent
- *   TC02: The audit selector definition requires the same number of addresses and values
+ *   TC01: Token cannot be equivalent to AllProxies
+ *   TC02: Currency stored values must remain consistent
+ *   TC03: The audit selector definition requires the same number of addresses and values
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
@@ -285,6 +286,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 _decimals)
     public onlyCoreOp returns (bool)
   {
+    require(_token != ALL_PROXIES, "TC01");
     defineProxy(_token, _delegateId);
     TokenData storage tokenData = tokens_[_token];
     tokenData.name = _name;
@@ -313,7 +315,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     if (currency != bytes32(0)) {
       // Updating the core currency is not yet supported
-      require(_userRegistry.currency() == currency, "TC01");
+      require(_userRegistry.currency() == currency, "TC02");
     } else {
       currency = _userRegistry.currency();
     }
@@ -331,7 +333,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     address[] memory _selectorAddresses,
     bool[] memory _selectorValues) public onlyCoreOp returns (bool)
   {
-    require(_selectorAddresses.length == _selectorValues.length, "TC02");
+    require(_selectorAddresses.length == _selectorValues.length, "TC03");
 
     AuditStorage storage auditStorage = audits[_scope][_scopeId];
     for (uint256 i=0; i < _selectorAddresses.length; i++) {
