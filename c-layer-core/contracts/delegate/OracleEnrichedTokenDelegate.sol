@@ -13,7 +13,6 @@ import "../util/convert/BytesConvert.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- *  OET01: The rate is undefined or invalid
  */
 contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   using BytesConvert for bytes;
@@ -54,6 +53,8 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
 
   /**
    * @dev fetchConvertedValue
+   * @dev warning: a converted value of 0 should be considered invalid
+   * @dev it is left to the code calling this function to handle this case
    */
   function fetchConvertedValue(TransferData memory _transferData) internal view {
     uint256 value = _transferData.value;
@@ -61,7 +62,6 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
       TokenData memory token = tokens_[_transferData.token];
       _transferData.convertedValue = ratesProvider.convert(
         value, bytes(token.symbol).toBytes32(), currency);
-      require(_transferData.convertedValue != 0, "OET01");
     }
   }
 }

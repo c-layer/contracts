@@ -37,18 +37,23 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
   });
 
   it("should transfer from accounts[0] to accounts[1]", async function () {
-    const tx = await token.transfer(accounts[1], "3333");
+    const tx = await token.transfer(accounts[1], "1");
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "Transfer", "event");
     assert.equal(tx.logs[0].args.from, accounts[0], "from");
     assert.equal(tx.logs[0].args.to, accounts[1], "to");
-    assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+    assert.equal(tx.logs[0].args.value.toString(), "1", "value");
 
     const balance0 = await token.balanceOf(accounts[0]);
-    assert.equal(balance0.toString(), "996667", "balance");
+    assert.equal(balance0.toString(), "999999", "balance");
     const balance1 = await token.balanceOf(accounts[1]);
-    assert.equal(balance1.toString(), "3333", "balance");
+    assert.equal(balance1.toString(), "1", "balance");
+  });
+
+  it("should eval canTransfer Ok from accounts[0] to accounts[1]", async function () {
+    const result = await token.canTransfer.call(accounts[0], accounts[1], "1");
+    assert.equal(result, 1, "canTransfer");
   });
 
   it("should allow accounts[1] to receive too many tokens", async function () {
@@ -61,6 +66,11 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
     assert.equal(tx.logs[0].args.value.toString(), "3334", "value");
   });
 
+  it("should eval canTransfer Ok from accounts[0] to accounts[1] with too many tokens", async function () {
+    const result = await token.canTransfer.call(accounts[0], accounts[1], "3334");
+    assert.equal(result, 1, "canTransfer");
+  });
+
   it("should allow accounts[3] to receive some tokens", async function () {
     const tx = await token.transfer(accounts[3], "3333");
     assert.ok(tx.receipt.status, "Status");
@@ -71,9 +81,34 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
     assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
   });
 
+  it("should eval canTransfer Ok from accounts[0] to accounts[3]", async function () {
+    const result = await token.canTransfer.call(accounts[0], accounts[3], "3333");
+    assert.equal(result, 1, "canTransfer");
+  });
+
   describe("with audit selector", function () {
     beforeEach(async function () {
       await core.defineAuditSelector(core.address, 0, [accounts[0]], [true]);
+    });
+
+    it("should transfer from accounts[0] to accounts[1]", async function () {
+      const tx = await token.transfer(accounts[1], "1");
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, "Transfer", "event");
+      assert.equal(tx.logs[0].args.from, accounts[0], "from");
+      assert.equal(tx.logs[0].args.to, accounts[1], "to");
+      assert.equal(tx.logs[0].args.value.toString(), "1", "value");
+
+      const balance0 = await token.balanceOf(accounts[0]);
+      assert.equal(balance0.toString(), "999999", "balance");
+      const balance1 = await token.balanceOf(accounts[1]);
+      assert.equal(balance1.toString(), "1", "balance");
+    });
+
+    it("should eval canTransfer Ok from accounts[0] to accounts[1]", async function () {
+      const result = await token.canTransfer.call(accounts[0], accounts[1], "1");
+      assert.equal(result, 1, "canTransfer");
     });
 
     it("should transfer from accounts[0] to accounts[1]", async function () {
@@ -84,6 +119,11 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
       assert.equal(tx.logs[0].args.from, accounts[0], "from");
       assert.equal(tx.logs[0].args.to, accounts[1], "to");
       assert.equal(tx.logs[0].args.value.toString(), "2222", "value");
+    });
+
+    it("should eval canTransfer Ok from accounts[0] to accounts[1]", async function () {
+      const result = await token.canTransfer.call(accounts[0], accounts[1], "2222");
+      assert.equal(result, 1, "canTransfer");
     });
 
     describe("with many transfers", function () {
@@ -113,12 +153,36 @@ contract("LimitableReceptionTokenDelegate", function (accounts) {
         assert.equal(tx.logs[0].args.value.toString(), "1000", "value");
       });
 
+      it("should eval canTransfer Ok from accounts[0] to accounts[2]", async function () {
+        const result = await token.canTransfer.call(accounts[0], accounts[2], "1000");
+        assert.equal(result, 1, "canTransfer");
+      });
+
       it("should prevent accounts[1] to receive too many tokens from account 0", async function () {
         await assertRevert(token.transfer(accounts[1], "1"), "CO03");
       });
 
+      it("should eval canTransfer not Ok from accounts[0] to accounts[1] with too many tokens", async function () {
+        const result = await token.canTransfer.call(accounts[0], accounts[1], "3334");
+        assert.equal(result, 8, "canTransfer");
+      });
+
+      it("should prevent accounts[1] to receive to few tokens", async function () {
+        await assertRevert(token.transfer(accounts[1], "1"), "CO03");
+      });
+
+      it("should eval canTransfer Ok from accounts[0] to accounts[1] with too few tokens", async function () {
+        const result = await token.canTransfer.call(accounts[0], accounts[1], "1");
+        assert.equal(result, 8, "canTransfer");
+      });
+
       it("should prevent accounts[3] to receive any tokens", async function () {
         await assertRevert(token.transfer(accounts[3], "1"), "CO03");
+      });
+
+      it("should eval canTransfer Ok from accounts[0] to accounts[3] with any tokens", async function () {
+        const result = await token.canTransfer.call(accounts[0], accounts[3], "1");
+        assert.equal(result, 8, "canTransfer");
       });
     });
   });
