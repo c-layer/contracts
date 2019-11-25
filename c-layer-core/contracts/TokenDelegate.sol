@@ -12,20 +12,14 @@ contract TokenDelegate is CLayerTokenDelegate, MintableTokenDelegate {
   /**
    * @dev default audit data config
    */
-  function auditConfigs() internal pure returns (AuditConfig[] memory) {
-    AuditConfig[] memory auditConfigs_ = new AuditConfig[](2);
-    auditConfigs_[0] = AuditConfig(
-      0, true, // scopeId
-      false, true, false, // userData
-      true, false, // selectorSender
-      false, false, false, false, false, true // only cumulated reception
-    );
-    auditConfigs_[1] = AuditConfig(
+  function defaultAuditConfigurations() internal pure returns (AuditConfiguration[] memory) {
+    AuditConfiguration[] memory auditConfigurations_ = new AuditConfiguration[](1);
+    auditConfigurations_[0] = AuditConfiguration(
+      AuditMode.ALWAYS,
       0, false, // scopeId
       false, false, true, // addressData
-      false, false, // selectorSender
       false, true, false, false, false, false // last transaction
     );
-    return auditConfigs_;
+    return auditConfigurations_;
   }
 }

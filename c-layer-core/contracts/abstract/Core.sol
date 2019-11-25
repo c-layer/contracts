@@ -13,22 +13,22 @@ import "../util/convert/BytesConvert.sol";
  *
  * Error messages
  *   CO01: Only Proxy may access the function
- *   CO02: The proxy has no delegates
+ *   CO02: Address 0 is an invalid delegate address
  *   CO03: Delegatecall should be successfull
- *   CO04: Invalid delegateId
- *   CO05: Proxy must exist
+ *   CO04: Proxy must exist
  **/
 contract Core is Storage {
   using BytesConvert for bytes;
 
   modifier onlyProxy {
-    require(proxyDelegates[msg.sender] != address(0), "CO01");
+    require(delegates[proxyDelegates[msg.sender]] != address(0), "CO01");
     _;
   }
 
   function delegateCall(address _proxy) internal returns (bool status)
   {
-    address delegate = proxyDelegates[_proxy];
+    uint256 delegateId = proxyDelegates[_proxy];
+    address delegate = delegates[delegateId];
     require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
     (status, ) = delegate.delegatecall(msg.data);
@@ -45,23 +45,26 @@ contract Core is Storage {
     internal returns (bytes memory result)
   {
     bool status;
-    address delegate = proxyDelegates[_proxy];
-    require(delegate != address(0), "CO04");
+    uint256 delegateId = proxyDelegates[_proxy];
+    address delegate = delegates[delegateId];
+    require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
     (status, result) = delegate.delegatecall(msg.data);
     require(status, "CO03");
   }
 
-  function defineProxy(
-    address _proxy,
-    uint256 _delegateId)
+  function defineDelegate(uint256 _delegateId, address _delegate) internal returns (bool) {
+    delegates[_delegateId] = _delegate;
+    return true;
+  }
+
+  function defineProxy(address _proxy, uint256 _delegateId)
     internal returns (bool)
   {
-    require(_delegateId < delegates.length, "CO04");
-    address delegate = delegates[_delegateId];
+    require(delegates[_delegateId] != address(0), "CO02");
+    require(_proxy != address(0), "CO04");
 
-    require(_proxy != address(0), "CO05");
-    proxyDelegates[_proxy] = delegate;
+    proxyDelegates[_proxy] = _delegateId;
     return true;
   }
 

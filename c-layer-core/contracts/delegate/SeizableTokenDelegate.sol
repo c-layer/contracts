@@ -24,7 +24,7 @@ contract SeizableTokenDelegate is BaseTokenDelegate {
     uint256 _amount) public returns (bool)
   {
     require(_account != msg.sender, "ST02");
-    TokenData storage token = tokens_[_token];
+    TokenData storage token = tokens[_token];
 
     token.balances[_account] = token.balances[_account].sub(_amount);
     token.balances[msg.sender] = token.balances[msg.sender].add(_amount);

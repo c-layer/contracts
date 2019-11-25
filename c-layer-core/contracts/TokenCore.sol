@@ -13,7 +13,7 @@ import "./interface/ITokenCore.sol";
  * Error messages
  *   TC01: Token cannot be equivalent to AllProxies
  *   TC02: Currency stored values must remain consistent
- *   TC03: The audit selector definition requires the same number of addresses and values
+ *   TC03: The audit triggers definition requires the same number of addresses and values
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
@@ -23,9 +23,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
    * @dev It is desired for now that delegates
    * @dev cannot be changed once the core has been deployed.
    */
-  constructor(string memory _name, address[] memory _delegates) public {
+  constructor(string memory _name) public {
     name_ = _name;
-    delegates = _delegates;
   }
 
   function name() public view returns (string memory) {
@@ -38,18 +37,63 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return (userRegistry, ratesProvider, currency, userKeys);
   }
 
-  function auditSelector(
-    address _scope,
-    uint256 _scopeId,
-    address[] memory _addresses)
-    public view returns (bool[] memory)
+  function auditConfiguration(uint256 _configurationId)
+    public view returns
+  (
+      AuditMode mode,
+      uint256 scopeId,
+      bool scopeCore,
+      bool sharedData,
+      bool userData,
+      bool addressData,
+      bool fieldCreatedAt,
+      bool fieldLastTransactionAt,
+      bool fieldLastEmissionAt,
+      bool fieldLastReceptionAt,
+      bool fieldCumulatedEmission,
+      bool fieldCumulatedReception
+    )
   {
-    AuditStorage storage auditStorage = audits[_scope][_scopeId];
-    bool[] memory selector = new bool[](_addresses.length);
-    for (uint256 i=0; i < _addresses.length; i++) {
-      selector[i] = auditStorage.selector[_addresses[i]];
+    AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
+    return (
+      auditConfiguration_.mode,
+      auditConfiguration_.scopeId,
+      auditConfiguration_.scopeCore,
+      auditConfiguration_.sharedData,
+      auditConfiguration_.userData,
+      auditConfiguration_.addressData,
+      auditConfiguration_.fieldCreatedAt,
+      auditConfiguration_.fieldLastTransactionAt,
+      auditConfiguration_.fieldLastEmissionAt,
+      auditConfiguration_.fieldLastReceptionAt,
+      auditConfiguration_.fieldCumulatedEmission,
+      auditConfiguration_.fieldCumulatedReception
+    );
+  }
+
+  function auditTriggers(
+    uint256 _configurationId, address[] memory _triggers)
+    public view returns (
+      bool[] memory senders,
+      bool[] memory receivers,
+      bool[] memory tokens
+    )
+  {
+    AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
+    senders = new bool[](_triggers.length);
+    receivers = new bool[](_triggers.length);
+    tokens = new bool[](_triggers.length);
+
+    for(uint256 i=0; i < _triggers.length; i++) {
+      senders[i] = auditConfiguration_.triggerSenders[_triggers[i]];
+      receivers[i] = auditConfiguration_.triggerReceivers[_triggers[i]];
+      tokens[i] = auditConfiguration_.triggerTokens[_triggers[i]];
     }
-    return selector;
+  }
+
+  function delegateConfigurations(uint256 _delegateId)
+    public view returns (uint256[] memory) {
+    return delegatesConfigurations[_delegateId];
   }
 
   function auditShared(
@@ -113,29 +157,29 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
   /**************  ERC20  **************/
   function tokenName() public view returns (string memory) {
-    return tokens_[msg.sender].name;
+    return tokens[msg.sender].name;
   }
 
   function tokenSymbol() public view returns (string memory) {
-    return tokens_[msg.sender].symbol;
+    return tokens[msg.sender].symbol;
   }
 
   function tokenDecimals() public view returns (uint256) {
-    return tokens_[msg.sender].decimals;
+    return tokens[msg.sender].decimals;
   }
 
   function tokenTotalSupply() public view returns (uint256) {
-    return tokens_[msg.sender].totalSupply;
+    return tokens[msg.sender].totalSupply;
   }
 
   function tokenBalanceOf(address _owner) public view returns (uint256) {
-    return tokens_[msg.sender].balances[_owner];
+    return tokens[msg.sender].balances[_owner];
   }
 
   function tokenAllowance(address _owner, address _spender)
     public view returns (uint256)
   {
-    return tokens_[msg.sender].allowed[_owner][_spender];
+    return tokens[msg.sender].allowed[_owner][_spender];
   }
 
   function transfer(address, address, uint256)
@@ -184,7 +228,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 frozenUntil,
     IRule[] memory rules,
     IClaimable[] memory claimables) {
-    TokenData storage tokenData = tokens_[_token];
+    TokenData storage tokenData = tokens[_token];
 
     mintingFinished = tokenData.mintingFinished;
     allTimeIssued = tokenData.allTimeIssued;
@@ -199,7 +243,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function tokenProofs(address _token, address _holder, uint256 _proofId)
     public view returns (uint256, uint64, uint64)
   {
-    Proof[] storage proofs = tokens_[_token].proofs[_holder];
+    Proof[] storage proofs = tokens[_token].proofs[_holder];
     if (_proofId < proofs.length) {
       Proof storage proof = proofs[_proofId];
       return (proof.amount, proof.startAt, proof.endAt);
@@ -286,8 +330,9 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     public onlyCoreOp returns (bool)
   {
     require(_token != ALL_PROXIES, "TC01");
+
     defineProxy(_token, _delegateId);
-    TokenData storage tokenData = tokens_[_token];
+    TokenData storage tokenData = tokens[_token];
     tokenData.name = _name;
     tokenData.symbol = _symbol;
     tokenData.decimals = _decimals;
@@ -300,7 +345,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     public onlyCoreOp returns (bool)
   {
     removeProxy(_token);
-    delete tokens_[_token];
+    delete tokens[_token];
 
     emit TokenRemoved(_token);
     return true;
@@ -326,20 +371,67 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return true;
   }
 
-  function defineAuditSelector(
-    address _scope,
-    uint256 _scopeId,
-    address[] memory _selectorAddresses,
-    bool[] memory _selectorValues) public onlyCoreOp returns (bool)
+  function defineTokenDelegate(
+    uint256 _delegateId,
+    address _delegate,
+    uint256[] memory _configurations) public onlyCoreOp returns (bool)
   {
-    require(_selectorAddresses.length == _selectorValues.length, "TC03");
+    defineDelegate(_delegateId, _delegate);
+    if(_delegate != address(0)) {
+      delegatesConfigurations[_delegateId] = _configurations;
+      emit TokenDelegateDefined(_delegateId, _delegate, _configurations);
+    } else {
+      delete delegatesConfigurations[_delegateId];
+      emit TokenDelegateRemoved(_delegateId);
+    }
+    return true;
+  }
 
-    AuditStorage storage auditStorage = audits[_scope][_scopeId];
-    for (uint256 i=0; i < _selectorAddresses.length; i++) {
-      auditStorage.selector[_selectorAddresses[i]] = _selectorValues[i];
+  function defineAuditConfiguration(
+    uint256 _configurationId,
+    AuditMode _mode,
+    uint256 _scopeId,
+    bool _scopeCore,
+    bool[3] memory _data,
+    bool[6] memory _fields) public onlyCoreOp returns (bool)
+  {
+    AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
+    auditConfiguration_.mode = _mode;
+    auditConfiguration_.scopeId = _scopeId;
+    auditConfiguration_.scopeCore = _scopeCore;
+    auditConfiguration_.sharedData = _data[0];
+    auditConfiguration_.userData = _data[1];
+    auditConfiguration_.addressData = _data[2];
+    auditConfiguration_.fieldCreatedAt = _fields[0];
+    auditConfiguration_.fieldLastTransactionAt = _fields[1];
+    auditConfiguration_.fieldLastEmissionAt = _fields[2];
+    auditConfiguration_.fieldLastReceptionAt = _fields[3];
+    auditConfiguration_.fieldCumulatedEmission = _fields[4];
+    auditConfiguration_.fieldCumulatedReception = _fields[5];
+
+    emit AuditConfigurationDefined(_configurationId, _scopeId, _scopeCore, _mode);
+    return true;
+  }
+
+  function defineAuditTriggers(
+    uint256 _configurationId,
+    address[] memory _triggerAddresses,
+    bool[] memory _triggerSenders,
+    bool[] memory _triggerReceivers,
+    bool[] memory _triggerTokens) public onlyCoreOp returns (bool)
+  {
+    require(_triggerAddresses.length == _triggerSenders.length
+      && _triggerAddresses.length == _triggerReceivers.length
+      && _triggerAddresses.length == _triggerTokens.length, "TC03");
+
+    AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
+    for(uint256 i=0; i < _triggerAddresses.length; i++) {
+      auditConfiguration_.triggerSenders[_triggerAddresses[i]] = _triggerSenders[i];
+      auditConfiguration_.triggerReceivers[_triggerAddresses[i]] = _triggerReceivers[i];
+      auditConfiguration_.triggerTokens[_triggerAddresses[i]] = _triggerTokens[i];
     }
 
-    emit AuditSelectorDefined(_scope, _scopeId, _selectorAddresses, _selectorValues);
+    emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerSenders, _triggerReceivers, _triggerTokens);
     return true;
   }
 }

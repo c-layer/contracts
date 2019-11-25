@@ -78,7 +78,7 @@ contract BaseTokenDelegate is TokenStorage {
   function approve(address _sender, address _spender, uint256 _value)
     public returns (bool)
   {
-    TokenData storage token = tokens_[msg.sender];
+    TokenData storage token = tokens[msg.sender];
     token.allowed[_sender][_spender] = _value;
     require(
       TokenProxy(msg.sender).emitApproval(_sender, _spender, _value),
@@ -92,7 +92,7 @@ contract BaseTokenDelegate is TokenStorage {
   function increaseApproval(address _sender, address _spender, uint _addedValue)
     public returns (bool)
   {
-    TokenData storage token = tokens_[msg.sender];
+    TokenData storage token = tokens[msg.sender];
     token.allowed[_sender][_spender] = (
       token.allowed[_sender][_spender].add(_addedValue));
     require(
@@ -107,7 +107,7 @@ contract BaseTokenDelegate is TokenStorage {
   function decreaseApproval(address _sender, address _spender, uint _subtractedValue)
     public returns (bool)
   {
-    TokenData storage token = tokens_[msg.sender];
+    TokenData storage token = tokens[msg.sender];
     uint oldValue = token.allowed[_sender][_spender];
     if (_subtractedValue > oldValue) {
       token.allowed[_sender][_spender] = 0;
@@ -125,7 +125,7 @@ contract BaseTokenDelegate is TokenStorage {
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    TokenData storage token = tokens_[_transferData.token];
+    TokenData storage token = tokens[_transferData.token];
     address caller = _transferData.caller;
     address sender = _transferData.sender;
     address receiver = _transferData.receiver;
@@ -153,7 +153,7 @@ contract BaseTokenDelegate is TokenStorage {
   function canTransferInternal(TransferData memory _transferData)
     internal view returns (TransferCode)
   {
-    TokenData storage token = tokens_[_transferData.token];
+    TokenData storage token = tokens[_transferData.token];
     address sender = _transferData.sender;
     address receiver = _transferData.receiver;
     uint256 value = _transferData.value;

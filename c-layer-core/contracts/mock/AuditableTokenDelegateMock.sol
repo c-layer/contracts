@@ -28,7 +28,6 @@ contract AuditableTokenDelegateMock is AuditableTokenDelegate {
     uint256[] memory _senderKeys,
     uint256[] memory _receiverKeys,
     uint256[] memory _values,
-
     uint256[] memory _configIds) public returns (bool)
   {
     TransferData memory transferData_ = TransferData(
@@ -48,45 +47,45 @@ contract AuditableTokenDelegateMock is AuditableTokenDelegate {
       _values[0],
       _values[1]
     );
-    AuditConfig[] memory definedAuditConfigs = auditConfigs();
-    AuditConfig[] memory auditConfigs_ = new AuditConfig[](_configIds.length);
+    AuditConfiguration[] memory definedAuditConfigurations = defaultAuditConfigurations();
+    AuditConfiguration[] memory auditConfigurations_ = new AuditConfiguration[](_configIds.length);
     for (uint256 i=0; i < _configIds.length; i++) {
-      auditConfigs_[i] = definedAuditConfigs[_configIds[i]];
+      auditConfigurations_[i] = definedAuditConfigurations[_configIds[i]];
     }
 
-    updateAuditInternal(transferData_, auditConfigs_);
+    updateAuditInternal(transferData_);
     return true;
   }
 
   /**
    * @dev default audit data config
    */
-  function auditConfigs() internal pure returns (AuditConfig[] memory) {
-    AuditConfig[] memory auditConfigs_ = new AuditConfig[](4);
-    auditConfigs_[0] = AuditConfig(
+  function defaultAuditConfigurations() internal pure returns (AuditConfiguration[] memory) {
+    AuditConfiguration[] memory auditConfigurations_ = new AuditConfiguration[](4);
+    auditConfigurations_[0] = AuditConfiguration(
+      AuditMode.TRIGGERS_ONLY,
       0, true, // scopes
       true, true, true, // datas
-      true, false, // selectors
       true, true, true, true, true, true // fields
     );
-    auditConfigs_[1] = AuditConfig(
+    auditConfigurations_[1] = AuditConfiguration(
+      AuditMode.TRIGGERS_EXCLUDED,
       1, true, // scopes
       true, false, false, // datas
-      false, true, // selectors
       false, false, true, false, true, false // fields
     );
-    auditConfigs_[2] = AuditConfig(
+    auditConfigurations_[2] = AuditConfiguration(
+      AuditMode.ALWAYS,
       2, true, // scopes
       false, false, true,
-      true, true, //selectors
       true, true, false, false, false, false // fields
     );
-    auditConfigs_[3] = AuditConfig(
+    auditConfigurations_[3] = AuditConfiguration(
+      AuditMode.NEVER,
       0, false, // scopes
       true, false, true, // datas
-      false, false, // selectors
       true, true, true, true, true, true //fields
     );
-    return auditConfigs_;
+    return auditConfigurations_;
   }
 }

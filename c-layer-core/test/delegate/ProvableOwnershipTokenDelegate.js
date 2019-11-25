@@ -12,13 +12,19 @@ const AMOUNT = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
+const AUDIT_ALWAYS = 3;
 
 contract("ProvableOwnershipTokenDelegate", function (accounts) {
   let core, delegate, token;
 
   beforeEach(async function () {
     delegate = await ProvableOwnershipTokenDelegate.new();
-    core = await TokenCore.new("Test", [delegate.address]);
+    core = await TokenCore.new("Test");
+    await core.defineAuditConfiguration(
+      0, AUDIT_ALWAYS, 0, false,
+      [ false, false, true ],
+      [ false, true, false, false, false, false]);
+    await core.defineTokenDelegate(0, delegate.address, [ 0 ]);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(

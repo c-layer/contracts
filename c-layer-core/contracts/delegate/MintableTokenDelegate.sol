@@ -17,7 +17,7 @@ import "../TokenProxy.sol";
 contract MintableTokenDelegate is BaseTokenDelegate {
 
   modifier canMint(address _token) {
-    require(!tokens_[_token].mintingFinished, "MT02");
+    require(!tokens[_token].mintingFinished, "MT02");
     _;
   }
 
@@ -30,7 +30,7 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   function mint(address _token, address _to, uint256 _amount)
     public canMint(_token) returns (bool)
   {
-    TokenData storage token = tokens_[_token];
+    TokenData storage token = tokens[_token];
     token.totalSupply = token.totalSupply.add(_amount);
     token.balances[_to] = token.balances[_to].add(_amount);
 
@@ -48,7 +48,7 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   function finishMinting(address _token)
     public canMint(_token) returns (bool)
   {
-    tokens_[_token].mintingFinished = true;
+    tokens[_token].mintingFinished = true;
     emit MintFinished(_token);
     return true;
   }

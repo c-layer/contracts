@@ -15,9 +15,8 @@ import "../abstract/Core.sol";
  */
 contract CoreMock is Core {
 
-  constructor(address[] memory _delegates) public
-  {
-    delegates = _delegates;
+  function defineDelegateMock(uint256 _delegateId, address _delegate) public returns (bool) {
+    return defineDelegate(_delegateId, _delegate);
   }
 
   function defineProxyMock(address _proxy, uint256 _delegateId) public returns (bool) {

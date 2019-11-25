@@ -18,20 +18,22 @@ const DECIMALS = 18;
 const TOTAL_SUPPLY = "1000000";
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 
-const CORE_GAS_COST = 4009106;
-const MINTABLE_DELEGATE_GAS_COST = 1629796;
-const DELEGATE_GAS_COST = 3786484;
-const PROXY_GAS_COST = 906187;
+const CORE_GAS_COST = 4553937;
+const MINTABLE_DELEGATE_GAS_COST = 1624965;
+const DELEGATE_GAS_COST = 3962747;
+const PROXY_GAS_COST = 906251;
 
-const MINTABLE_FIRST_TRANSFER_COST = 59774;
-const MINTABLE_FIRST_TRANSFER_FROM_COST = 67512;
-const MINTABLE_TRANSFER_COST = 44293;
-const FIRST_TRANSFER_COST = 95282;
-const FIRST_TRANSFER_FROM_COST = 102975;
-const TRANSFER_COST = 64322;
-const AUDITED_FIRST_TRANSFER_COST = 132449;
-const AUDITED_FIRST_TRANSFER_FROM_COST = 140959;
-const AUDITED_TRANSFER_COST = 86009;
+const MINTABLE_FIRST_TRANSFER_COST = 60358;
+const MINTABLE_FIRST_TRANSFER_FROM_COST = 68028;
+const MINTABLE_TRANSFER_COST = 44877;
+const FIRST_TRANSFER_COST = 65846;
+const FIRST_TRANSFER_FROM_COST = 73471;
+const TRANSFER_COST = 50366;
+const AUDITED_FIRST_TRANSFER_COST = 164958;
+const AUDITED_FIRST_TRANSFER_FROM_COST = 173400;
+const AUDITED_TRANSFER_COST = 103038;
+const AUDIT_MODE_TRIGGERS_ONLY = 1;
+const AUDIT_MODE_ALWAYS = 3;
 
 contract("Performance", function (accounts) {
   let userRegistry, ratesProvider;
@@ -39,12 +41,12 @@ contract("Performance", function (accounts) {
 
   before(async function () {
     userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
+      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000, 5000000 ]);
     ratesProvider = await RatesProviderMock.new();
   });
 
   it("should have a core gas cost at " + CORE_GAS_COST, async function () {
-    const gas = await TokenCore.new.estimateGas("Test", accounts);
+    const gas = await TokenCore.new.estimateGas("Test");
     assert.equal(gas, CORE_GAS_COST, "gas");
   });
 
@@ -59,7 +61,7 @@ contract("Performance", function (accounts) {
   });
 
   it("should have a proxy gas cost at " + PROXY_GAS_COST, async function () {
-    core = await TokenCore.new("Test", []);
+    core = await TokenCore.new("Test");
     const gas = await TokenProxy.new.estimateGas(core.address);
     assert.equal(gas, PROXY_GAS_COST, "gas");
   });
@@ -71,8 +73,11 @@ contract("Performance", function (accounts) {
       delegates = await Promise.all([
         MintableTokenDelegate.new(), TokenDelegate.new(),
       ]);
-      core = await TokenCore.new("Test", delegates.map((delegate) => delegate.address));
-      await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
+      core = await TokenCore.new("Test");
+
+      await core.defineTokenDelegate(0, delegates[0].address, []);
+      await core.defineTokenDelegate(1, delegates[1].address, []);
+      await core.defineOracles(userRegistry.address, ratesProvider.address, [ 0, 1, 2 ]);
     });
 
     describe("With a mintable token defined", function () {
@@ -85,7 +90,7 @@ contract("Performance", function (accounts) {
         await token.approve(accounts[1], "3333");
       });
 
-      it("should estimate a first transfer accounts[0]", async function () {
+      it("shuld estimate a first transfer accounts[0]", async function () {
         const gas = await token.transfer.estimateGas(accounts[1], "3333");
         assert.equal(gas, MINTABLE_FIRST_TRANSFER_COST, "estimate");
       });
@@ -113,6 +118,11 @@ contract("Performance", function (accounts) {
         await token.approve(accounts[1], "3333");
       });
 
+      it("should eval canTransfer Ok", async function () {
+        const result = await token.canTransfer.call(accounts[0], accounts[1], 0);
+        assert.equal(result, 1, "canTransfer");
+      });
+
       it("should estimate a first transfer accounts[0]", async function () {
         const gas = await token.transfer.estimateGas(accounts[1], "3333");
         assert.equal(gas, FIRST_TRANSFER_COST, "estimate");
@@ -130,9 +140,19 @@ contract("Performance", function (accounts) {
         assert.equal(gas, TRANSFER_COST, "estimate");
       });
 
-      describe("With auditSelector", function () {
+      describe("With audit configuration", function () {
         beforeEach(async function () {
-          await core.defineAuditSelector(core.address, 0, [accounts[0]], [true]);
+          await core.defineTokenDelegate(1, delegates[1].address, [ 0, 1 ]);
+          await core.defineAuditConfiguration(
+            0, AUDIT_MODE_TRIGGERS_ONLY, 0, true,
+            [ false, true, false ],
+            [ false, false, false, false, false, true ]);
+          await core.defineAuditTriggers(
+            0, [ accounts[0] ], [ true ], [ false ], [ false ]);
+          await core.defineAuditConfiguration(
+            1, AUDIT_MODE_ALWAYS, 0, false,
+            [ false, false, true ],
+            [ false, true, false, false, false, false ]);
         });
 
         it("should estimate a first transfer accounts[0]", async function () {

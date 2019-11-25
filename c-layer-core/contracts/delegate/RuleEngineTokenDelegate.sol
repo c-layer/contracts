@@ -46,7 +46,7 @@ contract RuleEngineTokenDelegate is BaseTokenDelegate {
   function defineRules(
     address _token, IRule[] memory _rules) public
   {
-    tokens_[_token].rules = _rules;
+    tokens[_token].rules = _rules;
     emit RulesDefined(_token, _rules);
   }
 
@@ -58,7 +58,7 @@ contract RuleEngineTokenDelegate is BaseTokenDelegate {
    * with a transfer and transferFrom gas cost reasonable.
    */
   function validateAddress(address _token, address _address) public view returns (bool) {
-    IRule[] memory rules_ = tokens_[_token].rules;
+    IRule[] memory rules_ = tokens[_token].rules;
     for (uint256 i = 0; i < rules_.length; i++) {
       if (!rules_[i].isAddressValid(_address)) {
         return false;
@@ -82,7 +82,7 @@ contract RuleEngineTokenDelegate is BaseTokenDelegate {
   function validateTransfer(address _from, address _to, uint256 _amount)
     public view returns (bool)
   {
-    IRule[] memory rules_ = tokens_[msg.sender].rules;
+    IRule[] memory rules_ = tokens[msg.sender].rules;
     for (uint256 i = 0; i < rules_.length; i++) {
       if (!rules_[i].isTransferValid(_from, _to, _amount)) {
         return false;

@@ -21,7 +21,8 @@ contract("FreezableTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await FreezableTokenDelegate.new();
-    core = await TokenCore.new("Test", [delegate.address]);
+    core = await TokenCore.new("Test");
+    await core.defineTokenDelegate(0, delegate.address, []);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
