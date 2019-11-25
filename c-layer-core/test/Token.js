@@ -19,7 +19,8 @@ contract("Token", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("Test", [delegate.address]);
+    core = await TokenCore.new("Test");
+    await core.defineTokenDelegate(0, delegate.address, []);
   });
 
   describe("With a token defined", async function () {

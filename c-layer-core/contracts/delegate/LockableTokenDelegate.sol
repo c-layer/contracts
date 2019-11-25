@@ -45,8 +45,8 @@ contract LockableTokenDelegate is BaseTokenDelegate {
     address[] memory _exceptions) public returns (bool)
   {
     require(_startAt < _endAt, "LTD01");
-    tokens_[_token].lock = Lock(_startAt, _endAt);
-    Lock storage tokenLock = tokens_[_token].lock;
+    tokens[_token].lock = Lock(_startAt, _endAt);
+    Lock storage tokenLock = tokens[_token].lock;
     for (uint256 i=0; i < _exceptions.length; i++) {
       tokenLock.exceptions[_exceptions[i]] = true;
     }
@@ -58,7 +58,7 @@ contract LockableTokenDelegate is BaseTokenDelegate {
    * @dev isUnlocked
    */
   function isUnlocked(address _sender) private view returns (bool) {
-    Lock storage tokenLock = tokens_[msg.sender].lock;
+    Lock storage tokenLock = tokens[msg.sender].lock;
     // solhint-disable-next-line not-rely-on-time
     uint256 currentTime = now;
     return tokenLock.endAt <= currentTime

@@ -19,7 +19,8 @@ contract("SeizableToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await SeizableTokenDelegate.new();
-    core = await TokenCore.new("Test", [delegate.address]);
+    core = await TokenCore.new("Test");
+    await core.defineTokenDelegate(0, delegate.address, []);
 
     token = await TokenProxy.new(core.address);
     await core.defineToken(

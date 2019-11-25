@@ -6,6 +6,7 @@ import "./interface/IRule.sol";
 import "./interface/IClaimable.sol";
 import "./interface/IUserRegistry.sol";
 import "./interface/IRatesProvider.sol";
+import "./interface/ITokenStorage.sol";
 
 
 /**
@@ -13,42 +14,13 @@ import "./interface/IRatesProvider.sol";
  * @dev Token storage
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
-contract TokenStorage is OperableStorage {
+contract TokenStorage is ITokenStorage, OperableStorage {
   using SafeMath for uint256;
-
-  enum TransferCode {
-    UNKNOWN,
-    OK,
-    INVALID_SENDER,
-    NO_RECIPIENT,
-    INSUFFICIENT_TOKENS,
-    LOCKED,
-    FROZEN,
-    RULE,
-    LIMITED_RECEPTION
-  }
 
   struct Proof {
     uint256 amount;
     uint64 startAt;
     uint64 endAt;
-  }
-
-  struct AuditData {
-    uint64 createdAt;
-    uint64 lastTransactionAt;
-    uint64 lastEmissionAt;
-    uint64 lastReceptionAt;
-    uint256 cumulatedEmission;
-    uint256 cumulatedReception;
-  }
-
-  struct AuditStorage {
-    mapping (address => bool) selector;
-
-    AuditData sharedData;
-    mapping(uint256 => AuditData) userData;
-    mapping(address => AuditData) addressData;
   }
 
   struct Lock {
@@ -79,7 +51,28 @@ contract TokenStorage is OperableStorage {
     IRule[] rules;
     IClaimable[] claimables;
   }
-  mapping (address => TokenData) internal tokens_;
+
+  struct AuditData {
+    uint64 createdAt;
+    uint64 lastTransactionAt;
+    uint64 lastEmissionAt;
+    uint64 lastReceptionAt;
+    uint256 cumulatedEmission;
+    uint256 cumulatedReception;
+  }
+
+  struct AuditStorage {
+    AuditData sharedData;
+    mapping(uint256 => AuditData) userData;
+    mapping(address => AuditData) addressData;
+  }
+
+  // DelegateId => AuditConfiguration[]
+  mapping (uint256 => AuditConfiguration) auditConfigurations;
+  mapping (uint256 => uint256[]) internal delegatesConfigurations;
+  mapping (address => TokenData) internal tokens;
+
+  // Scope x ScopeId => AuditStorage
   mapping (address => mapping (uint256 => AuditStorage)) internal audits;
 
   IUserRegistry internal userRegistry;
@@ -97,34 +90,4 @@ contract TokenStorage is OperableStorage {
     // solhint-disable-next-line not-rely-on-time
     return uint64(now);
   }
-
-  event OraclesDefined(
-    IUserRegistry userRegistry,
-    IRatesProvider ratesProvider,
-    bytes32 currency,
-    uint256[] userKeys);
-  event AuditSelectorDefined(
-    address indexed scope, uint256 scopeId, address[] addresses, bool[] values);
-  event Issue(address indexed token, uint256 amount);
-  event Redeem(address indexed token, uint256 amount);
-  event Mint(address indexed token, uint256 amount);
-  event MintFinished(address indexed token);
-  event ProofCreated(address indexed token, address indexed holder, uint256 proofId);
-  event RulesDefined(address indexed token, IRule[] rules);
-  event LockDefined(
-    address indexed token,
-    uint256 startAt,
-    uint256 endAt,
-    address[] exceptions
-  );
-  event Seize(address indexed token, address account, uint256 amount);
-  event Freeze(address address_, uint256 until);
-  event ClaimablesDefined(address indexed token, IClaimable[] claimables);
-  event TokenDefined(
-    address indexed token,
-    uint256 delegateId,
-    string name,
-    string symbol,
-    uint256 decimals);
-  event TokenRemoved(address indexed token);
 }

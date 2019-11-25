@@ -20,7 +20,7 @@ contract IssuableTokenDelegate is BaseTokenDelegate {
   function issue(address _token, uint256 _amount)
     public returns (bool)
   {
-    TokenData storage token = tokens_[_token];
+    TokenData storage token = tokens[_token];
     token.balances[msg.sender] = token.balances[msg.sender].add(_amount);
     token.totalSupply = token.totalSupply.add(_amount);
     token.allTimeIssued += _amount;
@@ -38,7 +38,7 @@ contract IssuableTokenDelegate is BaseTokenDelegate {
   function redeem(address _token, uint256 _amount)
     public returns (bool)
   {
-    TokenData storage token = tokens_[_token];
+    TokenData storage token = tokens[_token];
     token.balances[msg.sender] = token.balances[msg.sender].sub(_amount);
     token.totalSupply = token.totalSupply.sub(_amount);
     token.allTimeRedeemed += _amount;

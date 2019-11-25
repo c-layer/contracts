@@ -8,6 +8,12 @@ pragma solidity >=0.5.0 <0.6.0;
  **/
 contract IUserRegistry {
 
+  enum KeyCode {
+    KYC_LIMIT_KEY,
+    EMISSION_LIMIT_KEY,
+    RECEPTION_LIMIT_KEY
+  }
+
   event UserRegistered(uint256 indexed userId);
   event AddressAttached(uint256 indexed userId, address address_);
   event AddressDetached(uint256 indexed userId, address address_);

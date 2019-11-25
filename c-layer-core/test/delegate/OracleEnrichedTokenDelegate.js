@@ -87,7 +87,8 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
 
     beforeEach(async function () {
       delegate = await OracleEnrichedTokenDelegate.new();
-      core = await TokenCoreMock.new("Test", [delegate.address]);
+      core = await TokenCoreMock.new("Test");
+      await core.defineTokenDelegate(0, delegate.address, []);
       userRegistry = await UserRegistryMock.new(
         [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
       ratesProvider = await RatesProviderMock.new();

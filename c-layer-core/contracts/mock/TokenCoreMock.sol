@@ -13,15 +13,14 @@ import "../TokenProxy.sol";
  **/
 contract TokenCoreMock is TokenCore {
 
-  constructor(
-    string memory _name, address[] memory _delegates)
+  constructor(string memory _name)
     // solhint-disable-next-line no-empty-blocks
-    public TokenCore(_name, _delegates) {}
+    public TokenCore(_name) {}
 
   function defineSupplyMock(address _tokenAddress, uint256 _supply)
     public returns (bool)
   {
-    TokenData storage token = tokens_[_tokenAddress];
+    TokenData storage token = tokens[_tokenAddress];
     token.totalSupply = _supply;
     token.balances[msg.sender] = _supply;
     return true;

@@ -59,7 +59,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   function fetchConvertedValue(TransferData memory _transferData) internal view {
     uint256 value = _transferData.value;
     if (_transferData.convertedValue == 0 && value != 0) {
-      TokenData memory token = tokens_[_transferData.token];
+      TokenData memory token = tokens[_transferData.token];
       _transferData.convertedValue = ratesProvider.convert(
         value, bytes(token.symbol).toBytes32(), currency);
     }

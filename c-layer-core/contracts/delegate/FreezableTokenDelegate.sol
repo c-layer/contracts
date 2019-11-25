@@ -44,7 +44,7 @@ contract FreezableTokenDelegate is BaseTokenDelegate {
     address[] memory _addresses,
     uint256 _until) public returns (bool)
   {
-    mapping(address => uint256) storage frozenUntils = tokens_[_token].frozenUntils;
+    mapping(address => uint256) storage frozenUntils = tokens[_token].frozenUntils;
     for (uint256 i = 0; i < _addresses.length; i++) {
       frozenUntils[_addresses[i]] = _until;
       emit Freeze(_addresses[i], _until);
@@ -56,7 +56,7 @@ contract FreezableTokenDelegate is BaseTokenDelegate {
    * @dev areNotFrozen
    */
   function areNotFrozen(address _from, address _to) private view returns (bool) {
-    mapping(address => uint256) storage frozenUntils = tokens_[msg.sender].frozenUntils;
+    mapping(address => uint256) storage frozenUntils = tokens[msg.sender].frozenUntils;
     // solhint-disable-next-line not-rely-on-time
     uint256 currentTime = now;
     return (frozenUntils[msg.sender] < currentTime
