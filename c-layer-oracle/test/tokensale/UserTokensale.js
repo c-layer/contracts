@@ -91,17 +91,17 @@ contract("UserTokensale", function (accounts) {
   });
 
   it("should have investor 1 unspentETH to 0", async function () {
-    const unspentETH = await sale.registredInvestorUnspentETH(1);
+    const unspentETH = await sale.registeredInvestorUnspentETH(1);
     assert.equal(unspentETH.toString(), 0, "unspentETH");
   });
 
   it("should have investor 1 invested to 0", async function () {
-    const invested = await sale.registredInvestorInvested(1);
+    const invested = await sale.registeredInvestorInvested(1);
     assert.equal(invested.toString(), 0, "tokenPrice");
   });
 
   it("should have investor 1 tokens to 0", async function () {
-    const tokens = await sale.registredInvestorTokens(1);
+    const tokens = await sale.registeredInvestorTokens(1);
     assert.equal(tokens.toString(), 0, "userRegistry");
   });
 

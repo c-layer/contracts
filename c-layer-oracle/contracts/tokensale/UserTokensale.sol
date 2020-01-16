@@ -48,19 +48,19 @@ contract UserTokensale is ChangeTokensale {
     return userRegistry_;
   }
 
-  function registredInvestorUnspentETH(uint256 _investorId)
+  function registeredInvestorUnspentETH(uint256 _investorId)
     public view returns (uint256)
   {
     return investorIds[_investorId].unspentETH;
   }
 
-  function registredInvestorInvested(uint256 _investorId)
+  function registeredInvestorInvested(uint256 _investorId)
     public view returns (uint256)
   {
     return investorIds[_investorId].invested;
   }
 
-  function registredInvestorTokens(uint256 _investorId)
+  function registeredInvestorTokens(uint256 _investorId)
     public view returns (uint256)
   {
     return investorIds[_investorId].tokens;

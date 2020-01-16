@@ -362,7 +362,7 @@ contract("UserRegistry", function (accounts) {
     });
   });
 
-  describe("with 4 accounts registred", function () {
+  describe("with 4 accounts registered", function () {
     beforeEach(async function () {
       userRegistry = await UserRegistry.new(
         "Test",
