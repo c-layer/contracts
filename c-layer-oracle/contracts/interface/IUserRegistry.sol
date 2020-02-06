@@ -10,8 +10,8 @@ contract IUserRegistry {
 
   enum KeyCode {
     KYC_LIMIT_KEY,
-    EMISSION_LIMIT_KEY,
-    RECEPTION_LIMIT_KEY
+    RECEPTION_LIMIT_KEY,
+    EMISSION_LIMIT_KEY
   }
 
   event UserRegistered(uint256 indexed userId, address address_, uint256 validUntilTime);
