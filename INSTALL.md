@@ -45,7 +45,7 @@ It can be used directly to convert a amount from a currency into a different one
 
 We will create a Token (TKN) later but we can already set its initial countervalue here.
 ```javascript
-let ratesProvider = await RatesProvider.new("Altcoinomy);	
+let ratesProvider = await RatesProvider.new("Altcoinomy");
 const currencies = [
   web3.utils.fromAscii("ETH").padEnd(66, "0"),
   web3.utils.fromAscii("USD").padEnd(66, "0"),
@@ -78,7 +78,7 @@ let delegates = await Promise.all([
 
 const coreName = "MyComplianceCore";
 let core = await TokenCore.new(coreName, delegates);
-await core.defineOracles(u.address, r.address, [0, 1]);								
+await core.defineOracles(u.address, r.address, [0, 1]);
 
 let token = await TokenProxy.new(core.address);
 const delegateId = 1;
@@ -97,11 +97,11 @@ const exceptions = [ await core.defineLock(token.address, lockStart, lockEnd, er
 await core.defineAuditSelector(core.address, 0, erc20Vault[0], [ true ]);
 
 let token = await TokenProxy.new(core.address);
-t1 = await Tokensale.new("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820", accounts[0], accounts[0], "77", "100000000000000000000", "0x5553440000000000000000000000000000000000000000000000000000000000", "0x51C0f8B3d5EB7ed7F2F6a400cb5C59BB4DA0E9bd", "0x62C0749F1cF0A9E68B789386aD905544162F18c6", "1571560200", "1571563800")								
-t2 = await Tokensale.new("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820", accounts[0], accounts[0], "77", "100000000000000000000", "0x5553440000000000000000000000000000000000000000000000000000000000", "0x51C0f8B3d5EB7ed7F2F6a400cb5C59BB4DA0E9bd", "0x62C0749F1cF0A9E68B789386aD905544162F18c6", "1571567400", "1571571000")								
-t = await IERC20.at("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820")								
-t.approve(t1.address, "9680000000000000000000000000")								
-t.approve(t2.address, "8800000000000000000000000000")								
+t1 = await Tokensale.new("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820", accounts[0], accounts[0], "77", "100000000000000000000", "0x5553440000000000000000000000000000000000000000000000000000000000", "0x51C0f8B3d5EB7ed7F2F6a400cb5C59BB4DA0E9bd", "0x62C0749F1cF0A9E68B789386aD905544162F18c6", "1571560200", "1571563800");
+t2 = await Tokensale.new("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820", accounts[0], accounts[0], "77", "100000000000000000000", "0x5553440000000000000000000000000000000000000000000000000000000000", "0x51C0f8B3d5EB7ed7F2F6a400cb5C59BB4DA0E9bd", "0x62C0749F1cF0A9E68B789386aD905544162F18c6", "1571567400", "1571571000");
+t = await IERC20.at("0xF9043F5d2ad07755495649cd8ffccBAE5dE01820");
+t.approve(t1.address, "9680000000000000000000000000");
+t.approve(t2.address, "8800000000000000000000000000");
 ```
 
 ## Deployment and execution of a tokensale
