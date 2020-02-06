@@ -11,7 +11,7 @@ import "./AuditableTokenDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
- * LR01: receiver must be registered
+ * LR01: the transfer must stay below the limit if sender comes is set for audit selector
  */
 contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
 
@@ -60,10 +60,14 @@ contract LimitableReceptionTokenDelegate is AuditableTokenDelegate {
     }
 
     fetchReceiverUser(_transferData);
-    fetchConvertedValue(_transferData);
-    require(_transferData.receiverId != 0, "LR01");
-    AuditData storage auditData = auditStorage.userData[_transferData.receiverId];
-    return auditData.cumulatedReception.add(_transferData.convertedValue)
-      <= _transferData.receiverKeys[AML_LIMIT_KEY];
+    if (_transferData.receiverId != 0) {
+      fetchConvertedValue(_transferData);
+      if (_transferData.convertedValue != 0) {
+        AuditData storage auditData = auditStorage.userData[_transferData.receiverId];
+        return auditData.cumulatedReception.add(_transferData.convertedValue)
+          <= _transferData.receiverKeys[AML_LIMIT_KEY];
+      }
+    }
+    return false;
   }
 }
