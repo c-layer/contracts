@@ -33,7 +33,7 @@ const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3("defineRules(address,address[])"),
 ].map((x) => x.substr(0, 10));
 const REVIEW_PRIVILEGES = [
-  web3.utils.sha3("reviewToken(address,address[])"),
+  web3.utils.sha3("reviewToken(address)"),
 ];
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3("configureTokensales(address,address[],uint256[])"),
@@ -52,7 +52,8 @@ contract("TokenFactory", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("MyCore", [delegate.address]);
+    core = await TokenCore.new("MyCore");
+    await core.defineTokenDelegate(0, delegate.address, []);
     factory = await TokenFactory.new(core.address);
 
     proxyCode = TokenProxy.bytecode;
@@ -158,7 +159,7 @@ contract("TokenFactory", function (accounts) {
       });
 
       it("should not let non proxy operator to review token", async function () {
-        await assertRevert(factory.reviewToken(token.address, [], { from: accounts[1] }), "OA01");
+        await assertRevert(factory.reviewToken(token.address, { from: accounts[1] }), "OA01");
       });
 
       it("should not let non proxy operator to configure tokensale", async function () {
@@ -176,7 +177,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with no selectors", async function () {
-          const tx = await factory.reviewToken(token.address, [], { from: accounts[1] });
+          const tx = await factory.reviewToken(token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
@@ -184,7 +185,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with selectors", async function () {
-          const tx = await factory.reviewToken(token.address, [accounts[0], accounts[1]], { from: accounts[1] });
+          const tx = await factory.reviewToken(token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
