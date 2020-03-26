@@ -60,6 +60,7 @@ contract ITokenStorage {
   event TokenDelegateRemoved(uint256 indexed delegateId);
   event AuditConfigurationDefined(uint256 indexed configurationId, uint256 scopeId, bool scopeCore, AuditMode mode);
   event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] senders, bool[] receivers, bool[] tokens);
+  event SelfManaged(address indexed holder, bool active);
 
   event Issue(address indexed token, uint256 amount);
   event Redeem(address indexed token, uint256 amount);

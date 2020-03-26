@@ -139,4 +139,9 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     bool[] memory _triggerSenders,
     bool[] memory _triggerReceivers,
     bool[] memory _triggerTokens) public returns (bool);
+
+  function isSelfManaged(address _owner)
+    public view returns (bool);
+  function manageSelf(bool _active)
+    public returns (bool);
 }

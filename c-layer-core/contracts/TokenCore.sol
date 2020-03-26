@@ -434,4 +434,17 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerSenders, _triggerReceivers, _triggerTokens);
     return true;
   }
+
+  function isSelfManaged(address _owner)
+    public view returns (bool)
+  {
+    return selfManaged[_owner];
+  }
+
+  function manageSelf(bool _active)
+    public returns (bool)
+  {
+    selfManaged[msg.sender] = _active;
+    emit SelfManaged(msg.sender, _active);
+  }
 }

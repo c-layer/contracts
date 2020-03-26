@@ -107,7 +107,7 @@ contract("BaseToken", function (accounts) {
         assert.equal(allowance.toString(), "3333", "allowance");
       });
 
-      describe("With an allowance from accounts[0] to accounts[1]", function () {
+      describe("With an allowance from accounts[0] to accounts[1] (non operator)", function () {
         beforeEach(async function () {
           await token.approve(accounts[1], "3333");
         });
@@ -133,10 +133,6 @@ contract("BaseToken", function (accounts) {
 
           const allowance = await token.allowance(accounts[0], accounts[1]);
           assert.equal(allowance.toString(), "0", "allowance");
-        });
-
-        it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO03");
         });
 
         it("should let accounts[0] increase approval between accounts[0] and accounts[1]", async function () {
@@ -173,6 +169,44 @@ contract("BaseToken", function (accounts) {
           assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
           assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
           assert.equal(tx.logs[0].args.value.toString(), "0", "value");
+        });
+      });
+
+      describe("With no allowance and token provided to accounts[1]", function () {
+        beforeEach(async function () {
+          await token.transfer(accounts[1], "3333");
+        });
+
+       it("should let operator transfer token from accounts[1]", async function () {
+          const tx = await token.transferFrom(accounts[1], accounts[2], "3333", { from: accounts[0] });
+          assert.ok(tx.receipt.status, "Status");
+          assert.equal(tx.logs.length, 1);
+          assert.equal(tx.logs[0].event, "Transfer", "event");
+          assert.equal(tx.logs[0].args.from, accounts[1], "from");
+          assert.equal(tx.logs[0].args.to, accounts[2], "to");
+          assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+
+          const balance0 = await token.balanceOf(accounts[1]);
+          assert.equal(balance0.toString(), "0", "balance");
+          const balance2 = await token.balanceOf(accounts[2]);
+          assert.equal(balance2.toString(), "3333", "balance");
+
+          const allowance = await token.allowance(accounts[0], accounts[1]);
+          assert.equal(allowance.toString(), "0", "allowance");
+        });
+
+        it("should prevent transferFrom too much from accounts[1]", async function () {
+          await assertRevert(token.transferFrom(accounts[1], accounts[2], "3334"), "CO03");
+        });
+
+        describe("With accounts[1] self managed", function () {
+          beforeEach(async function () {
+            await core.manageSelf(true, { from: accounts[1] });
+          });
+
+          it("should prevent transferFrom from accounts[1]", async function () {
+            await assertRevert(token.transferFrom(accounts[1], accounts[2], "3333", { from: accounts[0] }), "CO03");
+          });
         });
       });
     });

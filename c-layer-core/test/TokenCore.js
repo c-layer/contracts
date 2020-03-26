@@ -139,6 +139,24 @@ contract("TokenCore", function (accounts) {
     assert.deepEqual(tx.logs[0].args.tokens, [ false, false, true ], "tokens");
   });
 
+  it("should be self managed for a user", async function () {
+    const selfManaged = await core.isSelfManaged(accounts[1]);
+    assert.ok(!selfManaged, "User should not be selfManaged");
+  });
+
+  it("should let user self managed their wallet", async function () {
+    const tx = await core.manageSelf(true, { from: accounts[1] });
+    
+    assert.ok(tx.receipt.status, "Status");
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, "SelfManaged", "event");
+    assert.equal(tx.logs[0].args.holder, accounts[1], "holder");
+    assert.equal(tx.logs[0].args.active, true, "active");
+
+    const selfManaged = await core.isSelfManaged(accounts[1]);
+    assert.ok(selfManaged, "User should be selfManaged");
+  });
+
   describe("with a delegate defined", async function () {
     beforeEach(async function () {
       await core.defineAuditConfiguration(

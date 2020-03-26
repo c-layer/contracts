@@ -75,6 +75,9 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   // Scope x ScopeId => AuditStorage
   mapping (address => mapping (uint256 => AuditStorage)) internal audits;
 
+  // Prevents transfer on behalf
+  mapping (address => bool) selfManaged;
+
   IUserRegistry internal userRegistry;
   IRatesProvider internal ratesProvider;
 

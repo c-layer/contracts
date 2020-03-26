@@ -134,7 +134,10 @@ contract BaseTokenDelegate is TokenStorage {
     require(sender != address(0), "TD01");
     require(value <= token.balances[sender], "TD02");
 
-    if (caller != address(0)) {
+    if (caller != address(0)
+      && (selfManaged[sender]
+        || !hasProxyPrivilege(caller, _transferData.token, msg.sig)))
+    {
       require(value <= token.allowed[sender][caller], "TD04");
       token.allowed[sender][caller] = token.allowed[sender][caller].sub(value);
     }
