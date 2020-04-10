@@ -96,6 +96,8 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     public returns (bool);
   function mintAtOnce(address, address[] memory, uint256[] memory)
     public returns (bool);
+  function burn(address, uint256)
+    public returns (bool);
   function seize(address _token, address, uint256)
     public returns (bool);
   function freezeManyAddresses(

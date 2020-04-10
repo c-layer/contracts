@@ -114,6 +114,39 @@ contract("MintableTokenDelegate", function (accounts) {
       await assertRevert(core.finishMinting(token.address, { from: accounts[1] }), "OC03");
     });
 
+    describe("With operator having some tokens", async function () {
+      beforeEach(async function () {
+        await token.transfer(accounts[0], AMOUNT, { from: accounts[1] });
+      });
+
+      it("should let operator burn some tokens", async function () {
+        const tx = await core.burn(token.address, AMOUNT);
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, "Burn", "event");
+        assert.equal(tx.logs[0].args.token, token.address, "token");
+        assert.equal(tx.logs[0].args.amount, AMOUNT, "amount");
+
+        const tokenEvents = await token.getPastEvents("allEvents", {
+          fromBlock: tx.logs[0].blockNumber,
+          toBlock: tx.logs[0].blockNumber,
+        });
+        assert.equal(tokenEvents.length, 1, "events");
+        assert.equal(tokenEvents[0].event, "Transfer", "event");
+        assert.equal(tokenEvents[0].returnValues.from, accounts[0], "to");
+        assert.equal(tokenEvents[0].returnValues.to, NULL_ADDRESS, "from");
+        assert.equal(tokenEvents[0].returnValues.value, AMOUNT, "value");
+      });
+
+      it("should prevent operator to burn too many tokens", async function() {
+        await assertRevert(core.burn(token.address, accounts[1], AMOUNT + 1), "CO03");
+      });
+
+      it("should prevent non operator to burn any tokens", async function () {
+        await assertRevert(core.burn(token.address, accounts[1], 1, { from: accounts[1] }), "OC03");
+      });
+    });
+
     describe("With minting finished", function () {
       beforeEach(async function () {
         await core.finishMinting(token.address);

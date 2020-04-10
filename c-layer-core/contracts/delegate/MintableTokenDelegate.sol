@@ -42,6 +42,25 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   }
 
   /**
+   * @dev Function to burn tokens
+   * @param _amount The amount of tokens to burn.
+   * @return A boolean that indicates if the operation was successful.
+   */
+  function burn(address _token, uint256 _amount)
+    public returns (bool)
+  {
+    TokenData storage token = tokens[_token];
+    token.totalSupply = token.totalSupply.sub(_amount);
+    token.balances[msg.sender] = token.balances[msg.sender].sub(_amount);
+
+    require(
+      TokenProxy(_token).emitTransfer(msg.sender, address(0), _amount),
+      "MT01");
+    emit Burn(_token, _amount);
+    return true;
+  }
+
+  /**
    * @dev Function to stop minting new tokens.
    * @return True if the operation was successful.
    */
