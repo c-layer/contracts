@@ -13,7 +13,7 @@ import "./interface/ITokenCore.sol";
  * Error messages
  *   TC01: Token cannot be equivalent to AllProxies
  *   TC02: Currency stored values must remain consistent
- *   TC03: The audit selector definition requires the same number of addresses and values
+ *   TC03: The audit triggers definition requires the same number of addresses and values
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
