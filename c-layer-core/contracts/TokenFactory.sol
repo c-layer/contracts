@@ -32,11 +32,12 @@ import "./interface/ITokenFactory.sol";
  **/
 contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
 
-  bytes4[] public REQUIRED_CORE_PRIVILEGES = [
+  bytes4[] private REQUIRED_CORE_PRIVILEGES = [
     bytes4(keccak256("assignProxyOperators(address,bytes32,address[])")),
-    bytes4(keccak256("defineToken(address,uint256,string,string,uint256)"))
+    bytes4(keccak256("defineToken(address,uint256,string,string,uint256)")),
+    bytes4(keccak256("defineAuditSelector(address,uint256,address[],bool[])"))
   ];
-  bytes4[] public REQUIRED_PROXY_PRIVILEGES = [
+  bytes4[] private REQUIRED_PROXY_PRIVILEGES = [
     bytes4(keccak256("mintAtOnce(address,address[],uint256[])")),
     bytes4(keccak256("defineLock(address,uint256,uint256,address[])")),
     bytes4(keccak256("defineRules(address,address[])"))
@@ -128,12 +129,18 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
   /**
    * @dev reviewToken
    */
-  function reviewToken(address _token)
+  function reviewToken(address _token, address[] memory _auditSelectors)
     public onlyCoreOperator returns (bool)
   {
     require(hasCoreAccess(), "TF01");
 
+    bool[] memory values = new bool[](_auditSelectors.length);
+    for(uint256 i=0; i < values.length; i++) {
+      values[i] = true;
+    }
+
     ITokenCore tokenCore = ITokenCore(address(core));
+    require(tokenCore.defineAuditSelector(address(core), 0, _auditSelectors, values), "TF11");
     require(tokenCore.defineRules(_token, new IRule[](0)), "TF12");
     emit TokenReviewed(_token);
     return true;

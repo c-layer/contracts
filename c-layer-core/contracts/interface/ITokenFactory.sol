@@ -23,7 +23,8 @@ contract ITokenFactory {
     uint256[] memory _supplies,
     address[] memory _proxyOperators
   ) public returns (address);
-  function reviewToken(address _token) public returns (bool);
+  function reviewToken(address _token,
+    address[] memory _auditSelectors) public returns (bool);
   function configureTokensales(address _token,
     address[] memory _tokensales, uint256[] memory _allowances) public returns (bool);
   function updateAllowances(address _token,
