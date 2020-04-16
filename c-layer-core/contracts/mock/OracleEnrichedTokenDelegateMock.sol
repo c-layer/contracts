@@ -18,62 +18,62 @@ contract OracleEnrichedTokenDelegateMock is OracleEnrichedTokenDelegate {
    /**
    * @dev defineOraclesMock
     */
-  function defineOraclesMock(
-    IUserRegistry _userRegistry, IRatesProvider _ratesProvider, uint256[] memory _userKeys)
-    public returns (bool)
+  function defineOracleMock(IUserRegistry _userRegistry) public returns (bool)
   {
     userRegistry = _userRegistry;
-    ratesProvider = _ratesProvider;
-    userKeys = _userKeys;
   }
 
   /**
    * @dev testFetchCallerUser
    */
-  function testFetchCallerUser(address _caller)
+  function testFetchCallerUser(address _caller, uint256[] memory _userKeys)
     public view returns (uint256, uint256[] memory, bool)
   {
     TransferData memory transferData = transferData(
       address(0), _caller, address(0), address(0), 0);
 
-    super.fetchCallerUser(transferData);
+    super.fetchCallerUser(transferData, _userKeys);
     return (transferData.callerId, transferData.callerKeys, transferData.callerFetched);
   }
 
   /**
    * @dev testFetchSenderUser
    */
-  function testFetchSenderUser(address _sender)
+  function testFetchSenderUser(address _sender, uint256[] memory _userKeys)
     public view returns (uint256, uint256[] memory, bool)
   {
     TransferData memory transferData = transferData(
       address(0), address(0), _sender, address(0), 0);
 
-    super.fetchSenderUser(transferData);
+    super.fetchSenderUser(transferData, _userKeys);
     return (transferData.senderId, transferData.senderKeys, transferData.senderFetched);
   }
 
   /**
    * @dev testFetchReceiverUser
    */
-  function testFetchReceiverUser(address _receiver)
+  function testFetchReceiverUser(address _receiver, uint256[] memory _userKeys)
     public view returns (uint256, uint256[] memory, bool)
   {
     TransferData memory transferData = transferData(
       address(0), address(0), address(0), _receiver, 0);
 
-    super.fetchReceiverUser(transferData);
+    super.fetchReceiverUser(transferData, _userKeys);
     return (transferData.receiverId, transferData.receiverKeys, transferData.receiverFetched);
   }
 
   /**
    * @dev testFetchConvertedValue
    */
-  function testFetchConvertedValue(uint256 _value) public view returns (uint256) {
+  function testFetchConvertedValue(
+    uint256 _value,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency) public view returns (uint256)
+  {
     TransferData memory transferData = transferData(
       address(0), address(0), address(0), address(0), _value);
 
-    super.fetchConvertedValue(transferData);
+    super.fetchConvertedValue(transferData, _ratesProvider, _currency);
     return (transferData.convertedValue);
   }
 }

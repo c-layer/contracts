@@ -18,6 +18,7 @@ const SYMBOL = "TKN";
 const DECIMALS = 18;
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
 const AUDIT_TRIGGERS_ONLY = 1;
+const AUDIT_STORAGE_USER_ID = 1;
 
 contract("LimitableTransferabilityTokenDelegate", function (accounts) {
   let core, delegate, token, userRegistry, ratesProvider;
@@ -25,22 +26,23 @@ contract("LimitableTransferabilityTokenDelegate", function (accounts) {
   beforeEach(async function () {
     delegate = await LimitableTransferabilityTokenDelegate.new();
     core = await TokenCore.new("Test");
-    await core.defineTokenDelegate(0, delegate.address, [ 0 ]);
-    await core.defineAuditConfiguration(0,
-      AUDIT_TRIGGERS_ONLY, 0, true, // scopes
-      [ false, true, false ], // datas
-      [ false, false, false, false, true, true ] // fields
+    userRegistry = await UserRegistryMock.new(
+      [accounts[0], accounts[1], accounts[2]], CHF, [5, 6666, 3333]);
+    ratesProvider = await RatesProviderMock.new();
+    await core.defineOracle(userRegistry.address);
+
+    await core.defineTokenDelegate(1, delegate.address, [0, 1]);
+    await core.defineAuditConfiguration(1,
+      0, true, // scopes
+      AUDIT_TRIGGERS_ONLY, AUDIT_STORAGE_USER_ID,
+      [0, 1, 2], ratesProvider.address, CHF,
+      [false, false, false, false, true, true] // fields
     );
   
     token = await TokenProxy.new(core.address);
     await core.defineToken(
-      token.address, 0, NAME, SYMBOL, DECIMALS);
+      token.address, 1, NAME, SYMBOL, DECIMALS);
     await core.defineSupplyMock(token.address, AMOUNT);
-
-    userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], CHF, [5, 6666, 3333 ]);
-    ratesProvider = await RatesProviderMock.new();
-    await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1, 2]);
   });
 
   it("should transfer from accounts[0] to accounts[1]", async function () {
@@ -95,7 +97,7 @@ contract("LimitableTransferabilityTokenDelegate", function (accounts) {
 
   describe("with trigger on sender", function () {
     beforeEach(async function () {
-      await core.defineAuditTriggers(0, [ accounts[0] ], [ true ], [ false ], [ false ]);
+      await core.defineAuditTriggers(1, [accounts[0]], [true], [false], [false]);
     });
 
     it("should transfer 1 from accounts[0] to accounts[1]", async function () {
@@ -141,7 +143,8 @@ contract("LimitableTransferabilityTokenDelegate", function (accounts) {
       });
 
       it("should have a user audit for user 1", async function () {
-        const audit1 = await core.auditUser(core.address, 0, 1);
+        const userId = "0x" + "1".padStart(64, "0");
+        const audit1 = await core.audit(core.address, 0, AUDIT_STORAGE_USER_ID, userId);
         assert.equal(audit1[0], "0", "createdAt");
         assert.equal(audit1[1], "0", "lastTransactionAt");
         assert.equal(audit1[2], "0", "lastEmissionAt");
@@ -151,7 +154,8 @@ contract("LimitableTransferabilityTokenDelegate", function (accounts) {
       });
 
       it("should have a user audit for user 2", async function () {
-        const audit1 = await core.auditUser(core.address, 0, 2);
+        const userId = "0x" + "2".padStart(64, "0");
+        const audit1 = await core.audit(core.address, 0, AUDIT_STORAGE_USER_ID, userId);
         assert.equal(audit1[0], "0", "createdAt");
         assert.equal(audit1[1], "0", "lastTransactionAt");
         assert.equal(audit1[2], "0", "lastEmissionAt");

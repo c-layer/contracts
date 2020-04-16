@@ -20,10 +20,11 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchCallerUser
    */
-  function fetchCallerUser(TransferData memory _transferData) internal view {
+  function fetchCallerUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view {
     if (!_transferData.callerFetched) {
       (_transferData.callerId, _transferData.callerKeys) =
-        userRegistry.validUser(_transferData.caller, userKeys);
+        userRegistry.validUser(_transferData.caller, _userKeys);
       _transferData.callerFetched = true;
     }
   }
@@ -31,10 +32,12 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchSenderUser
    */
-  function fetchSenderUser(TransferData memory _transferData) internal view {
+  function fetchSenderUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view
+  {
     if (!_transferData.senderFetched) {
       (_transferData.senderId, _transferData.senderKeys) =
-        userRegistry.validUser(_transferData.sender, userKeys);
+        userRegistry.validUser(_transferData.sender, _userKeys);
       _transferData.senderFetched = true;
     }
   }
@@ -43,10 +46,12 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchReceiverUser
    */
-  function fetchReceiverUser(TransferData memory _transferData) internal view {
+  function fetchReceiverUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view
+  {
     if (!_transferData.receiverFetched) {
       (_transferData.receiverId, _transferData.receiverKeys) =
-        userRegistry.validUser(_transferData.receiver, userKeys);
+        userRegistry.validUser(_transferData.receiver, _userKeys);
       _transferData.receiverFetched = true;
     }
   }
@@ -56,12 +61,15 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
    * @dev warning: a converted value of 0 should be considered invalid
    * @dev it is left to the code calling this function to handle this case
    */
-  function fetchConvertedValue(TransferData memory _transferData) internal view {
+  function fetchConvertedValue(TransferData memory _transferData,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency) internal view
+  {
     uint256 value = _transferData.value;
     if (_transferData.convertedValue == 0 && value != 0) {
       TokenData memory token = tokens[_transferData.token];
-      _transferData.convertedValue = ratesProvider.convert(
-        value, bytes(token.symbol).toBytes32(), currency);
+      _transferData.convertedValue = _ratesProvider.convert(
+        value, bytes(token.symbol).toBytes32(), _currency);
     }
   }
 }

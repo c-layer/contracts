@@ -7,6 +7,7 @@ pragma solidity >=0.5.0 <0.6.0;
  *
  * Error messages
  *   PR01: Only accessible by core
+ *   PR02: Core request should be successfull
  **/
 contract Proxy {
 
@@ -22,5 +23,18 @@ contract Proxy {
 
   constructor(address _core) public {
     core = _core;
+  }
+
+  /**
+   * @dev enforce static immutability (view)
+   * @dev in order to read core value through internal core delegateCall
+   */
+  function staticCallUint256() internal view returns (uint256 result) {
+    (bool status, bytes memory value) = core.staticcall(msg.data);
+    require(status, "PR02");
+    // solhint-disable-next-line no-inline-assembly
+    assembly {
+      result := mload(add(value, 0x20))
+    }
   }
 }

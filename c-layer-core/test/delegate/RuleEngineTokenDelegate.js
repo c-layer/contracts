@@ -21,11 +21,11 @@ contract("RuleEngineTokenDelegate", function (accounts) {
   beforeEach(async function () {
     delegate = await RuleEngineTokenDelegate.new();
     core = await TokenCore.new("Test");
-    await core.defineTokenDelegate(0, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, []);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
-      token.address, 0, NAME, SYMBOL, DECIMALS);
+      token.address, 1, NAME, SYMBOL, DECIMALS);
     await core.defineSupplyMock(token.address, AMOUNT);
     await token.approve(accounts[1], AMOUNT);
   });

@@ -10,7 +10,7 @@ const TokenCore = artifacts.require("TokenCore.sol");
 const TokenFactory = artifacts.require("TokenFactory.sol");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 
-const TOKEN_DEPLOYMENT_COST = "1086259";
+const TOKEN_DEPLOYMENT_COST = "1065941";
 const CAN_TRANSFER = 5; // LOCKED
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");
@@ -53,7 +53,7 @@ contract("TokenFactory", function (accounts) {
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
     core = await TokenCore.new("MyCore");
-    await core.defineTokenDelegate(0, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, []);
     factory = await TokenFactory.new(core.address);
 
     proxyCode = TokenProxy.bytecode;
@@ -79,7 +79,7 @@ contract("TokenFactory", function (accounts) {
 
   it("should prevent non authorized to define a proxy code", async function () {
     await assertRevert(factory.deployToken(
-      0, NAME, SYMBOL, DECIMALS, LOCK_END,
+      1, NAME, SYMBOL, DECIMALS, LOCK_END,
       [accounts[0], factory.address], SUPPLIES, [accounts[0]]), "TF01");
   });
 
@@ -93,14 +93,14 @@ contract("TokenFactory", function (accounts) {
 
     it("should estimate a new token deployment", async function () {
       const gasCost = await factory.deployToken.estimateGas(
-        0, NAME, SYMBOL, DECIMALS, LOCK_END,
+        1, NAME, SYMBOL, DECIMALS, LOCK_END,
         VAULTS, SUPPLIES, [accounts[0]]);
       assert.equal(gasCost, TOKEN_DEPLOYMENT_COST, "gas cost");
     });
 
     it("should deploy a new token", async function () {
       const tx = await factory.deployToken(
-        0, NAME, SYMBOL, DECIMALS, LOCK_END,
+        1, NAME, SYMBOL, DECIMALS, LOCK_END,
         VAULTS, SUPPLIES, [accounts[0]]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
@@ -114,7 +114,7 @@ contract("TokenFactory", function (accounts) {
 
       beforeEach(async function () {
         const tx = await factory.deployToken(
-          0, NAME, SYMBOL, DECIMALS, LOCK_END,
+          1, NAME, SYMBOL, DECIMALS, LOCK_END,
           [factory.address, factory.address], SUPPLIES, [accounts[0]]);
         const tokenAddress = tx.logs[0].args.token;
         token = await TokenProxy.at(tokenAddress);
@@ -141,9 +141,9 @@ contract("TokenFactory", function (accounts) {
       it("should have token data", async function () {
         const tokenData = await core.token(token.address);
         assert.ok(tokenData.mintingFinished, "mintingFinished");
-        assert.equal(tokenData.allTimeIssued, 0, "all time issued");
-        assert.equal(tokenData.allTimeRedeemed, 0, "all time issued");
-        assert.equal(tokenData.allTimeSeized, 0, "all time issued");
+        assert.equal(tokenData.allTimeMinted.toString(), TOTAL_SUPPLY, "all time minted");
+        assert.equal(tokenData.allTimeBurned.toString(), 0, "all time burned");
+        assert.equal(tokenData.allTimeSeized.toString(), 0, "all time seized");
         assert.deepEqual(tokenData.lock.map((x) => x.toString()), ["0", LOCK_END], "lock");
         assert.deepEqual(tokenData.rules, [factory.address], "rules");
         assert.deepEqual(tokenData.claimables, [], "claimables");

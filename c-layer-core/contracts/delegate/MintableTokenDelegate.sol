@@ -33,11 +33,12 @@ contract MintableTokenDelegate is BaseTokenDelegate {
     TokenData storage token = tokens[_token];
     token.totalSupply = token.totalSupply.add(_amount);
     token.balances[_to] = token.balances[_to].add(_amount);
+    token.allTimeMinted = token.allTimeMinted.add(_amount);
 
     require(
       TokenProxy(_token).emitTransfer(address(0), _to, _amount),
       "MT01");
-    emit Mint(_token, _amount);
+    emit Minted(_token, _amount);
     return true;
   }
 
@@ -52,11 +53,12 @@ contract MintableTokenDelegate is BaseTokenDelegate {
     TokenData storage token = tokens[_token];
     token.totalSupply = token.totalSupply.sub(_amount);
     token.balances[msg.sender] = token.balances[msg.sender].sub(_amount);
+    token.allTimeBurned = token.allTimeBurned.add(_amount);
 
     require(
       TokenProxy(_token).emitTransfer(msg.sender, address(0), _amount),
       "MT01");
-    emit Burn(_token, _amount);
+    emit Burned(_token, _amount);
     return true;
   }
 

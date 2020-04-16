@@ -19,7 +19,7 @@ contract("BaseToken", function (accounts) {
   beforeEach(async function () {
     delegate = await BaseTokenDelegate.new();
     core = await TokenCoreMock.new("Test");
-    await core.defineTokenDelegate(0, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, []);
   });
 
   describe("With a token defined", async function () {
@@ -28,7 +28,7 @@ contract("BaseToken", function (accounts) {
     beforeEach(async function () {
       token = await TokenProxy.new(core.address);
       await core.defineToken(
-        token.address, 0, NAME, SYMBOL, DECIMALS);
+        token.address, 1, NAME, SYMBOL, DECIMALS);
     });
 
     it("should have a core for token", async function () {
@@ -177,7 +177,7 @@ contract("BaseToken", function (accounts) {
           await token.transfer(accounts[1], "3333");
         });
 
-       it("should let operator transfer token from accounts[1]", async function () {
+        it("should let operator transfer token from accounts[1]", async function () {
           const tx = await token.transferFrom(accounts[1], accounts[2], "3333", { from: accounts[0] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);

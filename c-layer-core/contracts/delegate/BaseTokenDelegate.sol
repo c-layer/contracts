@@ -39,6 +39,24 @@ contract BaseTokenDelegate is TokenStorage {
     uint256 convertedValue;
   }
 
+  function decimals() public view returns (uint256) {
+    return tokens[msg.sender].decimals;
+  }
+
+  function totalSupply() public view returns (uint256) {
+    return tokens[msg.sender].totalSupply;
+  }
+
+  function balanceOf(address _owner) public view returns (uint256) {
+    return tokens[msg.sender].balances[_owner];
+  }
+
+  function allowance(address _owner, address _spender)
+    public view returns (uint256)
+  {
+    return tokens[msg.sender].allowances[_owner][_spender];
+  }
+
   /**
    * @dev Overriden transfer function
    */
@@ -79,7 +97,7 @@ contract BaseTokenDelegate is TokenStorage {
     public returns (bool)
   {
     TokenData storage token = tokens[msg.sender];
-    token.allowed[_sender][_spender] = _value;
+    token.allowances[_sender][_spender] = _value;
     require(
       TokenProxy(msg.sender).emitApproval(_sender, _spender, _value),
       "TD03");
@@ -93,10 +111,10 @@ contract BaseTokenDelegate is TokenStorage {
     public returns (bool)
   {
     TokenData storage token = tokens[msg.sender];
-    token.allowed[_sender][_spender] = (
-      token.allowed[_sender][_spender].add(_addedValue));
+    token.allowances[_sender][_spender] = (
+      token.allowances[_sender][_spender].add(_addedValue));
     require(
-      TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowed[_sender][_spender]),
+      TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowances[_sender][_spender]),
       "TD03");
     return true;
   }
@@ -108,14 +126,14 @@ contract BaseTokenDelegate is TokenStorage {
     public returns (bool)
   {
     TokenData storage token = tokens[msg.sender];
-    uint oldValue = token.allowed[_sender][_spender];
+    uint oldValue = token.allowances[_sender][_spender];
     if (_subtractedValue > oldValue) {
-      token.allowed[_sender][_spender] = 0;
+      token.allowances[_sender][_spender] = 0;
     } else {
-      token.allowed[_sender][_spender] = oldValue.sub(_subtractedValue);
+      token.allowances[_sender][_spender] = oldValue.sub(_subtractedValue);
     }
     require(
-      TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowed[_sender][_spender]),
+      TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowances[_sender][_spender]),
       "TD03");
     return true;
   }
@@ -138,8 +156,8 @@ contract BaseTokenDelegate is TokenStorage {
       && (selfManaged[sender]
         || !hasProxyPrivilege(caller, _transferData.token, msg.sig)))
     {
-      require(value <= token.allowed[sender][caller], "TD04");
-      token.allowed[sender][caller] = token.allowed[sender][caller].sub(value);
+      require(value <= token.allowances[sender][caller], "TD04");
+      token.allowances[sender][caller] = token.allowances[sender][caller].sub(value);
     }
 
     token.balances[sender] = token.balances[sender].sub(value);

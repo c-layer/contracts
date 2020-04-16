@@ -22,12 +22,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>13/13</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">60% </span>
+        <span class="strong">87.5% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>6/10</span>
+        <span class='fraction'>7/8</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -37,7 +37,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>13/13</span>
       </div>
     </div>
   </div>
@@ -110,7 +110,15 @@
 65
 66
 67
-68</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+68
+69
+70
+71
+72
+73
+74
+75
+76</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -145,22 +153,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-yes">2×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">127×</span>
+<span class="cline-any cline-yes">95×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">19×</span>
-<span class="cline-any cline-yes">19×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
+<span class="cline-any cline-yes">94×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -168,12 +166,30 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20×</span>
-<span class="cline-any cline-yes">20×</span>
-<span class="cline-any cline-yes">19×</span>
-<span class="cline-any cline-yes">19×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">126×</span>
+<span class="cline-any cline-yes">94×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">93×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">431×</span>
+<span class="cline-any cline-yes">431×</span>
+<span class="cline-any cline-yes">130×</span>
+<span class="cline-any cline-yes">130×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -192,7 +208,6 @@ import "../util/convert/BytesConvert.sol";
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
  *
  * Error messages
- *  OET01: The rate is undefined or invalid
  */
 contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   using BytesConvert for bytes;
@@ -200,10 +215,11 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchCallerUser
    */
-  function fetchCallerUser(TransferData memory _transferData) internal view {
+  function fetchCallerUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view {
     <span class="missing-if-branch" title="else path not taken" >E</span>if (!_transferData.callerFetched) {
       (_transferData.callerId, _transferData.callerKeys) =
-        userRegistry.validUser(_transferData.caller, userKeys);
+        userRegistry.validUser(_transferData.caller, _userKeys);
       _transferData.callerFetched = true;
     }
   }
@@ -211,10 +227,12 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchSenderUser
    */
-  function fetchSenderUser(TransferData memory _transferData) internal view {
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!_transferData.senderFetched) {
+  function fetchSenderUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view
+  {
+    if (!_transferData.senderFetched) {
       (_transferData.senderId, _transferData.senderKeys) =
-        userRegistry.validUser(_transferData.sender, userKeys);
+        userRegistry.validUser(_transferData.sender, _userKeys);
       _transferData.senderFetched = true;
     }
   }
@@ -223,24 +241,30 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   /**
    * @dev fetchReceiverUser
    */
-  function fetchReceiverUser(TransferData memory _transferData) internal view {
-    <span class="missing-if-branch" title="else path not taken" >E</span>if (!_transferData.receiverFetched) {
+  function fetchReceiverUser(TransferData memory _transferData,
+    uint256[] memory _userKeys) internal view
+  {
+    if (!_transferData.receiverFetched) {
       (_transferData.receiverId, _transferData.receiverKeys) =
-        userRegistry.validUser(_transferData.receiver, userKeys);
+        userRegistry.validUser(_transferData.receiver, _userKeys);
       _transferData.receiverFetched = true;
     }
   }
 &nbsp;
   /**
    * @dev fetchConvertedValue
+   * @dev warning: a converted value of 0 should be considered invalid
+   * @dev it is left to the code calling this function to handle this case
    */
-  function fetchConvertedValue(TransferData memory _transferData) internal view {
+  function fetchConvertedValue(TransferData memory _transferData,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency) internal view
+  {
     uint256 value = _transferData.value;
     if (_transferData.convertedValue == 0 &amp;&amp; value != 0) {
-      TokenData memory token = tokens_[_transferData.token];
-      _transferData.convertedValue = ratesProvider.convert(
-        value, bytes(token.symbol).toBytes32(), currency);
-      <span class="missing-if-branch" title="else path not taken" >E</span>require(_transferData.convertedValue != 0, "OET01");
+      TokenData memory token = tokens[_transferData.token];
+      _transferData.convertedValue = _ratesProvider.convert(
+        value, bytes(token.symbol).toBytes32(), _currency);
     }
   }
 }
@@ -250,7 +274,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 21 2019 20:14:53 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 16 2020 14:09:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

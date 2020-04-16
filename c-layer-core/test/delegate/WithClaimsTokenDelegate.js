@@ -13,7 +13,9 @@ const AMOUNT = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
+const NULL_ADDRESS = "0x".padEnd(42, "0");
 const AUDIT_ALWAYS = 3;
+const AUDIT_STORAGE_ADDRESS = 0;
 
 contract("WithClaimsTokenDelegate", function (accounts) {
   let core, delegate, token, claimable;
@@ -21,15 +23,16 @@ contract("WithClaimsTokenDelegate", function (accounts) {
   beforeEach(async function () {
     delegate = await WithClaimsTokenDelegate.new();
     core = await TokenCore.new("Test");
-    await core.defineAuditConfiguration(
-      0, AUDIT_ALWAYS, 0, false,
-      [ false, false, true ],
-      [ false, true, false, false, false, false]);
-    await core.defineTokenDelegate(0, delegate.address, [ 0 ]);
+    await core.defineAuditConfiguration(0,
+      0, false,
+      AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
+      [], NULL_ADDRESS, "0x0",
+      [false, true, false, false, false, false]);
+    await core.defineTokenDelegate(1, delegate.address, [0]);
     
     token = await TokenProxy.new(core.address);
     await core.defineToken(
-      token.address, 0, NAME, SYMBOL, DECIMALS);
+      token.address, 1, NAME, SYMBOL, DECIMALS);
     await core.defineSupplyMock(token.address, AMOUNT);
     await token.approve(accounts[1], AMOUNT);
   });

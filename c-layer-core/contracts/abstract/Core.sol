@@ -15,7 +15,8 @@ import "../util/convert/BytesConvert.sol";
  *   CO01: Only Proxy may access the function
  *   CO02: Address 0 is an invalid delegate address
  *   CO03: Delegatecall should be successfull
- *   CO04: Proxy must exist
+ *   CO04: DelegateId must be greater than 0
+ *   CO05: Proxy must exist
  **/
 contract Core is Storage {
   using BytesConvert for bytes;
@@ -54,6 +55,7 @@ contract Core is Storage {
   }
 
   function defineDelegate(uint256 _delegateId, address _delegate) internal returns (bool) {
+    require(_delegateId != 0, "CO04");
     delegates[_delegateId] = _delegate;
     return true;
   }
@@ -62,7 +64,7 @@ contract Core is Storage {
     internal returns (bool)
   {
     require(delegates[_delegateId] != address(0), "CO02");
-    require(_proxy != address(0), "CO04");
+    require(_proxy != address(0), "CO05");
 
     proxyDelegates[_proxy] = _delegateId;
     return true;

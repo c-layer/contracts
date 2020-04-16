@@ -31,43 +31,42 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return name_;
   }
 
-  function oracles() public view returns
-    (IUserRegistry, IRatesProvider, bytes32, uint256[] memory)
+  function oracle() public view returns
+    (IUserRegistry, bytes32)
   {
-    return (userRegistry, ratesProvider, currency, userKeys);
+    return (userRegistry, currency);
   }
 
   function auditConfiguration(uint256 _configurationId)
-    public view returns
-  (
-      AuditMode mode,
+    public view returns (
       uint256 scopeId,
       bool scopeCore,
-      bool sharedData,
-      bool userData,
-      bool addressData,
-      bool fieldCreatedAt,
-      bool fieldLastTransactionAt,
-      bool fieldLastEmissionAt,
-      bool fieldLastReceptionAt,
-      bool fieldCumulatedEmission,
-      bool fieldCumulatedReception
-    )
+      AuditMode mode,
+      AuditStorageMode storageMode,
+      uint256[] memory userKeys,
+      IRatesProvider ratesProvider,
+      bytes32 currency,
+      bool[6] memory fields)
   {
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
     return (
-      auditConfiguration_.mode,
       auditConfiguration_.scopeId,
       auditConfiguration_.scopeCore,
-      auditConfiguration_.sharedData,
-      auditConfiguration_.userData,
-      auditConfiguration_.addressData,
-      auditConfiguration_.fieldCreatedAt,
-      auditConfiguration_.fieldLastTransactionAt,
-      auditConfiguration_.fieldLastEmissionAt,
-      auditConfiguration_.fieldLastReceptionAt,
-      auditConfiguration_.fieldCumulatedEmission,
-      auditConfiguration_.fieldCumulatedReception
+
+      auditConfiguration_.mode,
+      auditConfiguration_.storageMode,
+      auditConfiguration_.userKeys,
+      auditConfiguration_.ratesProvider,
+      auditConfiguration_.currency,
+
+      [
+        auditConfiguration_.fieldCreatedAt,
+        auditConfiguration_.fieldLastTransactionAt,
+        auditConfiguration_.fieldLastEmissionAt,
+        auditConfiguration_.fieldLastReceptionAt,
+        auditConfiguration_.fieldCumulatedEmission,
+        auditConfiguration_.fieldCumulatedReception
+      ]
     );
   }
 
@@ -92,33 +91,16 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   function delegateConfigurations(uint256 _delegateId)
-    public view returns (uint256[] memory) {
+    public view returns (uint256[] memory)
+  {
     return delegatesConfigurations[_delegateId];
   }
 
-  function auditShared(
-    address _scope,
-    uint256 _scopeId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastEmissionAt,
-    uint64 lastReceptionAt,
-    uint256 cumulatedEmission,
-    uint256 cumulatedReception)
-  {
-    AuditData memory audit = audits[_scope][_scopeId].sharedData;
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
-  }
-
-  function auditUser(
+  function audit(
     address _scope,
     uint256 _scopeId,
-    uint256 _userId) public view returns (
+    AuditStorageMode _storageMode,
+    bytes32 _storageId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastEmissionAt,
@@ -126,33 +108,23 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 cumulatedEmission,
     uint256 cumulatedReception)
   {
-    AuditData memory audit = audits[_scope][_scopeId].userData[_userId];
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
-  }
+    AuditData memory auditData;
+    if (_storageMode == AuditStorageMode.SHARED) {
+      auditData = audits[_scope][_scopeId].sharedData;
+    }
+    if (_storageMode == AuditStorageMode.ADDRESS) {
+      auditData = audits[_scope][_scopeId].addressData[address(bytes20(_storageId))];
+    }
+    if (_storageMode == AuditStorageMode.USER_ID) {
+      auditData = audits[_scope][_scopeId].userData[uint256(_storageId)];
+    }
 
-  function auditAddress(
-    address _scope,
-    uint256 _scopeId,
-    address _holder) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastEmissionAt,
-    uint64 lastReceptionAt,
-    uint256 cumulatedEmission,
-    uint256 cumulatedReception)
-  {
-    AuditData memory audit = audits[_scope][_scopeId].addressData[_holder];
-    createdAt = audit.createdAt;
-    lastTransactionAt = audit.lastTransactionAt;
-    lastReceptionAt = audit.lastReceptionAt;
-    lastEmissionAt = audit.lastEmissionAt;
-    cumulatedReception = audit.cumulatedReception;
-    cumulatedEmission = audit.cumulatedEmission;
+    createdAt = auditData.createdAt;
+    lastTransactionAt = auditData.lastTransactionAt;
+    lastEmissionAt = auditData.lastEmissionAt;
+    lastReceptionAt = auditData.lastReceptionAt;
+    cumulatedEmission = auditData.cumulatedEmission;
+    cumulatedReception = auditData.cumulatedReception;
   }
 
   /**************  ERC20  **************/
@@ -164,22 +136,22 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return tokens[msg.sender].symbol;
   }
 
-  function tokenDecimals() public view returns (uint256) {
-    return tokens[msg.sender].decimals;
+  function decimals() public onlyProxy returns (uint256) {
+    return delegateCallUint256(msg.sender);
   }
 
-  function tokenTotalSupply() public view returns (uint256) {
-    return tokens[msg.sender].totalSupply;
+  function totalSupply() public onlyProxy returns (uint256) {
+    return delegateCallUint256(msg.sender);
   }
 
-  function tokenBalanceOf(address _owner) public view returns (uint256) {
-    return tokens[msg.sender].balances[_owner];
+  function balanceOf(address) onlyProxy public returns (uint256) {
+    return delegateCallUint256(msg.sender);
   }
 
-  function tokenAllowance(address _owner, address _spender)
-    public view returns (uint256)
+  function allowance(address, address)
+    public onlyProxy returns (uint256)
   {
-    return tokens[msg.sender].allowed[_owner][_spender];
+    return delegateCallUint256(msg.sender);
   }
 
   function transfer(address, address, uint256)
@@ -221,8 +193,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (
     bool mintingFinished,
-    uint256 allTimeIssued,
-    uint256 allTimeRedeemed,
+    uint256 allTimeMinted,
+    uint256 allTimeBurned,
     uint256 allTimeSeized,
     uint256[2] memory lock,
     uint256 frozenUntil,
@@ -231,8 +203,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     TokenData storage tokenData = tokens[_token];
 
     mintingFinished = tokenData.mintingFinished;
-    allTimeIssued = tokenData.allTimeIssued;
-    allTimeRedeemed = tokenData.allTimeRedeemed;
+    allTimeMinted = tokenData.allTimeMinted;
+    allTimeBurned = tokenData.allTimeBurned;
     allTimeSeized = tokenData.allTimeSeized;
     lock = [ tokenData.lock.startAt, tokenData.lock.endAt ];
     frozenUntil = tokenData.frozenUntils[msg.sender];
@@ -252,18 +224,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   /***********  TOKEN ADMIN  ***********/
-  function issue(address _token, uint256)
-    public onlyProxyOp(_token) returns (bool)
-  {
-    return delegateCall(_token);
-  }
-
-  function redeem(address _token, uint256)
-    public onlyProxyOp(_token) returns (bool)
-  {
-    return delegateCall(_token);
-  }
-
   function mint(address _token, address, uint256)
     public onlyProxyOp(_token) returns (bool)
   {
@@ -356,35 +316,26 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return true;
   }
 
-  function defineOracles(
-    IUserRegistry _userRegistry,
-    IRatesProvider _ratesProvider,
-    uint256[] memory _userKeys)
+  function defineOracle(
+    IUserRegistry _userRegistry)
     public onlyCoreOp returns (bool)
   {
-    if (currency != bytes32(0)) {
-      // Updating the core currency is not yet supported
-      require(_userRegistry.currency() == currency, "TC02");
-    } else {
-      currency = _userRegistry.currency();
-    }
     userRegistry = _userRegistry;
-    ratesProvider = _ratesProvider;
-    userKeys = _userKeys;
+    currency = _userRegistry.currency();
 
-    emit OraclesDefined(userRegistry, ratesProvider, currency, userKeys);
+    emit OracleDefined(userRegistry, currency);
     return true;
   }
 
   function defineTokenDelegate(
     uint256 _delegateId,
     address _delegate,
-    uint256[] memory _configurations) public onlyCoreOp returns (bool)
+    uint256[] memory _auditConfigurations) public onlyCoreOp returns (bool)
   {
     defineDelegate(_delegateId, _delegate);
     if(_delegate != address(0)) {
-      delegatesConfigurations[_delegateId] = _configurations;
-      emit TokenDelegateDefined(_delegateId, _delegate, _configurations);
+      delegatesConfigurations[_delegateId] = _auditConfigurations;
+      emit TokenDelegateDefined(_delegateId, _delegate, _auditConfigurations);
     } else {
       delete delegatesConfigurations[_delegateId];
       emit TokenDelegateRemoved(_delegateId);
@@ -394,19 +345,24 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
   function defineAuditConfiguration(
     uint256 _configurationId,
-    AuditMode _mode,
     uint256 _scopeId,
     bool _scopeCore,
-    bool[3] memory _data,
+    AuditMode _mode,
+    AuditStorageMode _storageMode,
+    uint256[] memory _userKeys,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency,
     bool[6] memory _fields) public onlyCoreOp returns (bool)
   {
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
     auditConfiguration_.mode = _mode;
+    auditConfiguration_.storageMode = _storageMode;
     auditConfiguration_.scopeId = _scopeId;
     auditConfiguration_.scopeCore = _scopeCore;
-    auditConfiguration_.sharedData = _data[0];
-    auditConfiguration_.userData = _data[1];
-    auditConfiguration_.addressData = _data[2];
+    auditConfiguration_.userKeys = _userKeys;
+    auditConfiguration_.ratesProvider = _ratesProvider;
+    auditConfiguration_.currency = _currency;
+
     auditConfiguration_.fieldCreatedAt = _fields[0];
     auditConfiguration_.fieldLastTransactionAt = _fields[1];
     auditConfiguration_.fieldLastEmissionAt = _fields[2];
@@ -414,7 +370,15 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     auditConfiguration_.fieldCumulatedEmission = _fields[4];
     auditConfiguration_.fieldCumulatedReception = _fields[5];
 
-    emit AuditConfigurationDefined(_configurationId, _scopeId, _scopeCore, _mode);
+    emit AuditConfigurationDefined(
+      _configurationId,
+      _scopeId,
+      _scopeCore,
+      _mode,
+      _storageMode,
+      _userKeys,
+      _ratesProvider,
+      _currency);
     return true;
   }
 

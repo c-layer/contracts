@@ -13,6 +13,7 @@ import "../util/convert/BytesConvert.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  *
  * Error messages
+ * AT01: Configuration and User Registry must have the same currency
  **/
 contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
   using BytesConvert for bytes;
@@ -33,24 +34,21 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
    */
   function isAuditRequiredInternal(
     TransferData memory _transferData,
-    uint256 _configurationId
+    AuditConfiguration storage _configuration
     ) internal view returns (bool)
   {
-    AuditConfiguration storage auditConfiguration_ =
-      auditConfigurations[_configurationId];
-
-    if (auditConfiguration_.mode == AuditMode.NEVER) {
+    if (_configuration.mode == AuditMode.NEVER) {
       return false;
     }
-    if (auditConfiguration_.triggerTokens[_transferData.token]
-      || auditConfiguration_.triggerSenders[_transferData.sender]
-      || auditConfiguration_.triggerReceivers[_transferData.receiver])
+    if (_configuration.triggerTokens[_transferData.token]
+      || _configuration.triggerSenders[_transferData.sender]
+      || _configuration.triggerReceivers[_transferData.receiver])
     {
-      if (auditConfiguration_.mode == AuditMode.TRIGGERS_EXCLUDED) {
+      if (_configuration.mode == AuditMode.TRIGGERS_EXCLUDED) {
         return false;
       }
     } else {
-      if (auditConfiguration_.mode == AuditMode.TRIGGERS_ONLY) {
+      if (_configuration.mode == AuditMode.TRIGGERS_ONLY) {
         return false;
       }
     }
@@ -58,104 +56,145 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
   }
 
   /**
+   * @dev can transfer internal
+   */
+  function canTransferInternal(TransferData memory _transferData)
+    internal view returns (TransferCode)
+  {
+    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegates[_transferData.token]];
+
+    for (uint256 i=0; i < configurationIds.length; i++) {
+      AuditConfiguration memory configuration_ =
+        auditConfigurations[configurationIds[i]];
+      if (configuration_.currency != bytes32(0)
+        && (address(configuration_.ratesProvider) == address(0)
+        || auditConfigurations[configurationIds[i]].currency != currency)) {
+        return TransferCode.INVALID_CURRENCY_CONFIGURATION;
+      }
+    }
+
+    return super.canTransferInternal(_transferData);
+  }
+
+  /**
    * @dev Update audit data
    */
   function updateAuditInternal(
-    TransferData memory _transferData) internal
+    TransferData memory _transferData) internal returns (bool)
   {
-    uint256[] storage configurations = delegatesConfigurations[proxyDelegates[_transferData.token]];
+    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegates[_transferData.token]];
 
-    for (uint256 i=0; i < configurations.length; i++) {
-      updateAuditPrivate(configurations[i], _transferData);
+    for (uint256 i=0; i < configurationIds.length; i++) {
+      // triggers are only accessible in storage
+      AuditConfiguration storage configuration_ = auditConfigurations[configurationIds[i]];
+
+      require(configuration_.currency == bytes32(0)
+        || (address(configuration_.ratesProvider) != address(0)
+        && configuration_.currency == currency), "AT01");
+      updateAuditPrivate(configuration_, _transferData);
     }
   }
 
-  function updateAuditPrivate(uint256 _configurationId, TransferData memory _transferData) private {
-    AuditConfiguration memory auditConfiguration_ = auditConfigurations[_configurationId];
-
+  function updateAuditPrivate(
+    AuditConfiguration storage _configuration,
+    TransferData memory _transferData) private
+  {
     /**** AUDIT STORAGE ****/
     AuditStorage storage auditStorage = (
-      (auditConfiguration_.scopeCore) ? audits[address(this)] : audits[_transferData.token]
-    )[auditConfiguration_.scopeId];
+      (_configuration.scopeCore) ? audits[address(this)] : audits[_transferData.token]
+    )[_configuration.scopeId];
 
     /**** FILTERS ****/
-    if (!isAuditRequiredInternal(_transferData, _configurationId)) {
+    if (!isAuditRequiredInternal(_transferData, _configuration)) {
       return;
     }
 
     /**** UPDATE AUDIT DATA ****/
-    if (auditConfiguration_.sharedData) {
-      updateSenderAuditPrivate(auditStorage.sharedData, auditConfiguration_, _transferData);
-      updateReceiverAuditPrivate(auditStorage.sharedData, auditConfiguration_, _transferData);
+    if (_configuration.storageMode == AuditStorageMode.SHARED) {
+      updateSenderAuditPrivate(auditStorage.sharedData, _configuration, _transferData);
+      updateReceiverAuditPrivate(auditStorage.sharedData, _configuration, _transferData);
     }
-    if (auditConfiguration_.userData) {
-      fetchSenderUser(_transferData);
-      fetchReceiverUser(_transferData);
+    if (_configuration.storageMode == AuditStorageMode.USER_ID) {
+      fetchSenderUser(_transferData, _configuration.userKeys);
+      fetchReceiverUser(_transferData, _configuration.userKeys);
 
       if (_transferData.senderId != 0) {
-        updateSenderAuditPrivate(auditStorage.userData[_transferData.senderId], auditConfiguration_, _transferData);
+        updateSenderAuditPrivate(auditStorage.userData[_transferData.senderId], _configuration, _transferData);
       }
 
       if (_transferData.receiverId != 0) {
-        updateReceiverAuditPrivate(auditStorage.userData[_transferData.receiverId], auditConfiguration_, _transferData);
+        updateReceiverAuditPrivate(auditStorage.userData[_transferData.receiverId], _configuration, _transferData);
       }
+
+      /*emit TransferAuditLog(
+        _transferData.senderId,
+        _transferData.receiverId,
+        auditStorage.userData[_transferData.senderId].cumulatedEmission,
+        (_configuration.userKeys.length > 2) ? _transferData.senderKeys[1] : 0,
+        auditStorage.userData[_transferData.senderId].cumulatedReception,
+        (_configuration.userKeys.length > 2) ? _transferData.senderKeys[2] : 0
+      );*/
     }
-    if (auditConfiguration_.addressData) {
-      updateSenderAuditPrivate(auditStorage.addressData[_transferData.sender], auditConfiguration_, _transferData);
-      updateReceiverAuditPrivate(auditStorage.addressData[_transferData.receiver], auditConfiguration_, _transferData);
+    if (_configuration.storageMode == AuditStorageMode.ADDRESS) {
+      updateSenderAuditPrivate(auditStorage.addressData[_transferData.sender], _configuration, _transferData);
+      updateReceiverAuditPrivate(auditStorage.addressData[_transferData.receiver], _configuration, _transferData);
     }
   }
 
   function updateSenderAuditPrivate(
     AuditData storage _senderAudit,
-    AuditConfiguration memory _auditConfiguration,
+    AuditConfiguration memory _configuration,
     TransferData memory _transferData
   ) private {
     uint64 currentTime = currentTime();
-    if (_auditConfiguration.fieldCreatedAt && _senderAudit.createdAt == 0) {
+    if (_configuration.fieldCreatedAt && _senderAudit.createdAt == 0) {
       _senderAudit.createdAt = currentTime;
     }
-    if (_auditConfiguration.fieldLastTransactionAt) {
+    if (_configuration.fieldLastTransactionAt) {
       _senderAudit.lastTransactionAt = currentTime;
     }
-    if (_auditConfiguration.fieldLastEmissionAt) {
+    if (_configuration.fieldLastEmissionAt) {
       _senderAudit.lastEmissionAt = currentTime;
     }
-    if (_auditConfiguration.fieldCumulatedEmission) {
-      if (_auditConfiguration.scopeCore) {
-        fetchConvertedValue(_transferData);
-        // may overflow
-        _senderAudit.cumulatedEmission += _transferData.convertedValue;
+    if (_configuration.fieldCumulatedEmission) {
+      if (_configuration.currency != bytes32(0)) {
+        fetchConvertedValue(_transferData,
+          _configuration.ratesProvider,
+          _configuration.currency);
+        _senderAudit.cumulatedEmission =
+          _senderAudit.cumulatedEmission.add(_transferData.convertedValue);
       } else {
-        // may overflow
-        _senderAudit.cumulatedEmission += _transferData.value;
+        _senderAudit.cumulatedEmission =
+          _senderAudit.cumulatedEmission.add(_transferData.value);
       }
     }
   }
 
   function updateReceiverAuditPrivate(
     AuditData storage _receiverAudit,
-    AuditConfiguration memory _auditConfiguration,
+    AuditConfiguration memory _configuration,
     TransferData memory _transferData
   ) private {
     uint64 currentTime = currentTime();
-    if (_auditConfiguration.fieldCreatedAt && _receiverAudit.createdAt == 0) {
+    if (_configuration.fieldCreatedAt && _receiverAudit.createdAt == 0) {
       _receiverAudit.createdAt = currentTime;
     }
-    if (_auditConfiguration.fieldLastTransactionAt) {
+    if (_configuration.fieldLastTransactionAt) {
       _receiverAudit.lastTransactionAt = currentTime;
     }
-    if (_auditConfiguration.fieldLastReceptionAt) {
+    if (_configuration.fieldLastReceptionAt) {
       _receiverAudit.lastReceptionAt = currentTime;
     }
-    if (_auditConfiguration.fieldCumulatedReception) {
-      if (_auditConfiguration.scopeCore) {
-        fetchConvertedValue(_transferData);
-        // may overflow
-        _receiverAudit.cumulatedReception += _transferData.convertedValue;
+    if (_configuration.fieldCumulatedReception) {
+      if (_configuration.currency != bytes32(0)) {
+        fetchConvertedValue(_transferData,
+          _configuration.ratesProvider,
+          _configuration.currency);
+        _receiverAudit.cumulatedReception =
+          _receiverAudit.cumulatedReception.add(_transferData.convertedValue);
       } else {
-        // may overflow
-        _receiverAudit.cumulatedReception += _transferData.value;
+        _receiverAudit.cumulatedReception =
+          _receiverAudit.cumulatedReception.add(_transferData.value);
       }
     }
   }

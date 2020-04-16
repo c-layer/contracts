@@ -63,27 +63,31 @@ contract AuditableTokenDelegateMock is AuditableTokenDelegate {
   function defaultAuditConfigurations() internal pure returns (AuditConfiguration[] memory) {
     AuditConfiguration[] memory auditConfigurations_ = new AuditConfiguration[](4);
     auditConfigurations_[0] = AuditConfiguration(
-      AuditMode.TRIGGERS_ONLY,
       0, true, // scopes
-      true, true, true, // datas
-      true, true, true, true, true, true // fields
+      AuditMode.TRIGGERS_ONLY,
+      AuditStorageMode.ADDRESS,
+      new uint256[](0), IRatesProvider(address(0)), bytes32(0),
+      true, true, true, true, true, true // fields,
     );
     auditConfigurations_[1] = AuditConfiguration(
-      AuditMode.TRIGGERS_EXCLUDED,
       1, true, // scopes
-      true, false, false, // datas
+      AuditMode.TRIGGERS_EXCLUDED,
+      AuditStorageMode.SHARED,
+      new uint256[](0), IRatesProvider(address(0)), bytes32(0),
       false, false, true, false, true, false // fields
     );
     auditConfigurations_[2] = AuditConfiguration(
-      AuditMode.ALWAYS,
       2, true, // scopes
-      false, false, true,
+      AuditMode.ALWAYS,
+      AuditStorageMode.USER_ID,
+      new uint256[](0), IRatesProvider(address(0)), bytes32(0),
       true, true, false, false, false, false // fields
     );
     auditConfigurations_[3] = AuditConfiguration(
-      AuditMode.NEVER,
       0, false, // scopes
-      true, false, true, // datas
+      AuditMode.NEVER,
+      AuditStorageMode.SHARED,
+      new uint256[](0), IRatesProvider(address(0)), bytes32(0),
       true, true, true, true, true, true //fields
     );
     return auditConfigurations_;

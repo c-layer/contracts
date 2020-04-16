@@ -7,7 +7,7 @@
 const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
-const TokenDelegate = artifacts.require("TokenDelegate.sol");
+const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");
 const NAME = "Token";
@@ -18,9 +18,9 @@ contract("Token", function (accounts) {
   let core, delegate;
 
   beforeEach(async function () {
-    delegate = await TokenDelegate.new();
+    delegate = await MintableTokenDelegate.new();
     core = await TokenCore.new("Test");
-    await core.defineTokenDelegate(0, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, []);
   });
 
   describe("With a token defined", async function () {
@@ -29,7 +29,7 @@ contract("Token", function (accounts) {
     beforeEach(async function () {
       token = await TokenProxy.new(core.address);
       await core.defineToken(
-        token.address, 0, NAME, SYMBOL, DECIMALS);
+        token.address, 1, NAME, SYMBOL, DECIMALS);
     });
 
     it("should have a core for token", async function () {
@@ -172,7 +172,7 @@ contract("Token", function (accounts) {
         });
 
         it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO03");
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334", { from: accounts[1] }), "CO03");
         });
 
         it("should let accounts[0] increase approval between accounts[0] and accounts[1]", async function () {

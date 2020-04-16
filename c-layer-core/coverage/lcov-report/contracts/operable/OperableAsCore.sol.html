@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for contracts/delegate/IssuableTokenDelegate.sol</title>
+    <title>Code coverage report for contracts/operable/OperableAsCore.sol</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -16,28 +16,28 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../../index.html">all files</a> / <a href="index.html">contracts/delegate/</a> IssuableTokenDelegate.sol
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/operable/</a> OperableAsCore.sol
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">80% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>4/5</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">50% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>2/4</span>
+        <span class='fraction'>4/4</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">80% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>2/2</span>
+        <span class='fraction'>4/5</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">100% </span>
+        <span class="strong">85.71% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>6/7</span>
       </div>
     </div>
   </div>
@@ -95,7 +95,10 @@
 50
 51
 52
-53</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+53
+54
+55
+56</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -114,89 +117,95 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">23×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">19×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">7×</span>
-<span class="cline-any cline-yes">7×</span>
+<span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">20×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">3×</span>
-<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">42×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
-import "./BaseTokenDelegate.sol";
-import "../TokenProxy.sol";
+import "../interface/IOperableCore.sol";
 &nbsp;
 &nbsp;
 /**
- * @title IssuableTokenDelegate
- * @dev BasicToken contract which implement an issuing mechanism.
+ * @title TokenFactory
+ *
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
  *
  * Error messages
- * IT01: Transfer events must be generated
- */
-contract IssuableTokenDelegate is BaseTokenDelegate {
+ *   OA01: Missing the core privilege
+ *   OA02: Missing the proxy privilege
+ **/
+contract OperableAsCore {
 &nbsp;
-  /**
-   * @dev called by the owner to increase the supply
-   */
-  function issue(address _token, uint256 _amount)
-    public returns (bool)
-  {
-    TokenData storage token = tokens_[_token];
-    token.balances[msg.sender] = token.balances[msg.sender].add(_amount);
-    token.totalSupply = token.totalSupply.add(_amount);
-    token.allTimeIssued += _amount;
+  IOperableCore public core;
 &nbsp;
-    <span class="missing-if-branch" title="else path not taken" >E</span>require(
-      TokenProxy(_token).emitTransfer(address(0), msg.sender, _amount),
-      "IT01");
-    emit Issue(_token, _amount);
-    return true;
+  modifier onlyCoreOperator() {
+    require(core.hasCorePrivilege(
+      msg.sender, msg.sig), "OA01");
+    _;
+  }
+&nbsp;
+  modifier onlyProxyOperator(address _proxy) {
+    require(core.hasProxyPrivilege(
+      msg.sender, _proxy, msg.sig), "OA02");
+    _;
   }
 &nbsp;
   /**
-   * @dev called by the owner to decrease the supply
-   */
-  function redeem(address _token, uint256 _amount)
-    public returns (bool)
-  {
-    TokenData storage token = tokens_[_token];
-    token.balances[msg.sender] = token.balances[msg.sender].sub(_amount);
-    token.totalSupply = token.totalSupply.sub(_amount);
-    token.allTimeRedeemed += _amount;
+   * @dev constructor
+   **/
+  constructor(address _core) public {
+    core = IOperableCore(_core);
+  }
 &nbsp;
-    <span class="missing-if-branch" title="else path not taken" >E</span>require(
-      TokenProxy(_token).emitTransfer(msg.sender, address(0), _amount),
-      "IT01");
-    emit Redeem(_token, _amount);
-    return true;
+  /**
+   * @dev hasCorePrivilege
+   */
+  function hasCorePrivilege(address _operator, bytes4 _privilege)
+    public view returns (bool)
+  {
+    return core.hasCorePrivilege(_operator, _privilege);
+  }
+&nbsp;
+  /**
+   * @dev hasProxyPrivilege
+   */
+<span class="fstat-no" title="function not covered" >  function hasProxyPrivilege(address _operator, address _proxy, bytes4 _privilege)</span>
+    public view returns (bool)
+  {
+<span class="cstat-no" title="statement not covered" >    return core.hasProxyPrivilege(_operator, _proxy, _privilege);</span>
   }
 }
 &nbsp;</pre></td></tr>
@@ -205,7 +214,7 @@ contract IssuableTokenDelegate is BaseTokenDelegate {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 21 2019 20:14:53 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 16 2020 14:09:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

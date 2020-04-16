@@ -16,6 +16,8 @@ const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
 const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
+const NULL_ADDRESS = "0x".padEnd(42, "0");
+const EMPTY_BYTES = "0x".padEnd(66, "0");
 
 contract("OracleEnrichedTokenDelegate", function (accounts) {
   let core, delegate, userRegistry, ratesProvider;
@@ -26,57 +28,57 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
     });
 
     it("should fail to fetch caller user", async function () {
-      await assertRevert(delegate.testFetchCallerUser(accounts[0]), "CO03");
+      await assertRevert(delegate.testFetchCallerUser(accounts[0], [0, 1, 2]), "CO03");
     });
 
     it("should fail to fetch sender user", async function () {
-      await assertRevert(delegate.testFetchSenderUser(accounts[0]), "CO03");
+      await assertRevert(delegate.testFetchSenderUser(accounts[0], [0, 1, 2]), "CO03");
     });
 
     it("should fail to fetch receiver user", async function () {
-      await assertRevert(delegate.testFetchReceiverUser(accounts[0]), "CO03");
+      await assertRevert(delegate.testFetchReceiverUser(accounts[0], [0, 1, 2]), "CO03");
     });
 
     it("should fetch converted value for 0", async function () {
-      const convertedValue = await delegate.testFetchConvertedValue(0);
+      const convertedValue = await delegate.testFetchConvertedValue(0, NULL_ADDRESS, EMPTY_BYTES);
       assert.equal(convertedValue, "0", "convertedValue");
     });
 
     it("should failed to fetch converted value for 100", async function () {
-      await assertRevert(delegate.testFetchConvertedValue(100), "CO03");
+      await assertRevert(delegate.testFetchConvertedValue(100, NULL_ADDRESS, EMPTY_BYTES), "CO03");
     });
 
     describe("with user registry and ratesProvider defined", function () {
       beforeEach(async function () {
         ratesProvider = await RatesProviderMock.new();
         userRegistry = await UserRegistryMock.new(
-          [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
-        await delegate.defineOraclesMock(userRegistry.address, ratesProvider.address, [0, 1]);
+          [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000, 5000000]);
+        await delegate.defineOracleMock(userRegistry.address);
       });
 
       it("should fetch caller user", async function () {
-        const callerUser = await delegate.testFetchCallerUser(accounts[0]);
+        const callerUser = await delegate.testFetchCallerUser(accounts[0], [0, 1, 2]);
         assert.equal(callerUser[0], "1", "caller Id");
-        assert.deepEqual(callerUser[1].map((x) => x.toString()), ["5", "5000000"], "caller keys");
+        assert.deepEqual(callerUser[1].map((x) => x.toString()), ["5", "5000000", "5000000"], "caller keys");
         assert.equal(callerUser[2], true, "caller fetched");
       });
 
       it("should fetch sender user", async function () {
-        const senderUser = await delegate.testFetchSenderUser(accounts[0]);
+        const senderUser = await delegate.testFetchSenderUser(accounts[0], [0, 1, 2]);
         assert.equal(senderUser[0], "1", "sender Id");
-        assert.deepEqual(senderUser[1].map((x) => x.toString()), ["5", "5000000"], "sender keys");
+        assert.deepEqual(senderUser[1].map((x) => x.toString()), ["5", "5000000", "5000000"], "sender keys");
         assert.equal(senderUser[2], true, "sender fetched");
       });
 
       it("should fetch receiver user", async function () {
-        const receiverUser = await delegate.testFetchReceiverUser(accounts[0]);
+        const receiverUser = await delegate.testFetchReceiverUser(accounts[0], [0, 1, 2]);
         assert.equal(receiverUser[0], "1", "receiver Id");
-        assert.deepEqual(receiverUser[1].map((x) => x.toString()), ["5", "5000000"], "receiver keys");
+        assert.deepEqual(receiverUser[1].map((x) => x.toString()), ["5", "5000000", "5000000"], "receiver keys");
         assert.equal(receiverUser[2], true, "receiver fetched");
       });
 
       it("should fetch converted value", async function () {
-        const convertedValue = await delegate.testFetchConvertedValue(100);
+        const convertedValue = await delegate.testFetchConvertedValue(100, ratesProvider.address, CHF);
         assert.equal(convertedValue, "150", "convertedValue");
       });
     });
@@ -88,15 +90,15 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
     beforeEach(async function () {
       delegate = await OracleEnrichedTokenDelegate.new();
       core = await TokenCoreMock.new("Test");
-      await core.defineTokenDelegate(0, delegate.address, []);
+      await core.defineTokenDelegate(1, delegate.address, []);
       userRegistry = await UserRegistryMock.new(
-        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
+        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000, 5000000]);
       ratesProvider = await RatesProviderMock.new();
-      await core.defineOracles(userRegistry.address, ratesProvider.address, [0, 1]);
+      await core.defineOracle(userRegistry.address);
 
       token = await TokenProxy.new(core.address);
       await core.defineToken(
-        token.address, 0, NAME, SYMBOL, DECIMALS);
+        token.address, 1, NAME, SYMBOL, DECIMALS);
     });
 
     it("should have a core for token", async function () {
@@ -199,7 +201,7 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
         });
 
         it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334"), "CO03");
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334", { from: accounts[1] }), "CO03");
         });
       });
     });

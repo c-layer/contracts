@@ -21,18 +21,18 @@ contract("MintableTokenDelegate", function (accounts) {
   beforeEach(async function () {
     delegate = await MintableTokenDelegate.new();
     core = await TokenCore.new("Test");
-    await core.defineTokenDelegate(0, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, []);
  
     token = await TokenProxy.new(core.address);
     await core.defineToken(
-      token.address, 0, NAME, SYMBOL, DECIMALS);
+      token.address, 1, NAME, SYMBOL, DECIMALS);
   });
 
   it("should let operator mint", async function () {
     const tx = await core.mint(token.address, accounts[1], AMOUNT);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "Mint", "event");
+    assert.equal(tx.logs[0].event, "Minted", "event");
     assert.equal(tx.logs[0].args.amount, AMOUNT, "amount");
 
     const tokenEvents = await token.getPastEvents("allEvents", {
@@ -67,7 +67,7 @@ contract("MintableTokenDelegate", function (accounts) {
     assert.equal(tokenEvents.length, 3, "token events");
  
     recipients.forEach((address, i) => {
-      assert.equal(tx.logs[i].event, "Mint", "event");
+      assert.equal(tx.logs[i].event, "Minted", "event");
       assert.equal(tx.logs[i].args.amount, AMOUNT * i, "amount");
       assert.equal(tokenEvents[i].event, "Transfer", "event");
       assert.equal(tokenEvents[i].returnValues.from, NULL_ADDRESS, "from");
@@ -123,7 +123,7 @@ contract("MintableTokenDelegate", function (accounts) {
         const tx = await core.burn(token.address, AMOUNT);
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, "Burn", "event");
+        assert.equal(tx.logs[0].event, "Burned", "event");
         assert.equal(tx.logs[0].args.token, token.address, "token");
         assert.equal(tx.logs[0].args.amount, AMOUNT, "amount");
 
@@ -138,7 +138,7 @@ contract("MintableTokenDelegate", function (accounts) {
         assert.equal(tokenEvents[0].returnValues.value, AMOUNT, "value");
       });
 
-      it("should prevent operator to burn too many tokens", async function() {
+      it("should prevent operator to burn too many tokens", async function () {
         await assertRevert(core.burn(token.address, accounts[1], AMOUNT + 1), "CO03");
       });
 

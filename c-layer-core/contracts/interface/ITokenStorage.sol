@@ -22,7 +22,23 @@ contract ITokenStorage {
     FROZEN,
     RULE,
     LIMITED_EMISSION,
-    LIMITED_RECEPTION
+    LIMITED_RECEPTION,
+    INVALID_CURRENCY_CONFIGURATION
+  }
+
+  enum SCOPE {
+    DEFAULT
+  }
+
+  enum DELEGATE_CONFIGURATION {
+    PROOF_OF_OWNERSHIP,
+    LIMITABLE_TRANSFERABILITY
+  }
+
+  enum AuditStorageMode {
+    ADDRESS,
+    USER_ID,
+    SHARED
   }
 
   enum AuditMode {
@@ -32,41 +48,26 @@ contract ITokenStorage {
     ALWAYS
   }
 
-  struct AuditConfiguration {
-    AuditMode mode;
-    mapping (address => bool) triggerSenders;
-    mapping (address => bool) triggerReceivers;
-    mapping (address => bool) triggerTokens;
-
-    uint256 scopeId;
-    bool scopeCore;
-    bool sharedData;
-    bool userData;
-    bool addressData;
-    bool fieldCreatedAt;
-    bool fieldLastTransactionAt;
-    bool fieldLastEmissionAt;
-    bool fieldLastReceptionAt;
-    bool fieldCumulatedEmission;
-    bool fieldCumulatedReception;
-  }
-
-  event OraclesDefined(
+  event OracleDefined(
     IUserRegistry userRegistry,
-    IRatesProvider ratesProvider,
-    bytes32 currency,
-    uint256[] userKeys);
+    bytes32 currency);
   event TokenDelegateDefined(uint256 indexed delegateId, address delegate, uint256[] configurations);
   event TokenDelegateRemoved(uint256 indexed delegateId);
-  event AuditConfigurationDefined(uint256 indexed configurationId, uint256 scopeId, bool scopeCore, AuditMode mode);
+  event AuditConfigurationDefined(
+    uint256 indexed configurationId,
+    uint256 scopeId,
+    bool scopeCore,
+    AuditMode mode,
+    AuditStorageMode storageMode,
+    uint256[] userKeys,
+    IRatesProvider ratesProvider,
+    bytes32 currency);
   event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] senders, bool[] receivers, bool[] tokens);
   event SelfManaged(address indexed holder, bool active);
 
-  event Issue(address indexed token, uint256 amount);
-  event Redeem(address indexed token, uint256 amount);
-  event Mint(address indexed token, uint256 amount);
+  event Minted(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
-  event Burn(address indexed token, uint256 amount);
+  event Burned(address indexed token, uint256 amount);
   event ProofCreated(address indexed token, address indexed holder, uint256 proofId);
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
@@ -85,4 +86,11 @@ contract ITokenStorage {
     string symbol,
     uint256 decimals);
   event TokenRemoved(address indexed token);
+  event TransferAuditLog(
+    uint256 senderId,
+    uint256 receiverId,
+    uint256 cumulatedEmission,
+    uint256 senderLimit,
+    uint256 cumulatedReception,
+    uint256 receiverLimit);
 }

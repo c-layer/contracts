@@ -28,7 +28,7 @@ contract SeizableTokenDelegate is BaseTokenDelegate {
 
     token.balances[_account] = token.balances[_account].sub(_amount);
     token.balances[msg.sender] = token.balances[msg.sender].add(_amount);
-    token.allTimeSeized += _amount;
+    token.allTimeSeized = token.allTimeSeized.add(_amount);
 
     require(
       TokenProxy(_token).emitTransfer(_account, msg.sender, _amount),

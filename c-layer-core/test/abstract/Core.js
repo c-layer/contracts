@@ -27,7 +27,7 @@ contract("Core", function (accounts) {
 
   describe("With a delegate defined", async function () {
     beforeEach(async function () {
-       await core.defineDelegateMock(1, delegate.address);
+      await core.defineDelegateMock(1, delegate.address);
     });
 
     it("should un-define a delegate", async function () {
@@ -41,7 +41,7 @@ contract("Core", function (accounts) {
     });
 
     it("should prevent defining a null proxy", async function () {
-      await assertRevert(core.defineProxyMock(NULL_ADDRESS, 1), "CO04");
+      await assertRevert(core.defineProxyMock(NULL_ADDRESS, 1), "CO05");
     });
 
     it("should prevent define a proxy with a non existant delegate", async function () {

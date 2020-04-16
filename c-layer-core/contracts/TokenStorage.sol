@@ -36,13 +36,13 @@ contract TokenStorage is ITokenStorage, OperableStorage {
 
     uint256 totalSupply;
     mapping (address => uint256) balances;
-    mapping (address => mapping (address => uint256)) allowed;
+    mapping (address => mapping (address => uint256)) allowances;
 
     bool mintingFinished;
 
-    uint256 allTimeIssued; // potential overflow
-    uint256 allTimeRedeemed; // potential overflow
-    uint256 allTimeSeized; // potential overflow
+    uint256 allTimeMinted;
+    uint256 allTimeBurned;
+    uint256 allTimeSeized;
 
     mapping (address => Proof[]) proofs;
     mapping (address => uint256) frozenUntils;
@@ -67,8 +67,31 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     mapping(address => AuditData) addressData;
   }
 
+  struct AuditConfiguration {
+    uint256 scopeId;
+    bool scopeCore;
+
+    AuditMode mode;
+    AuditStorageMode storageMode;
+
+    uint256[] userKeys;
+    IRatesProvider ratesProvider;
+    bytes32 currency;
+
+    bool fieldCreatedAt;
+    bool fieldLastTransactionAt;
+    bool fieldLastEmissionAt;
+    bool fieldLastReceptionAt;
+    bool fieldCumulatedEmission;
+    bool fieldCumulatedReception;
+
+    mapping (address => bool) triggerSenders;
+    mapping (address => bool) triggerReceivers;
+    mapping (address => bool) triggerTokens;
+  }
+
   // DelegateId => AuditConfiguration[]
-  mapping (uint256 => AuditConfiguration) auditConfigurations;
+  mapping (uint256 => AuditConfiguration) internal auditConfigurations;
   mapping (uint256 => uint256[]) internal delegatesConfigurations;
   mapping (address => TokenData) internal tokens;
 
@@ -76,13 +99,10 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   mapping (address => mapping (uint256 => AuditStorage)) internal audits;
 
   // Prevents transfer on behalf
-  mapping (address => bool) selfManaged;
+  mapping (address => bool) internal selfManaged;
 
   IUserRegistry internal userRegistry;
-  IRatesProvider internal ratesProvider;
-
   bytes32 internal currency;
-  uint256[] internal userKeys;
 
   string internal name_;
 

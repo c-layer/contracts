@@ -14,23 +14,18 @@ import "./IOperableCore.sol";
 contract ITokenCore is ITokenStorage, IOperableCore {
 
   function name() public view returns (string memory);
-  function oracles() public view returns
-    (IUserRegistry, IRatesProvider, bytes32, uint256[] memory);
+  function oracle() public view returns (IUserRegistry, bytes32);
 
   function auditConfiguration(uint256 _configurationId)
     public view returns (
-      AuditMode mode,
       uint256 scopeId,
       bool scopeCore,
-      bool sharedData,
-      bool userData,
-      bool addressData,
-      bool fieldCreatedAt,
-      bool fieldLastTransactionAt,
-      bool fieldLastEmissionAt,
-      bool fieldLastReceptionAt,
-      bool fieldCumulatedEmission,
-      bool fieldCumulatedReception);
+      AuditMode mode,
+      AuditStorageMode storageMode,
+      uint256[] memory userKeys,
+      IRatesProvider ratesProvider,
+      bytes32 currency,
+      bool[6] memory fields);
   function auditTriggers(
     uint256 _configurationId,
     address[] memory _triggers) public view returns (
@@ -40,29 +35,11 @@ contract ITokenCore is ITokenStorage, IOperableCore {
   function delegateConfigurations(uint256 _delegateId)
     public view returns (uint256[] memory);
 
-  function auditShared(
-    address _scope,
-    uint256 _scopeId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastEmissionAt,
-    uint64 lastReceptionAt,
-    uint256 cumulatedEmission,
-    uint256 cumulatedReception);
-  function auditUser(
+  function audit(
     address _scope,
     uint256 _scopeId,
-    uint256 _userId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint64 lastEmissionAt,
-    uint64 lastReceptionAt,
-    uint256 cumulatedEmission,
-    uint256 cumulatedReception);
-  function auditAddress(
-    address _scope,
-    uint256 _scopeId,
-    address _holder) public view returns (
+    AuditStorageMode _storageMode,
+    bytes32 _storageId) public view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint64 lastEmissionAt,
@@ -70,11 +47,30 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     uint256 cumulatedEmission,
     uint256 cumulatedReception);
 
+  /**************  ERC20  **************/
+  function tokenName() public view returns (string memory);
+  function tokenSymbol() public view returns (string memory);
+
+  function decimals() public returns (uint256);
+  function totalSupply() public returns (uint256);
+  function balanceOf(address) public returns (uint256);
+  function allowance(address, address) public returns (uint256);
+  function transfer(address, address, uint256)
+    public returns (bool status);
+  function transferFrom(address, address, address, uint256)
+    public returns (bool status);
+  function approve(address, address, uint256)
+    public returns (bool status);
+  function increaseApproval(address, address, uint256)
+    public returns (bool status);
+  function decreaseApproval(address, address, uint256)
+    public returns (bool status);
+
   /***********  TOKEN DATA   ***********/
   function token(address _token) public view returns (
     bool mintingFinished,
-    uint256 allTimeIssued,
-    uint256 allTimeRedeemed,
+    uint256 allTimeMinted,
+    uint256 allTimeBurned,
     uint256 allTimeSeized,
     uint256[2] memory lock,
     uint256 freezedUntil,
@@ -86,10 +82,6 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     public returns (uint256);
 
   /***********  TOKEN ADMIN  ***********/
-  function issue(address, uint256)
-    public returns (bool);
-  function redeem(address, uint256)
-    public returns (bool);
   function mint(address, address, uint256)
     public returns (bool);
   function finishMinting(address)
@@ -120,20 +112,21 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     uint256 _decimals) public returns (bool);
   function removeToken(address _token) public returns (bool);
 
-  function defineOracles(
-    IUserRegistry _userRegistry,
-    IRatesProvider _ratesProvider,
-    uint256[] memory _userKeys) public returns (bool);
+  function defineOracle(
+    IUserRegistry _userRegistry) public returns (bool);
   function defineTokenDelegate(
     uint256 _delegateId,
     address _delegate,
     uint256[] memory _configurations) public returns (bool);
   function defineAuditConfiguration(
     uint256 _configurationId,
-    AuditMode _mode,
     uint256 _scopeId,
     bool _scopeCore,
-    bool[3] memory _data,
+    AuditMode _mode,
+    AuditStorageMode _storageMode,
+    uint256[] memory userKeys,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency,
     bool[6] memory _fields) public returns (bool);
   function defineAuditTriggers(
     uint256 _configurationId,

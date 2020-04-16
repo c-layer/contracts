@@ -24,21 +24,21 @@ contract TokenProxy is IERC20, OperableProxy {
   }
 
   function decimals() public view returns (uint256) {
-    return TokenCore(core).tokenDecimals();
+    return staticCallUint256();
   }
 
   function totalSupply() public view returns (uint256) {
-    return TokenCore(core).tokenTotalSupply();
+    return staticCallUint256();
   }
 
-  function balanceOf(address _owner) public view returns (uint256) {
-    return TokenCore(core).tokenBalanceOf(_owner);
+  function balanceOf(address) public view returns (uint256) {
+    return staticCallUint256();
   }
 
-  function allowance(address _owner, address _spender)
+  function allowance(address, address)
     public view returns (uint256)
   {
-    return TokenCore(core).tokenAllowance(_owner, _spender);
+    return staticCallUint256();
   }
 
   function transfer(address _to, uint256 _value) public returns (bool status)
@@ -70,10 +70,10 @@ contract TokenProxy is IERC20, OperableProxy {
     return TokenCore(core).decreaseApproval(msg.sender, _spender, _subtractedValue);
   }
 
-  function canTransfer(address _from, address _to, uint256 _value)
-    public returns (uint256)
+  function canTransfer(address, address, uint256)
+    public view returns (uint256)
   {
-    return TokenCore(core).canTransfer(_from, _to, _value);
+    return staticCallUint256();
   }
 
   function emitTransfer(address _from, address _to, uint256 _value)

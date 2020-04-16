@@ -159,21 +159,7 @@
 114
 115
 116
-117
-118
-119
-120
-121
-122
-123
-124
-125
-126
-127
-128
-129
-130
-131</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+117</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -270,7 +256,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">240×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -287,20 +272,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">493×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
@@ -311,6 +283,7 @@ import "./interface/IRule.sol";
 import "./interface/IClaimable.sol";
 import "./interface/IUserRegistry.sol";
 import "./interface/IRatesProvider.sol";
+import "./interface/ITokenStorage.sol";
 &nbsp;
 &nbsp;
 /**
@@ -318,42 +291,13 @@ import "./interface/IRatesProvider.sol";
  * @dev Token storage
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
  */
-contract TokenStorage is OperableStorage {
+contract TokenStorage is ITokenStorage, OperableStorage {
   using SafeMath for uint256;
-&nbsp;
-  enum TransferCode {
-    UNKNOWN,
-    OK,
-    INVALID_SENDER,
-    NO_RECIPIENT,
-    INSUFFICIENT_TOKENS,
-    LOCKED,
-    FROZEN,
-    RULE,
-    LIMITED_RECEPTION
-  }
 &nbsp;
   struct Proof {
     uint256 amount;
     uint64 startAt;
     uint64 endAt;
-  }
-&nbsp;
-  struct AuditData {
-    uint64 createdAt;
-    uint64 lastTransactionAt;
-    uint64 lastEmissionAt;
-    uint64 lastReceptionAt;
-    uint256 cumulatedEmission;
-    uint256 cumulatedReception;
-  }
-&nbsp;
-  struct AuditStorage {
-    mapping (address =&gt; bool) selector;
-&nbsp;
-    AuditData sharedData;
-    mapping(uint256 =&gt; AuditData) userData;
-    mapping(address =&gt; AuditData) addressData;
   }
 &nbsp;
   struct Lock {
@@ -369,13 +313,13 @@ contract TokenStorage is OperableStorage {
 &nbsp;
     uint256 totalSupply;
     mapping (address =&gt; uint256) balances;
-    mapping (address =&gt; mapping (address =&gt; uint256)) allowed;
+    mapping (address =&gt; mapping (address =&gt; uint256)) allowances;
 &nbsp;
     bool mintingFinished;
 &nbsp;
-    uint256 allTimeIssued; // potential overflow
-    uint256 allTimeRedeemed; // potential overflow
-    uint256 allTimeSeized; // potential overflow
+    uint256 allTimeMinted;
+    uint256 allTimeBurned;
+    uint256 allTimeSeized;
 &nbsp;
     mapping (address =&gt; Proof[]) proofs;
     mapping (address =&gt; uint256) frozenUntils;
@@ -384,14 +328,58 @@ contract TokenStorage is OperableStorage {
     IRule[] rules;
     IClaimable[] claimables;
   }
-  mapping (address =&gt; TokenData) internal tokens_;
+&nbsp;
+  struct AuditData {
+    uint64 createdAt;
+    uint64 lastTransactionAt;
+    uint64 lastEmissionAt;
+    uint64 lastReceptionAt;
+    uint256 cumulatedEmission;
+    uint256 cumulatedReception;
+  }
+&nbsp;
+  struct AuditStorage {
+    AuditData sharedData;
+    mapping(uint256 =&gt; AuditData) userData;
+    mapping(address =&gt; AuditData) addressData;
+  }
+&nbsp;
+  struct AuditConfiguration {
+    uint256 scopeId;
+    bool scopeCore;
+&nbsp;
+    AuditMode mode;
+    AuditStorageMode storageMode;
+&nbsp;
+    uint256[] userKeys;
+    IRatesProvider ratesProvider;
+    bytes32 currency;
+&nbsp;
+    bool fieldCreatedAt;
+    bool fieldLastTransactionAt;
+    bool fieldLastEmissionAt;
+    bool fieldLastReceptionAt;
+    bool fieldCumulatedEmission;
+    bool fieldCumulatedReception;
+&nbsp;
+    mapping (address =&gt; bool) triggerSenders;
+    mapping (address =&gt; bool) triggerReceivers;
+    mapping (address =&gt; bool) triggerTokens;
+  }
+&nbsp;
+  // DelegateId =&gt; AuditConfiguration[]
+  mapping (uint256 =&gt; AuditConfiguration) internal auditConfigurations;
+  mapping (uint256 =&gt; uint256[]) internal delegatesConfigurations;
+  mapping (address =&gt; TokenData) internal tokens;
+&nbsp;
+  // Scope x ScopeId =&gt; AuditStorage
   mapping (address =&gt; mapping (uint256 =&gt; AuditStorage)) internal audits;
 &nbsp;
-  IUserRegistry internal userRegistry;
-  IRatesProvider internal ratesProvider;
+  // Prevents transfer on behalf
+  mapping (address =&gt; bool) internal selfManaged;
 &nbsp;
+  IUserRegistry internal userRegistry;
   bytes32 internal currency;
-  uint256[] internal userKeys;
 &nbsp;
   string internal name_;
 &nbsp;
@@ -402,36 +390,6 @@ contract TokenStorage is OperableStorage {
     // solhint-disable-next-line not-rely-on-time
     return uint64(now);
   }
-&nbsp;
-  event OraclesDefined(
-    IUserRegistry userRegistry,
-    IRatesProvider ratesProvider,
-    bytes32 currency,
-    uint256[] userKeys);
-  event AuditSelectorDefined(
-    address indexed scope, uint256 scopeId, address[] addresses, bool[] values);
-  event Issue(address indexed token, uint256 amount);
-  event Redeem(address indexed token, uint256 amount);
-  event Mint(address indexed token, uint256 amount);
-  event MintFinished(address indexed token);
-  event ProofCreated(address indexed token, address indexed holder, uint256 proofId);
-  event RulesDefined(address indexed token, IRule[] rules);
-  event LockDefined(
-    address indexed token,
-    uint256 startAt,
-    uint256 endAt,
-    address[] exceptions
-  );
-  event Seize(address indexed token, address account, uint256 amount);
-  event Freeze(address address_, uint256 until);
-  event ClaimablesDefined(address indexed token, IClaimable[] claimables);
-  event TokenDefined(
-    address indexed token,
-    uint256 delegateId,
-    string name,
-    string symbol,
-    uint256 decimals);
-  event TokenRemoved(address indexed token);
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -439,7 +397,7 @@ contract TokenStorage is OperableStorage {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon Oct 21 2019 20:14:53 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 16 2020 14:09:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../prettify.js"></script>

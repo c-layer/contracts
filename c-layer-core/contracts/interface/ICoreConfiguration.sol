@@ -11,9 +11,20 @@ import "./ITokenCore.sol";
 contract ICoreConfiguration {
 
   enum CONFIGURATION {
+    PROOF_OF_OWNERSHIP,
     PRIMARY_MARKET_AML,
-    SECONDARY_MARKET_AML,
-    PROOF_OF_OWNERSHIP
+    SECONDARY_MARKET_AML
+  }
+
+  enum DELEGATE {
+    UNDEFINED,
+    UTILITY,
+    PAYMENT,
+    SECURITY,
+    EQUITY,
+    BOND,
+    FUND,
+    DERIVATIVE
   }
 
   bytes4[] public REQUIRED_CORE_PRIVILEGES = [
@@ -22,5 +33,9 @@ contract ICoreConfiguration {
   ];
 
   function hasCoreAccess() public view returns (bool);
-  function configure(ITokenCore _core) public returns (bool);
+  function defineCoreConfigurations(
+    address _delegate,
+    IRatesProvider _ratesProvider,
+    bytes32 _currency
+  ) public returns (bool);
 }
