@@ -14,10 +14,10 @@ import "./operable/OperableAsCore.sol";
 contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
 
   uint256[] private userKeys = [ uint256(0), uint256(1), uint256(2) ];
-  
+
   uint256[] private noAMLConfig = [ uint256(CONFIGURATION.PROOF_OF_OWNERSHIP) ];
   uint256[] private primaryMarketAMLConfig = [
-    uint256(CONFIGURATION.PROOF_OF_OWNERSHIP), 
+    uint256(CONFIGURATION.PROOF_OF_OWNERSHIP),
     uint256(CONFIGURATION.PRIMARY_MARKET_AML) ];
   uint256[] private secondaryMarketAMLConfig = [
     uint256(CONFIGURATION.PROOF_OF_OWNERSHIP),
@@ -38,7 +38,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
         address(this), REQUIRED_CORE_PRIVILEGES[i]);
     }
   }
- 
+
    /**
    * @dev defineCoreConfigurations
    */
@@ -61,7 +61,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
       new uint256[](0), IRatesProvider(address(0)), '0x0',
       [ false, true, false, false, false, false ] // only last transaction
     );
- 
+
     // Primary Market AML Configuration
     tokenCore.defineAuditConfiguration(
       uint256(CONFIGURATION.PRIMARY_MARKET_AML),
