@@ -1,7 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "./ProvableOwnershipTokenDelegate.sol";
-import "../interface/IClaimable.sol";
 
 
 /**
@@ -29,46 +28,30 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    if (hasClaims(msg.sender, _transferData.sender)) {
+    TokenData storage token = tokens[msg.sender];
+    AuditStorage storage auditStorage = audits[msg.sender][uint256(AUDIT_CONFIGURATION.PROOF_OF_OWNERSHIP)];
+
+    if (token.latestClaimAt > auditStorage.addressData[_transferData.sender].lastTransactionAt) {
       createProof(msg.sender, _transferData.sender);
     }
-
-    if (hasClaims(msg.sender, _transferData.receiver)) {
+    if (token.latestClaimAt > auditStorage.addressData[_transferData.receiver].lastTransactionAt) {
       createProof(msg.sender, _transferData.receiver);
     }
     return super.transferInternal(_transferData);
   }
 
   /**
-   * @dev Returns true if there are any claimables associated to this token
-   * to be made at this time for the _holder
-   * @dev the claimables array is unbounded and each claims
-   * may have a complex gas cost estimate. Therefore it is left
-   * to the token operators to ensure that the token remains always operable
-   * with a transfer and transferFrom gas cost reasonable.
+   * @dev define claim contract to this token
    */
-  function hasClaims(address _token, address _holder) public view returns (bool) {
-    uint256 lastTransaction = audits[_token][0].addressData[_holder].lastTransactionAt;
-    IClaimable[] memory claimables_ = tokens[_token].claimables;
-    for (uint256 i = 0; i < claimables_.length; i++) {
-      if (claimables_[i].hasClaimsSince(_holder, lastTransaction)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /**
-   * @dev define claimables contract to this token
-   * @notice Beware do not add too many claimables as gas used in
-   * @notice for transfer will add up through hasClaims calls
-   */
-  function defineClaimables(
-    address _token, IClaimable[] memory _claimables)
+  function defineClaim(
+    address _token, address _claim, uint256 _claimAt)
     public returns (bool)
   {
-    tokens[_token].claimables = _claimables;
-    emit ClaimablesDefined(_token, _claimables);
+    if (_claimAt > tokens[_token].latestClaimAt) {
+      tokens[_token].latestClaimAt = _claimAt;
+    }
+
+    emit ClaimDefined(_token, _claim, _claimAt);
     return true;
   }
 }

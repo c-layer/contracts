@@ -22,7 +22,7 @@ contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
     uint256 configurationId = delegatesConfigurations[proxyDelegates[_transferData.token]]
-      [uint256(DELEGATE_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
+      [uint256(AUDIT_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
     AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
 
     if (isAuditRequiredInternal(_transferData, configuration_)) {
@@ -40,7 +40,7 @@ contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
     internal view returns (TransferCode)
   {
     uint256 configurationId = delegatesConfigurations[proxyDelegates[_transferData.token]]
-      [uint256(DELEGATE_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
+      [uint256(AUDIT_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
     AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
 
     if (isAuditRequiredInternal(_transferData, configuration_)) {

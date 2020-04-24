@@ -199,7 +199,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256[2] memory lock,
     uint256 frozenUntil,
     IRule[] memory rules,
-    IClaimable[] memory claimables) {
+    uint256 latestClaimAt) {
     TokenData storage tokenData = tokens[_token];
 
     mintingFinished = tokenData.mintingFinished;
@@ -209,7 +209,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     lock = [ tokenData.lock.startAt, tokenData.lock.endAt ];
     frozenUntil = tokenData.frozenUntils[msg.sender];
     rules = tokenData.rules;
-    claimables = tokenData.claimables;
+    latestClaimAt = tokenData.latestClaimAt;
   }
 
   function tokenProofs(address _token, address _holder, uint256 _proofId)
@@ -280,7 +280,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function defineClaimables(address _token, IClaimable[] memory)
+  function defineClaim(address _token, address, uint256)
     public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);

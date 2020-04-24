@@ -3,7 +3,6 @@ pragma solidity >=0.5.0 <0.6.0;
 import "./IUserRegistry.sol";
 import "./IRatesProvider.sol";
 import "./IRule.sol";
-import "./IClaimable.sol";
 
 
 /**
@@ -30,7 +29,7 @@ contract ITokenStorage {
     DEFAULT
   }
 
-  enum DELEGATE_CONFIGURATION {
+  enum AUDIT_CONFIGURATION {
     PROOF_OF_OWNERSHIP,
     LIMITABLE_TRANSFERABILITY
   }
@@ -78,7 +77,10 @@ contract ITokenStorage {
   );
   event Seize(address indexed token, address account, uint256 amount);
   event Freeze(address address_, uint256 until);
-  event ClaimablesDefined(address indexed token, IClaimable[] claimables);
+  event ClaimDefined(
+    address indexed token,
+    address indexed claim,
+    uint256 claimAt);
   event TokenDefined(
     address indexed token,
     uint256 delegateId,

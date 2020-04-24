@@ -145,7 +145,7 @@ contract("TokenFactory", function (accounts) {
         assert.equal(tokenData.allTimeSeized.toString(), 0, "all time seized");
         assert.deepEqual(tokenData.lock.map((x) => x.toString()), ["0", LOCK_END], "lock");
         assert.deepEqual(tokenData.rules, [factory.address], "rules");
-        assert.deepEqual(tokenData.claimables, [], "claimables");
+        assert.equal(tokenData.latestClaimAt.toString(), "0", "latestClaimAt");
       });
 
       it("should return canTransfer tokens", async function () {

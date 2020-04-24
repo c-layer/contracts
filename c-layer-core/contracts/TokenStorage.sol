@@ -3,7 +3,6 @@ pragma solidity >=0.5.0 <0.6.0;
 import "./util/math/SafeMath.sol";
 import "./operable/OperableStorage.sol";
 import "./interface/IRule.sol";
-import "./interface/IClaimable.sol";
 import "./interface/IUserRegistry.sol";
 import "./interface/IRatesProvider.sol";
 import "./interface/ITokenStorage.sol";
@@ -49,7 +48,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
 
     Lock lock;
     IRule[] rules;
-    IClaimable[] claimables;
+    uint256 latestClaimAt;
   }
 
   struct AuditData {

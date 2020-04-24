@@ -7,7 +7,6 @@
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCoreMock.sol");
 const WithClaimsTokenDelegate = artifacts.require("WithClaimsTokenDelegate.sol");
-const EmptyClaimable = artifacts.require("EmptyClaimable.sol");
 
 const AMOUNT = 1000000;
 const NAME = "Token";
@@ -16,9 +15,11 @@ const DECIMALS = 18;
 const NULL_ADDRESS = "0x".padEnd(42, "0");
 const AUDIT_ALWAYS = 3;
 const AUDIT_STORAGE_ADDRESS = 0;
+const CLAIM_BEFORE = "" + Math.floor((new Date().getTime() - 3600 * 24 * 365) / 1000);
+const CLAIM_AFTER = "" + Math.floor((new Date().getTime() + 3600 * 24 * 365) / 1000);
 
 contract("WithClaimsTokenDelegate", function (accounts) {
-  let core, delegate, token, claimable;
+  let core, delegate, token;
 
   beforeEach(async function () {
     delegate = await WithClaimsTokenDelegate.new();
@@ -52,28 +53,27 @@ contract("WithClaimsTokenDelegate", function (accounts) {
     assert.equal(balance1.toString(), "3333", "balance");
   });
 
-  it("should let define claimables", async function () {
-    claimable = await EmptyClaimable.new(true);
-    const tx = await core.defineClaimables(token.address, [claimable.address]);
-    assert.ok(tx.receipt.status, "ClaimablesDefined");
+  it("should let define a claim before", async function () {
+    const tx = await core.defineClaim(token.address, accounts[1], CLAIM_BEFORE);
+    assert.ok(tx.receipt.status, "ClaimDefined");
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "ClaimablesDefined", "event");
+    assert.equal(tx.logs[0].event, "ClaimDefined", "event");
     assert.equal(tx.logs[0].args.token, token.address, "token");
-    assert.equal(tx.logs[0].args.claimables, claimable.address, "claimables");
+    assert.equal(tx.logs[0].args.claim, accounts[1], "claim");
+    assert.equal(tx.logs[0].args.claimAt, CLAIM_BEFORE, "claimAt");
   });
 
-  describe("With an inactive claimables defined", function () {
+  describe("With an old claim defined", function () {
     beforeEach(async function () {
-      claimable = await EmptyClaimable.new(false);
-      await core.defineClaimables(token.address, [claimable.address]);
+      await core.defineClaim(token.address, accounts[1], CLAIM_BEFORE);
     });
 
-    it("should have a claimable", async function () {
+    it("should have a latestClaimAt", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[7], [claimable.address], "claimables");
+      assert.equal(tokenData.latestClaimAt.toString(), CLAIM_BEFORE, "claimAt");
     });
 
-    it("should transfer from accounts[0] to accounts[1]", async function () {
+    it("should transfer from accounts[0] to accounts[1] with proofs", async function () {
       const tx = await token.transfer(accounts[1], "3333");
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
@@ -86,10 +86,10 @@ contract("WithClaimsTokenDelegate", function (accounts) {
         fromBlock: tx.logs[0].blockNumber,
         toBlock: tx.logs[0].blockNumber,
       });
-      assert.equal(coreEvents.length, 0, "events");
+      assert.equal(coreEvents.length, 2, "events");
     });
 
-    it("should transferFrom from accounts[0] to accounts[1]", async function () {
+    it("should transferFrom from accounts[0] to accounts[1] with proofs", async function () {
       const tx = await token.transfer(accounts[1], "3333");
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
@@ -102,25 +102,58 @@ contract("WithClaimsTokenDelegate", function (accounts) {
         fromBlock: tx.logs[0].blockNumber,
         toBlock: tx.logs[0].blockNumber,
       });
-      assert.equal(coreEvents.length, 0, "events");
+      assert.equal(coreEvents.length, 2, "events");
+    });
+
+    describe("After one transfer", async function () {
+      beforeEach(async function () {
+        await token.transfer(accounts[1], "3333");
+      });
+
+      it("should transfer from accounts[0] to accounts[1] with no proofs", async function () {
+        const tx = await token.transfer(accounts[1], "3333");
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, "Transfer", "event");
+        assert.equal(tx.logs[0].args.from, accounts[0], "from");
+        assert.equal(tx.logs[0].args.to, accounts[1], "to");
+        assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+
+        const coreEvents = await core.getPastEvents("allEvents", {
+          fromBlock: tx.logs[0].blockNumber,
+          toBlock: tx.logs[0].blockNumber,
+        });
+        assert.equal(coreEvents.length, 0, "events");
+      });
+
+      it("should transferFrom from accounts[0] to accounts[1] with no proofs", async function () {
+        const tx = await token.transfer(accounts[1], "3333");
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, "Transfer", "event");
+        assert.equal(tx.logs[0].args.from, accounts[0], "from");
+        assert.equal(tx.logs[0].args.to, accounts[1], "to");
+        assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+
+        const coreEvents = await core.getPastEvents("allEvents", {
+          fromBlock: tx.logs[0].blockNumber,
+          toBlock: tx.logs[0].blockNumber,
+        });
+        assert.equal(coreEvents.length, 0, "events");
+      });
     });
   });
 
-  describe("With one active and two inactive claimables defined", function () {
-    let claimable2, claimable3;
-
+  describe("With one recent and old claim defined", function () {
     beforeEach(async function () {
-      claimable = await EmptyClaimable.new(true);
-      claimable2 = await EmptyClaimable.new(false);
-      claimable3 = await EmptyClaimable.new(false);
-      await core.defineClaimables(token.address,
-        [claimable.address, claimable2.address, claimable3.address]);
+      await core.defineClaim(token.address, accounts[1], CLAIM_AFTER);
+      await core.defineClaim(token.address, accounts[2], CLAIM_BEFORE);
+      await core.defineClaim(token.address, accounts[3], CLAIM_BEFORE);
     });
 
-    it("should have a claimable", async function () {
+    it("should have a latestClaimAt", async function () {
       const tokenData = await core.token(token.address);
-      assert.deepEqual(tokenData[7],
-        [claimable.address, claimable2.address, claimable3.address], "claimables");
+      assert.equal(tokenData.latestClaimAt.toString(), CLAIM_AFTER, "latestClaimAt");
     });
 
     it("should transfer from accounts[0] to accounts[1]", async function () {

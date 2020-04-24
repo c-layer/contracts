@@ -75,7 +75,7 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     uint256[2] memory lock,
     uint256 freezedUntil,
     IRule[] memory,
-    IClaimable[] memory);
+    uint256 latestClaimAt);
   function tokenProofs(address _token, address _holder, uint256 _proofId)
     public view returns (uint256, uint64, uint64);
   function canTransfer(address, address, uint256)
@@ -101,7 +101,7 @@ contract ITokenCore is ITokenStorage, IOperableCore {
   function defineLock(address, uint256, uint256, address[] memory)
     public returns (bool);
   function defineRules(address, IRule[] memory) public returns (bool);
-  function defineClaimables(address, IClaimable[] memory) public returns (bool);
+  function defineClaim(address, address, uint256) public returns (bool);
 
   /************  CORE ADMIN  ************/
   function defineToken(

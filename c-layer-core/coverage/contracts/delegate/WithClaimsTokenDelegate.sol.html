@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>11/11</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -32,12 +32,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>3/3</span>
+        <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>14/14</span>
+        <span class='fraction'>11/11</span>
       </div>
     </div>
   </div>
@@ -100,24 +100,7 @@
 55
 56
 57
-58
-59
-60
-61
-62
-63
-64
-65
-66
-67
-68
-69
-70
-71
-72
-73
-74
-75</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+58</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -147,34 +130,16 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28×</span>
+<span class="cline-any cline-yes">28×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24×</span>
-<span class="cline-any cline-yes">6×</span>
+<span class="cline-any cline-yes">28×</span>
+<span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">28×</span>
+<span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24×</span>
-<span class="cline-any cline-yes">6×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-yes">48×</span>
-<span class="cline-any cline-yes">16×</span>
-<span class="cline-any cline-yes">12×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">36×</span>
+<span class="cline-any cline-yes">28×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -184,17 +149,17 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">21×</span>
+<span class="cline-any cline-yes">11×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
-<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">21×</span>
+<span class="cline-any cline-yes">21×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
 import "./ProvableOwnershipTokenDelegate.sol";
-import "../interface/IClaimable.sol";
 &nbsp;
 &nbsp;
 /**
@@ -222,46 +187,30 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    if (hasClaims(msg.sender, _transferData.sender)) {
+    TokenData storage token = tokens[msg.sender];
+    AuditStorage storage auditStorage = audits[msg.sender][uint256(AUDIT_CONFIGURATION.PROOF_OF_OWNERSHIP)];
+&nbsp;
+    if (token.latestClaimAt &gt; auditStorage.addressData[_transferData.sender].lastTransactionAt) {
       createProof(msg.sender, _transferData.sender);
     }
-&nbsp;
-    if (hasClaims(msg.sender, _transferData.receiver)) {
+    if (token.latestClaimAt &gt; auditStorage.addressData[_transferData.receiver].lastTransactionAt) {
       createProof(msg.sender, _transferData.receiver);
     }
     return super.transferInternal(_transferData);
   }
 &nbsp;
   /**
-   * @dev Returns true if there are any claimables associated to this token
-   * to be made at this time for the _holder
-   * @dev the claimables array is unbounded and each claims
-   * may have a complex gas cost estimate. Therefore it is left
-   * to the token operators to ensure that the token remains always operable
-   * with a transfer and transferFrom gas cost reasonable.
+   * @dev define claim contract to this token
    */
-  function hasClaims(address _token, address _holder) public view returns (bool) {
-    uint256 lastTransaction = audits[_token][0].addressData[_holder].lastTransactionAt;
-    IClaimable[] memory claimables_ = tokens[_token].claimables;
-    for (uint256 i = 0; i &lt; claimables_.length; i++) {
-      if (claimables_[i].hasClaimsSince(_holder, lastTransaction)) {
-        return true;
-      }
-    }
-    return false;
-  }
-&nbsp;
-  /**
-   * @dev define claimables contract to this token
-   * @notice Beware do not add too many claimables as gas used in
-   * @notice for transfer will add up through hasClaims calls
-   */
-  function defineClaimables(
-    address _token, IClaimable[] memory _claimables)
+  function defineClaim(
+    address _token, address _claim, uint256 _claimAt)
     public returns (bool)
   {
-    tokens[_token].claimables = _claimables;
-    emit ClaimablesDefined(_token, _claimables);
+    if (_claimAt &gt; tokens[_token].latestClaimAt) {
+      tokens[_token].latestClaimAt = _claimAt;
+    }
+&nbsp;
+    emit ClaimDefined(_token, _claim, _claimAt);
     return true;
   }
 }
@@ -271,7 +220,7 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Thu Apr 16 2020 14:09:16 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 24 2020 17:45:04 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

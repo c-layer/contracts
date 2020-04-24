@@ -111,9 +111,4 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
     }
     return true;
   }
-
-  event RoleDefined(bytes32 role);
-  event OperatorAssigned(bytes32 role, address operator);
-  event ProxyOperatorAssigned(address proxy, bytes32 role, address operator);
-  event OperatorRevoked(address operator);
 }
