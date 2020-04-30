@@ -236,6 +236,18 @@ contract("TokenCore", function (accounts) {
           token.address, 1, NAME, SYMBOL, DECIMALS);
       });
 
+      it("should let migrate token", async function () {
+        const tx = await core.migrateToken(token.address, accounts[0]);
+        assert.ok(tx.receipt.status, "Status");
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].args.token, token.address, "token");
+        assert.equal(tx.logs[0].args.newCore, accounts[0], "newCore");
+        assert.equal(tx.logs[0].event, "TokenMigrated", "event");
+
+        const newCoreAddress = await token.core();
+        assert.equal(newCoreAddress, accounts[0], "newCoreAddress");
+      });
+
       it("should let remove token", async function () {
         const tx = await core.removeToken(token.address);
         assert.ok(tx.receipt.status, "Status");
