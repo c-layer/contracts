@@ -87,6 +87,7 @@ contract ITokenStorage {
     string name,
     string symbol,
     uint256 decimals);
+  event TokenMigrated(address indexed token, address newCore);
   event TokenRemoved(address indexed token);
   event TransferAuditLog(
     uint256 senderId,

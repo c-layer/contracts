@@ -2,6 +2,7 @@ pragma solidity >=0.5.0 <0.6.0;
 
 import "./Storage.sol";
 import "../util/convert/BytesConvert.sol";
+import "./Proxy.sol";
 
 
 /**
@@ -17,6 +18,9 @@ import "../util/convert/BytesConvert.sol";
  *   CO03: Delegatecall should be successfull
  *   CO04: DelegateId must be greater than 0
  *   CO05: Proxy must exist
+ *   CO06: Proxy must be already defined
+ *   CO07: New core must exist
+ *   CO08: Proxy update must be successfull
  **/
 contract Core is Storage {
   using BytesConvert for bytes;
@@ -70,9 +74,18 @@ contract Core is Storage {
     return true;
   }
 
+  function migrateProxy(address _proxy, address _newCore)
+    internal returns (bool)
+  {
+    require(proxyDelegates[_proxy] != 0, "CO06");
+    require(Proxy(_proxy).updateCore(_newCore), "CO08");
+    return true;
+  }
+
   function removeProxy(address _proxy)
     internal returns (bool)
   {
+    require(proxyDelegates[_proxy] != 0, "CO06");
     delete proxyDelegates[_proxy];
     return true;
   }

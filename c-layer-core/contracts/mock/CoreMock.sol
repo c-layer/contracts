@@ -39,6 +39,10 @@ contract CoreMock is Core {
     return delegateCallBytes(msg.sender);
   }
 
+  function migrateProxyMock(address _proxy, address _newCore) public returns (bool) {
+    return migrateProxy(_proxy, _newCore);
+  }
+
   function removeProxyMock(address _proxy) public returns (bool) {
     return removeProxy(_proxy);
   }

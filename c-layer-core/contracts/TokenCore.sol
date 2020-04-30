@@ -306,6 +306,14 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return true;
   }
 
+  function migrateToken(address _token, address _newCore)
+    public onlyCoreOp returns (bool)
+  {
+    migrateProxy(_token, _newCore);
+    emit TokenMigrated(_token, _newCore);
+    return true;
+  }
+
   function removeToken(address _token)
     public onlyCoreOp returns (bool)
   {

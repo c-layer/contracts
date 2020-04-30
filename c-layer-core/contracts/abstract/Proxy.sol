@@ -26,6 +26,16 @@ contract Proxy {
   }
 
   /**
+   * @dev update the core
+   */
+  function updateCore(address _core)
+    public onlyCore returns (bool)
+  {
+    core = _core;
+    return true;
+  }
+
+  /**
    * @dev enforce static immutability (view)
    * @dev in order to read core value through internal core delegateCall
    */
