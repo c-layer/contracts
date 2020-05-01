@@ -62,6 +62,7 @@ contract ITokenStorage {
     IRatesProvider ratesProvider,
     bytes32 currency);
   event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] senders, bool[] receivers, bool[] tokens);
+  event AuditsRemoved(address scope, uint256 scopeId);
   event SelfManaged(address indexed holder, bool active);
 
   event Minted(address indexed token, uint256 amount);

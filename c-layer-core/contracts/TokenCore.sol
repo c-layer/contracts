@@ -390,6 +390,14 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return true;
   }
 
+  function removeAudits(address _scope, uint256 _scopeId)
+    public onlyCoreOp returns (bool)
+  {
+    delete audits[_scope][_scopeId];
+    emit AuditsRemoved(_scope, _scopeId);
+    return true;
+  }
+
   function defineAuditTriggers(
     uint256 _configurationId,
     address[] memory _triggerAddresses,

@@ -128,6 +128,8 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     IRatesProvider _ratesProvider,
     bytes32 _currency,
     bool[6] memory _fields) public returns (bool);
+  function removeAudits(address _scope, uint256 _scopeId)
+    public returns (bool);
   function defineAuditTriggers(
     uint256 _configurationId,
     address[] memory _triggerAddresses,

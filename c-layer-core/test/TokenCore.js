@@ -199,6 +199,15 @@ contract("TokenCore", function (accounts) {
       assert.deepEqual(triggers.tokens, [false, false, true], "tokens");
     });
 
+    it("should let remove audit", async function () {
+      const tx = await core.removeAudits(accounts[0], 0);
+      assert.ok(tx.receipt.status, "Status");
+      assert.equal(tx.logs.length, 1, "logs");
+      assert.equal(tx.logs[0].event, "AuditsRemoved", "event");
+      assert.equal(tx.logs[0].args.scope, accounts[0], "scope");
+      assert.equal(tx.logs[0].args.scopeId, 0, "scoeId");
+    });
+
     it("should have a delegate", async function () {
       const delegate0 = await core.delegates(1);
       assert.equal(delegate0, delegate.address, "delegate 0");
