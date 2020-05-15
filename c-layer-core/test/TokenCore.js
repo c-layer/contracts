@@ -172,7 +172,7 @@ contract("TokenCore", function (accounts) {
         [true, false, false],
         [false, true, false],
         [false, false, true]);
-      await core.defineTokenDelegate(1, delegate.address, [2]);
+      await core.defineTokenDelegate(1, delegate.address, [2, 4]);
     });
 
     it("should have an audit configuration", async function () {
@@ -271,7 +271,7 @@ contract("TokenCore", function (accounts) {
         });
 
         it("Should have no delegates", async function () {
-          const delegate = await core.proxyDelegates(token.address);
+          const delegate = await core.proxyDelegateIds(token.address);
           assert.equal(delegate, 0, "no delegates");
         });
 

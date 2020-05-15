@@ -30,6 +30,11 @@ contract("RuleEngineTokenDelegate", function (accounts) {
     await token.approve(accounts[1], AMOUNT);
   });
 
+  it("should have audit requirements", async function () {
+    const auditRequirements = await delegate.auditRequirements();
+    assert.equal(auditRequirements.toString(), 0, "audit requirements");
+  });
+
   it("should transfer from accounts[0] to accounts[1]", async function () {
     const tx = await token.transfer(accounts[1], "3333");
     assert.ok(tx.receipt.status, "Status");

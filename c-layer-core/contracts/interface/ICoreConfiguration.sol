@@ -1,6 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./ITokenCore.sol";
+import "../interface/IRatesProvider.sol";
+import "../interface/IOperableCore.sol";
 
 
 /**
@@ -28,13 +29,15 @@ contract ICoreConfiguration {
   }
 
   bytes4[] public REQUIRED_CORE_PRIVILEGES = [
-    bytes4(keccak256("defineAuditConfiguration(address,bytes32,address[])")),
-    bytes4(keccak256("defineAuditTriggers(address,uint256,string,string,uint256)"))
+    bytes4(keccak256("defineAuditConfiguration(uint256,uint256,bool,uint8,uint8,uint256[],address,bytes32,bool[6])")),
+    bytes4(keccak256("defineTokenDelegate(uint256,address,uint256[])"))
   ];
 
-  function hasCoreAccess() public view returns (bool);
+  function hasCoreAccess(IOperableCore _core) public view returns (bool);
   function defineCoreConfigurations(
-    address _delegate,
+    address _core,
+    address _mintableDelegate,
+    address _compliantDelegate,
     IRatesProvider _ratesProvider,
     bytes32 _currency
   ) public returns (bool);

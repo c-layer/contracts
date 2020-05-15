@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for contracts/abstract/Factory.sol</title>
+    <title>Code coverage report for contracts/interface/ITokenDelegate.sol</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -16,13 +16,13 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../../index.html">all files</a> / <a href="index.html">contracts/abstract/</a> Factory.sol
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/interface/</a> ITokenDelegate.sol
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>6/6</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
@@ -32,12 +32,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>3/3</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>7/7</span>
+        <span class='fraction'>0/0</span>
       </div>
     </div>
   </div>
@@ -93,7 +93,15 @@
 48
 49
 50
-51</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+51
+52
+53
+54
+55
+56
+57
+58
+59</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -114,7 +122,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -123,10 +130,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">21×</span>
-<span class="cline-any cline-yes">21×</span>
-<span class="cline-any cline-yes">21×</span>
-<span class="cline-any cline-yes">21×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -135,8 +138,21 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">18×</span>
-<span class="cline-any cline-yes">18×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -145,53 +161,61 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
-import "../util/convert/BytesConvert.sol";
+import "../interface/ITokenStorage.sol";
 &nbsp;
 &nbsp;
 /**
- * @title Factory
- *
+ * @title Token Delegate Interface
+ * @dev Token Delegate Interface
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
  *
  * Error messages
- **/
-contract Factory {
-  using BytesConvert for bytes;
+ */
+contract ITokenDelegate is ITokenStorage {
 &nbsp;
-  bytes internal proxyCode_;
+  struct TransferData {
+    address token;
+    address caller;
+    address sender;
+    address receiver;
 &nbsp;
-  /**
-   * @dev proxyCode
-   */
-  function proxyCode() public view returns (bytes memory) {
-    return proxyCode_;
+    uint256 callerId;
+    uint256[] callerKeys;
+    bool callerFetched;
+&nbsp;
+    uint256 senderId;
+    uint256[] senderKeys;
+    bool senderFetched;
+&nbsp;
+    uint256 receiverId;
+    uint256[] receiverKeys;
+    bool receiverFetched;
+&nbsp;
+    uint256 value;
+    uint256 convertedValue;
   }
 &nbsp;
-  /**
-   * @dev defineProxyCodeInternal
-   */
-  function defineProxyCodeInternal(address _core, bytes memory _proxyCode)
-    internal returns (bool)
-  {
-    bytes32 coreAddress = abi.encode(_core).toBytes32();
-    proxyCode_ = abi.encodePacked(_proxyCode, coreAddress);
-    emit ProxyCodeDefined(keccak256(_proxyCode));
-    return true;
-  }
-&nbsp;
-  /**
-   * @dev deployProxyInternal
-   */
-  function deployProxyInternal()
-    internal returns (address address_)
-  {
-    bytes memory code = proxyCode_;
-    assembly {
-      address_ := create(0, add(code, 0x20), mload(code))
-    }
-  }
-&nbsp;
-  event ProxyCodeDefined(bytes32 codeHash);
+  function decimals() public view returns (uint256);
+  function totalSupply() public view returns (uint256);
+  function balanceOf(address _owner) public view returns (uint256);
+  function allowance(address _owner, address _spender)
+    public view returns (uint256);
+  function transfer(address _sender, address _receiver, uint256 _value)
+    public returns (bool);
+  function transferFrom(
+    address _caller, address _sender, address _receiver, uint256 _value)
+    public returns (bool);
+  function canTransfer(
+    address _sender,
+    address _receiver,
+    uint256 _value) public view returns (TransferCode);
+  function approve(address _sender, address _spender, uint256 _value)
+    public returns (bool);
+  function increaseApproval(address _sender, address _spender, uint _addedValue)
+    public returns (bool);
+  function decreaseApproval(address _sender, address _spender, uint _subtractedValue)
+    public returns (bool);
+  function auditRequirements() public pure returns (uint256);
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -199,7 +223,7 @@ contract Factory {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 24 2020 17:45:04 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri May 15 2020 16:27:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

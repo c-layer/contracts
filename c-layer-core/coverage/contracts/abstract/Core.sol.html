@@ -22,22 +22,22 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>21/21</span>
+        <span class='fraction'>25/25</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">75% </span>
+        <span class="strong">77.27% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>12/16</span>
+        <span class='fraction'>17/22</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>7/7</span>
+        <span class='fraction'>8/8</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>23/23</span>
+        <span class='fraction'>27/27</span>
       </div>
     </div>
   </div>
@@ -122,7 +122,20 @@
 77
 78
 79
-80</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -146,18 +159,22 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">460×</span>
-<span class="cline-any cline-yes">457×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">547×</span>
-<span class="cline-any cline-yes">547×</span>
-<span class="cline-any cline-yes">547×</span>
+<span class="cline-any cline-yes">464×</span>
+<span class="cline-any cline-yes">461×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">547×</span>
-<span class="cline-any cline-yes">547×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">551×</span>
+<span class="cline-any cline-yes">551×</span>
+<span class="cline-any cline-yes">551×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">551×</span>
+<span class="cline-any cline-yes">551×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -179,24 +196,33 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">294×</span>
-<span class="cline-any cline-yes">294×</span>
-<span class="cline-any cline-yes">294×</span>
+<span class="cline-any cline-yes">329×</span>
+<span class="cline-any cline-yes">329×</span>
+<span class="cline-any cline-yes">329×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">249×</span>
-<span class="cline-any cline-yes">247×</span>
+<span class="cline-any cline-yes">261×</span>
+<span class="cline-any cline-yes">259×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">245×</span>
-<span class="cline-any cline-yes">245×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">257×</span>
+<span class="cline-any cline-yes">257×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
 <span class="cline-any cline-yes">7×</span>
 <span class="cline-any cline-yes">7×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -205,6 +231,7 @@
 &nbsp;
 import "./Storage.sol";
 import "../util/convert/BytesConvert.sol";
+import "./Proxy.sol";
 &nbsp;
 &nbsp;
 /**
@@ -220,18 +247,21 @@ import "../util/convert/BytesConvert.sol";
  *   CO03: Delegatecall should be successfull
  *   CO04: DelegateId must be greater than 0
  *   CO05: Proxy must exist
+ *   CO06: Proxy must be already defined
+ *   CO07: New core must exist
+ *   CO08: Proxy update must be successfull
  **/
 contract Core is Storage {
   using BytesConvert for bytes;
 &nbsp;
   modifier onlyProxy {
-    require(delegates[proxyDelegates[msg.sender]] != address(0), "CO01");
+    require(delegates[proxyDelegateIds[msg.sender]] != address(0), "CO01");
     _;
   }
 &nbsp;
   function delegateCall(address _proxy) internal returns (bool status)
   {
-    uint256 delegateId = proxyDelegates[_proxy];
+    uint256 delegateId = proxyDelegateIds[_proxy];
     address delegate = delegates[delegateId];
     <span class="missing-if-branch" title="else path not taken" >E</span>require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
@@ -249,7 +279,7 @@ contract Core is Storage {
     internal returns (bytes memory result)
   {
     bool status;
-    uint256 delegateId = proxyDelegates[_proxy];
+    uint256 delegateId = proxyDelegateIds[_proxy];
     address delegate = delegates[delegateId];
     <span class="missing-if-branch" title="else path not taken" >E</span>require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
@@ -269,14 +299,23 @@ contract Core is Storage {
     require(delegates[_delegateId] != address(0), "CO02");
     require(_proxy != address(0), "CO05");
 &nbsp;
-    proxyDelegates[_proxy] = _delegateId;
+    proxyDelegateIds[_proxy] = _delegateId;
+    return true;
+  }
+&nbsp;
+  function migrateProxy(address _proxy, address _newCore)
+    internal returns (bool)
+  {
+    require(proxyDelegateIds[_proxy] != 0, "CO06");
+    <span class="missing-if-branch" title="else path not taken" >E</span>require(Proxy(_proxy).updateCore(_newCore), "CO08");
     return true;
   }
 &nbsp;
   function removeProxy(address _proxy)
     internal returns (bool)
   {
-    delete proxyDelegates[_proxy];
+    require(proxyDelegateIds[_proxy] != 0, "CO06");
+    delete proxyDelegateIds[_proxy];
     return true;
   }
 }
@@ -286,7 +325,7 @@ contract Core is Storage {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 24 2020 17:45:04 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri May 15 2020 16:27:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

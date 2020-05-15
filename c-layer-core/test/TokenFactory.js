@@ -10,7 +10,7 @@ const TokenCore = artifacts.require("TokenCore.sol");
 const TokenFactory = artifacts.require("TokenFactory.sol");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 
-const TOKEN_DEPLOYMENT_COST = "1065941";
+const TOKEN_DEPLOYMENT_COST = "1107971";
 const CAN_TRANSFER = 5; // LOCKED
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");
@@ -52,7 +52,7 @@ contract("TokenFactory", function (accounts) {
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
     core = await TokenCore.new("MyCore");
-    await core.defineTokenDelegate(1, delegate.address, []);
+    await core.defineTokenDelegate(1, delegate.address, [0, 1]);
     factory = await TokenFactory.new(core.address);
 
     proxyCode = TokenProxy.bytecode;
@@ -72,7 +72,7 @@ contract("TokenFactory", function (accounts) {
     const tx = await factory.defineProxyCode(proxyCode);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "ProxyCodeDefined", "event");
+    assert.equal(tx.logs[0].event, "ContractCodeDefined", "event");
     assert.equal(tx.logs[0].args.codeHash, proxyCodeHash, "proxy codeHash");
   });
 

@@ -3,6 +3,7 @@ pragma solidity >=0.5.0 <0.6.0;
 import "./operable/OperableCore.sol";
 import "./TokenStorage.sol";
 import "./interface/ITokenCore.sol";
+import "./interface/ITokenDelegate.sol";
 
 
 /**
@@ -13,7 +14,8 @@ import "./interface/ITokenCore.sol";
  * Error messages
  *   TC01: Token cannot be equivalent to AllProxies
  *   TC02: Currency stored values must remain consistent
- *   TC03: The audit triggers definition requires the same number of addresses and values
+ *   TC03: Delegate has invalid audit configurations values
+ *   TC04: The audit triggers definition requires the same number of addresses and values
  **/
 contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
@@ -340,6 +342,9 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     address _delegate,
     uint256[] memory _auditConfigurations) public onlyCoreOp returns (bool)
   {
+    require(_delegate == address(0) ||
+      ITokenDelegate(_delegate).auditRequirements()
+      <= _auditConfigurations.length, "TC03");
     defineDelegate(_delegateId, _delegate);
     if(_delegate != address(0)) {
       delegatesConfigurations[_delegateId] = _auditConfigurations;
@@ -407,7 +412,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     require(_triggerAddresses.length == _triggerSenders.length
       && _triggerAddresses.length == _triggerReceivers.length
-      && _triggerAddresses.length == _triggerTokens.length, "TC03");
+      && _triggerAddresses.length == _triggerTokens.length, "TC04");
 
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
     for(uint256 i=0; i < _triggerAddresses.length; i++) {

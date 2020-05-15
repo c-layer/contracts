@@ -17,11 +17,18 @@ import "./AuditableTokenDelegate.sol";
 contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
 
   /**
+   * @dev audit requirements
+   **/
+  function auditRequirements() public pure returns (uint256) {
+    return super.auditRequirements() + 1;
+  }
+
+  /**
    * @dev Overriden transfer internal function
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
-    uint256 configurationId = delegatesConfigurations[proxyDelegates[_transferData.token]]
+    uint256 configurationId = delegatesConfigurations[proxyDelegateIds[_transferData.token]]
       [uint256(AUDIT_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
     AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
 
@@ -39,7 +46,7 @@ contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
   function canTransferInternal(TransferData memory _transferData)
     internal view returns (TransferCode)
   {
-    uint256 configurationId = delegatesConfigurations[proxyDelegates[_transferData.token]]
+    uint256 configurationId = delegatesConfigurations[proxyDelegateIds[_transferData.token]]
       [uint256(AUDIT_CONFIGURATION.LIMITABLE_TRANSFERABILITY)];
     AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
 
@@ -70,7 +77,7 @@ contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
         _configuration.ratesProvider,
         _configuration.currency);
 
-      if (_transferData.convertedValue != 0) {
+      if (_transferData.value == 0 || _transferData.convertedValue != 0) {
         AuditStorage storage auditStorage = (
           (_configuration.scopeCore) ? audits[address(this)] : audits[_transferData.token]
         )[_configuration.scopeId];
@@ -97,7 +104,7 @@ contract LimitableTransferabilityTokenDelegate is AuditableTokenDelegate {
         _configuration.ratesProvider,
         _configuration.currency);
 
-      if (_transferData.convertedValue != 0) {
+      if (_transferData.value == 0 || _transferData.convertedValue != 0) {
         AuditStorage storage auditStorage = (
           (_configuration.scopeCore) ? audits[address(this)] : audits[_transferData.token]
         )[_configuration.scopeId];

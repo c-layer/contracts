@@ -22,7 +22,7 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>49/49</span>
+        <span class='fraction'>50/50</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">79.17% </span>
@@ -32,12 +32,12 @@
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>13/13</span>
+        <span class='fraction'>14/14</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>50/50</span>
+        <span class='fraction'>51/51</span>
       </div>
     </div>
   </div>
@@ -257,42 +257,7 @@
 212
 213
 214
-215
-216
-217
-218
-219
-220
-221
-222
-223
-224
-225
-226
-227
-228
-229</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+215</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -369,12 +334,12 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94×</span>
-<span class="cline-any cline-yes">94×</span>
-<span class="cline-any cline-yes">94×</span>
+<span class="cline-any cline-yes">98×</span>
+<span class="cline-any cline-yes">98×</span>
+<span class="cline-any cline-yes">98×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">94×</span>
+<span class="cline-any cline-yes">98×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -409,6 +374,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">323×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -501,6 +473,7 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
+import "../interface/ITokenDelegate.sol";
 import "../TokenStorage.sol";
 import "../TokenProxy.sol";
 &nbsp;
@@ -516,29 +489,7 @@ import "../TokenProxy.sol";
  * TD03: Transfer event must be generated
  * TD04: Allowance limit reached
  */
-contract BaseTokenDelegate is TokenStorage {
-&nbsp;
-  struct TransferData {
-    address token;
-    address caller;
-    address sender;
-    address receiver;
-&nbsp;
-    uint256 callerId;
-    uint256[] callerKeys;
-    bool callerFetched;
-&nbsp;
-    uint256 senderId;
-    uint256[] senderKeys;
-    bool senderFetched;
-&nbsp;
-    uint256 receiverId;
-    uint256[] receiverKeys;
-    bool receiverFetched;
-&nbsp;
-    uint256 value;
-    uint256 convertedValue;
-  }
+contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
 &nbsp;
   function decimals() public view returns (uint256) {
     return tokens[msg.sender].decimals;
@@ -640,6 +591,13 @@ contract BaseTokenDelegate is TokenStorage {
   }
 &nbsp;
   /**
+   * @dev audit requirements
+   **/
+  function auditRequirements() public pure returns (uint256) {
+    return 0;
+  }
+&nbsp;
+  /**
    * @dev transfer
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)
@@ -733,7 +691,7 @@ contract BaseTokenDelegate is TokenStorage {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri Apr 24 2020 17:45:04 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri May 15 2020 16:27:16 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

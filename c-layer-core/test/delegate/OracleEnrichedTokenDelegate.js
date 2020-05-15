@@ -27,6 +27,11 @@ contract("OracleEnrichedTokenDelegate", function (accounts) {
       delegate = await OracleEnrichedTokenDelegateMock.new();
     });
 
+    it("should have audit requirements", async function () {
+      const auditRequirements = await delegate.auditRequirements();
+      assert.equal(auditRequirements.toString(), 0, "audit requirements");
+    });
+
     it("should fail to fetch caller user", async function () {
       await assertRevert(delegate.testFetchCallerUser(accounts[0], [0, 1, 2]), "CO03");
     });

@@ -22,6 +22,11 @@ contract("BaseToken", function (accounts) {
     await core.defineTokenDelegate(1, delegate.address, []);
   });
 
+  it("should have audit requirements", async function () {
+    const auditRequirements = await delegate.auditRequirements();
+    assert.equal(auditRequirements.toString(), 0, "audit requirements");
+  });
+
   describe("With a token defined", async function () {
     let token;
 

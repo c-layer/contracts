@@ -74,6 +74,11 @@ contract("AuditableToken", function (accounts) {
       await token.approve(accounts[1], AMOUNT);
     });
 
+    it("should have audit requirements", async function () {
+      const auditRequirements = await delegate.auditRequirements();
+      assert.equal(auditRequirements.toString(), 0, "audit requirements");
+    });
+
     it("should have audit shared", async function () {
       const audit = await core.audit(
         token.address, 0, AUDIT_STORAGE_SHARED, "0x0");

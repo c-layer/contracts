@@ -1,0 +1,24 @@
+1.
+`core = await TokenCore.new('Altcoinomy')`
+
+2.
+`coreConfig = await CoreConfiguration.new()`
+
+3.
+const ALL_PRIVILEGES = '0x416c6c50726976696c6567657300000000000000000000000000000000000000';
+core.assignOperators(ALL_PRIVILEGES, [ coreConfig.address, <operators> ]);
+
+4.
+delegate = await TokenDelegate.new()
+mintableDelegate = await ProvableOwnershipTokenDelegate.new()
+
+5.
+coreConfig.defineCoreConfigurations(mintableDelegate.address, delegate.address, ratesProvider.address, '0x4348460000000000000000000000000000000000000000000000000000000000')
+
+6.
+const ALL_PROXIES = '0x00000000000000000000416c6c50726f78696573';
+core.assignProxyOperators(ALL_PROXIES, ALL_PRIVILEGES, [ <operators> ]);
+
+7.
+core.defineOracle(userRegistry.address);
+

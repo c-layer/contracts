@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "../abstract/Factory.sol";
+import "../util/deploy/Factory.sol";
 
 
 /**
@@ -20,21 +20,40 @@ contract FactoryMock is Factory {
   /**
    * @dev defineProxyCode
    */
-  function defineProxyCode(address _core, bytes memory _proxyCode)
+  function defineProxyCode(uint256 _id, address _core, bytes memory _proxyCode)
     public returns (bool)
   {
-    return defineProxyCodeInternal(_core, _proxyCode);
+    return defineProxyCodeInternal(_id, _core, _proxyCode);
   }
 
   /**
-   * @dev deployProxy
+   * @dev defineContractCode
    */
-  function deployProxy() public returns (bool)
+  function defineContractCode(uint256 _id, bytes memory _code)
+    public returns (bool)
   {
-    address proxy = deployProxyInternal();
-    emit ProxyDeployed(proxy);
+    return defineContractCodeInternal(_id, _code);
+  }
+
+  /**
+   * @dev deployContract
+   */
+  function deployContractId(uint256 _id) public returns (bool)
+  {
+    address address_ = deployContractInternal(_id);
+    emit ContractDeployed(address_);
     return true;
   }
 
-  event ProxyDeployed(address proxy);
+  /**
+   * @dev deployContract
+   */
+  function deployContract(bytes memory _code) public returns (bool)
+  {
+    address address_ = deployContractInternal(_code);
+    emit ContractDeployed(address_);
+    return true;
+  }
+
+  event ContractDeployed(address address_);
 }

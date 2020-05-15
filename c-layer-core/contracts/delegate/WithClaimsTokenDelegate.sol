@@ -24,6 +24,13 @@ import "./ProvableOwnershipTokenDelegate.sol";
 contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
 
   /**
+   * @dev audit requirements
+   **/
+  function auditRequirements() public pure returns (uint256) {
+    return super.auditRequirements() + 1;
+  }
+
+  /**
    * @dev Overriden transfer internal function
    */
   function transferInternal(TransferData memory _transferData) internal returns (bool)

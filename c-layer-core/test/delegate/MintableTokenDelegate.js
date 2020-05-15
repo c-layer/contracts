@@ -28,6 +28,11 @@ contract("MintableTokenDelegate", function (accounts) {
       token.address, 1, NAME, SYMBOL, DECIMALS);
   });
 
+  it("should have audit requirements", async function () {
+    const auditRequirements = await delegate.auditRequirements();
+    assert.equal(auditRequirements.toString(), 0, "audit requirements");
+  });
+
   it("should let operator mint", async function () {
     const tx = await core.mint(token.address, accounts[1], AMOUNT);
     assert.ok(tx.receipt.status, "Status");

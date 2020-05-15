@@ -1,6 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./abstract/Factory.sol";
+import "./util/deploy/Factory.sol";
 import "./operable/OperableAsCore.sol";
 import "./interface/IERC20.sol";
 import "./interface/ITokenCore.sol";
@@ -15,8 +15,8 @@ import "./interface/ITokenFactory.sol";
  * Error messages
  *   TF01: Required privileges must be granted from the core to the factory
  *   TF02: There must be the same number of vault and supplies
- *   TF03: A proxy code must defined
- *   TF04: Token proxy must deployed
+ *   TF03: A proxy code must be defined
+ *   TF04: Token proxy must be deployed
  *   TF05: Token must be defined in the core
  *   TF06: Factory role must be granted on the proxy
  *   TF07: Issuer role must be granted on the proxy
@@ -31,6 +31,8 @@ import "./interface/ITokenFactory.sol";
  *   TF16: Allowance must be successfull
  **/
 contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
+
+  uint256 constant TOKEN_PROXY = 0;
 
   bytes4[] public REQUIRED_CORE_PRIVILEGES = [
     bytes4(keccak256("assignProxyOperators(address,bytes32,address[])")),
@@ -56,7 +58,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
   function defineProxyCode(bytes memory _code)
     public onlyCoreOperator returns (bool)
   {
-    return defineProxyCodeInternal(address(core), _code);
+    return defineProxyCodeInternal(uint256(TOKEN_PROXY), address(core), _code);
   }
 
   /**
@@ -89,10 +91,10 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore {
   ) public returns (address) {
     require(hasCoreAccess(), "TF01");
     require(_vaults.length == _supplies.length, "TF02");
-    require(proxyCode_.length != 0, "TF03");
+    require(contractCodes_[uint256(TOKEN_PROXY)].length != 0, "TF03");
 
     // 1- Creating a proxy
-    address token = deployProxyInternal();
+    address token = deployContractInternal(uint256(TOKEN_PROXY));
     require(token != address(0), "TF04");
 
     // 2- Defining the token in the core

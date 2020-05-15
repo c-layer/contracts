@@ -10,6 +10,6 @@ pragma solidity >=0.5.0 <0.6.0;
  **/
 contract Storage {
 
-  mapping(address => uint256) public proxyDelegates;
+  mapping(address => uint256) public proxyDelegateIds;
   mapping(uint256 => address) public delegates;
 }

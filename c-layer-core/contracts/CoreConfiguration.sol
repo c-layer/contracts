@@ -1,7 +1,8 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "./interface/ITokenCore.sol";
 import "./interface/ICoreConfiguration.sol";
-import "./operable/OperableAsCore.sol";
+
 
 /**
  * @title CoreConfiguration
@@ -11,7 +12,7 @@ import "./operable/OperableAsCore.sol";
  * Error messages
  *   CC01: Some required privileges from the core are missing
  */
-contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
+contract CoreConfiguration is ICoreConfiguration {
 
   uint256[] private userKeys = [ uint256(0), uint256(1), uint256(2) ];
 
@@ -24,17 +25,12 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     uint256(CONFIGURATION.SECONDARY_MARKET_AML) ];
 
   /**
-   * @dev constructor
-   **/
-  constructor(address _core) public OperableAsCore(_core) {}
-
-  /**
    * @dev has core access
    */
-  function hasCoreAccess() public view returns (bool access) {
+  function hasCoreAccess(IOperableCore _core) public view returns (bool access) {
     access = true;
     for (uint256 i=0; i<REQUIRED_CORE_PRIVILEGES.length; i++) {
-      access = access && hasCorePrivilege(
+      access = access && _core.hasCorePrivilege(
         address(this), REQUIRED_CORE_PRIVILEGES[i]);
     }
   }
@@ -43,14 +39,16 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
    * @dev defineCoreConfigurations
    */
   function defineCoreConfigurations(
-    address _delegate,
+    address _core,
+    address _mintableDelegate,
+    address _compliantDelegate,
     IRatesProvider _ratesProvider,
     bytes32 _currency
   ) public returns (bool)
   {
-    require(hasCoreAccess(), "CC01");
+    require(hasCoreAccess(IOperableCore(_core)), "CC01");
 
-    ITokenCore tokenCore = ITokenCore(address(core));
+    ITokenCore tokenCore = ITokenCore(_core);
 
     // Proof Of Ownership Configuration
     tokenCore.defineAuditConfiguration(
@@ -58,7 +56,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
       0, false, // scopeId (token, 0)
       ITokenStorage.AuditMode.ALWAYS,
       ITokenStorage.AuditStorageMode.ADDRESS,
-      new uint256[](0), IRatesProvider(address(0)), '0x0',
+      new uint256[](0), IRatesProvider(address(0)), '',
       [ false, true, false, false, false, false ] // only last transaction
     );
 
@@ -83,18 +81,18 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     );
 
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.UTILITY), _delegate, noAMLConfig);
+      uint256(DELEGATE.UTILITY), _mintableDelegate, noAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.PAYMENT), _delegate, noAMLConfig);
+      uint256(DELEGATE.PAYMENT), _mintableDelegate, noAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.SECURITY), _delegate, primaryMarketAMLConfig);
+      uint256(DELEGATE.SECURITY), _compliantDelegate, primaryMarketAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.EQUITY), _delegate, secondaryMarketAMLConfig);
+      uint256(DELEGATE.EQUITY), _compliantDelegate, secondaryMarketAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.BOND), _delegate, secondaryMarketAMLConfig);
+      uint256(DELEGATE.BOND), _compliantDelegate, secondaryMarketAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.FUND), _delegate, secondaryMarketAMLConfig);
+      uint256(DELEGATE.FUND), _compliantDelegate, secondaryMarketAMLConfig);
     tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.DERIVATIVE), _delegate, secondaryMarketAMLConfig);
+      uint256(DELEGATE.DERIVATIVE), _compliantDelegate, secondaryMarketAMLConfig);
   }
 }

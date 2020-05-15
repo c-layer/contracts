@@ -26,13 +26,13 @@ contract Core is Storage {
   using BytesConvert for bytes;
 
   modifier onlyProxy {
-    require(delegates[proxyDelegates[msg.sender]] != address(0), "CO01");
+    require(delegates[proxyDelegateIds[msg.sender]] != address(0), "CO01");
     _;
   }
 
   function delegateCall(address _proxy) internal returns (bool status)
   {
-    uint256 delegateId = proxyDelegates[_proxy];
+    uint256 delegateId = proxyDelegateIds[_proxy];
     address delegate = delegates[delegateId];
     require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
@@ -50,7 +50,7 @@ contract Core is Storage {
     internal returns (bytes memory result)
   {
     bool status;
-    uint256 delegateId = proxyDelegates[_proxy];
+    uint256 delegateId = proxyDelegateIds[_proxy];
     address delegate = delegates[delegateId];
     require(delegate != address(0), "CO02");
     // solhint-disable-next-line avoid-low-level-calls
@@ -70,14 +70,14 @@ contract Core is Storage {
     require(delegates[_delegateId] != address(0), "CO02");
     require(_proxy != address(0), "CO05");
 
-    proxyDelegates[_proxy] = _delegateId;
+    proxyDelegateIds[_proxy] = _delegateId;
     return true;
   }
 
   function migrateProxy(address _proxy, address _newCore)
     internal returns (bool)
   {
-    require(proxyDelegates[_proxy] != 0, "CO06");
+    require(proxyDelegateIds[_proxy] != 0, "CO06");
     require(Proxy(_proxy).updateCore(_newCore), "CO08");
     return true;
   }
@@ -85,8 +85,8 @@ contract Core is Storage {
   function removeProxy(address _proxy)
     internal returns (bool)
   {
-    require(proxyDelegates[_proxy] != 0, "CO06");
-    delete proxyDelegates[_proxy];
+    require(proxyDelegateIds[_proxy] != 0, "CO06");
+    delete proxyDelegateIds[_proxy];
     return true;
   }
 }

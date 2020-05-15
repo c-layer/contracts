@@ -61,7 +61,7 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
   function canTransferInternal(TransferData memory _transferData)
     internal view returns (TransferCode)
   {
-    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegates[_transferData.token]];
+    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegateIds[_transferData.token]];
 
     for (uint256 i=0; i < configurationIds.length; i++) {
       AuditConfiguration memory configuration_ =
@@ -82,7 +82,7 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
   function updateAuditInternal(
     TransferData memory _transferData) internal returns (bool)
   {
-    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegates[_transferData.token]];
+    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegateIds[_transferData.token]];
 
     for (uint256 i=0; i < configurationIds.length; i++) {
       // triggers are only accessible in storage

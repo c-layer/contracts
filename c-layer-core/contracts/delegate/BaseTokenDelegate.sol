@@ -1,5 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "../interface/ITokenDelegate.sol";
 import "../TokenStorage.sol";
 import "../TokenProxy.sol";
 
@@ -15,29 +16,7 @@ import "../TokenProxy.sol";
  * TD03: Transfer event must be generated
  * TD04: Allowance limit reached
  */
-contract BaseTokenDelegate is TokenStorage {
-
-  struct TransferData {
-    address token;
-    address caller;
-    address sender;
-    address receiver;
-
-    uint256 callerId;
-    uint256[] callerKeys;
-    bool callerFetched;
-
-    uint256 senderId;
-    uint256[] senderKeys;
-    bool senderFetched;
-
-    uint256 receiverId;
-    uint256[] receiverKeys;
-    bool receiverFetched;
-
-    uint256 value;
-    uint256 convertedValue;
-  }
+contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
 
   function decimals() public view returns (uint256) {
     return tokens[msg.sender].decimals;
@@ -136,6 +115,13 @@ contract BaseTokenDelegate is TokenStorage {
       TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowances[_sender][_spender]),
       "TD03");
     return true;
+  }
+
+  /**
+   * @dev audit requirements
+   **/
+  function auditRequirements() public pure returns (uint256) {
+    return 0;
   }
 
   /**
