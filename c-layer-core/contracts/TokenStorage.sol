@@ -61,6 +61,8 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   }
 
   struct AuditStorage {
+    bytes32 currency;
+
     AuditData sharedData;
     mapping(uint256 => AuditData) userData;
     mapping(address => AuditData) addressData;
@@ -100,9 +102,8 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   // Prevents transfer on behalf
   mapping (address => bool) internal selfManaged;
 
-  IUserRegistry internal userRegistry;
-  bytes32 internal currency;
-
+  IUserRegistry internal userRegistry_;
+  bytes32 internal currency_;
   string internal name_;
 
   /**

@@ -15,7 +15,7 @@ contract TokenCoreMock is TokenCore {
 
   constructor(string memory _name)
     // solhint-disable-next-line no-empty-blocks
-    public TokenCore(_name) {}
+    public TokenCore(_name, new address[](0)) {}
 
   function defineSupplyMock(address _tokenAddress, uint256 _supply)
     public returns (bool)

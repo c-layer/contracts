@@ -51,7 +51,7 @@ contract("Performance", function (accounts) {
   });
 
   it("should have a core gas cost at " + CORE_GAS_COST, async function () {
-    const gas = await TokenCore.new.estimateGas("Test");
+    const gas = await TokenCore.new.estimateGas("Test", []);
     assert.equal(gas, CORE_GAS_COST, "gas");
   });
 
@@ -66,7 +66,7 @@ contract("Performance", function (accounts) {
   });
 
   it("should have a proxy gas cost at " + PROXY_GAS_COST, async function () {
-    core = await TokenCore.new("Test");
+    core = await TokenCore.new("Test", []);
     const gas = await TokenProxy.new.estimateGas(core.address);
     assert.equal(gas, PROXY_GAS_COST, "gas");
   });
@@ -78,7 +78,7 @@ contract("Performance", function (accounts) {
       delegates = await Promise.all([
         MintableTokenDelegate.new(), TokenDelegate.new(),
       ]);
-      core = await TokenCore.new("Test");
+      core = await TokenCore.new("Test", []);
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
       await core.defineTokenDelegate(2, delegates[1].address, [0, 1]);
@@ -90,7 +90,7 @@ contract("Performance", function (accounts) {
         token = await TokenProxy.new(core.address);
         await core.defineToken(
           token.address, 1, NAME, SYMBOL, DECIMALS);
-        await core.mint(token.address, accounts[0], TOTAL_SUPPLY);
+        await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
         await token.transfer(token.address, "3333");
         await token.approve(accounts[1], "3333");
       });
@@ -118,7 +118,7 @@ contract("Performance", function (accounts) {
         token = await TokenProxy.new(core.address);
         await core.defineToken(
           token.address, 2, NAME, SYMBOL, DECIMALS);
-        await core.mint(token.address, accounts[0], TOTAL_SUPPLY);
+        await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
         await token.transfer(token.address, "3333"); // force global variables init
         await token.approve(accounts[1], "3333");
       });

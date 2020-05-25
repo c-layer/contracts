@@ -30,7 +30,7 @@ contract("Factory", function (accounts) {
   });
 
   it("should define a proxy code", async function () {
-    const tx = await factory.defineProxyCode(TOKEN_PROXY_ID, CORE_ADDRESS, proxyCode);
+    const tx = await factory.defineProxyCode(TOKEN_PROXY_ID, proxyCode);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "ContractCodeDefined", "event");
@@ -39,16 +39,16 @@ contract("Factory", function (accounts) {
 
   describe("With proxy code defined", function () {
     beforeEach(async function () {
-      await factory.defineProxyCode(TOKEN_PROXY_ID, CORE_ADDRESS, proxyCode);
+      await factory.defineProxyCode(TOKEN_PROXY_ID, proxyCode);
     });
 
     it("should have a proxy code", async function () {
       const proxyCodeFound = await factory.contractCode(TOKEN_PROXY_ID);
-      assert.equal(proxyCodeFound, proxyCode + CORE_PARAMETER, "proxy code");
+      assert.equal(proxyCodeFound, proxyCode, "proxy code");
     });
 
     it("should let deploy a proxy", async function () {
-      const tx = await factory.deployContractId(TOKEN_PROXY_ID);
+      const tx = await factory.deployContractId(TOKEN_PROXY_ID, CORE_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "ContractDeployed", "event");
@@ -69,7 +69,7 @@ contract("Factory", function (accounts) {
       let proxy, proxyAddress;
 
       beforeEach(async function () {
-        const tx = await factory.deployContractId(TOKEN_PROXY_ID);
+        const tx = await factory.deployContractId(TOKEN_PROXY_ID, CORE_ADDRESS);
         proxyAddress = tx.logs[0].args.address_;
         proxy = await ProxyMock.at(proxyAddress);
       });

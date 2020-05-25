@@ -20,7 +20,7 @@ contract OracleEnrichedTokenDelegateMock is OracleEnrichedTokenDelegate {
     */
   function defineOracleMock(IUserRegistry _userRegistry) public returns (bool)
   {
-    userRegistry = _userRegistry;
+    userRegistry_ = _userRegistry;
   }
 
   /**

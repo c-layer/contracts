@@ -28,7 +28,7 @@ contract("TokenCore", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCore.new("Test", []);
     userRegistry = await UserRegistryMock.new(
       [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
     ratesProvider = await RatesProviderMock.new();

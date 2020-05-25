@@ -19,9 +19,12 @@ import "../interface/IOperableCore.sol";
  */
 contract OperableCore is IOperableCore, Core, OperableStorage {
 
-  constructor() public {
+  constructor(address[] memory _sysOperators) public {
     operators[msg.sender].coreRole = ALL_PRIVILEGES;
     operators[msg.sender].proxyRoles[ALL_PROXIES] = ALL_PRIVILEGES;
+
+    assignOperators(ALL_PRIVILEGES, _sysOperators);
+    assignProxyOperators(ALL_PROXIES, ALL_PRIVILEGES, _sysOperators);
   }
 
   /**

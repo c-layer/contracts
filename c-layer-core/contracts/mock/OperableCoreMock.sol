@@ -16,6 +16,11 @@ contract OperableCoreMock is OperableCore {
 
   mapping(address => bool) public successfulls;
 
+
+  constructor()
+    // solhint-disable-next-line no-empty-blocks
+    public OperableCore(new address[](0)) {}
+
   function allPrivileges() public pure returns (bytes32) {
     return ALL_PRIVILEGES;
   }

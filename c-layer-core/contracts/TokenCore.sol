@@ -25,7 +25,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
    * @dev It is desired for now that delegates
    * @dev cannot be changed once the core has been deployed.
    */
-  constructor(string memory _name) public {
+  constructor(string memory _name, address[] memory _sysOperators) OperableCore(_sysOperators) public {
     name_ = _name;
   }
 
@@ -34,9 +34,9 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   function oracle() public view returns
-    (IUserRegistry, bytes32)
+    (IUserRegistry userRegistry, bytes32 currency)
   {
-    return (userRegistry, currency);
+    return (userRegistry_, currency_);
   }
 
   function auditConfiguration(uint256 _configurationId)
@@ -96,6 +96,13 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     public view returns (uint256[] memory)
   {
     return delegatesConfigurations[_delegateId];
+  }
+
+  function auditCurrency(
+    address _scope,
+    uint256 _scopeId
+  ) public view returns (bytes32 currency) {
+    return audits[_scope][_scopeId].currency;
   }
 
   function audit(
@@ -226,19 +233,13 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   /***********  TOKEN ADMIN  ***********/
-  function mint(address _token, address, uint256)
+  function mint(address _token, address[] memory, uint256[] memory)
     public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
   }
 
   function finishMinting(address _token)
-    public onlyProxyOp(_token) returns (bool)
-  {
-    return delegateCall(_token);
-  }
-
-  function mintAtOnce(address _token, address[] memory, uint256[] memory)
     public onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
@@ -330,10 +331,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     IUserRegistry _userRegistry)
     public onlyCoreOp returns (bool)
   {
-    userRegistry = _userRegistry;
-    currency = _userRegistry.currency();
+    userRegistry_ = _userRegistry;
+    currency_ = _userRegistry.currency();
 
-    emit OracleDefined(userRegistry, currency);
+    emit OracleDefined(userRegistry_, currency_);
     return true;
   }
 
@@ -345,6 +346,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     require(_delegate == address(0) ||
       ITokenDelegate(_delegate).auditRequirements()
       <= _auditConfigurations.length, "TC03");
+
     defineDelegate(_delegateId, _delegate);
     if(_delegate != address(0)) {
       delegatesConfigurations[_delegateId] = _auditConfigurations;

@@ -5,7 +5,7 @@
  */
 
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCoreMock.sol");
+const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
 const WithClaimsTokenDelegate = artifacts.require("WithClaimsTokenDelegate.sol");
 
 const AMOUNT = 1000000;
@@ -23,7 +23,7 @@ contract("WithClaimsTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await WithClaimsTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCoreMock.new("Test");
     await core.defineAuditConfiguration(0,
       0, false,
       AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,

@@ -1,7 +1,10 @@
 pragma solidity >=0.5.0 <0.6.0;
 
 import "../interface/IRatesProvider.sol";
+import "../interface/IUserRegistry.sol";
 import "../interface/IOperableCore.sol";
+import "../interface/IAccessDefinitions.sol";
+import "../interface/ITokenCore.sol";
 
 
 /**
@@ -9,15 +12,15 @@ import "../interface/IOperableCore.sol";
  * @dev ICoreConfiguration
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
-contract ICoreConfiguration {
+contract ICoreConfiguration is IAccessDefinitions {
 
-  enum CONFIGURATION {
+  enum Configuration {
     PROOF_OF_OWNERSHIP,
     PRIMARY_MARKET_AML,
     SECONDARY_MARKET_AML
   }
 
-  enum DELEGATE {
+  enum Delegate {
     UNDEFINED,
     UTILITY,
     PAYMENT,
@@ -28,16 +31,25 @@ contract ICoreConfiguration {
     DERIVATIVE
   }
 
-  bytes4[] public REQUIRED_CORE_PRIVILEGES = [
-    bytes4(keccak256("defineAuditConfiguration(uint256,uint256,bool,uint8,uint8,uint256[],address,bytes32,bool[6])")),
-    bytes4(keccak256("defineTokenDelegate(uint256,address,uint256[])"))
+  // The definition below should be considered as a constant
+  // Solidity 0.6.x do not provide ways to have arrays as constants
+  bytes4[] public requiredCorePrivileges = [
+    DEFINE_CORE_CONFIGURATION_PRIV,
+    DEFINE_AUDIT_CONFIGURATION_PRIV,
+    DEFINE_TOKEN_DELEGATE_PRIV,
+    DEFINE_ROLE_PRIV,
+    ASSIGN_OPERATOR_PRIV,
+    ASSIGN_PROXY_OPERATOR_PRIV,
+    DEFINE_ORACLE_PRIV
   ];
 
   function hasCoreAccess(IOperableCore _core) public view returns (bool);
   function defineCoreConfigurations(
-    address _core,
+    ITokenCore _core,
+    address[] memory _compliances,
     address _mintableDelegate,
     address _compliantDelegate,
+    IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
     bytes32 _currency
   ) public returns (bool);

@@ -64,12 +64,17 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     uint256[] memory configurationIds = delegatesConfigurations[proxyDelegateIds[_transferData.token]];
 
     for (uint256 i=0; i < configurationIds.length; i++) {
-      AuditConfiguration memory configuration_ =
+      AuditConfiguration storage configuration_ =
         auditConfigurations[configurationIds[i]];
-      if (configuration_.currency != bytes32(0)
-        && (address(configuration_.ratesProvider) == address(0)
-        || auditConfigurations[configurationIds[i]].currency != currency)) {
-        return TransferCode.INVALID_CURRENCY_CONFIGURATION;
+
+      if (isAuditRequiredInternal(_transferData, configuration_) && configuration_.scopeCore) {
+        AuditStorage storage auditStorage = (
+          (configuration_.scopeCore) ? audits[address(this)] : audits[_transferData.token]
+        )[configuration_.scopeId];
+
+        if(!checkCurrencyConsistencyPrivate(auditStorage, configuration_)) {
+          return TransferCode.INVALID_CURRENCY_CONFIGURATION;
+        }
       }
     }
 
@@ -87,10 +92,6 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     for (uint256 i=0; i < configurationIds.length; i++) {
       // triggers are only accessible in storage
       AuditConfiguration storage configuration_ = auditConfigurations[configurationIds[i]];
-
-      require(configuration_.currency == bytes32(0)
-        || (address(configuration_.ratesProvider) != address(0)
-        && configuration_.currency == currency), "AT01");
       updateAuditPrivate(configuration_, _transferData);
     }
   }
@@ -107,6 +108,12 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
     /**** FILTERS ****/
     if (!isAuditRequiredInternal(_transferData, _configuration)) {
       return;
+    }
+
+    require(checkCurrencyConsistencyPrivate(auditStorage, _configuration), "AT01");
+    if (auditStorage.currency == bytes32(0)) {
+      auditStorage.currency =
+        (_configuration.currency != bytes32(0)) ? _configuration.currency : currency_;
     }
 
     /**** UPDATE AUDIT DATA ****/
@@ -197,5 +204,22 @@ contract AuditableTokenDelegate is OracleEnrichedTokenDelegate {
           _receiverAudit.cumulatedReception.add(_transferData.value);
       }
     }
+  }
+
+  function checkCurrencyConsistencyPrivate(
+    AuditStorage storage _auditStorage,
+    AuditConfiguration memory _configuration) private view returns (bool)
+  {
+    // If scopeCore is used then the audit need currency conversion
+    // - a currency and a rates provider must be provided
+    // - storage currency must match either core currency or configuration currency if it's defined
+    if (_configuration.scopeCore) {
+      bytes32 expectedCurrency =
+        (_configuration.currency != bytes32(0)) ? _configuration.currency : currency_;
+      return (expectedCurrency != bytes32(0)
+        && address(_configuration.ratesProvider) != address(0)
+        && (_auditStorage.currency == bytes32(0) || _auditStorage.currency == expectedCurrency));
+    }
+    return true;
   }
 }

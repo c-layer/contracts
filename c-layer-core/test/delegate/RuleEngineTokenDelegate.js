@@ -6,7 +6,7 @@
 
 const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCoreMock.sol");
+const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
 const RuleEngineTokenDelegate = artifacts.require("RuleEngineTokenDelegate.sol");
 const YesNoRule = artifacts.require("YesNoRule.sol");
 
@@ -20,7 +20,7 @@ contract("RuleEngineTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await RuleEngineTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCoreMock.new("Test");
     await core.defineTokenDelegate(1, delegate.address, []);
  
     token = await TokenProxy.new(core.address);

@@ -28,7 +28,7 @@ contract ProvableOwnershipTokenDelegate is AuditableTokenDelegate {
     uint256 proofId = proofs.length;
 
     uint256 lastTransactionAt =
-      audits[_token][uint256(SCOPE.DEFAULT)].addressData[_holder].lastTransactionAt;
+      audits[_token][uint256(Scope.DEFAULT)].addressData[_holder].lastTransactionAt;
 
     TokenData storage token = tokens[_token];
     proofs.push(Proof(

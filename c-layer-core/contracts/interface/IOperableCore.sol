@@ -1,5 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "../interface/IAccessDefinitions.sol";
+
 
 /**
  * @title IOperableCore
@@ -9,10 +11,7 @@ pragma solidity >=0.5.0 <0.6.0;
  *
  * Error messages
  */
-contract IOperableCore {
-  bytes32 constant ALL_PRIVILEGES = bytes32("AllPrivileges");
-  address constant ALL_PROXIES = address(0x416c6c50726f78696573); // "AllProxies"
-
+contract IOperableCore is IAccessDefinitions {
   function coreRole(address _address) public view returns (bytes32);
   function proxyRole(address _proxy, address _address) public view returns (bytes32);
   function rolePrivilege(bytes32 _role, bytes4 _privilege) public view returns (bool);

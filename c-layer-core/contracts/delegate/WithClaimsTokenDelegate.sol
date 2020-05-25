@@ -36,7 +36,7 @@ contract WithClaimsTokenDelegate is ProvableOwnershipTokenDelegate {
   function transferInternal(TransferData memory _transferData) internal returns (bool)
   {
     TokenData storage token = tokens[msg.sender];
-    AuditStorage storage auditStorage = audits[msg.sender][uint256(AUDIT_CONFIGURATION.PROOF_OF_OWNERSHIP)];
+    AuditStorage storage auditStorage = audits[msg.sender][uint256(AuditConfigurationCode.PROOF_OF_OWNERSHIP)];
 
     if (token.latestClaimAt > auditStorage.addressData[_transferData.sender].lastTransactionAt) {
       createProof(msg.sender, _transferData.sender);

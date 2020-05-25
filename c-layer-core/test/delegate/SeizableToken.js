@@ -6,7 +6,7 @@
 
 const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCoreMock.sol");
+const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
 const SeizableTokenDelegate = artifacts.require("SeizableTokenDelegate.sol");
 
 const AMOUNT = 1000000;
@@ -19,7 +19,7 @@ contract("SeizableToken", function (accounts) {
 
   beforeEach(async function () {
     delegate = await SeizableTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCoreMock.new("Test");
     await core.defineTokenDelegate(1, delegate.address, []);
 
     token = await TokenProxy.new(core.address);

@@ -14,7 +14,9 @@ import "./IOperableCore.sol";
 contract ITokenCore is ITokenStorage, IOperableCore {
 
   function name() public view returns (string memory);
-  function oracle() public view returns (IUserRegistry, bytes32);
+  function oracle() public view returns (
+    IUserRegistry userRegistry,
+    bytes32 currency);
 
   function auditConfiguration(uint256 _configurationId)
     public view returns (
@@ -35,6 +37,10 @@ contract ITokenCore is ITokenStorage, IOperableCore {
   function delegateConfigurations(uint256 _delegateId)
     public view returns (uint256[] memory);
 
+  function auditCurrency(
+    address _scope,
+    uint256 _scopeId
+  ) public view returns (bytes32 currency);
   function audit(
     address _scope,
     uint256 _scopeId,
@@ -82,11 +88,9 @@ contract ITokenCore is ITokenStorage, IOperableCore {
     public returns (uint256);
 
   /***********  TOKEN ADMIN  ***********/
-  function mint(address, address, uint256)
+  function mint(address, address[] memory, uint256[] memory)
     public returns (bool);
   function finishMinting(address)
-    public returns (bool);
-  function mintAtOnce(address, address[] memory, uint256[] memory)
     public returns (bool);
   function burn(address, uint256)
     public returns (bool);

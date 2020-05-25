@@ -20,7 +20,7 @@ contract("MintableTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await MintableTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCore.new("Test", []);
     await core.defineTokenDelegate(1, delegate.address, []);
  
     token = await TokenProxy.new(core.address);
@@ -34,36 +34,13 @@ contract("MintableTokenDelegate", function (accounts) {
   });
 
   it("should let operator mint", async function () {
-    const tx = await core.mint(token.address, accounts[1], AMOUNT);
-    assert.ok(tx.receipt.status, "Status");
-    assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "Minted", "event");
-    assert.equal(tx.logs[0].args.amount, AMOUNT, "amount");
-
-    const tokenEvents = await token.getPastEvents("allEvents", {
-      fromBlock: tx.logs[0].blockNumber,
-      toBlock: tx.logs[0].blockNumber,
-    });
-    assert.equal(tokenEvents.length, 1, "events");
-    assert.equal(tokenEvents[0].event, "Transfer", "event");
-    assert.equal(tokenEvents[0].returnValues.from, NULL_ADDRESS, "from");
-    assert.equal(tokenEvents[0].returnValues.to, accounts[1], "to");
-    assert.equal(tokenEvents[0].returnValues.value, AMOUNT, "value");
-  });
-
-  it("should prevent non operator to mint", async function () {
-    await assertRevert(core.mint(
-      token.address, accounts[1], AMOUNT, { from: accounts[1] }), "OC03");
-  });
-
-  it("should let operator mintAtOnce", async function () {
     const recipients = [accounts[1], accounts[2], accounts[3]];
     const amounts = recipients.map((address, i) => AMOUNT * i);
 
-    const tx = await core.mintAtOnce(token.address, recipients, amounts);
+    const tx = await core.mint(token.address, recipients, amounts);
 
     assert.ok(tx.receipt.status, "Status");
-    assert.equal(tx.logs.length, 4);
+    assert.equal(tx.logs.length, 3);
 
     const tokenEvents = await token.getPastEvents("allEvents", {
       fromBlock: tx.logs[0].blockNumber,
@@ -79,23 +56,22 @@ contract("MintableTokenDelegate", function (accounts) {
       assert.equal(tokenEvents[i].returnValues.to, address, "to");
       assert.equal(tokenEvents[i].returnValues.value, AMOUNT * i, "value");
     });
-    assert.equal(tx.logs[3].event, "MintFinished", "event");
   });
 
-  it("should prevent operator to mintAtOnce with inconsistent parameters", async function () {
-    await assertRevert(core.mintAtOnce(token.address, [accounts[1]], []), "CO03");
+  it("should prevent operator to mint with inconsistent parameters", async function () {
+    await assertRevert(core.mint(token.address, [accounts[1]], []), "CO03");
   });
 
-  it("should prevent non operator to mintAtOnce", async function () {
+  it("should prevent non operator to mint", async function () {
     await assertRevert(
-      core.mintAtOnce(token.address, [accounts[1]], [AMOUNT], { from: accounts[1] }),
+      core.mint(token.address, [accounts[1]], [AMOUNT], { from: accounts[1] }),
       "OC03");
   });
 
   describe("With tokens minted", function () {
     beforeEach(async function () {
-      await core.mint(token.address, accounts[1], AMOUNT);
-      await core.mint(token.address, accounts[2], 2 * AMOUNT);
+      await core.mint(token.address, [accounts[1]], [AMOUNT]);
+      await core.mint(token.address, [accounts[2]], [2 * AMOUNT]);
     });
 
     it("should have a total supply", async function () {
@@ -163,7 +139,7 @@ contract("MintableTokenDelegate", function (accounts) {
       });
 
       it("should prevent operator to mint again", async function () {
-        await assertRevert(core.mint(token.address, accounts[1], AMOUNT), "CO03");
+        await assertRevert(core.mint(token.address, [accounts[1]], [AMOUNT]), "CO03");
       });
 
       it("should prevent operator to finish mintingt again", async function () {

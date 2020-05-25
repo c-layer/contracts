@@ -39,11 +39,9 @@ contract Factory {
    */
   function defineProxyCodeInternal(
     uint256 _id,
-    address _core,
     bytes memory _proxyCode) internal returns (bool)
   {
-    bytes32 coreAddress = abi.encode(_core).toBytes32();
-    contractCodes_[_id] = abi.encodePacked(_proxyCode, coreAddress);
+    contractCodes_[_id] = _proxyCode;
     emit ContractCodeDefined(keccak256(_proxyCode));
     return true;
   }
@@ -51,10 +49,15 @@ contract Factory {
   /**
    * @dev deployContractInternal
    */
-  function deployContractInternal(uint256 _id)
+  function deployContractInternal(uint256 _id,
+    address _core)
     internal returns (address address_)
   {
-    return deployContractInternal(contractCodes_[_id]);
+    bytes32 coreAddress = abi.encode(_core).toBytes32();
+
+    return deployContractInternal(
+      abi.encodePacked(contractCodes_[_id], coreAddress)
+    );
   }
 
   /**

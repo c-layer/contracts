@@ -1,7 +1,7 @@
 pragma solidity >=0.5.0 <0.6.0;
 
-import "./interface/ITokenCore.sol";
 import "./interface/ICoreConfiguration.sol";
+import "./operable/OperableAsCores.sol";
 
 
 /**
@@ -12,26 +12,24 @@ import "./interface/ICoreConfiguration.sol";
  * Error messages
  *   CC01: Some required privileges from the core are missing
  */
-contract CoreConfiguration is ICoreConfiguration {
+contract CoreConfiguration is ICoreConfiguration, OperableAsCores {
 
-  uint256[] private userKeys = [ uint256(0), uint256(1), uint256(2) ];
-
-  uint256[] private noAMLConfig = [ uint256(CONFIGURATION.PROOF_OF_OWNERSHIP) ];
+  uint256[] private noAMLConfig = [ uint256(Configuration.PROOF_OF_OWNERSHIP) ];
   uint256[] private primaryMarketAMLConfig = [
-    uint256(CONFIGURATION.PROOF_OF_OWNERSHIP),
-    uint256(CONFIGURATION.PRIMARY_MARKET_AML) ];
+    uint256(Configuration.PROOF_OF_OWNERSHIP),
+    uint256(Configuration.PRIMARY_MARKET_AML) ];
   uint256[] private secondaryMarketAMLConfig = [
-    uint256(CONFIGURATION.PROOF_OF_OWNERSHIP),
-    uint256(CONFIGURATION.SECONDARY_MARKET_AML) ];
+    uint256(Configuration.PROOF_OF_OWNERSHIP),
+    uint256(Configuration.SECONDARY_MARKET_AML) ];
 
   /**
    * @dev has core access
    */
   function hasCoreAccess(IOperableCore _core) public view returns (bool access) {
     access = true;
-    for (uint256 i=0; i<REQUIRED_CORE_PRIVILEGES.length; i++) {
+    for (uint256 i=0; i<requiredCorePrivileges.length; i++) {
       access = access && _core.hasCorePrivilege(
-        address(this), REQUIRED_CORE_PRIVILEGES[i]);
+        address(this), requiredCorePrivileges[i]);
     }
   }
 
@@ -39,20 +37,21 @@ contract CoreConfiguration is ICoreConfiguration {
    * @dev defineCoreConfigurations
    */
   function defineCoreConfigurations(
-    address _core,
+    ITokenCore _core,
+    address[] memory _compliances,
     address _mintableDelegate,
     address _compliantDelegate,
+    IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
     bytes32 _currency
-  ) public returns (bool)
+  ) public onlyCoreOperator(_core) returns (bool)
   {
-    require(hasCoreAccess(IOperableCore(_core)), "CC01");
-
-    ITokenCore tokenCore = ITokenCore(_core);
+    require(hasCoreAccess(_core), "CC01");
 
     // Proof Of Ownership Configuration
-    tokenCore.defineAuditConfiguration(
-      uint256(CONFIGURATION.PROOF_OF_OWNERSHIP),
+    uint256[] memory userKeys = new uint256[](0);
+    _core.defineAuditConfiguration(
+      uint256(Configuration.PROOF_OF_OWNERSHIP),
       0, false, // scopeId (token, 0)
       ITokenStorage.AuditMode.ALWAYS,
       ITokenStorage.AuditStorageMode.ADDRESS,
@@ -61,8 +60,11 @@ contract CoreConfiguration is ICoreConfiguration {
     );
 
     // Primary Market AML Configuration
-    tokenCore.defineAuditConfiguration(
-      uint256(CONFIGURATION.PRIMARY_MARKET_AML),
+    userKeys = new uint256[](2);
+    userKeys[0] = 0;
+    userKeys[1] = 2;
+    _core.defineAuditConfiguration(
+      uint256(Configuration.PRIMARY_MARKET_AML),
       0, true, // scopeId (core, 0)
       ITokenStorage.AuditMode.TRIGGERS_ONLY,
       ITokenStorage.AuditStorageMode.USER_ID,
@@ -71,8 +73,12 @@ contract CoreConfiguration is ICoreConfiguration {
     );
 
     // Secondary Market AML Configuration
-    tokenCore.defineAuditConfiguration(
-      uint256(CONFIGURATION.SECONDARY_MARKET_AML),
+    userKeys = new uint256[](3);
+    userKeys[0] = 0;
+    userKeys[1] = 1;
+    userKeys[2] = 2;
+    _core.defineAuditConfiguration(
+      uint256(Configuration.SECONDARY_MARKET_AML),
       0, true, // scopeId (core, 0)
       ITokenStorage.AuditMode.TRIGGERS_EXCLUDED,
       ITokenStorage.AuditStorageMode.USER_ID,
@@ -80,19 +86,38 @@ contract CoreConfiguration is ICoreConfiguration {
       [ false, false, false, false, false, true ] // only cumulated reception
     );
 
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.UTILITY), _mintableDelegate, noAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.PAYMENT), _mintableDelegate, noAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.SECURITY), _compliantDelegate, primaryMarketAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.EQUITY), _compliantDelegate, secondaryMarketAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.BOND), _compliantDelegate, secondaryMarketAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.FUND), _compliantDelegate, secondaryMarketAMLConfig);
-    tokenCore.defineTokenDelegate(
-      uint256(DELEGATE.DERIVATIVE), _compliantDelegate, secondaryMarketAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.UTILITY), _mintableDelegate, noAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.PAYMENT), _mintableDelegate, noAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.SECURITY), _compliantDelegate, primaryMarketAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.EQUITY), _compliantDelegate, secondaryMarketAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.BOND), _compliantDelegate, secondaryMarketAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.FUND), _compliantDelegate, secondaryMarketAMLConfig);
+    _core.defineTokenDelegate(
+      uint256(Delegate.DERIVATIVE), _compliantDelegate, secondaryMarketAMLConfig);
+
+    bytes4[] memory privileges = new bytes4[](4);
+    privileges[0] = DEFINE_RULES_PRIV;
+    privileges[1] = SEIZE_PRIV;
+    privileges[2] = FREEZE_MANY_ADDRESSES_PRIV;
+    privileges[3] = DEFINE_LOCK_PRIV;
+    _core.defineRole(COMPLIANCE_PROXY_ROLE, privileges);
+    _core.assignProxyOperators(ALL_PROXIES, COMPLIANCE_PROXY_ROLE, _compliances);
+
+    privileges = new bytes4[](5);
+    privileges[0] = MINT_PRIV;
+    privileges[1] = BURN_PRIV;
+    privileges[2] = FINISH_MINTING_PRIV;
+    privileges[3] = DEFINE_LOCK_PRIV;
+    privileges[4] = DEFINE_CLAIM_PRIV;
+    _core.defineRole(ISSUER_PROXY_ROLE, privileges);
+
+    // Assign Oracle
+    _core.defineOracle(_userRegistry);
   }
 }

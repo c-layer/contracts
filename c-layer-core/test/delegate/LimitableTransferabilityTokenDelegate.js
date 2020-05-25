@@ -6,7 +6,7 @@
 
 const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCoreMock.sol");
+const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
 const LimitableTransferabilityTokenDelegate = artifacts.require("LimitableTransferabilityTokenDelegate.sol");
 
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
@@ -25,7 +25,7 @@ contract("LimitableTransferabilityTokenDelegate", function (accounts) {
 
   beforeEach(async function () {
     delegate = await LimitableTransferabilityTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCoreMock.new("Test");
     userRegistry = await UserRegistryMock.new(
       [accounts[0], accounts[1], accounts[2]], CHF, [5, 6666, 3333]);
     ratesProvider = await RatesProviderMock.new();

@@ -19,7 +19,7 @@ contract("Token", function (accounts) {
 
   beforeEach(async function () {
     delegate = await MintableTokenDelegate.new();
-    core = await TokenCore.new("Test");
+    core = await TokenCore.new("Test", []);
     await core.defineTokenDelegate(1, delegate.address, []);
   });
 
@@ -91,7 +91,7 @@ contract("Token", function (accounts) {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {
-        await core.mintAtOnce(token.address, [accounts[0]], [TOTAL_SUPPLY]);
+        await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
       });
 
       it("should have a total supply for token", async function () {

@@ -25,11 +25,11 @@ contract ITokenStorage {
     INVALID_CURRENCY_CONFIGURATION
   }
 
-  enum SCOPE {
+  enum Scope {
     DEFAULT
   }
 
-  enum AUDIT_CONFIGURATION {
+  enum AuditConfigurationCode {
     PROOF_OF_OWNERSHIP,
     LIMITABLE_TRANSFERABILITY
   }

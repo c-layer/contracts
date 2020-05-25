@@ -22,27 +22,6 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   }
 
   /**
-   * @dev Function to mint tokens
-   * @param _to The address that will receive the minted tokens.
-   * @param _amount The amount of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
-   */
-  function mint(address _token, address _to, uint256 _amount)
-    public canMint(_token) returns (bool)
-  {
-    TokenData storage token = tokens[_token];
-    token.totalSupply = token.totalSupply.add(_amount);
-    token.balances[_to] = token.balances[_to].add(_amount);
-    token.allTimeMinted = token.allTimeMinted.add(_amount);
-
-    require(
-      TokenProxy(_token).emitTransfer(address(0), _to, _amount),
-      "MT01");
-    emit Minted(_token, _amount);
-    return true;
-  }
-
-  /**
    * @dev Function to burn tokens
    * @param _amount The amount of tokens to burn.
    * @return A boolean that indicates if the operation was successful.
@@ -63,6 +42,23 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   }
 
   /**
+   * @dev Function to mint all tokens at once
+   * @param _recipients The addresses that will receive the minted tokens.
+   * @param _amounts The amounts of tokens to mint.
+   * @return A boolean that indicates if the operation was successful.
+   */
+  function mint(address _token, address[] memory _recipients, uint256[] memory _amounts)
+    public canMint(_token) returns (bool)
+  {
+    require(_recipients.length == _amounts.length, "MT03");
+
+    bool result = true;
+    for (uint256 i=0; i < _recipients.length; i++) {
+      result = result && mintInternal(_token, _recipients[i], _amounts[i]);
+    }
+  }
+
+  /**
    * @dev Function to stop minting new tokens.
    * @return True if the operation was successful.
    */
@@ -75,20 +71,23 @@ contract MintableTokenDelegate is BaseTokenDelegate {
   }
 
   /**
-   * @dev Function to mint all tokens at once
-   * @param _recipients The addresses that will receive the minted tokens.
-   * @param _amounts The amounts of tokens to mint.
+   * @dev Function to mint tokens internal
+   * @param _to The address that will receive the minted tokens.
+   * @param _amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function mintAtOnce(address _token, address[] memory _recipients, uint256[] memory _amounts)
-    public canMint(_token) returns (bool)
+  function mintInternal(address _token, address _to, uint256 _amount)
+    internal canMint(_token) returns (bool)
   {
-    require(_recipients.length == _amounts.length, "MT03");
+    TokenData storage token = tokens[_token];
+    token.totalSupply = token.totalSupply.add(_amount);
+    token.balances[_to] = token.balances[_to].add(_amount);
+    token.allTimeMinted = token.allTimeMinted.add(_amount);
 
-    bool result = true;
-    for (uint256 i=0; i < _recipients.length; i++) {
-      result = result && mint(_token, _recipients[i], _amounts[i]);
-    }
-    return result && finishMinting(_token);
+    require(
+      TokenProxy(_token).emitTransfer(address(0), _to, _amount),
+      "MT01");
+    emit Minted(_token, _amount);
+    return true;
   }
 }

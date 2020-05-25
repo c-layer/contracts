@@ -20,10 +20,10 @@ contract FactoryMock is Factory {
   /**
    * @dev defineProxyCode
    */
-  function defineProxyCode(uint256 _id, address _core, bytes memory _proxyCode)
+  function defineProxyCode(uint256 _id, bytes memory _proxyCode)
     public returns (bool)
   {
-    return defineProxyCodeInternal(_id, _core, _proxyCode);
+    return defineProxyCodeInternal(_id, _proxyCode);
   }
 
   /**
@@ -38,9 +38,9 @@ contract FactoryMock is Factory {
   /**
    * @dev deployContract
    */
-  function deployContractId(uint256 _id) public returns (bool)
+  function deployContractId(uint256 _id, address _core) public returns (bool)
   {
-    address address_ = deployContractInternal(_id);
+    address address_ = deployContractInternal(_id, _core);
     emit ContractDeployed(address_);
     return true;
   }

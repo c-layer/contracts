@@ -10,7 +10,7 @@ const TokenCore = artifacts.require("TokenCore.sol");
 const TokenFactory = artifacts.require("TokenFactory.sol");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 
-const TOKEN_DEPLOYMENT_COST = "1107971";
+const TOKEN_DEPLOYMENT_COST = "1093151";
 const CAN_TRANSFER = 5; // LOCKED
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");
@@ -22,21 +22,24 @@ const SUPPLIES_DECIMALS = "000000000000000000";
 const SUPPLIES = [42 * 10 ** 6 + SUPPLIES_DECIMALS, 24 * 10 ** 6 + SUPPLIES_DECIMALS];
 const TOTAL_SUPPLY = 66 * 10 ** 6 + SUPPLIES_DECIMALS;
 
+const ALL_PROXIES = web3.utils.toChecksumAddress(
+  "0x" + web3.utils.fromAscii("AllProxies").substr(2).padStart(40, "0"));
 const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3("assignProxyOperators(address,bytes32,address[])"),
   web3.utils.sha3("defineToken(address,uint256,string,string,uint256)"),
 ].map((x) => x.substr(0, 10));
 const REQUIRED_PROXY_PRIVILEGES = [
-  web3.utils.sha3("mintAtOnce(address,address[],uint256[])"),
+  web3.utils.sha3("mint(address,address[],uint256[])"),
+  web3.utils.sha3("finishMinting(address)"),
   web3.utils.sha3("defineLock(address,uint256,uint256,address[])"),
   web3.utils.sha3("defineRules(address,address[])"),
 ].map((x) => x.substr(0, 10));
 const REVIEW_PRIVILEGES = [
-  web3.utils.sha3("reviewToken(address)"),
+  web3.utils.sha3("reviewToken(address,address)"),
 ];
 const ISSUER_PRIVILEGES = [
-  web3.utils.sha3("configureTokensales(address,address[],uint256[])"),
-  web3.utils.sha3("updateAllowances(address,address[],uint256[])"),
+  web3.utils.sha3("configureTokensales(address,address,address[],uint256[])"),
+  web3.utils.sha3("updateAllowances(address,address,address[],uint256[])"),
 ];
 const FACTORY_CORE_ROLE = web3.utils.fromAscii("FactoryCoreRole").padEnd(66, "0");
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii("FactoryProxyRole").padEnd(66, "0");
@@ -51,21 +54,16 @@ contract("TokenFactory", function (accounts) {
 
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
-    core = await TokenCore.new("MyCore");
+    core = await TokenCore.new("MyCore", []);
     await core.defineTokenDelegate(1, delegate.address, [0, 1]);
-    factory = await TokenFactory.new(core.address);
+    factory = await TokenFactory.new();
 
     proxyCode = TokenProxy.bytecode;
     proxyCodeHash = web3.utils.sha3(proxyCode);
   });
 
-  it("should have a core", async function () {
-    const coreAddress = await factory.core();
-    assert.equal(coreAddress, core.address, "core address");
-  });
-
   it("should prevent non authorized to define a proxy code", async function () {
-    await assertRevert(factory.defineProxyCode(proxyCode, { from: accounts[1] }), "OA01");
+    await assertRevert(factory.defineProxyCode(proxyCode, { from: accounts[1] }), "OP01");
   });
 
   it("should let operator define a proxy code", async function () {
@@ -78,8 +76,29 @@ contract("TokenFactory", function (accounts) {
 
   it("should prevent non authorized to define a proxy code", async function () {
     await assertRevert(factory.deployToken(
-      1, NAME, SYMBOL, DECIMALS, LOCK_END,
+      core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, false,
       [accounts[0], factory.address], SUPPLIES, [accounts[0]]), "TF01");
+  });
+
+  it("should not have core access", async function () {
+    const access = await factory.hasCoreAccess(core.address);
+    assert.ok(!access, "not access");
+  });
+
+  it("should have required core privileges", async function () {
+    const requiredCorePrivileges =
+      await Promise.all(REQUIRED_CORE_PRIVILEGES.map(
+        (_, i) => factory.requiredCorePrivileges(i)));
+    assert.deepEqual(requiredCorePrivileges, REQUIRED_CORE_PRIVILEGES, "core privileges");
+    await assertRevert(factory.requiredCorePrivileges(REQUIRED_CORE_PRIVILEGES.length));
+  });
+
+  it("should have required proxy privileges", async function () {
+    const requiredProxyPrivileges =
+      await Promise.all(REQUIRED_PROXY_PRIVILEGES.map(
+        (_, i) => factory.requiredProxyPrivileges(i)));
+    assert.deepEqual(requiredProxyPrivileges, REQUIRED_PROXY_PRIVILEGES, "proxy privileges");
+    await assertRevert(factory.requiredProxyPrivileges(REQUIRED_PROXY_PRIVILEGES.length));
   });
 
   describe("With proxy code defined and core authorizations", function () {
@@ -88,18 +107,24 @@ contract("TokenFactory", function (accounts) {
       await core.defineRole(FACTORY_CORE_ROLE, REQUIRED_CORE_PRIVILEGES);
       await core.assignOperators(FACTORY_CORE_ROLE, [factory.address]);
       await core.defineRole(FACTORY_PROXY_ROLE, REQUIRED_PROXY_PRIVILEGES);
+      await core.assignProxyOperators(ALL_PROXIES, FACTORY_PROXY_ROLE, [factory.address]);
+    });
+
+    it("should have core access", async function () {
+      const access = await factory.hasCoreAccess(core.address);
+      assert.ok(access, "access");
     });
 
     it("should estimate a new token deployment", async function () {
       const gasCost = await factory.deployToken.estimateGas(
-        1, NAME, SYMBOL, DECIMALS, LOCK_END,
+        core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, true,
         VAULTS, SUPPLIES, [accounts[0]]);
       assert.equal(gasCost, TOKEN_DEPLOYMENT_COST, "gas cost");
     });
 
     it("should deploy a new token", async function () {
       const tx = await factory.deployToken(
-        1, NAME, SYMBOL, DECIMALS, LOCK_END,
+        core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, true,
         VAULTS, SUPPLIES, [accounts[0]]);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
@@ -113,7 +138,7 @@ contract("TokenFactory", function (accounts) {
 
       beforeEach(async function () {
         const tx = await factory.deployToken(
-          1, NAME, SYMBOL, DECIMALS, LOCK_END,
+          core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, true,
           [factory.address, factory.address], SUPPLIES, [accounts[0]]);
         const tokenAddress = tx.logs[0].args.token;
         token = await TokenProxy.at(tokenAddress);
@@ -131,8 +156,6 @@ contract("TokenFactory", function (accounts) {
       });
 
       it("should have roles defined", async function () {
-        const factoryRole = await core.proxyRole(token.address, factory.address);
-        assert.equal(factoryRole, FACTORY_PROXY_ROLE, "factory role");
         const issuerRole = await core.proxyRole(token.address, accounts[0]);
         assert.equal(issuerRole, ISSUER_PROXY_ROLE, "issuer role");
       });
@@ -158,15 +181,16 @@ contract("TokenFactory", function (accounts) {
       });
 
       it("should not let non proxy operator to review token", async function () {
-        await assertRevert(factory.reviewToken(token.address, { from: accounts[1] }), "OA01");
+        await assertRevert(factory.reviewToken(core.address,
+          token.address, { from: accounts[1] }), "OA01");
       });
 
       it("should not let non proxy operator to configure tokensale", async function () {
-        await assertRevert(factory.configureTokensales(token.address, [], []), "OA02");
+        await assertRevert(factory.configureTokensales(core.address, token.address, [], []), "OA02");
       });
 
       it("should not let non proxy operator to update allowances", async function () {
-        await assertRevert(factory.updateAllowances(token.address, [], []), "OA02");
+        await assertRevert(factory.updateAllowances(core.address, token.address, [], []), "OA02");
       });
 
       describe("With reviewer authorizations", function () {
@@ -176,7 +200,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with no selectors", async function () {
-          const tx = await factory.reviewToken(token.address, { from: accounts[1] });
+          const tx = await factory.reviewToken(core.address, token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
@@ -184,7 +208,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let reviewer review token with selectors", async function () {
-          const tx = await factory.reviewToken(token.address, { from: accounts[1] });
+          const tx = await factory.reviewToken(core.address, token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokenReviewed", "event");
@@ -198,7 +222,7 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let issuer configure tokensales with no tokensales", async function () {
-          const tx = await factory.configureTokensales(token.address, [], []);
+          const tx = await factory.configureTokensales(core.address, token.address, [], []);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, "TokensalesConfigured", "event");
@@ -207,8 +231,8 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let issuer configure tokensales with tokensales", async function () {
-          const tx = await factory.configureTokensales(token.address,
-            [accounts[1], accounts[2]], ["10000", "20000"]);
+          const tx = await factory.configureTokensales(core.address,
+            token.address, [accounts[1], accounts[2]], ["10000", "20000"]);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 3);
           assert.equal(tx.logs[2].event, "TokensalesConfigured", "event");
@@ -217,13 +241,15 @@ contract("TokenFactory", function (accounts) {
         });
 
         it("should let issuer update allowances with no spenders", async function () {
-          const tx = await factory.updateAllowances(token.address, [], []);
+          const tx = await factory.updateAllowances(core.address,
+            token.address, [], []);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 0);
         });
 
         it("should let issuer update allowance with spenders", async function () {
-          const tx = await factory.updateAllowances(token.address, [accounts[1], accounts[2]], ["0", "100000"]);
+          const tx = await factory.updateAllowances(core.address,
+            token.address, [accounts[1], accounts[2]], ["0", "100000"]);
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, "AllowanceUpdated", "event1");

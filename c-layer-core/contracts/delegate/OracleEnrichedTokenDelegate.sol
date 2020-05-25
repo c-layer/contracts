@@ -24,7 +24,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
     uint256[] memory _userKeys) internal view {
     if (!_transferData.callerFetched) {
       (_transferData.callerId, _transferData.callerKeys) =
-        userRegistry.validUser(_transferData.caller, _userKeys);
+        userRegistry_.validUser(_transferData.caller, _userKeys);
       _transferData.callerFetched = true;
     }
   }
@@ -37,7 +37,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   {
     if (!_transferData.senderFetched) {
       (_transferData.senderId, _transferData.senderKeys) =
-        userRegistry.validUser(_transferData.sender, _userKeys);
+        userRegistry_.validUser(_transferData.sender, _userKeys);
       _transferData.senderFetched = true;
     }
   }
@@ -51,7 +51,7 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
   {
     if (!_transferData.receiverFetched) {
       (_transferData.receiverId, _transferData.receiverKeys) =
-        userRegistry.validUser(_transferData.receiver, _userKeys);
+        userRegistry_.validUser(_transferData.receiver, _userKeys);
       _transferData.receiverFetched = true;
     }
   }
@@ -68,8 +68,10 @@ contract OracleEnrichedTokenDelegate is BaseTokenDelegate {
     uint256 value = _transferData.value;
     if (_transferData.convertedValue == 0 && value != 0) {
       TokenData memory token = tokens[_transferData.token];
-      _transferData.convertedValue = _ratesProvider.convert(
-        value, bytes(token.symbol).toBytes32(), _currency);
+      bytes32 currencyFrom = bytes(token.symbol).toBytes32();
+
+      _transferData.convertedValue =
+        _ratesProvider.convert(value, currencyFrom, _currency);
     }
   }
 }

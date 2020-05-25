@@ -1,5 +1,6 @@
 pragma solidity >=0.5.0 <0.6.0;
 
+import "../interface/IAccessDefinitions.sol";
 import "../abstract/Storage.sol";
 import "../util/governance/Ownable.sol";
 
@@ -11,11 +12,7 @@ import "../util/governance/Ownable.sol";
  *
  * Error messages
  */
-contract OperableStorage is Ownable, Storage {
-
-  // Hardcoded role granting all - non sysop - privileges
-  bytes32 constant internal ALL_PRIVILEGES = bytes32("AllPrivileges");
-  address constant internal ALL_PROXIES = address(0x416c6c50726f78696573); // "AllProxies"
+contract OperableStorage is IAccessDefinitions, Ownable, Storage {
 
   struct RoleData {
     mapping(bytes4 => bool) privileges;
