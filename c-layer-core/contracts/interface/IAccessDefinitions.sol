@@ -12,15 +12,20 @@ contract IAccessDefinitions {
   address constant ALL_PROXIES = address(0x416c6C50726F78696573); // "AllProxies"
 
   // Roles
+  bytes32 constant FACTORY_CORE_ROLE = bytes32("FactoryCoreRole");
+  bytes32 constant FACTORY_PROXY_ROLE = bytes32("FactoryProxyRole");
+  bytes32 constant COMPLIANCE_CORE_ROLE = bytes32("ComplianceCoreRole");
   bytes32 constant COMPLIANCE_PROXY_ROLE = bytes32("ComplianceProxyRole");
   bytes32 constant ISSUER_PROXY_ROLE = bytes32("IssuerProxyRole");
 
   // Sys Privileges
   bytes4 constant DEFINE_ROLE_PRIV =
     bytes4(keccak256("defineRole(bytes32,bytes4[])"));
-  bytes4 constant ASSIGN_OPERATOR_PRIV =
+  bytes4 constant ASSIGN_OPERATORS_PRIV =
     bytes4(keccak256("assignOperators(bytes32,address[])"));
-  bytes4 constant ASSIGN_PROXY_OPERATOR_PRIV =
+  bytes4 constant REVOKE_OPERATORS_PRIV =
+    bytes4(keccak256("revokeOperators(address[])"));
+  bytes4 constant ASSIGN_PROXY_OPERATORS_PRIV =
     bytes4(keccak256("assignProxyOperators(address,bytes32,address[])"));
 
   // Core Privileges

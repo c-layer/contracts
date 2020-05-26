@@ -23,6 +23,7 @@ const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3("defineTokenDelegate(uint256,address,uint256[])"),
   web3.utils.sha3("defineRole(bytes32,bytes4[])"),
   web3.utils.sha3("assignOperators(bytes32,address[])"),
+  web3.utils.sha3("revokeOperators(address[])"),
   web3.utils.sha3("assignProxyOperators(address,bytes32,address[])"),
   web3.utils.sha3("defineOracle(address)"),
 ].map((x) => x.substr(0, 10));

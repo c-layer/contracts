@@ -19,7 +19,7 @@ contract ITokenFactory is IAccessDefinitions {
   // The definitions below should be considered as a constant
   // Solidity 0.6.x do not provide ways to have arrays as constants
   bytes4[] public requiredCorePrivileges = [
-    ASSIGN_PROXY_OPERATOR_PRIV,
+    ASSIGN_PROXY_OPERATORS_PRIV,
     DEFINE_TOKEN_PRIV
   ];
   bytes4[] public requiredProxyPrivileges = [

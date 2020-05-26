@@ -87,7 +87,6 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCores {
     // 3- Assign roles
     address[] memory factoryAddress = new address[](1);
     factoryAddress[0] = address(this);
-    //require(_core.assignProxyOperators(address(token), COMPLIANCE_PROXY_ROLE, factoryAddress), "TF06");
     require(_core.assignProxyOperators(address(token), ISSUER_PROXY_ROLE, _proxyOperators), "TF07");
 
     // 4- Define rules
