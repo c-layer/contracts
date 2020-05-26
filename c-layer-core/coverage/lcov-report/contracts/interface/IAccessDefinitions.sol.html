@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for contracts/operable/OperableAsCore.sol</title>
+    <title>Code coverage report for contracts/interface/IAccessDefinitions.sol</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -16,28 +16,28 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../../index.html">all files</a> / <a href="index.html">contracts/operable/</a> OperableAsCore.sol
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/interface/</a> IAccessDefinitions.sol
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
-        <span class="strong">80% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>4/5</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>4/4</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">80% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>4/5</span>
+        <span class='fraction'>0/0</span>
       </div>
       <div class='fl pad1y space-right2'>
-        <span class="strong">85.71% </span>
+        <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>6/7</span>
+        <span class='fraction'>0/0</span>
       </div>
     </div>
   </div>
@@ -117,22 +117,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">23×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">19×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">10×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">6×</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -141,7 +125,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">42×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -150,63 +133,80 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
-import "../interface/IOperableCore.sol";
-&nbsp;
 &nbsp;
 /**
- * @title TokenFactory
- *
+ * @title IAccessDefinitions
+ * @dev IAccessDefinitions
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
- *
- * Error messages
- *   OA01: Missing the core privilege
- *   OA02: Missing the proxy privilege
- **/
-contract OperableAsCore {
+ */
+contract IAccessDefinitions {
 &nbsp;
-  IOperableCore public core;
+  bytes32 constant ALL_PRIVILEGES = bytes32("AllPrivileges");
+  address constant ALL_PROXIES = address(0x416c6C50726F78696573); // "AllProxies"
 &nbsp;
-  modifier onlyCoreOperator() {
-    require(core.hasCorePrivilege(
-      msg.sender, msg.sig), "OA01");
-    _;
-  }
+  // Roles
+  bytes32 constant COMPLIANCE_PROXY_ROLE = bytes32("ComplianceProxyRole");
+  bytes32 constant ISSUER_PROXY_ROLE = bytes32("IssuerProxyRole");
 &nbsp;
-  modifier onlyProxyOperator(address _proxy) {
-    require(core.hasProxyPrivilege(
-      msg.sender, _proxy, msg.sig), "OA02");
-    _;
-  }
+  // Sys Privileges
+  bytes4 constant DEFINE_ROLE_PRIV =
+    bytes4(keccak256("defineRole(bytes32,bytes4[])"));
+  bytes4 constant ASSIGN_OPERATOR_PRIV =
+    bytes4(keccak256("assignOperators(bytes32,address[])"));
+  bytes4 constant ASSIGN_PROXY_OPERATOR_PRIV =
+    bytes4(keccak256("assignProxyOperators(address,bytes32,address[])"));
 &nbsp;
-  /**
-   * @dev constructor
-   **/
-  constructor(address _core) public {
-    core = IOperableCore(_core);
-  }
+  // Core Privileges
+  bytes4 constant DEFINE_CORE_CONFIGURATION_PRIV =
+    bytes4(keccak256("defineCoreConfigurations(address,address,address[],address,address,address,address,bytes32)"));
+  bytes4 constant DEFINE_AUDIT_CONFIGURATION_PRIV =
+    bytes4(keccak256("defineAuditConfiguration(uint256,uint256,bool,uint8,uint8,uint256[],address,bytes32,bool[6])"));
+  bytes4 constant DEFINE_TOKEN_DELEGATE_PRIV =
+    bytes4(keccak256("defineTokenDelegate(uint256,address,uint256[])"));
+  bytes4 constant DEFINE_ORACLE_PRIV =
+    bytes4(keccak256("defineOracle(address)"));
+  bytes4 constant DEFINE_TOKEN_PRIV =
+    bytes4(keccak256("defineToken(address,uint256,string,string,uint256)"));
 &nbsp;
-  /**
-   * @dev hasCorePrivilege
-   */
-  function hasCorePrivilege(address _operator, bytes4 _privilege)
-    public view returns (bool)
-  {
-    return core.hasCorePrivilege(_operator, _privilege);
-  }
-&nbsp;
-  /**
-   * @dev hasProxyPrivilege
-   */
-<span class="fstat-no" title="function not covered" >  function hasProxyPrivilege(address _operator, address _proxy, bytes4 _privilege)</span>
-    public view returns (bool)
-  {
-<span class="cstat-no" title="statement not covered" >    return core.hasProxyPrivilege(_operator, _proxy, _privilege);</span>
-  }
+  // Proxy Privileges
+  bytes4 constant MINT_PRIV =
+    bytes4(keccak256("mint(address,address[],uint256[])"));
+  bytes4 constant BURN_PRIV =
+    bytes4(keccak256("burn(address,uint256)"));
+  bytes4 constant FINISH_MINTING_PRIV =
+    bytes4(keccak256("finishMinting(address)"));
+  bytes4 constant SEIZE_PRIV =
+    bytes4(keccak256("seize(address,address,uint256)"));
+  bytes4 constant DEFINE_LOCK_PRIV =
+    bytes4(keccak256("defineLock(address,uint256,uint256,address[])"));
+  bytes4 constant FREEZE_MANY_ADDRESSES_PRIV =
+    bytes4(keccak256("freezeManyAddresses(address,address[],uint256)"));
+  bytes4 constant DEFINE_RULES_PRIV =
+    bytes4(keccak256("defineRules(address,address[])"));
+  bytes4 constant DEFINE_CLAIM_PRIV =
+    bytes4(keccak256("defineClaim(address,address,uint256)"));
 }
 &nbsp;</pre></td></tr>
 </table></pre>
@@ -214,7 +214,7 @@ contract OperableAsCore {
 </div><!-- /wrapper -->
 <div class='footer quiet pad2 space-top1 center small'>
   Code coverage
-  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Fri May 15 2020 16:27:16 GMT+0000 (Coordinated Universal Time)
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Mon May 25 2020 20:27:00 GMT+0000 (Coordinated Universal Time)
 </div>
 </div>
 <script src="../../prettify.js"></script>

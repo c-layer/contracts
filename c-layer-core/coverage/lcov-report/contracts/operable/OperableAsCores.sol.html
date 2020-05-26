@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Code coverage report for contracts/interface/IOperableCore.sol</title>
+    <title>Code coverage report for contracts/operable/OperableAsCores.sol</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../../prettify.css" />
     <link rel="stylesheet" href="../../base.css" />
@@ -16,28 +16,28 @@
 <div class='wrapper'>
   <div class='pad1'>
     <h1>
-      <a href="../../index.html">all files</a> / <a href="index.html">contracts/interface/</a> IOperableCore.sol
+      <a href="../../index.html">all files</a> / <a href="index.html">contracts/operable/</a> OperableAsCores.sol
     </h1>
     <div class='clearfix'>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Statements</span>
-        <span class='fraction'>0/0</span>
+        <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Branches</span>
-        <span class='fraction'>0/0</span>
+        <span class='fraction'>4/4</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Functions</span>
-        <span class='fraction'>0/0</span>
+        <span class='fraction'>2/2</span>
       </div>
       <div class='fl pad1y space-right2'>
         <span class="strong">100% </span>
         <span class="quiet">Lines</span>
-        <span class='fraction'>0/0</span>
+        <span class='fraction'>4/4</span>
       </div>
     </div>
   </div>
@@ -72,10 +72,7 @@
 27
 28
 29
-30
-31
-32
-33</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+30</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -93,51 +90,45 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">14×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6×</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">pragma solidity &gt;=0.5.0 &lt;0.6.0;
 &nbsp;
-import "../interface/IAccessDefinitions.sol";
+import "../interface/IOperableCore.sol";
+import "../util/governance/Operable.sol";
 &nbsp;
 &nbsp;
 /**
- * @title IOperableCore
- * @dev The Operable contract enable the restrictions of operations to a set of operators
+ * @title OperableAsCores
  *
  * @author Cyril Lapinte - &lt;cyril.lapinte@openfiz.com&gt;
  *
  * Error messages
- */
-contract IOperableCore is IAccessDefinitions {
-  function coreRole(address _address) public view returns (bytes32);
-  function proxyRole(address _proxy, address _address) public view returns (bytes32);
-  function rolePrivilege(bytes32 _role, bytes4 _privilege) public view returns (bool);
-  function roleHasPrivilege(bytes32 _role, bytes4 _privilege) public view returns (bool);
-  function hasCorePrivilege(address _address, bytes4 _privilege) public view returns (bool);
-  function hasProxyPrivilege(address _address, address _proxy, bytes4 _privilege) public view returns (bool);
+ *   OA01: Missing the core privilege
+ *   OA02: Missing the proxy privilege
+ **/
+contract OperableAsCores is Operable {
 &nbsp;
-  function defineRole(bytes32 _role, bytes4[] memory _privileges) public returns (bool);
-  function assignOperators(bytes32 _role, address[] memory _operators) public returns (bool);
-  function assignProxyOperators(
-    address _proxy, bytes32 _role, address[] memory _operators) public returns (bool);
-  function revokeOperators(address[] memory _operators) public returns (bool);
+  modifier onlyCoreOperator(IOperableCore _core) {
+    require(_core.hasCorePrivilege(
+      msg.sender, msg.sig), "OA01");
+    _;
+  }
 &nbsp;
-  event RoleDefined(bytes32 role);
-  event OperatorAssigned(bytes32 role, address operator);
-  event ProxyOperatorAssigned(address proxy, bytes32 role, address operator);
-  event OperatorRevoked(address operator);
+  modifier onlyProxyOperator(IOperableCore _core, address _proxy) {
+    require(_core.hasProxyPrivilege(
+      msg.sender, _proxy, msg.sig), "OA02");
+    _;
+  }
 }
 &nbsp;</pre></td></tr>
 </table></pre>
