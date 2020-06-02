@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "workspaces": [
+    "common",
+    "token",
+    "oracle"
+  ],
+  "scripts": {
+    "compile": "yarn workspaces run compile",
+    "coverage": "yarn workspaces run coverage",
+    "lint": "yarn workspaces run lint",
+    "test": "yarn workspaces run test",
+    "flatten": "yarn workspaces run flatten"
+  }
+}

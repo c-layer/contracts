@@ -1,0 +1,58 @@
+{
+  "name": "@c-layer/common",
+  "version": "1.0.0",
+  "description": "SmartContract common componnents for the Compliance Layer",
+  "files": [
+    "build",
+    "contracts",
+    "test"
+  ],
+  "scripts": {
+    "compile": "truffle compile",
+    "console": "truffle console",
+    "coverage": "scripts/coverage.sh",
+    "lint": "npm run lint:sol && npm run lint:js",
+    "lint:fix": "npm run lint:js:fix",
+    "lint:js": "eslint .",
+    "lint:js:fix": "eslint . --fix",
+    "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
+    "test": "npm run compile && scripts/test.sh",
+    "flatten": "node_modules/.bin/truffle-flattener"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/c-layer/contracts.git"
+  },
+  "keywords": [
+    "solidity",
+    "ethereum",
+    "contracts",
+    "securities",
+    "erc20",
+    "core"
+  ],
+  "author": "Cyril Lapinte",
+  "license": "MIT",
+  "private": true,
+  "bugs": {
+    "url": "https://github.com/c-layer/contracts/issues"
+  },
+  "homepage": "https://c-layer.org",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^6.8.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "ethereumjs-util": "^6.2.0",
+    "ganache-cli": "^6.9.1",
+    "solhint": "^3.0.0-rc.7",
+    "solidity-coverage": "^0.7.4",
+    "solidity-docgen": "^0.4.1",
+    "truffle": "^5.1.26",
+    "truffle-flattener": "^1.4.2",
+    "@truffle/hdwallet-provider": "^1.0.34"
+  }
+}
