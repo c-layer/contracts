@@ -28,9 +28,9 @@ contract("MintableTokenDelegate", function (accounts) {
       token.address, 1, NAME, SYMBOL, DECIMALS);
   });
 
-  it("should have audit requirements", async function () {
-    const auditRequirements = await delegate.auditRequirements();
-    assert.equal(auditRequirements.toString(), 0, "audit requirements");
+  it("should have no check configurations", async function () {
+    const check = await delegate.checkConfigurations([]);
+    assert.ok(check, "check configurations");
   });
 
   it("should let operator mint", async function () {

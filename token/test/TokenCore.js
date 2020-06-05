@@ -11,14 +11,18 @@ const TokenDelegate = artifacts.require("TokenDelegate.sol");
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 
-const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
-const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
-const TKN = web3.utils.toHex("TKN").padEnd(66, "0");
+const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(66, "0");
+//const CHF = "CHF";
+const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const NULL_ADDRESS = "0x".padEnd(42, "0");
+const EMPTY_BYTES = "0x".padEnd(66, "0");
+const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
+
 const AUDIT_MODE_TRIGGERS_ONLY = 1;
+
 // const AUDIT_MODE_ALWAYS = 3;
 
 const AUDIT_STORAGE_MODE_SHARED = 2;
@@ -29,9 +33,14 @@ contract("TokenCore", function (accounts) {
   beforeEach(async function () {
     delegate = await TokenDelegate.new();
     core = await TokenCore.new("Test", [accounts[0]]);
-    userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
-    ratesProvider = await RatesProviderMock.new();
+
+    ratesProvider = await RatesProviderMock.new("Test");
+    await ratesProvider.defineCurrencies([CHF_BYTES, SYMBOL_BYTES], ["0" , "0"], "100");
+    await ratesProvider.defineRates(["150"]);
+    userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, NEXT_YEAR);
+    await userRegistry.updateUserAllExtended(1, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(3, ["5", "50000", "50000"]);
   });
 
   it("should have a name", async function () {
@@ -67,7 +76,7 @@ contract("TokenCore", function (accounts) {
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "OracleDefined", "event");
     assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-    assert.equal(tx.logs[0].args.currency.toString(), CHF, "currency");
+    assert.equal(tx.logs[0].args.currency.toString(), CHF_BYTES, "currency");
   });
 
   describe("With oracle defined", async function () {
@@ -76,32 +85,30 @@ contract("TokenCore", function (accounts) {
     });
 
     it("should let define a user registry with the samet currency", async function () {
-      userRegistry = await UserRegistryMock.new(
-        [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
+      userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, 0);
       const tx = await core.defineOracle(userRegistry.address);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "OracleDefined", "event");
       assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-      assert.equal(tx.logs[0].args.currency.toString(), CHF, "currency");
+      assert.equal(tx.logs[0].args.currency.toString(), CHF_BYTES, "currency");
     });
 
     it("should let define a user registry with a different currency", async function () {
-      userRegistry = await UserRegistryMock.new(
-        [accounts[0], accounts[1], accounts[2]], TKN, [5, 5000000]);
+      userRegistry = await UserRegistryMock.new("Test", SYMBOL_BYTES, accounts, 0);
       const tx = await core.defineOracle(userRegistry.address);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "OracleDefined", "event");
       assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-      assert.equal(tx.logs[0].args.currency.toString(), TKN, "currency");
+      assert.equal(tx.logs[0].args.currency.toString(), SYMBOL_BYTES, "currency");
     });
 
     it("should have oracle", async function () {
       const oracle = await core.oracle();
 
       assert.equal(oracle[0], userRegistry.address, "user registry");
-      assert.equal(oracle[1], CHF, "currency");
+      assert.equal(oracle[1], CHF_BYTES, "currency");
     });
   });
 
@@ -109,7 +116,7 @@ contract("TokenCore", function (accounts) {
     const tx = await core.defineAuditConfiguration(2,
       3, true,
       AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-      [1], [2], ratesProvider.address, CHF,
+      [1], [2], ratesProvider.address, CHF_BYTES,
       [true, true, true, true]);
 
     assert.ok(tx.receipt.status, "Status");
@@ -123,24 +130,24 @@ contract("TokenCore", function (accounts) {
     assert.deepEqual(tx.logs[0].args.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
     assert.deepEqual(tx.logs[0].args.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
     assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
-    assert.equal(tx.logs[0].args.currency, CHF, "currency");
+    assert.equal(tx.logs[0].args.currency, CHF_BYTES, "currency");
   });
 
   it("should define audit triggers", async function () {
     const tx = await core.defineAuditTriggers(
       2, [accounts[1], accounts[2], accounts[3]],
+      [false, false, true],
       [true, false, false],
-      [false, true, false],
-      [false, false, true]);
+      [false, true, false]);
 
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "AuditTriggersDefined", "event");
     assert.equal(tx.logs[0].args.configurationId, 2, "configurationId");
     assert.deepEqual(tx.logs[0].args.triggers, [accounts[1], accounts[2], accounts[3]], "triggers");
+    assert.deepEqual(tx.logs[0].args.tokens, [false, false, true], "tokens");
     assert.deepEqual(tx.logs[0].args.senders, [true, false, false], "senders");
     assert.deepEqual(tx.logs[0].args.receivers, [false, true, false], "receivers");
-    assert.deepEqual(tx.logs[0].args.tokens, [false, false, true], "tokens");
   });
 
   it("should be self managed for a user", async function () {
@@ -166,13 +173,13 @@ contract("TokenCore", function (accounts) {
       await core.defineAuditConfiguration(2,
         3, true,
         AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-        [1], [2], ratesProvider.address, CHF,
+        [1], [2], ratesProvider.address, CHF_BYTES,
         [true, true, true, true]);
       await core.defineAuditTriggers(
         2, [accounts[1], accounts[2], accounts[3]],
+        [false, false, true],
         [true, false, false],
-        [false, true, false],
-        [false, false, true]);
+        [false, true, false]);
       await core.defineTokenDelegate(1, delegate.address, [2, 4]);
     });
 
@@ -185,7 +192,7 @@ contract("TokenCore", function (accounts) {
       assert.deepEqual(configuration.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
       assert.deepEqual(configuration.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
       assert.equal(configuration.ratesProvider, ratesProvider.address, "ratesProvider");
-      assert.equal(configuration.currency, CHF, "currency");
+      assert.equal(configuration.currency, CHF_BYTES, "currency");
       assert.equal(configuration.fields[0], true, "createdAt");
       assert.equal(configuration.fields[1], true, "lastTransactionAt");
       assert.equal(configuration.fields[2], true, "cumulatedEmission");
@@ -194,9 +201,9 @@ contract("TokenCore", function (accounts) {
 
     it("should have audit triggers", async function () {
       const triggers = await core.auditTriggers(2, [accounts[1], accounts[2], accounts[3]]);
+      assert.deepEqual(triggers.tokens, [false, false, true], "tokens");
       assert.deepEqual(triggers.senders, [true, false, false], "senders");
       assert.deepEqual(triggers.receivers, [false, true, false], "receivers");
-      assert.deepEqual(triggers.tokens, [false, false, true], "tokens");
     });
 
     it("should let remove audit", async function () {

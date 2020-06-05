@@ -14,38 +14,41 @@ const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 
 const NAME = "Token";
 const SYMBOL = "TKN";
+const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(66, "0");
 const DECIMALS = 18;
 const TOTAL_SUPPLY = "1000000";
-const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
+const CHF = "CHF";
+const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
 const EMPTY_BYTES = "0x".padEnd(66, "0");
+const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const CORE_GAS_COST = 4795167;
-const MINTABLE_DELEGATE_GAS_COST = 1849701;
-const DELEGATE_GAS_COST = 4833778;
-const PROXY_GAS_COST = 883512;
+const CORE_GAS_COST = 4510002;
+const MINTABLE_DELEGATE_GAS_COST = 1663879;
+const DELEGATE_GAS_COST = 3334284;
+const PROXY_GAS_COST = 824865;
 
-const MINTABLE_FIRST_TRANSFER_COST = 60295;
-const MINTABLE_FIRST_TRANSFER_FROM_COST = 69614;
-const MINTABLE_TRANSFER_COST = 44815;
-const FIRST_TRANSFER_COST = 69742;
-const FIRST_TRANSFER_FROM_COST = 79038;
-const TRANSFER_COST = 54262;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 0;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 0;
-const ISSUANCE_AUDITED_TRANSFER_COST = 0;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 0;
-const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 0;
-const AUDITED_FIRST_TRANSFER_COST = 122173;
-const AUDITED_FIRST_TRANSFER_FROM_COST = 131469;
-const AUDITED_TRANSFER_COST = 75732;
-const AUDITED_FIRST_TRANSFER_AFTER_COST = 0;
-const AUDITED_TRANSFER_AFTER_COST = 0;
+const MINTABLE_FIRST_TRANSFER_COST = 64346;
+const MINTABLE_FIRST_TRANSFER_FROM_COST = 76256;
+const MINTABLE_TRANSFER_COST = 48866;
+const FIRST_TRANSFER_COST = 82927;
+const FIRST_TRANSFER_FROM_COST = 94815;
+const TRANSFER_COST = 67447;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 290941;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 302829;
+const ISSUANCE_AUDITED_TRANSFER_COST = 177372;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 140019;
+const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 100390;
+const AUDITED_FIRST_TRANSFER_COST = 261433;
+const AUDITED_FIRST_TRANSFER_FROM_COST = 273321;
+const AUDITED_TRANSFER_COST = 169354;
+const AUDITED_FIRST_TRANSFER_AFTER_COST = 271388;
+const AUDITED_TRANSFER_AFTER_COST = 183644;
 
 // const AUDIT_MODE_NEVER = 0;
 const AUDIT_MODE_ALWAYS = 1;
 const AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED = 2;
-// const AUDIT_MODE_ALWAYS_TRIGGERS_ONLY = 3;
+// const AUDIT_MODE_TRIGGERS_ONLY = 3;
 const AUDIT_MODE_WHEN_TRIGGERS_MATCHED = 4;
 // const AUDIT_MODE_WHEN_TRIGGERS_UNMATCHED = 5;
 
@@ -58,9 +61,13 @@ contract("Performance", function (accounts) {
   let core;
 
   before(async function () {
-    userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], CHF, [5, 500000, 500000]);
-    ratesProvider = await RatesProviderMock.new();
+    ratesProvider = await RatesProviderMock.new("Test");
+    await ratesProvider.defineCurrencies([CHF_BYTES, SYMBOL_BYTES], ["0" , "0"], "100");
+    await ratesProvider.defineRates(["150"]);
+    userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, NEXT_YEAR);
+    await userRegistry.updateUserAllExtended(1, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(3, ["5", "50000", "50000"]);
   });
 
   it("should have a core gas cost at " + CORE_GAS_COST, async function () {
@@ -94,7 +101,7 @@ contract("Performance", function (accounts) {
       core = await TokenCore.new("Test", [accounts[0]]);
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
-      await core.defineTokenDelegate(2, delegates[1].address, [0, 1]);
+      await core.defineTokenDelegate(2, delegates[1].address, [1, 2]);
       await core.defineOracle(userRegistry.address);
     });
 
@@ -169,12 +176,15 @@ contract("Performance", function (accounts) {
           await core.defineAuditConfiguration(1,
             0, true,
             AUDIT_MODE_WHEN_TRIGGERS_MATCHED, AUDIT_STORAGE_USER_ID,
-            [], [2], ratesProvider.address, CHF,
+            [1], [2], ratesProvider.address, CHF_BYTES,
             [true, false, false, true]);
           await core.defineAuditTriggers(
-            1, [accounts[0]], [true], [false], [false]);
+            1, [accounts[0]], [false], [true], [false]);
+        });
+
+        it("should assert canTransfer", async function () {
           const reason = await token.canTransfer(accounts[0], accounts[1], "3333");
-          console.log(reason.toString());
+          assert.equal(reason.toString(), "1", "should be transferable");
         });
 
         it("should estimate a first transfer accounts[0]", async function () {
@@ -197,25 +207,11 @@ contract("Performance", function (accounts) {
         describe("and after issuance", function () {
           beforeEach(async function () {
             await token.transfer(accounts[1], "3333");
-            const reason = await token.canTransfer(accounts[0], accounts[1], "3333");
-            console.log(reason.toString());
-            [1, 2, 3].forEach(async function (i) {
-              const auditId = await core.audit(core.address,
-                0, AUDIT_STORAGE_USER_ID, ("0x" + (i + "").padStart(64, "0")));
-              const auditAddress = await core.audit(token.address, 0, AUDIT_STORAGE_ADDRESS, accounts[i - 1]);
-              console.log("Before - Id= [" + i + "] : " + JSON.stringify(auditId));
-              console.log("Before - Address= [" + i + "] : " + JSON.stringify(auditAddress));
-            });
           });
 
-          afterEach(async function () {
-            [1, 2, 3].forEach(async function (i) {
-              const auditId = await core.audit(core.address,
-                0, AUDIT_STORAGE_USER_ID, ("0x" + (i + "").padStart(64, "0")));
-              const auditAddress = await core.audit(token.address, 0, AUDIT_STORAGE_ADDRESS, accounts[i - 1]);
-              console.log("After - Id= [" + i + "] : " + JSON.stringify(auditId));
-              console.log("After - Address= [" + i + "] : " + JSON.stringify(auditAddress));
-            });
+          it("should assert canTransfer", async function () {
+            const reason = await token.canTransfer(accounts[1], accounts[2], "1111");
+            assert.equal(reason.toString(), "1", "should be transferable");
           });
 
           it("should estimate a first transfer by accounts[1] to acounts[2]", async function () {
@@ -242,10 +238,15 @@ contract("Performance", function (accounts) {
           await core.defineAuditConfiguration(1,
             0, true,
             AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED, AUDIT_STORAGE_USER_ID,
-            [1], [2], ratesProvider.address, CHF,
+            [1], [2], ratesProvider.address, CHF_BYTES,
             [true, false, true, true]);
           await core.defineAuditTriggers(
-            1, [accounts[0]], [true], [false], [false]);
+            1, [accounts[0]], [false], [true], [false]);
+        });
+
+        it("should assert canTransfer", async function () {
+          const reason = await token.canTransfer(accounts[0], accounts[1], "3333");
+          assert.equal(reason.toString(), "1", "should be transferable");
         });
 
         it("should estimate a first transfer accounts[0]", async function () {
@@ -268,25 +269,11 @@ contract("Performance", function (accounts) {
         describe("and after issuance", function () {
           beforeEach(async function () {
             await token.transfer(accounts[1], "3333");
-            const reason = await token.canTransfer(accounts[1], accounts[2], "1111");
-            console.log(reason.toString());
-            [1, 2, 3].forEach(async function (i) {
-              const auditId = await core.audit(core.address,
-                0, AUDIT_STORAGE_USER_ID, ("0x" + (i + "").padStart(64, "0")));
-              const auditAddress = await core.audit(token.address, 0, AUDIT_STORAGE_ADDRESS, accounts[i - 1]);
-              console.log("Before - Id= [" + i + "] : " + JSON.stringify(auditId));
-              console.log("Before - Address= [" + i + "] : " + JSON.stringify(auditAddress));
-            });
           });
 
-          afterEach(async function () {
-            [1, 2, 3].forEach(async function (i) {
-              const auditId = await core.audit(core.address,
-                0, AUDIT_STORAGE_USER_ID, ("0x" + (i + "").padStart(64, "0")));
-              const auditAddress = await core.audit(token.address, 0, AUDIT_STORAGE_ADDRESS, accounts[i - 1]);
-              console.log("After - Id= [" + i + "] : " + JSON.stringify(auditId));
-              console.log("After - Address= [" + i + "] : " + JSON.stringify(auditAddress));
-            });
+          it("should assert canTransfer", async function () {
+            const reason = await token.canTransfer(accounts[1], accounts[2], "1111");
+            assert.equal(reason.toString(), "1", "should be transferable");
           });
 
           it("should estimate a first transfer by accounts[1] to acounts[2]", async function () {

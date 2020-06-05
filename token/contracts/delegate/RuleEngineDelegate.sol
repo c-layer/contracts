@@ -33,7 +33,7 @@ abstract contract RuleEngineDelegate is TokenStorage {
   function areTransferRulesValid(STransferData memory _transferData)
     internal view returns (bool)
   {
-    IRule[] memory rules_ = tokens[msg.sender].rules;
+    IRule[] memory rules_ = tokens[_transferData.token].rules;
     for (uint256 i = 0; i < rules_.length; i++) {
       if (!rules_[i].isTransferValid(_transferData.sender, _transferData.receiver, _transferData.value)) {
         return false;

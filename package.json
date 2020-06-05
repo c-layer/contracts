@@ -6,6 +6,7 @@
     "oracle"
   ],
   "scripts": {
+    "clean": "yarn workspaces run clean;",
     "compile": "yarn workspaces run compile",
     "coverage": "yarn workspaces run coverage",
     "lint": "yarn workspaces run lint",

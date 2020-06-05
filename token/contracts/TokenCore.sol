@@ -376,7 +376,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     bytes32 _currency,
     bool[4] memory _fields) override public onlyCoreOp returns (bool)
   {
-    // Mark permanently the core audit storage with the currency it is used
+    // Mark permanently the core audit storage with the currency to be used with
     if (_scopeCore) {
       AuditStorage storage auditStorage = audits[address(this)][_scopeId];
       if(auditStorage.currency == bytes32(0)) {
@@ -411,7 +411,8 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
       _senderKeys,
       _receiverKeys,
       _ratesProvider,
-      _currency);
+      _currency,
+      _fields);
     return true;
   }
 
@@ -426,9 +427,9 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function defineAuditTriggers(
     uint256 _configurationId,
     address[] memory _triggerAddresses,
+    bool[] memory _triggerTokens,
     bool[] memory _triggerSenders,
-    bool[] memory _triggerReceivers,
-    bool[] memory _triggerTokens) override public onlyCoreOp returns (bool)
+    bool[] memory _triggerReceivers) override public onlyCoreOp returns (bool)
   {
     require(_triggerAddresses.length == _triggerSenders.length
       && _triggerAddresses.length == _triggerReceivers.length
@@ -441,7 +442,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
       auditConfiguration_.triggerTokens[_triggerAddresses[i]] = _triggerTokens[i];
     }
 
-    emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerSenders, _triggerReceivers, _triggerTokens);
+    emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerTokens, _triggerSenders, _triggerReceivers);
     return true;
   }
 

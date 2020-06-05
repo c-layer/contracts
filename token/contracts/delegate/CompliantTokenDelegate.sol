@@ -51,12 +51,12 @@ contract CompliantTokenDelegate is
     override internal returns (bool)
   {
     require(!isLocked(_transferData), "CT01");
-    require(!areFrozen(_transferData), "CT02");
+    require(!isFrozen(_transferData), "CT02");
     require(areTransferRulesValid(_transferData), "CT03");
-    require(belowTransferLimit(_transferData) == TransferCode.OK, "CT04");
+    require(isTransferBelowLimits(_transferData) == TransferCode.OK, "CT04");
 
     return super.transferInternal(_transferData)
-       && updateAuditInternal(_transferData);
+      && updateAllAuditsInternal(_transferData);
   }
 
   /**
@@ -68,14 +68,14 @@ contract CompliantTokenDelegate is
     if (isLocked(_transferData)) {
       return TransferCode.LOCKED;
     }
-    if (areFrozen(_transferData)) {
+    if (isFrozen(_transferData)) {
       return TransferCode.FROZEN;
     }
     if (!areTransferRulesValid(_transferData)) {
       return TransferCode.RULE;
     }
 
-    code = belowTransferLimit(_transferData);
+    code = isTransferBelowLimits(_transferData);
     return (code == TransferCode.OK) ? 
       super.canTransferInternal(_transferData) : code;
   }

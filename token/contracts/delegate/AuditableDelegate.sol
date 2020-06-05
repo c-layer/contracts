@@ -17,56 +17,55 @@ import "./OracleEnrichedDelegate.sol";
  **/
 contract AuditableDelegate is OracleEnrichedDelegate {
 
-  uint256 constant DEFAULT_CONFIGURATION = 0;
-  uint256 constant DEFAULT_SCOPE = 0;
-
   /**
    * @dev isAuditRequiredInternal
    */
-  function isAuditRequiredInternal(uint256 _configurationId, STransferData memory _transferData)
+  function isAuditRequiredInternal(
+    AuditConfiguration storage _configuration, STransferData memory _transferData)
     internal view returns (bool)
   {
-    AuditConfiguration storage configuration_ = auditConfigurations[_configurationId];
-    if (configuration_.mode == AuditMode.NEVER) {
+    if (_configuration.mode == AuditMode.NEVER) {
       return false;
     }
-    if (configuration_.mode == AuditMode.ALWAYS
-      || configuration_.mode == AuditMode.ALWAYS_TRIGGERS_EXCLUDED
-      || configuration_.mode == AuditMode.ALWAYS_TRIGGERS_ONLY) {
+    if (_configuration.mode == AuditMode.ALWAYS
+      || (_configuration.mode == AuditMode.ALWAYS_TRIGGERS_EXCLUDED
+        && !_configuration.triggerTokens[_transferData.token]))
+    {
       return true;
     }
 
-    if (configuration_.triggerTokens[_transferData.sender]
-      || configuration_.triggerSenders[_transferData.receiver]
-      || configuration_.triggerReceivers[_transferData.token])
+    if (_configuration.triggerTokens[_transferData.token]
+      || _configuration.triggerSenders[_transferData.sender]
+      || _configuration.triggerReceivers[_transferData.receiver])
     {
-      return (configuration_.mode != AuditMode.WHEN_TRIGGERS_UNMATCHED);
+      return (_configuration.mode == AuditMode.WHEN_TRIGGERS_MATCHED
+        || _configuration.mode == AuditMode.TRIGGERS_ONLY);
     } else {
-      return (configuration_.mode != AuditMode.WHEN_TRIGGERS_MATCHED);
+      return (_configuration.mode == AuditMode.WHEN_TRIGGERS_UNMATCHED);
     }
   }
 
   /**
    * @dev Update audit data
    */
-  function updateAuditInternal(
+  function updateAllAuditsInternal(
     STransferData memory _transferData) internal returns (bool)
   {
-    uint256[] memory configurationIds = delegatesConfigurations[proxyDelegateIds[_transferData.token]];
-    for (uint256 i=1; i < configurationIds.length; i++) {
-      updateAuditPrivate(configurationIds[i], _transferData);
+    uint256[] storage configurationIds = delegatesConfigurations[proxyDelegateIds[_transferData.token]];
+    for (uint256 i=0; i < configurationIds.length; i++) {
+      updateAuditInternal(configurationIds[i], _transferData);
     }
     return true;
   }
 
-  function updateAuditPrivate(
+  function updateAuditInternal(
     uint256 _configurationId,
-    STransferData memory _transferData) private
+    STransferData memory _transferData) internal
   {
     AuditConfiguration storage configuration_ = auditConfigurations[_configurationId];
 
     /**** FILTERS ****/
-    if (!isAuditRequiredInternal(_configurationId, _transferData)) {
+    if (!isAuditRequiredInternal(configuration_, _transferData)) {
       return;
     }
 
@@ -76,14 +75,12 @@ contract AuditableDelegate is OracleEnrichedDelegate {
     )[configuration_.scopeId];
 
     if (configuration_.currency != bytes32(0)) {
-      fetchConvertedValue(_transferData,
-        configuration_.ratesProvider,
-        configuration_.currency);
+      fetchConvertedValue(_transferData, configuration_);
     }
 
     /**** UPDATE AUDIT DATA ****/
     if ((configuration_.mode != AuditMode.ALWAYS_TRIGGERS_EXCLUDED || !configuration_.triggerSenders[_transferData.sender])
-      && (configuration_.mode != AuditMode.ALWAYS_TRIGGERS_ONLY || configuration_.triggerSenders[_transferData.sender]))
+      && (configuration_.mode != AuditMode.TRIGGERS_ONLY || configuration_.triggerSenders[_transferData.sender]))
     {
       if (configuration_.storageMode == AuditStorageMode.SHARED) {
         updateSenderAuditPrivate(auditStorage.sharedData, configuration_, _transferData);
@@ -99,8 +96,8 @@ contract AuditableDelegate is OracleEnrichedDelegate {
       }
     }
 
-    if ((configuration_.mode != AuditMode.ALWAYS_TRIGGERS_EXCLUDED || !configuration_.triggerSenders[_transferData.receiver])
-      && (configuration_.mode != AuditMode.ALWAYS_TRIGGERS_ONLY || configuration_.triggerSenders[_transferData.receiver]))
+    if ((configuration_.mode != AuditMode.ALWAYS_TRIGGERS_EXCLUDED || !configuration_.triggerReceivers[_transferData.receiver])
+      && (configuration_.mode != AuditMode.TRIGGERS_ONLY || configuration_.triggerReceivers[_transferData.receiver]))
     {
       if (configuration_.storageMode == AuditStorageMode.SHARED) {
         updateReceiverAuditPrivate(auditStorage.sharedData, configuration_, _transferData);
@@ -119,7 +116,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
 
   function updateSenderAuditPrivate(
     AuditData storage _senderAudit,
-    AuditConfiguration memory _configuration,
+    AuditConfiguration storage _configuration,
     STransferData memory _transferData) private
   {
     uint64 currentTime = currentTime();
@@ -138,7 +135,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
 
   function updateReceiverAuditPrivate(
     AuditData storage _receiverAudit,
-    AuditConfiguration memory _configuration,
+    AuditConfiguration storage _configuration,
     STransferData memory _transferData) private
   {
     uint64 currentTime = currentTime();

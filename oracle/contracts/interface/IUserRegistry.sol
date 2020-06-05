@@ -24,7 +24,6 @@ abstract contract IUserRegistry {
   event UserValidity(uint256 indexed userId, uint256 validUntilTime);
   event UserExtendedKey(uint256 indexed userId, uint256 key, uint256 value);
   event UserExtendedKeys(uint256 indexed userId, uint256[] values);
-
   event ExtendedKeysDefinition(uint256[] keys);
 
   function registerManyUsersExternal(address[] calldata _addresses, uint256 _validUntilTime)

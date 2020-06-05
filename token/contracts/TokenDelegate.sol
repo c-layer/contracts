@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 
 import "./delegate/CompliantTokenDelegate.sol";
-import "./delegate/MintableDelegate.sol";
 
 /**
  * @title Token Delegate

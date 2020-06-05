@@ -190,13 +190,9 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
   function transferData(
     address _token, address _caller,
     address _sender, address _receiver, uint256 _value)
-    internal view returns (STransferData memory)
+    internal pure returns (STransferData memory)
   {
-    // silence state mutability warning without generating bytecode
-    // see https://github.com/ethereum/solidity/issues/2691
-    this;
-
-    uint256[] memory emptyArray = new uint256[](0);
+    uint256[] memory emptyArray = new uint256[](1);
     return STransferData(
         _token,
         _caller,

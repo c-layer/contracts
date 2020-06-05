@@ -1,20 +1,17 @@
 pragma solidity ^0.6.0;
 
+import "@c-layer/oracle/contracts/RatesProvider.sol";
+
 
 /**
- * @title RatesProviderMock
- * @dev RatesProviderMock interface
+ * @title RatesProvider Mock
+ * @dev RatesProvider Mock
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
- */
-contract RatesProviderMock {
+ **/
+contract RatesProviderMock is RatesProvider {
 
-  uint256 private rate = 1500;
-
-  function convert(uint256 _amount, bytes32, bytes32)
-    public view returns (uint256)
-  {
-    return _amount * rate / 1000;
+  constructor(string memory _name) RatesProvider(_name) public {
   }
 }

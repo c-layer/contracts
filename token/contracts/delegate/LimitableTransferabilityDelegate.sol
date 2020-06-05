@@ -16,23 +16,23 @@ import "./AuditableDelegate.sol";
 */
 contract LimitableTransferabilityDelegate is AuditableDelegate {
 
+  uint256 constant AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY = 1;
+
   /**
-   * @dev belowTransferLimit
+   * @dev isTransferBelowLimits
    */
-  function belowTransferLimit(STransferData memory _transferData)
+  function isTransferBelowLimits(STransferData memory _transferData)
     internal view returns (TransferCode code) {
 
     uint256 configurationId = delegatesConfigurations[proxyDelegateIds[_transferData.token]]
-      [uint256(AuditConfigurationCode.LIMITABLE_TRANSFERABILITY)];
-    if (!isAuditRequiredInternal(configurationId, _transferData)) {
+      [AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY];
+    AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
+
+    if (!isAuditRequiredInternal(configuration_, _transferData)) {
       return TransferCode.OK;
     }
 
-    AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
-    fetchConvertedValue(
-      _transferData,
-      configuration_.ratesProvider,
-      configuration_.currency);
+    fetchConvertedValue(_transferData, configuration_);
     if (_transferData.value != 0 && _transferData.convertedValue == 0) {
       return TransferCode.INVALID_RATE;
     }

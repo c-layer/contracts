@@ -8,6 +8,7 @@
     "test"
   ],
   "scripts": {
+    "clean": "rm -rf ./build;",
     "compile": "truffle compile",
     "console": "truffle console",
     "coverage": "scripts/coverage.sh",

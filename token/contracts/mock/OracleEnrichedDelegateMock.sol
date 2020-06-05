@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "../delegate/BaseTokenDelegate.sol";
+import "./DelegateMock.sol";
 import "../delegate/OracleEnrichedDelegate.sol";
 
 
@@ -15,54 +15,63 @@ import "../delegate/OracleEnrichedDelegate.sol";
  *
  * Error messages
  */
-contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, BaseTokenDelegate {
+contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
 
-   /**
-   * @dev defineOraclesMock
-    */
-  function defineOracleMock(IUserRegistry _userRegistry) public returns (bool)
-  {
-    userRegistry_ = _userRegistry;
-  }
+  uint256 constant AUDIT_CONFIGURATION_DEFAULT = 0;
 
   /**
    * @dev testFetchSenderUser
    */
   function testFetchSenderUser(address _sender, uint256[] memory _userKeys)
-    public view returns (uint256, uint256[] memory, bool)
+    public returns (bool)
   {
     STransferData memory transferData_ = transferData(
       address(0), address(0), _sender, address(0), 0);
+    AuditConfiguration storage configuration =
+      auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
+    configuration.senderKeys = _userKeys;
 
-    super.fetchSenderUser(transferData_, _userKeys);
-    return (transferData_.senderId, transferData_.senderKeys, transferData_.senderFetched);
+    super.fetchSenderUser(transferData_, configuration.senderKeys);
+    logTransferData(transferData_);
+    return true;
   }
 
   /**
    * @dev testFetchReceiverUser
    */
   function testFetchReceiverUser(address _receiver, uint256[] memory _userKeys)
-    public view returns (uint256, uint256[] memory, bool)
+    public returns (bool)
   {
     STransferData memory transferData_ = transferData(
       address(0), address(0), address(0), _receiver, 0);
+    AuditConfiguration storage configuration =
+      auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
+    configuration.receiverKeys = _userKeys;
 
-    super.fetchReceiverUser(transferData_, _userKeys);
-    return (transferData_.receiverId, transferData_.receiverKeys, transferData_.receiverFetched);
+    super.fetchReceiverUser(transferData_, configuration.receiverKeys);
+    logTransferData(transferData_);
+    return true;
   }
 
   /**
    * @dev testFetchConvertedValue
    */
   function testFetchConvertedValue(
-    uint256 _value,
-    IRatesProvider _ratesProvider,
-    bytes32 _currency) public view returns (uint256)
+    uint256 _value, IRatesProvider _ratesProvider,
+    address _token, string memory _symbol, bytes32 _currencyTo)
+    public returns (bool)
   {
     STransferData memory transferData_ = transferData(
-      address(0), address(0), address(0), address(0), _value);
+      _token, address(0), address(0), address(0), _value);
+    AuditConfiguration storage configuration =
+      auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
+    configuration.ratesProvider = _ratesProvider;
+    configuration.currency = _currencyTo;
 
-    super.fetchConvertedValue(transferData_, _ratesProvider, _currency);
-    return (transferData_.convertedValue);
+    tokens[_token].symbol = _symbol;
+
+    super.fetchConvertedValue(transferData_, configuration);
+    logTransferData(transferData_);
+    return true;
   }
 }

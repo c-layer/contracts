@@ -102,7 +102,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
       ITokenStorage.AuditMode.ALWAYS_TRIGGERS_EXCLUDED,
       ITokenStorage.AuditStorageMode.USER_ID,
       senderKeys, receiverKeys, _ratesProvider, _currency,
-      [ false, false, true, true ] // only cumulated reception
+      [ true, false, true, true ] // only cumulated reception
     ), "CC04");
 
     require(_core.defineTokenDelegate(

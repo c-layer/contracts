@@ -5,114 +5,83 @@
  */
 
 const assertRevert = require("../helpers/assertRevert");
-const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
-const FreezableDelegate = artifacts.require("FreezableDelegate.sol");
+const FreezableDelegateMock = artifacts.require("FreezableDelegateMock.sol");
 
-const AMOUNT = 1000000;
-const NAME = "Token";
-const SYMBOL = "TKN";
-const DECIMALS = 18;
-const BEFORE = 1500000000;
-const AFTER = 5000000000;
+const TOKEN_ADDRESS = "0x" + "123456789".padStart(40, "0");
+const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
+const PREVIOUS_YEAR = Math.floor(new Date().getTime() / 1000) - (24 * 3600 * 365);
 
 contract("FreezableDelegate", function (accounts) {
-  let core, delegate, token;
+  let delegate;
 
   beforeEach(async function () {
-    delegate = await FreezableTokenDelegate.new();
-    core = await TokenCoreMock.new("Test", [accounts[0]]);
-    await core.defineTokenDelegate(1, delegate.address, []);
- 
-    token = await TokenProxy.new(core.address);
-    await core.defineToken(
-      token.address, 1, NAME, SYMBOL, DECIMALS);
-    await core.defineSupplyMock(token.address, AMOUNT);
-    await token.approve(accounts[1], AMOUNT);
+    delegate = await FreezableDelegateMock.new();
   });
 
-  it("should have audit requirements", async function () {
-    const auditRequirements = await delegate.auditRequirements();
-    assert.equal(auditRequirements.toString(), 0, "audit requirements");
-  });
-
-  it("should transfer from accounts[0] to accounts[1]", async function () {
-    const tx = await token.transfer(accounts[1], "3333");
-    assert.ok(tx.receipt.status, "Status");
-    assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "Transfer", "event");
-    assert.equal(tx.logs[0].args.from, accounts[0], "from");
-    assert.equal(tx.logs[0].args.to, accounts[1], "to");
-    assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
-
-    const balance0 = await token.balanceOf(accounts[0]);
-    assert.equal(balance0.toString(), "996667", "balance");
-    const balance1 = await token.balanceOf(accounts[1]);
-    assert.equal(balance1.toString(), "3333", "balance");
+  it("should have transfer unfrozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[0], accounts[1], accounts[2], "1000");
+    assert.ok(!result, "not frozen");
   });
 
   it("should let freeze many addresses", async function () {
-    const tx = await core.freezeManyAddresses(token.address, [accounts[1], accounts[2]], AFTER);
+    const tx = await delegate.freezeManyAddresses(TOKEN_ADDRESS, [accounts[1], accounts[2]], NEXT_YEAR);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, "Freeze", "event");
     assert.equal(tx.logs[0].args.address_, accounts[1], "address");
-    assert.equal(tx.logs[0].args.until, AFTER, "until");
+    assert.equal(tx.logs[0].args.until, NEXT_YEAR, "until");
     assert.equal(tx.logs[1].event, "Freeze", "event");
     assert.equal(tx.logs[1].args.address_, accounts[2], "address");
-    assert.equal(tx.logs[1].args.until, AFTER, "until");
+    assert.equal(tx.logs[1].args.until, NEXT_YEAR, "until");
   });
 
   describe("With freezed account 1 in the future and account 2 in the past", function () {
     beforeEach(async function () {
-      await core.freezeManyAddresses(token.address, [accounts[1]], AFTER);
-      await core.freezeManyAddresses(token.address, [accounts[2]], BEFORE);
+      await delegate.freezeManyAddresses(TOKEN_ADDRESS, [accounts[1]], NEXT_YEAR);
+      await delegate.freezeManyAddresses(TOKEN_ADDRESS, [accounts[2]], PREVIOUS_YEAR);
     });
 
-    it("should have account 1 frozen", async function () {
-
-    });
-
-    it("should have canTransfer frozen for account 0 to account 1", async function () {
-      const result = await token.canTransfer.call(accounts[0], accounts[1], 100);
-      assert.equal(result, 6, "canTransfer");
-    });
-
-    it("should prevent transfer from account 0 to account 1", async function () {
-      await assertRevert(token.transfer(accounts[1], "3333"), "CO03");
-    });
-
-    it("should prevent transferFrom from account 0 to account 1", async function () {
-      await assertRevert(token.transferFrom(accounts[1], accounts[1], "3333"), "CO03");
-    });
-    
-    it("should have account 2 not frozen", async function () {
+    it("should have account 1 as caller frozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[1], accounts[0], accounts[3], "1000");
+    assert.ok(result, "frozen");
 
     });
 
-    it("should have canTransfer Ok for account 0 to account 2", async function () {
-      const result = await token.canTransfer.call(accounts[0], accounts[2], 100);
-      assert.equal(result, 1, "canTransfer");
+    it("should have account 1 as sender frozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[0], accounts[1], accounts[3], "1000");
+    assert.ok(result, "frozen");
+
     });
 
-    it("should transfer from account 0 to account 2", async function () {
-      const tx = await token.transfer(accounts[2], "3333");
-      assert.ok(tx.receipt.status, "Status");
-      assert.equal(tx.logs.length, 1);
-      assert.equal(tx.logs[0].event, "Transfer", "event");
-      assert.equal(tx.logs[0].args.from, accounts[0], "from");
-      assert.equal(tx.logs[0].args.to, accounts[2], "to");
-      assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+    it("should have account 1 as receiver frozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[0], accounts[3], accounts[1], "1000");
+    assert.ok(result, "frozen");
+
     });
 
-    it("should transferFrom from account 0 to account 2", async function () {
-      const tx = await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
-      assert.ok(tx.receipt.status, "Status");
-      assert.equal(tx.logs.length, 1);
-      assert.equal(tx.logs[0].event, "Transfer", "event");
-      assert.equal(tx.logs[0].args.from, accounts[0], "from");
-      assert.equal(tx.logs[0].args.to, accounts[2], "to");
-      assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+    it("should have account 2 as caller unfrozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[2], accounts[0], accounts[3], "1000");
+    assert.ok(!result, "not frozen");
+
+    });
+
+    it("should have account 2 as sender unfrozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[0], accounts[2], accounts[3], "1000");
+    assert.ok(!result, "not frozen");
+
+    });
+
+    it("should have account 2 as receiver unfrozen", async function () {
+    const result = await delegate.testIsFrozen(TOKEN_ADDRESS,
+      accounts[0], accounts[3], accounts[2], "1000");
+    assert.ok(!result, "not frozen");
+
     });
   });
 });

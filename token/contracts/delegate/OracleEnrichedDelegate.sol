@@ -26,7 +26,7 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev fetchSenderUser
    */
   function fetchSenderUser(STransferData memory _transferData,
-    uint256[] memory _userKeys) internal view
+    uint256[] storage _userKeys) internal view
   {
     if (!_transferData.senderFetched) {
       (_transferData.senderId, _transferData.senderKeys) =
@@ -39,7 +39,7 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev fetchReceiverUser
    */
   function fetchReceiverUser(STransferData memory _transferData,
-    uint256[] memory _userKeys) internal view
+    uint256[] storage _userKeys) internal view
   {
     if (!_transferData.receiverFetched) {
       (_transferData.receiverId, _transferData.receiverKeys) =
@@ -54,15 +54,14 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev it is left to the code calling this function to handle this case
    */
   function fetchConvertedValue(STransferData memory _transferData,
-    IRatesProvider _ratesProvider,
-    bytes32 _currency) internal view
+    AuditConfiguration storage _configuration) internal view
   {
     if (_transferData.convertedValue == 0 && _transferData.value != 0) {
       TokenData memory token = tokens[_transferData.token];
       bytes32 currencyFrom = bytes(token.symbol).toBytes32();
 
-      _transferData.convertedValue = (currencyFrom != _currency) ?
-         _ratesProvider.convert(_transferData.value, currencyFrom, _currency) : _transferData.value;
+      _transferData.convertedValue = (currencyFrom != _configuration.currency) ?
+        _configuration.ratesProvider.convert(_transferData.value, currencyFrom, _configuration.currency) : _transferData.value;
     }
   }
 }

@@ -7,14 +7,19 @@
 const UserRule = artifacts.require("UserRule.sol");
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 
+const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(66, "0");
+const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
+
 contract("UserRule", function (accounts) {
   let rule, userRegistry;
 
-  const CHF = web3.utils.toHex("CHF").padEnd(66, "0");
-
   beforeEach(async function () {
-    userRegistry = await UserRegistryMock.new(
-      [accounts[0], accounts[1], accounts[2]], CHF, [5, 5000000]);
+    userRegistry = await UserRegistryMock.new("Test", CHF_BYTES,
+      [accounts[0], accounts[1], accounts[2]], NEXT_YEAR);
+    await userRegistry.updateUserAllExtended(1, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
+    await userRegistry.updateUserAllExtended(3, ["5", "50000", "50000"]);
     rule = await UserRule.new(userRegistry.address);
   });
 

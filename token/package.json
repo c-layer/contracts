@@ -8,6 +8,7 @@
     "test"
   ],
   "scripts": {
+    "clean": "rm -rf ./build;",
     "compile": "truffle compile",
     "console": "truffle console",
     "coverage": "scripts/coverage.sh",
@@ -16,7 +17,7 @@
     "lint:js": "eslint .",
     "lint:js:fix": "eslint . --fix",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
-    "test": "npm run compile && scripts/test.sh",
+    "test": "scripts/test.sh",
     "flatten": "node_modules/.bin/truffle-flattener"
   },
   "repository": {
@@ -39,7 +40,8 @@
   },
   "homepage": "https://c-layer.org",
   "depenencies": {
-    "@c-layer/common": "^1.0.0"
+    "@c-layer/common": "^1.0.0",
+    "@c-layer/oracle": "^1.0.0"
    },
   "devDependencies": {
     "chai": "^4.2.0",

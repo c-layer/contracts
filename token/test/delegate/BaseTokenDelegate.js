@@ -6,25 +6,25 @@
 
 const assertRevert = require("../helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCoreMock = artifacts.require("TokenCoreMock.sol");
-const BaseTokenDelegate = artifacts.require("BaseTokenDelegate.sol");
+const TokenCore = artifacts.require("TokenCore.sol");
+const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
 
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
 
-contract("BaseToken", function (accounts) {
+contract("BaseTokenDelegate", function (accounts) {
   let core, delegate;
 
   beforeEach(async function () {
-    delegate = await BaseTokenDelegate.new();
-    core = await TokenCoreMock.new("Test", [accounts[0]]);
+    delegate = await MintableTokenDelegate.new();
+    core = await TokenCore.new("Test", [ accounts[0] ]);
     await core.defineTokenDelegate(1, delegate.address, []);
   });
 
-  it("should have audit requirements", async function () {
-    const auditRequirements = await delegate.auditRequirements();
-    assert.equal(auditRequirements.toString(), 0, "audit requirements");
+  it("should have no configuration requirements", async function () {
+    const checkConfigurations = await delegate.checkConfigurations([]);
+    assert.ok(checkConfigurations, "check configurations");
   });
 
   describe("With a token defined", async function () {
@@ -60,7 +60,7 @@ contract("BaseToken", function (accounts) {
       const TOTAL_SUPPLY = "1000000";
 
       beforeEach(async function () {
-        await core.defineSupplyMock(token.address, TOTAL_SUPPLY);
+        await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
       });
 
       it("should have a total supply for token", async function () {

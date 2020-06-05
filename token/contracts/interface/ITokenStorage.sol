@@ -33,11 +33,6 @@ abstract contract ITokenStorage {
     DEFAULT
   }
 
-  enum AuditConfigurationCode {
-    PROOF_OF_OWNERSHIP,
-    LIMITABLE_TRANSFERABILITY
-  }
-
   enum AuditStorageMode {
     ADDRESS,
     USER_ID,
@@ -48,7 +43,7 @@ abstract contract ITokenStorage {
     NEVER,
     ALWAYS,
     ALWAYS_TRIGGERS_EXCLUDED,
-    ALWAYS_TRIGGERS_ONLY,
+    TRIGGERS_ONLY,
     WHEN_TRIGGERS_MATCHED,
     WHEN_TRIGGERS_UNMATCHED
   }
@@ -67,8 +62,9 @@ abstract contract ITokenStorage {
     uint256[] senderKeys,
     uint256[] receiverKeys,
     IRatesProvider ratesProvider,
-    bytes32 currency);
-  event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] senders, bool[] receivers, bool[] tokens);
+    bytes32 currency,
+    bool[4] fields);
+  event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] tokens, bool[] senders, bool[] receivers);
   event AuditsRemoved(address scope, uint256 scopeId);
   event SelfManaged(address indexed holder, bool active);
 
@@ -97,11 +93,13 @@ abstract contract ITokenStorage {
     uint256 decimals);
   event TokenMigrated(address indexed token, address newCore);
   event TokenRemoved(address indexed token);
-  event TransferAuditLog(
-    uint256 senderId,
-    uint256 receiverId,
-    uint256 cumulatedEmission,
-    uint256 senderLimit,
-    uint256 cumulatedReception,
-    uint256 receiverLimit);
+  event LogTransferData(
+    address token, address caller, address sender, address receiver,
+    uint256 senderId, uint256[] senderKeys, bool senderFetched,
+    uint256 receiverId, uint256[] receiverKeys, bool receiverFetched,
+    uint256 value, uint256 convertedValue);
+  event LogAuditData(
+    uint64 createdAt, uint64 lastTransactionAt,
+    uint256 cumulatedEmission, uint256 cumulatedReception
+  );
 }

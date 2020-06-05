@@ -27,7 +27,7 @@ abstract contract LockableDelegate is TokenStorage {
     uint256 _endAt,
     address[] memory _exceptions) public returns (bool)
   {
-    require(_startAt < _endAt, "LTD01");
+    require(_startAt <= _endAt, "LTD01");
     tokens[_token].lock = Lock(_startAt, _endAt);
     Lock storage tokenLock = tokens[_token].lock;
     for (uint256 i=0; i < _exceptions.length; i++) {
@@ -38,7 +38,7 @@ abstract contract LockableDelegate is TokenStorage {
   }
 
   /**
-   * @dev isUnlocked
+   * @dev isLocked
    */
   function isLocked(STransferData memory _transferData) internal view returns (bool) {
     Lock storage tokenLock = tokens[_transferData.token].lock;
