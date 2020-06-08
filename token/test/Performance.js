@@ -19,8 +19,9 @@ const DECIMALS = 18;
 const TOTAL_SUPPLY = "1000000";
 const CHF = "CHF";
 const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const CHF_ADDRESS = web3.utils.toHex("CHF").padEnd(42, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const CORE_GAS_COST = 4510002;
@@ -62,8 +63,6 @@ contract("Performance", function (accounts) {
 
   before(async function () {
     ratesProvider = await RatesProviderMock.new("Test");
-    await ratesProvider.defineCurrencies([CHF_BYTES, SYMBOL_BYTES], ["0" , "0"], "100");
-    await ratesProvider.defineRates(["150"]);
     userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, NEXT_YEAR);
     await userRegistry.updateUserAllExtended(1, ["5", "50000", "50000"]);
     await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
@@ -102,7 +101,7 @@ contract("Performance", function (accounts) {
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
       await core.defineTokenDelegate(2, delegates[1].address, [1, 2]);
-      await core.defineOracle(userRegistry.address);
+      await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
     describe("With a mintable token defined", function () {
@@ -136,10 +135,12 @@ contract("Performance", function (accounts) {
     describe("With a c token defined", function () {
       beforeEach(async function () {
         token = await TokenProxy.new(core.address);
+        await ratesProvider.defineCurrencies([CHF_BYTES, token.address],
+          ["0" , "0"], "100");
+        await ratesProvider.defineRates(["150"]);
         await core.defineToken(
           token.address, 2, NAME, SYMBOL, DECIMALS);
         await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
-        await token.transfer(token.address, "3333"); // force global variables init
         await token.approve(accounts[1], "3333");
       });
 
@@ -176,7 +177,7 @@ contract("Performance", function (accounts) {
           await core.defineAuditConfiguration(1,
             0, true,
             AUDIT_MODE_WHEN_TRIGGERS_MATCHED, AUDIT_STORAGE_USER_ID,
-            [1], [2], ratesProvider.address, CHF_BYTES,
+            [1], [2], ratesProvider.address, CHF_ADDRESS,
             [true, false, false, true]);
           await core.defineAuditTriggers(
             1, [accounts[0]], [false], [true], [false]);
@@ -238,7 +239,7 @@ contract("Performance", function (accounts) {
           await core.defineAuditConfiguration(1,
             0, true,
             AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED, AUDIT_STORAGE_USER_ID,
-            [1], [2], ratesProvider.address, CHF_BYTES,
+            [1], [2], ratesProvider.address, CHF_ADDRESS,
             [true, false, true, true]);
           await core.defineAuditTriggers(
             1, [accounts[0]], [false], [true], [false]);

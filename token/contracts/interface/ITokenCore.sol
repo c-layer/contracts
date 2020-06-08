@@ -17,7 +17,8 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function name() virtual public view returns (string memory);
   function oracle() virtual public view returns (
     IUserRegistry userRegistry,
-    bytes32 currency);
+    IRatesProvider ratesProvider,
+    address currency);
 
   function auditConfiguration(uint256 _configurationId)
     virtual public view returns (
@@ -28,7 +29,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
       uint256[] memory senderKeys,
       uint256[] memory receiverKeys,
       IRatesProvider ratesProvider,
-      bytes32 currency,
+      address currency,
       bool[4] memory fields);
   function auditTriggers(
     uint256 _configurationId,
@@ -42,7 +43,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function auditCurrency(
     address _scope,
     uint256 _scopeId
-  ) virtual public view returns (bytes32 currency);
+  ) virtual public view returns (address currency);
   function audit(
     address _scope,
     uint256 _scopeId,
@@ -121,7 +122,9 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function removeToken(address _token) virtual public returns (bool);
 
   function defineOracle(
-    IUserRegistry _userRegistry) virtual public returns (bool);
+    IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider,
+    address _currency) virtual external returns (bool);
   function defineTokenDelegate(
     uint256 _delegateId,
     address _delegate,
@@ -135,7 +138,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     uint256[] memory senderKeys,
     uint256[] memory receiverKeys,
     IRatesProvider _ratesProvider,
-    bytes32 _currency,
+    address _currency,
     bool[4] memory _fields) virtual public returns (bool);
   function removeAudits(address _scope, uint256 _scopeId)
     virtual public returns (bool);

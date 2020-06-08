@@ -58,7 +58,7 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
    */
   function testFetchConvertedValue(
     uint256 _value, IRatesProvider _ratesProvider,
-    address _token, string memory _symbol, bytes32 _currencyTo)
+    address _token, address _currencyTo)
     public returns (bool)
   {
     STransferData memory transferData_ = transferData(
@@ -67,8 +67,6 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
       auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
     configuration.ratesProvider = _ratesProvider;
     configuration.currency = _currencyTo;
-
-    tokens[_token].symbol = _symbol;
 
     super.fetchConvertedValue(transferData_, configuration);
     logTransferData(transferData_);

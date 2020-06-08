@@ -16,17 +16,18 @@ const RatesProvider = artifacts.require("RatesProvider.sol");
 const TOKEN_ADDRESS = "0x" + "123456789".padStart(40, "0");
 const NAME = "Token";
 const SYMBOL = "TKN";
-const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(66, "0");
+const TOKEN_BYTES = web3.utils.toHex(TOKEN_ADDRESS).padEnd(66, "0");
 const DECIMALS = 18;
 const CHF = "CHF";
 const CHF_BYTES = web3.utils.toHex(CHF).padEnd(66, "0");
+const CHF_ADDRESS = web3.utils.toHex(CHF).padEnd(42, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_ADDRESS = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const FETCH_SENDER_ESTIMATE = 102588;
-const FETCH_RECEIVER_ESTIMATE = 102612;
-const FETCH_CONVERT_RATE = 117484;
+const FETCH_SENDER_ESTIMATE = 102611;
+const FETCH_RECEIVER_ESTIMATE = 102590;
+const FETCH_CONVERT_RATE = 83741;
 
 contract("OracleEnrichedDelegate", function (accounts) {
   let core, delegate, userRegistry, ratesProvider;
@@ -46,7 +47,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should fetch converted value for 0", async function () {
       const tx = await delegate.testFetchConvertedValue(
-        0, NULL_ADDRESS, TOKEN_ADDRESS, SYMBOL, CHF_BYTES);
+        0, NULL_ADDRESS, TOKEN_ADDRESS, CHF_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "LogTransferData", "event");
@@ -68,7 +69,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should fetch converted value for 100 same currency", async function () {
       const tx = await delegate.testFetchConvertedValue(
-        100, NULL_ADDRESS, TOKEN_ADDRESS, CHF, CHF_BYTES);
+        100, NULL_ADDRESS, TOKEN_ADDRESS, TOKEN_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "LogTransferData", "event");
@@ -90,7 +91,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should failed to fetch converted value for 100 in a different currency", async function () {
       await assertThrow(delegate.testFetchConvertedValue(
-        100, NULL_ADDRESS, TOKEN_ADDRESS, SYMBOL, CHF_BYTES));
+        100, NULL_ADDRESS, TOKEN_ADDRESS, CHF_ADDRESS));
     });
   });
 
@@ -105,7 +106,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
     });
 
     it("should let mock provides rates", async function () {
-      const rate = await ratesProvider.convert(100, EMPTY_BYTES, CHF_BYTES);
+      const rate = await ratesProvider.convert(100, EMPTY_ADDRESS, CHF_ADDRESS);
       assert.equal(rate.toString(), "150", "mocked rate");
     });
 
@@ -159,7 +160,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should fetch converted value", async function () {
       const tx = await delegate.testFetchConvertedValue(
-        100, ratesProvider.address, TOKEN_ADDRESS, SYMBOL, CHF_BYTES);
+        100, ratesProvider.address, TOKEN_ADDRESS, CHF_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "LogTransferData", "event");
@@ -183,16 +184,16 @@ contract("OracleEnrichedDelegate", function (accounts) {
   describe("With oracles defined", function () {
     before(async function () {
       ratesProvider = await RatesProvider.new("Test");
-      await ratesProvider.defineCurrencies([CHF_BYTES, SYMBOL_BYTES], ["0" , "0"], "100");
+      await ratesProvider.defineCurrencies([CHF_BYTES, TOKEN_BYTES], ["0" , "0"], "100");
       await ratesProvider.defineRates(["150"]);
-      userRegistry = await UserRegistry.new("Test", CHF_BYTES, accounts, NEXT_YEAR);
+      userRegistry = await UserRegistry.new("Test", CHF_ADDRESS, accounts, NEXT_YEAR);
       await userRegistry.updateUserAllExtended(2, ["0", "1000", "2000"]);
       await userRegistry.updateUserAllExtended(3, ["0", "2500", "500"]);
     });
 
     beforeEach(async function () {
       delegate = await OracleEnrichedDelegateMock.new();
-      await delegate.defineOracle(userRegistry.address);
+      await delegate.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
     it("should let oracle provides users", async function () {
@@ -245,7 +246,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should fetch converted value", async function () {
       const tx = await delegate.testFetchConvertedValue(
-        100, ratesProvider.address, TOKEN_ADDRESS, SYMBOL, CHF_BYTES);
+        100, ratesProvider.address, TOKEN_ADDRESS, CHF_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "LogTransferData", "event");
@@ -277,7 +278,7 @@ contract("OracleEnrichedDelegate", function (accounts) {
 
     it("should estimate gas to fetch converted value", async function () {
       const estimate = await delegate.testFetchConvertedValue.estimateGas(
-        100, ratesProvider.address, TOKEN_ADDRESS, SYMBOL, CHF_BYTES);
+        100, ratesProvider.address, TOKEN_ADDRESS, CHF_ADDRESS);
       assert.equal(estimate, FETCH_CONVERT_RATE, "fetch convert estimate");
     });
   });

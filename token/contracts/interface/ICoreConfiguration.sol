@@ -50,11 +50,11 @@ abstract contract ICoreConfiguration is ITokenAccessDefinitions {
   function hasCoreAccess(IOperableCore _core) virtual public view returns (bool);
   function defineCoreConfigurations(
     ITokenCore _core,
-    address[] memory _compliances,
+    address[] calldata _factories,
     address _mintableDelegate,
     address _compliantDelegate,
     IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
-    bytes32 _currency
-  ) virtual public returns (bool);
+    address _currency
+  ) virtual external returns (bool);
 }

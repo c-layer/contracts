@@ -14,17 +14,15 @@ const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
-const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(66, "0");
+const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(42, "0");
 //const CHF = "CHF";
-const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const CHF_ADDRESS = web3.utils.toHex("CHF").padEnd(42, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const AUDIT_MODE_TRIGGERS_ONLY = 1;
-
 // const AUDIT_MODE_ALWAYS = 3;
-
 const AUDIT_STORAGE_MODE_SHARED = 2;
 
 contract("TokenCore", function (accounts) {
@@ -35,9 +33,9 @@ contract("TokenCore", function (accounts) {
     core = await TokenCore.new("Test", [accounts[0]]);
 
     ratesProvider = await RatesProviderMock.new("Test");
-    await ratesProvider.defineCurrencies([CHF_BYTES, SYMBOL_BYTES], ["0" , "0"], "100");
+    await ratesProvider.defineCurrencies([CHF_ADDRESS, SYMBOL_BYTES], ["0" , "0"], "100");
     await ratesProvider.defineRates(["150"]);
-    userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, NEXT_YEAR);
+    userRegistry = await UserRegistryMock.new("Test", CHF_ADDRESS, accounts, NEXT_YEAR);
     await userRegistry.updateUserAllExtended(1, ["5", "50000", "50000"]);
     await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
     await userRegistry.updateUserAllExtended(3, ["5", "50000", "50000"]);
@@ -71,44 +69,48 @@ contract("TokenCore", function (accounts) {
   });
 
   it("should let define oracle", async function () {
-    const tx = await core.defineOracle(userRegistry.address);
+    const tx = await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "OracleDefined", "event");
     assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-    assert.equal(tx.logs[0].args.currency.toString(), CHF_BYTES, "currency");
+    assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
+    assert.equal(tx.logs[0].args.currency.toString(), CHF_ADDRESS, "currency");
   });
 
   describe("With oracle defined", async function () {
     beforeEach(async function () {
-      await core.defineOracle(userRegistry.address);
+      await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
     it("should let define a user registry with the samet currency", async function () {
-      userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, 0);
-      const tx = await core.defineOracle(userRegistry.address);
+      userRegistry = await UserRegistryMock.new("Test", CHF_ADDRESS, accounts, 0);
+      const tx = await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "OracleDefined", "event");
       assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-      assert.equal(tx.logs[0].args.currency.toString(), CHF_BYTES, "currency");
+      assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
+      assert.equal(tx.logs[0].args.currency.toLowerCase(), CHF_ADDRESS, "currency");
     });
 
     it("should let define a user registry with a different currency", async function () {
       userRegistry = await UserRegistryMock.new("Test", SYMBOL_BYTES, accounts, 0);
-      const tx = await core.defineOracle(userRegistry.address);
+      const tx = await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
       assert.ok(tx.receipt.status, "Status");
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, "OracleDefined", "event");
       assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
-      assert.equal(tx.logs[0].args.currency.toString(), SYMBOL_BYTES, "currency");
+      assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
+      assert.equal(tx.logs[0].args.currency.toLowerCase(), SYMBOL_BYTES, "currency");
     });
 
     it("should have oracle", async function () {
       const oracle = await core.oracle();
 
       assert.equal(oracle[0], userRegistry.address, "user registry");
-      assert.equal(oracle[1], CHF_BYTES, "currency");
+      assert.equal(oracle[1], ratesProvider.address, "rates provider");
+      assert.equal(oracle[2], CHF_ADDRESS, "currency");
     });
   });
 
@@ -116,7 +118,7 @@ contract("TokenCore", function (accounts) {
     const tx = await core.defineAuditConfiguration(2,
       3, true,
       AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-      [1], [2], ratesProvider.address, CHF_BYTES,
+      [1], [2], ratesProvider.address, CHF_ADDRESS,
       [true, true, true, true]);
 
     assert.ok(tx.receipt.status, "Status");
@@ -130,7 +132,7 @@ contract("TokenCore", function (accounts) {
     assert.deepEqual(tx.logs[0].args.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
     assert.deepEqual(tx.logs[0].args.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
     assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
-    assert.equal(tx.logs[0].args.currency, CHF_BYTES, "currency");
+    assert.equal(tx.logs[0].args.currency, CHF_ADDRESS, "currency");
   });
 
   it("should define audit triggers", async function () {
@@ -173,7 +175,7 @@ contract("TokenCore", function (accounts) {
       await core.defineAuditConfiguration(2,
         3, true,
         AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-        [1], [2], ratesProvider.address, CHF_BYTES,
+        [1], [2], ratesProvider.address, CHF_ADDRESS,
         [true, true, true, true]);
       await core.defineAuditTriggers(
         2, [accounts[1], accounts[2], accounts[3]],
@@ -192,7 +194,7 @@ contract("TokenCore", function (accounts) {
       assert.deepEqual(configuration.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
       assert.deepEqual(configuration.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
       assert.equal(configuration.ratesProvider, ratesProvider.address, "ratesProvider");
-      assert.equal(configuration.currency, CHF_BYTES, "currency");
+      assert.equal(configuration.currency, CHF_ADDRESS, "currency");
       assert.equal(configuration.fields[0], true, "createdAt");
       assert.equal(configuration.fields[1], true, "lastTransactionAt");
       assert.equal(configuration.fields[2], true, "cumulatedEmission");

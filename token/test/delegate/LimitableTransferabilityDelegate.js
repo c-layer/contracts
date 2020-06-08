@@ -14,13 +14,13 @@ const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 const SUPPLY = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
-const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(66, "0");
+const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(42, "0");
 const DECIMALS = 18;
 const CHF = "CHF";
-const CHF_BYTES = web3.utils.toHex(CHF).padEnd(66, "0");
+const CHF_BYTES = web3.utils.toHex(CHF).padEnd(42, "0");
 const TOKEN_ADDRESS = "0x" + "123456789".padStart(40, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 // Estimate

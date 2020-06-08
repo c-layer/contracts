@@ -1,6 +1,5 @@
 pragma solidity ^0.6.0;
 
-import "@c-layer/common/contracts/convert/BytesConvert.sol";
 import "./STransferData.sol";
 import "../TokenStorage.sol";
 
@@ -17,7 +16,6 @@ import "../TokenStorage.sol";
  * Error messages
  */
 contract OracleEnrichedDelegate is TokenStorage {
-  using BytesConvert for bytes;
 
   uint256 constant SENDER_LIMIT_ID = 0;
   uint256 constant RECEIVER_LIMIT_ID = 0;
@@ -57,11 +55,11 @@ contract OracleEnrichedDelegate is TokenStorage {
     AuditConfiguration storage _configuration) internal view
   {
     if (_transferData.convertedValue == 0 && _transferData.value != 0) {
-      TokenData memory token = tokens[_transferData.token];
-      bytes32 currencyFrom = bytes(token.symbol).toBytes32();
-
+      address currencyFrom = _transferData.token;
       _transferData.convertedValue = (currencyFrom != _configuration.currency) ?
-        _configuration.ratesProvider.convert(_transferData.value, currencyFrom, _configuration.currency) : _transferData.value;
+        _configuration.ratesProvider.convert(
+          _transferData.value, bytes32(bytes20(currencyFrom)),
+          bytes32(bytes20(_configuration.currency))) : _transferData.value;
     }
   }
 }

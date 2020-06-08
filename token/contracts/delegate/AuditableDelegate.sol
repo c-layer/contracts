@@ -64,21 +64,21 @@ contract AuditableDelegate is OracleEnrichedDelegate {
   {
     AuditConfiguration storage configuration_ = auditConfigurations[_configurationId];
 
-    /**** FILTERS ****/
+    //**** FILTERS ****/
     if (!isAuditRequiredInternal(configuration_, _transferData)) {
       return;
     }
 
-    /**** AUDIT STORAGE ****/
+    //**** AUDIT STORAGE ****/
     AuditStorage storage auditStorage = (
       (configuration_.scopeCore) ? audits[address(this)] : audits[_transferData.token]
     )[configuration_.scopeId];
 
-    if (configuration_.currency != bytes32(0)) {
+    if (configuration_.currency != address(0)) {
       fetchConvertedValue(_transferData, configuration_);
     }
 
-    /**** UPDATE AUDIT DATA ****/
+    //**** UPDATE AUDIT DATA ****/
     if ((configuration_.mode != AuditMode.ALWAYS_TRIGGERS_EXCLUDED || !configuration_.triggerSenders[_transferData.sender])
       && (configuration_.mode != AuditMode.TRIGGERS_ONLY || configuration_.triggerSenders[_transferData.sender]))
     {
@@ -127,7 +127,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
       _senderAudit.lastTransactionAt = currentTime;
     }
     if (_configuration.fieldCumulatedEmission) {
-      _senderAudit.cumulatedEmission = (_configuration.currency != bytes32(0)) ?
+      _senderAudit.cumulatedEmission = (_configuration.currency != address(0)) ?
          _senderAudit.cumulatedEmission.add(_transferData.convertedValue) :
          _senderAudit.cumulatedEmission.add(_transferData.value);
     }
@@ -146,7 +146,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
       _receiverAudit.lastTransactionAt = currentTime;
     }
     if (_configuration.fieldCumulatedReception) {
-      _receiverAudit.cumulatedReception = (_configuration.currency != bytes32(0)) ?
+      _receiverAudit.cumulatedReception = (_configuration.currency != address(0)) ?
         _receiverAudit.cumulatedReception.add(_transferData.convertedValue) :
         _receiverAudit.cumulatedReception.add(_transferData.value);
     }

@@ -7,8 +7,8 @@
 const UserRule = artifacts.require("UserRule.sol");
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 
-const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(66, "0");
-const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(42, "0");
+const CHF_BYTES = web3.utils.toHex("CHF").padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 contract("UserRule", function (accounts) {

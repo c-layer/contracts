@@ -19,28 +19,24 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-
 const fs = require('fs');
 
-
-let secret = "";
-let mnemonic = "";
-let infuraKey = "";
-
-try {
-  // Secret file format is:
-  // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
-  const path = __dirname + "/" + ".secret.json";
-  if (fs.existsSync(path)) {
-    secret = JSON.parse(fs.readFileSync(path));
-    mnemonic = secret.mnemonic;
-    infuraKey = secret.infuraKey;
+// Secret file format is:
+// { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
+const path = [ "~/.secret.json", "../.secret.json", "../../.secret.json", "../../../.secret.json" ];
+let secretPath;
+for (let i=0; i < path.length && !secretPath; i++) {
+  if (fs.existsSync(path[i])) {
+    secretPath = path[i];
   }
-} catch(err) {
-  console.error(err)
 }
 
-module.exports = {
+const secret = JSON.parse(fs.readFileSync(secretPath));
+const mnemonic = secret.mnemonic;
+const projectId = secret.projectId;
+const endpoints = secret.endpoints;
+
+let config = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
    * defaults web3 uses to send transactions. If you don't specify one truffle
@@ -87,41 +83,98 @@ module.exports = {
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
-
-    mainnet: {
-      provider: () => new HDWalletProvider(mnemonic, "https://mainnet.infura.io/v3/"+projectId, 0, 5),
-      network_id: 1,       // Ropsten's id
+    goerli: {
+      provider: () => new HDWalletProvider(mnemonic, "https://goerli.infura.io/v3/"+projectId, 0, 5),
+      network_id: 5,       // Goerli's id
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
-    // Useful for private networks
-    // private: {
-      // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-      // network_id: 2111,   // This network is yours, in the cloud.
-      // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+    mainnet: {
+      provider: () => new HDWalletProvider(mnemonic, "https://mainnet.infura.io/v3/"+projectId, 0, 5),
+      network_id: 1,       // Mainnet's id
+      gas: 6500000,        // This is a safe block limit
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
   },
-
-  plugins: [ "solidity-coverage" ],
 
   // Set default mocha options here, use special reporters etc.
   mocha: {
     // timeout: 100000
   },
 
+  plugins: [
+    "solidity-coverage"
+  ],
+
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.8",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.6.9",    // Fetch exact version from solc-bin (default: truffle's version)
+      // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {          // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
           enabled: true,
-          runs: 1000
-        }
+          runs: 10000,
+/*          details: {
+            // The peephole optimizer is always on if no details are given,
+            // use details to switch it off.
+            "peephole": true,
+           // The unused jumpdest remover is always on if no details are given,
+           // use details to switch it off.
+           "jumpdestRemover": true,
+           // Sometimes re-orders literals in commutative operations.
+           "orderLiterals": false,
+           // Removes duplicate code blocks
+           "deduplicate": false,
+           // Common subexpression elimination, this is the most complicated step but
+           // can also provide the largest gain.
+           "cse": false,
+           // Optimize representation of literal numbers and strings in code.
+           "constantOptimizer": false,
+           // The new Yul optimizer. Mostly operates on the code of ABIEncoderV2
+           // and inline assembly.
+           // It is activated together with the global optimizer setting
+           // and can be deactivated here.
+           // Before Solidity 0.6.0 it had to be activated through this switch.
+           "yul": true,
+           // Tuning options for the Yul optimizer.
+           "yulDetails": {
+              // Improve allocation of stack slots for variables, can free up stack slots early.
+              // Activated by default if the Yul optimizer is activated.
+              "stackAllocation": true
+            }
+          }*/
+        },
+        evmVersion: "istanbul"
       }
     }
   }
 }
+
+// Injecting endpoints
+Object.keys(endpoints).forEach((name) => {
+  if (!config.networks[name]) {
+    let template = {
+      network_id: 9999,       // Goerli's id
+      gas: 5500000,        // Goerli has a lower block limit than mainnet
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    };
+    Object.keys(config.networks).forEach((existingNetworkName) => {
+      if (name.startsWith(existingNetworkName)) {
+        template = config.networks[existingNetworkName];
+      }
+    });
+    template.provider = 
+      () => new HDWalletProvider(mnemonic, endpoints[name], 0, 5),
+    config.networks[name] = template;
+  }
+});
+
+module.exports = config;

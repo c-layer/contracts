@@ -12,13 +12,13 @@ const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 const SUPPLY = 1000000;
 const NAME = "Token";
 const SYMBOL = "TKN";
-const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(66, "0");
+const SYMBOL_BYTES = web3.utils.toHex(SYMBOL).padEnd(42, "0");
 const DECIMALS = 18;
 const CHF = "CHF";
-const CHF_BYTES = web3.utils.toHex(CHF).padEnd(66, "0");
+const CHF_BYTES = web3.utils.toHex(CHF).padEnd(42, "0");
 const TOKEN_ADDRESS = "0x" + "123456789".padStart(40, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 // Estimate
@@ -47,55 +47,55 @@ const CONFIGURATIONS = {
   "never": [
     0, 0, false,
     AUDIT_NEVER, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "alwaysAddress": [
     1, 1, true,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
    "alwaysGlobal": [
     2, 1, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
    "alwaysUserId": [
     3, 1, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_USER_ID,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
    "alwaysShared": [
     4, 1, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_SHARED,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "triggersOnly": [
     5, 2, false,
     AUDIT_TRIGGERS_ONLY, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "alwaysTriggersExcluded": [
     6, 3, false,
     AUDIT_ALWAYS_TRIGGERS_EXCLUDED, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "whenTriggersMatched": [
     7, 4, false,
     AUDIT_WHEN_TRIGGERS_MATCHED, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "whenTriggersUnmatched": [
     8, 5, false,
     AUDIT_WHEN_TRIGGERS_UNMATCHED, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, true, true, true]
   ],
   "alwaysDifferentCurrency": [
@@ -107,25 +107,25 @@ const CONFIGURATIONS = {
   "alwaysCreatedAt": [
     10, 7, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [true, false, false, false]
   ],
    "alwaysLastTransactionAt": [
     11, 7, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [false, true, false, false]
   ],
    "alwaysCumulatedEmission": [
     12, 7, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [false, false, true, false]
   ],
    "alwaysCumulatedReception": [
     13, 7, false,
     AUDIT_ALWAYS, AUDIT_STORAGE_ADDRESS,
-    [], [], NULL_ADDRESS, "0x",
+    [], [], NULL_ADDRESS, NULL_ADDRESS,
     [false, false, false, true]
   ],
  };

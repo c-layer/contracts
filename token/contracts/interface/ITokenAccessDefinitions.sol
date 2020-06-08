@@ -19,13 +19,13 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
 
   // Core Privileges
   bytes4 constant DEFINE_CORE_CONFIGURATION_PRIV =
-    bytes4(keccak256("defineCoreConfigurations(address,address,address[],address,address,address,address,bytes32)"));
+    bytes4(keccak256("defineCoreConfigurations(address,address,address[],address,address,address,address,address)"));
   bytes4 constant DEFINE_AUDIT_CONFIGURATION_PRIV =
-    bytes4(keccak256("defineAuditConfiguration(uint256,uint256,bool,uint8,uint8,uint256[],uint256[],address,bytes32,bool[4])"));
+    bytes4(keccak256("defineAuditConfiguration(uint256,uint256,bool,uint8,uint8,uint256[],uint256[],address,address,bool[4])"));
   bytes4 constant DEFINE_TOKEN_DELEGATE_PRIV =
     bytes4(keccak256("defineTokenDelegate(uint256,address,uint256[])"));
   bytes4 constant DEFINE_ORACLE_PRIV =
-    bytes4(keccak256("defineOracle(address)"));
+    bytes4(keccak256("defineOracle(address,address,address)"));
   bytes4 constant DEFINE_TOKEN_PRIV =
     bytes4(keccak256("defineToken(address,uint256,string,string,uint256)"));
 

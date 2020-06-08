@@ -19,7 +19,6 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-
 const fs = require('fs');
 
 // Secret file format is:
@@ -35,8 +34,9 @@ for (let i=0; i < path.length && !secretPath; i++) {
 const secret = JSON.parse(fs.readFileSync(secretPath));
 const mnemonic = secret.mnemonic;
 const projectId = secret.projectId;
+const endpoints = secret.endpoints;
 
-module.exports = {
+let config = {
   /**
    * Networks define how you connect to your ethereum client and let you set the
    * defaults web3 uses to send transactions. If you don't specify one truffle
@@ -83,22 +83,23 @@ module.exports = {
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
-
-    mainnet: {
-      provider: () => new HDWalletProvider(mnemonic, "https://mainnet.infura.io/v3/"+projectId, 0, 5),
-      network_id: 1,       // Ropsten's id
+    goerli: {
+      provider: () => new HDWalletProvider(mnemonic, "https://goerli.infura.io/v3/"+projectId, 0, 5),
+      network_id: 5,       // Goerli's id
       gas: 5500000,        // Ropsten has a lower block limit than mainnet
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
       skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
     },
 
-    // Useful for private networks
-    // private: {
-      // provider: () => new HDWalletProvider(mnemonic, `https://network.io`),
-      // network_id: 2111,   // This network is yours, in the cloud.
-      // production: true    // Treats this network as if it was a public net. (default: false)
-    // }
+    mainnet: {
+      provider: () => new HDWalletProvider(mnemonic, "https://mainnet.infura.io/v3/"+projectId, 0, 5),
+      network_id: 1,       // Mainnet's id
+      gas: 6500000,        // This is a safe block limit
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    },
   },
 
   // Set default mocha options here, use special reporters etc.
@@ -106,10 +107,14 @@ module.exports = {
     // timeout: 100000
   },
 
+  plugins: [
+    "solidity-coverage"
+  ],
+
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.8",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.6.9",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {          // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
@@ -150,3 +155,26 @@ module.exports = {
     }
   }
 }
+
+// Injecting endpoints
+Object.keys(endpoints).forEach((name) => {
+  if (!config.networks[name]) {
+    let template = {
+      network_id: 9999,       // Goerli's id
+      gas: 5500000,        // Goerli has a lower block limit than mainnet
+      confirmations: 2,    // # of confs to wait between deployments. (default: 0)
+      timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
+      skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )
+    };
+    Object.keys(config.networks).forEach((existingNetworkName) => {
+      if (name.startsWith(existingNetworkName)) {
+        template = config.networks[existingNetworkName];
+      }
+    });
+    template.provider = 
+      () => new HDWalletProvider(mnemonic, endpoints[name], 0, 5),
+    config.networks[name] = template;
+  }
+});
+
+module.exports = config;

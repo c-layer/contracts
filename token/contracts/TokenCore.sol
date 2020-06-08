@@ -38,10 +38,12 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return name_;
   }
 
-  function oracle() override public view returns
-    (IUserRegistry userRegistry, bytes32 currency)
+  function oracle() override public view returns (
+    IUserRegistry userRegistry,
+    IRatesProvider ratesProvider,
+    address currency)
   {
-    return (userRegistry_, currency_);
+    return (userRegistry_, ratesProvider_, currency_);
   }
 
   function auditConfiguration(uint256 _configurationId)
@@ -53,7 +55,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
       uint256[] memory senderKeys,
       uint256[] memory receiverKeys,
       IRatesProvider ratesProvider,
-      bytes32 currency,
+      address currency,
       bool[4] memory fields)
   {
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
@@ -106,7 +108,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function auditCurrency(
     address _scope,
     uint256 _scopeId
-  ) override public view returns (bytes32 currency) {
+  ) override public view returns (address currency) {
     return audits[_scope][_scopeId].currency;
   }
 
@@ -335,13 +337,16 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   function defineOracle(
-    IUserRegistry _userRegistry)
-    override public onlyCoreOp returns (bool)
+    IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider,
+    address _currency)
+    override external onlyCoreOp returns (bool)
   {
     userRegistry_ = _userRegistry;
-    currency_ = _userRegistry.currency();
+    ratesProvider_ = _ratesProvider;
+    currency_ = _currency;
 
-    emit OracleDefined(userRegistry_, currency_);
+    emit OracleDefined(userRegistry_, _ratesProvider, _currency);
     return true;
   }
 
@@ -373,18 +378,18 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256[] memory _senderKeys,
     uint256[] memory _receiverKeys,
     IRatesProvider _ratesProvider,
-    bytes32 _currency,
+    address _currency,
     bool[4] memory _fields) override public onlyCoreOp returns (bool)
   {
     // Mark permanently the core audit storage with the currency to be used with
     if (_scopeCore) {
       AuditStorage storage auditStorage = audits[address(this)][_scopeId];
-      if(auditStorage.currency == bytes32(0)) {
+      if(auditStorage.currency == address(0)) {
         auditStorage.currency = _currency;
       }
       require(auditStorage.currency == _currency, "TC04");
     } else {
-      require(_currency == bytes32(0), "TC05");
+      require(_currency == address(0), "TC05");
     }
    
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];

@@ -44,6 +44,10 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     uint256(Configuration.PROOF_OF_OWNERSHIP),
     uint256(Configuration.AML_FULL) ];
 
+  uint256[] emptyArray = new uint256[](0);
+  uint256[] senderKeys = [ uint256(IUserRegistry.KeyCode.EMISSION_LIMIT_KEY) ];
+  uint256[] receiverKeys = [ uint256(IUserRegistry.KeyCode.RECEPTION_LIMIT_KEY) ];
+
   /**
    * @dev has core access
    */
@@ -60,28 +64,22 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
    */
   function defineCoreConfigurations(
     ITokenCore _core,
-    address[] memory _factories,
+    address[] calldata _factories,
     address _mintableDelegate,
     address _compliantDelegate,
     IUserRegistry _userRegistry,
     IRatesProvider _ratesProvider,
-    bytes32 _currency
-  ) override public onlyCoreOperator(_core) returns (bool)
+    address _currency
+  ) override external onlyCoreOperator(_core) returns (bool)
   {
     require(hasCoreAccess(_core), "CC01");
-    uint256[] memory emptyArray = new uint256[](0);
-    uint256[] memory senderKeys = new uint256[](1);
-    senderKeys[0] = uint256(IUserRegistry.KeyCode.EMISSION_LIMIT_KEY);
-    uint256[] memory receiverKeys = new uint256[](1);
-    receiverKeys[0] = uint256(IUserRegistry.KeyCode.RECEPTION_LIMIT_KEY);
-
     // Proof Of Ownership Configuration
     require(_core.defineAuditConfiguration(
       uint256(Configuration.PROOF_OF_OWNERSHIP),
       uint256(ITokenStorage.Scope.DEFAULT), false, // scopeId (token, default)
       ITokenStorage.AuditMode.ALWAYS,
       ITokenStorage.AuditStorageMode.ADDRESS,
-      emptyArray, emptyArray, IRatesProvider(address(0)), '',
+      emptyArray, emptyArray, IRatesProvider(address(0)), address(0),
       [ false, true, false, false ] // only last transaction
     ), "CC02");
 
@@ -155,7 +153,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineRole(ISSUER_PROXY_ROLE, privileges), "CC18");
 
     // Assign Oracle
-    require(_core.defineOracle(_userRegistry), "CC19");
+    require(_core.defineOracle(_userRegistry, _ratesProvider, _currency), "CC19");
 
     address[] memory configOperators = new address[](1);
     configOperators[0] = address(this);

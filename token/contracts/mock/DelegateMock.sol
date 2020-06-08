@@ -197,9 +197,12 @@ contract DelegateMock is TokenStorage {
   /**
    * @dev defineOracle
    */
-  function defineOracle(IUserRegistry _userRegistry) public {
+  function defineOracle(IUserRegistry _userRegistry,
+    IRatesProvider _ratesProvider,
+    address _currency) public {
     userRegistry_ = _userRegistry;
-    currency_ = _userRegistry.currency();
+    ratesProvider_ = _ratesProvider;
+    currency_ = _currency;
   }
 
   /**
@@ -214,7 +217,7 @@ contract DelegateMock is TokenStorage {
     uint256[] memory _senderKeys,
     uint256[] memory _receiverKeys,
     IRatesProvider _ratesProvider,
-    bytes32 _currency,
+    address _currency,
     bool[4] memory _fields) public returns (bool)
   {
     // Mark permanently the core audit storage with the currency to be used with

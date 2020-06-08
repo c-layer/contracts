@@ -50,7 +50,8 @@ abstract contract ITokenStorage {
 
   event OracleDefined(
     IUserRegistry userRegistry,
-    bytes32 currency);
+    IRatesProvider ratesProvider,
+    address currency);
   event TokenDelegateDefined(uint256 indexed delegateId, address delegate, uint256[] configurations);
   event TokenDelegateRemoved(uint256 indexed delegateId);
   event AuditConfigurationDefined(
@@ -62,7 +63,7 @@ abstract contract ITokenStorage {
     uint256[] senderKeys,
     uint256[] receiverKeys,
     IRatesProvider ratesProvider,
-    bytes32 currency,
+    address currency,
     bool[4] fields);
   event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] tokens, bool[] senders, bool[] receivers);
   event AuditsRemoved(address scope, uint256 scopeId);

@@ -59,7 +59,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   }
 
   struct AuditStorage {
-    bytes32 currency;
+    address currency;
 
     AuditData sharedData;
     mapping(uint256 => AuditData) userData;
@@ -76,7 +76,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     uint256[] senderKeys;
     uint256[] receiverKeys;
     IRatesProvider ratesProvider;
-    bytes32 currency;
+    address currency;
 
     bool fieldCreatedAt;
     bool fieldLastTransactionAt;
@@ -100,7 +100,8 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   mapping (address => bool) internal selfManaged;
 
   IUserRegistry internal userRegistry_;
-  bytes32 internal currency_;
+  IRatesProvider internal ratesProvider_;
+  address internal currency_;
   string internal name_;
 
   /**

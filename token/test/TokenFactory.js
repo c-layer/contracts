@@ -10,7 +10,7 @@ const TokenCore = artifacts.require("TokenCore.sol");
 const TokenFactory = artifacts.require("TokenFactory.sol");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 
-const TOKEN_DEPLOYMENT_COST = "1280719";
+const TOKEN_DEPLOYMENT_COST = "1281146";
 const CAN_TRANSFER = 5; // LOCKED
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");

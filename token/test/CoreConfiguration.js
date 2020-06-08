@@ -12,23 +12,23 @@ const CoreConfiguration = artifacts.require("CoreConfiguration.sol");
 const UserRegistryMock = artifacts.require("UserRegistryMock.sol");
 const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 
-const CHF_BYTES = web3.utils.toHex("CHF").padEnd(66, "0");
+const CHF_ADDRESS = web3.utils.toHex("CHF").padEnd(42, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
-const EMPTY_BYTES = "0x".padEnd(66, "0");
+const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const CORE_CONFIG_ROLE = web3.utils.fromAscii("CoreConfigRole").padEnd(66, "0");
 const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3("defineCoreConfigurations(" +
-    "address,address,address[],address,address,address,address,bytes32)"),
+    "address,address,address[],address,address,address,address,address)"),
   web3.utils.sha3("defineAuditConfiguration(" +
-    "uint256,uint256,bool,uint8,uint8,uint256[],uint256[],address,bytes32,bool[4])"),
+    "uint256,uint256,bool,uint8,uint8,uint256[],uint256[],address,address,bool[4])"),
   web3.utils.sha3("defineTokenDelegate(uint256,address,uint256[])"),
   web3.utils.sha3("defineRole(bytes32,bytes4[])"),
   web3.utils.sha3("assignOperators(bytes32,address[])"),
   web3.utils.sha3("revokeOperators(address[])"),
   web3.utils.sha3("assignProxyOperators(address,bytes32,address[])"),
-  web3.utils.sha3("defineOracle(address)"),
+  web3.utils.sha3("defineOracle(address,address,address)"),
 ].map((x) => x.substr(0, 10));
 const COMPLIANCE_PROXY_ROLE = web3.utils.fromAscii("ComplianceProxyRole").padEnd(66, "0");
 const COMPLIANCE_PROXY_PRIVILEGES = [
@@ -60,8 +60,8 @@ contract("CoreConfiguration", function (accounts) {
     compliantDelegate = await TokenDelegate.new();
     core = await TokenCore.new("MyCore", [accounts[0]]);
     ratesProvider = await RatesProviderMock.new("Test");
-    await ratesProvider.defineCurrencies([CHF_BYTES], ["0"], "100");
-    userRegistry = await UserRegistryMock.new("Test", CHF_BYTES, accounts, "0");
+    await ratesProvider.defineCurrencies([CHF_ADDRESS], ["0"], "100");
+    userRegistry = await UserRegistryMock.new("Test", CHF_ADDRESS, accounts, "0");
   });
 
   it("should create a core configuration", async function () {
@@ -87,7 +87,7 @@ contract("CoreConfiguration", function (accounts) {
         compliantDelegate.address,
         userRegistry.address,
         ratesProvider.address,
-        CHF_BYTES), "CC01");
+        CHF_ADDRESS), "CC01");
     });
 
     it("should have required core privileges", async function () {
@@ -117,7 +117,7 @@ contract("CoreConfiguration", function (accounts) {
           compliantDelegate.address,
           userRegistry.address,
           ratesProvider.address,
-          CHF_BYTES);
+          CHF_ADDRESS);
         assert.ok(tx.receipt.status, "Status");
         assert.equal(tx.logs.length, 0);
       });
@@ -131,13 +131,13 @@ contract("CoreConfiguration", function (accounts) {
             compliantDelegate.address,
             userRegistry.address,
             ratesProvider.address,
-            CHF_BYTES);
+            CHF_ADDRESS);
         });
 
         it("should have an oracle defined", async function () {
           const u = await core.oracle();
           assert.equal(u.userRegistry, userRegistry.address, "userRegistry");
-          assert.equal(u.currency, CHF_BYTES, "compliance currency");
+          assert.equal(u.currency, CHF_ADDRESS, "compliance currency");
         });
 
         it("should have audit configuration 1", async function () {
@@ -162,7 +162,7 @@ contract("CoreConfiguration", function (accounts) {
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), [], "sender keys");
           assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ["1"], "receiver keys");
           assert.equal(a.ratesProvider, ratesProvider.address, "ratesProvider");
-          assert.equal(a.currency, CHF_BYTES, "currency");
+          assert.equal(a.currency, CHF_ADDRESS, "currency");
           assert.deepEqual(a.fields, [false, false, false, true], "fields");
         });
 
@@ -175,7 +175,7 @@ contract("CoreConfiguration", function (accounts) {
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), ["2"], "sender keys");
           assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ["1"], "receiver keys");
           assert.equal(a.ratesProvider, ratesProvider.address, "ratesProvider");
-          assert.equal(a.currency, CHF_BYTES, "currency");
+          assert.equal(a.currency, CHF_ADDRESS, "currency");
           assert.deepEqual(a.fields, [true, false, true, true], "fields");
         });
 
