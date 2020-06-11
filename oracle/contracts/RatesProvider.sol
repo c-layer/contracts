@@ -27,8 +27,8 @@ contract RatesProvider is IRatesProvider, Operable {
   // decimals offset with which rates are stored using the counter currency
   // this must be high enought to cover worse case
   // Can only be set to 1 with ETH or ERC20 which already have 18 decimals
-  // It should likely be configured to 10**16 (18-2) for GBP, USD or CHF.
-  uint256 internal rateOffset_ = 1;
+  // To support rates with 4 decimals, it should likely be configured to 10**22 (18-2+4) for GBP, USD or CHF.
+  uint256 internal rateOffset_ = 10000;
 
   // The first currency will be the counter currency
   bytes32[] internal currencies_ =
