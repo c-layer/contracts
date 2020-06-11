@@ -16,16 +16,11 @@ import "./interface/ITokenStorage.sol";
 contract TokenStorage is ITokenStorage, OperableStorage {
   using SafeMath for uint256;
 
-  struct Proof {
-    uint256 amount;
-    uint64 startAt;
-    uint64 endAt;
-  }
-
   struct Lock {
     uint256 startAt;
     uint256 endAt;
     mapping(address => bool) exceptions;
+    address[] exceptionsList;
   }
 
   struct TokenData {
@@ -43,12 +38,10 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     uint256 allTimeBurned;
     uint256 allTimeSeized;
 
-    mapping (address => Proof[]) proofs;
     mapping (address => uint256) frozenUntils;
 
     Lock lock;
     IRule[] rules;
-    uint256 latestClaimAt;
   }
 
   struct AuditData {
@@ -68,20 +61,11 @@ contract TokenStorage is ITokenStorage, OperableStorage {
 
   struct AuditConfiguration {
     uint256 scopeId;
-    bool scopeCore;
-
     AuditMode mode;
-    AuditStorageMode storageMode;
 
     uint256[] senderKeys;
     uint256[] receiverKeys;
     IRatesProvider ratesProvider;
-    address currency;
-
-    bool fieldCreatedAt;
-    bool fieldLastTransactionAt;
-    bool fieldCumulatedEmission;
-    bool fieldCumulatedReception;
 
     mapping (address => bool) triggerSenders;
     mapping (address => bool) triggerReceivers;

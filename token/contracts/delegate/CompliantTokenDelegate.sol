@@ -1,6 +1,5 @@
 pragma solidity ^0.6.0;
 
-//import "./WithClaimsTokenDelegate.sol";
 import "./MintableTokenDelegate.sol";
 import "./RuleEngineDelegate.sol";
 import "./SeizableDelegate.sol";
@@ -32,8 +31,7 @@ contract CompliantTokenDelegate is
   MintableTokenDelegate
 {
 
-  uint256 constant AUDIT_CONFIG_REQUIREMENTS = 2; // 0- Default, 1- Transfer Limitst
-  uint256 constant USER_KEYS_REQUIREMENTS = 2; // 0- Sender limit, 1- Receiver limit
+  uint256 constant AUDIT_CONFIG_REQUIREMENTS = 1; // 1- Transfer Limitst
 
   /**
    * @dev check config requirements
@@ -53,10 +51,13 @@ contract CompliantTokenDelegate is
     require(!isLocked(_transferData), "CT01");
     require(!isFrozen(_transferData), "CT02");
     require(areTransferRulesValid(_transferData), "CT03");
-    require(isTransferBelowLimits(_transferData) == TransferCode.OK, "CT04");
+
+    STransferAuditData memory _transferAuditData =
+      prepareAuditInternal(_transferData);
+    require(isTransferBelowLimits(_transferData, _transferAuditData) == TransferCode.OK, "CT04");
 
     return super.transferInternal(_transferData)
-      && updateAllAuditsInternal(_transferData);
+      && updateAllAuditsInternal(_transferData, _transferAuditData);
   }
 
   /**
@@ -75,7 +76,10 @@ contract CompliantTokenDelegate is
       return TransferCode.RULE;
     }
 
-    code = isTransferBelowLimits(_transferData);
+    STransferAuditData memory _transferAuditData =
+      prepareAuditInternal(_transferData);
+
+    code = isTransferBelowLimits(_transferData, _transferAuditData);
     return (code == TransferCode.OK) ? 
       super.canTransferInternal(_transferData) : code;
   }

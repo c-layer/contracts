@@ -10,7 +10,7 @@ const TokenCore = artifacts.require("TokenCore.sol");
 const TokenFactory = artifacts.require("TokenFactory.sol");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 
-const TOKEN_DEPLOYMENT_COST = "1281146";
+const TOKEN_DEPLOYMENT_COST = 1281146;
 const CAN_TRANSFER = 5; // LOCKED
 
 const NULL_ADDRESS = "0x".padEnd(42, "0");
@@ -171,7 +171,6 @@ contract("TokenFactory", function (accounts) {
         assert.equal(tokenData.allTimeSeized.toString(), 0, "all time seized");
         assert.deepEqual(tokenData.lock.map((x) => x.toString()), ["0", LOCK_END], "lock");
         assert.deepEqual(tokenData.rules, [factory.address], "rules");
-        assert.equal(tokenData.latestClaimAt.toString(), "0", "latestClaimAt");
       });
 
       it("should return canTransfer tokens", async function () {

@@ -27,11 +27,16 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
   {
     STransferData memory transferData_ = transferData(
       address(0), address(0), _sender, address(0), 0);
+    STransferAuditData memory transferAuditData_ =
+      STransferAuditData(AUDIT_CONFIGURATION_DEFAULT, 0,
+        address(0), IRatesProvider(address(0)),
+        true, false);
+
     AuditConfiguration storage configuration =
       auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
     configuration.senderKeys = _userKeys;
 
-    super.fetchSenderUser(transferData_, configuration.senderKeys);
+    super.fetchSenderUser(transferData_, transferAuditData_);
     logTransferData(transferData_);
     return true;
   }
@@ -44,11 +49,16 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
   {
     STransferData memory transferData_ = transferData(
       address(0), address(0), address(0), _receiver, 0);
+    STransferAuditData memory transferAuditData_ =
+      STransferAuditData(AUDIT_CONFIGURATION_DEFAULT, 0,
+        address(0), IRatesProvider(address(0)),
+        false, true);
+
     AuditConfiguration storage configuration =
       auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
     configuration.receiverKeys = _userKeys;
 
-    super.fetchReceiverUser(transferData_, configuration.receiverKeys);
+    super.fetchReceiverUser(transferData_, transferAuditData_);
     logTransferData(transferData_);
     return true;
   }
@@ -63,12 +73,12 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
   {
     STransferData memory transferData_ = transferData(
       _token, address(0), address(0), address(0), _value);
-    AuditConfiguration storage configuration =
-      auditConfigurations[AUDIT_CONFIGURATION_DEFAULT];
-    configuration.ratesProvider = _ratesProvider;
-    configuration.currency = _currencyTo;
+    STransferAuditData memory transferAuditData_ =
+      STransferAuditData(AUDIT_CONFIGURATION_DEFAULT, 0,
+        _currencyTo, _ratesProvider,
+        false, true);
 
-    super.fetchConvertedValue(transferData_, configuration);
+    super.fetchConvertedValue(transferData_, transferAuditData_);
     logTransferData(transferData_);
     return true;
   }

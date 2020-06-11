@@ -43,9 +43,7 @@ abstract contract ITokenStorage {
     NEVER,
     ALWAYS,
     ALWAYS_TRIGGERS_EXCLUDED,
-    TRIGGERS_ONLY,
-    WHEN_TRIGGERS_MATCHED,
-    WHEN_TRIGGERS_UNMATCHED
+    WHEN_TRIGGERS_MATCHED
   }
 
   event OracleDefined(
@@ -57,14 +55,11 @@ abstract contract ITokenStorage {
   event AuditConfigurationDefined(
     uint256 indexed configurationId,
     uint256 scopeId,
-    bool scopeCore,
     AuditMode mode,
-    AuditStorageMode storageMode,
     uint256[] senderKeys,
     uint256[] receiverKeys,
     IRatesProvider ratesProvider,
-    address currency,
-    bool[4] fields);
+    address currency);
   event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] tokens, bool[] senders, bool[] receivers);
   event AuditsRemoved(address scope, uint256 scopeId);
   event SelfManaged(address indexed holder, bool active);
@@ -72,7 +67,6 @@ abstract contract ITokenStorage {
   event Minted(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
   event Burned(address indexed token, uint256 amount);
-  event ProofCreated(address indexed token, address indexed holder, uint256 proofId);
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
     address indexed token,
@@ -99,6 +93,10 @@ abstract contract ITokenStorage {
     uint256 senderId, uint256[] senderKeys, bool senderFetched,
     uint256 receiverId, uint256[] receiverKeys, bool receiverFetched,
     uint256 value, uint256 convertedValue);
+  event LogTransferAuditData(
+    uint256 auditConfigurationId, uint256 scopeId,
+    address currency, IRatesProvider ratesProvider,
+    bool senderAuditRequired, bool receiverAuditRequired);
   event LogAuditData(
     uint64 createdAt, uint64 lastTransactionAt,
     uint256 cumulatedEmission, uint256 cumulatedReception

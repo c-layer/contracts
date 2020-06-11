@@ -16,33 +16,27 @@ import "./AuditableDelegate.sol";
 */
 contract LimitableTransferabilityDelegate is AuditableDelegate {
 
-  uint256 constant AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY = 1;
-
   /**
    * @dev isTransferBelowLimits
    */
-  function isTransferBelowLimits(STransferData memory _transferData)
-    internal view returns (TransferCode code) {
-
-    uint256 configurationId = delegatesConfigurations[proxyDelegateIds[_transferData.token]]
-      [AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY];
-    AuditConfiguration storage configuration_ = auditConfigurations[configurationId];
-
-    if (!isAuditRequiredInternal(configuration_, _transferData)) {
+  function isTransferBelowLimits(STransferData memory _transferData,
+      STransferAuditData memory _transferAuditData) internal view returns (TransferCode code)
+  {
+    if (!_transferAuditData.senderAuditRequired
+      && !_transferAuditData.receiverAuditRequired)
+    {
       return TransferCode.OK;
     }
 
-    fetchConvertedValue(_transferData, configuration_);
-    if (_transferData.value != 0 && _transferData.convertedValue == 0) {
+    fetchConvertedValue(_transferData, _transferAuditData);
+    if (_transferData.convertedValue == 0) {
       return TransferCode.INVALID_RATE;
     }
 
-    AuditStorage storage auditStorage = (
-        (configuration_.scopeCore) ? audits[address(this)] : audits[_transferData.token]
-      )[configuration_.scopeId];
+    AuditStorage storage auditStorage = audits[address(this)][_transferAuditData.scopeId];
 
-    if (configuration_.fieldCumulatedEmission) {
-      fetchSenderUser(_transferData, configuration_.senderKeys);
+    if (_transferAuditData.senderAuditRequired) {
+      fetchSenderUser(_transferData, _transferAuditData);
       if (_transferData.senderId == 0) {
         return TransferCode.NON_REGISTRED_SENDER;
       }
@@ -54,8 +48,8 @@ contract LimitableTransferabilityDelegate is AuditableDelegate {
       }
     }
 
-    if (configuration_.fieldCumulatedReception) {
-      fetchReceiverUser(_transferData, configuration_.receiverKeys);
+    if (_transferAuditData.receiverAuditRequired) {
+      fetchReceiverUser(_transferData, _transferAuditData);
       if (_transferData.receiverId == 0) {
         return TransferCode.NON_REGISTRED_RECEIVER;
       }

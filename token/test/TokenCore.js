@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
+const BN = require("bn.js");
 const assertRevert = require("./helpers/assertRevert");
 const TokenProxy = artifacts.require("TokenProxy.sol");
 const TokenCore = artifacts.require("TokenCore.sol");
@@ -14,7 +15,7 @@ const RatesProviderMock = artifacts.require("RatesProviderMock.sol");
 const NAME = "Token";
 const SYMBOL = "TKN";
 const DECIMALS = 18;
-const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(42, "0");
+const SYMBOL_BYTES = web3.utils.toHex("TKN").padEnd(66, "0");
 //const CHF = "CHF";
 const CHF_ADDRESS = web3.utils.toHex("CHF").padEnd(42, "0");
 const NULL_ADDRESS = "0x".padEnd(42, "0");
@@ -102,7 +103,7 @@ contract("TokenCore", function (accounts) {
       assert.equal(tx.logs[0].event, "OracleDefined", "event");
       assert.equal(tx.logs[0].args.userRegistry, userRegistry.address, "user registry");
       assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
-      assert.equal(tx.logs[0].args.currency.toLowerCase(), SYMBOL_BYTES, "currency");
+      assert.equal(tx.logs[0].args.currency.toLowerCase(), CHF_ADDRESS, "currency");
     });
 
     it("should have oracle", async function () {
@@ -115,20 +116,16 @@ contract("TokenCore", function (accounts) {
   });
 
   it("should define audit configuration", async function () {
-    const tx = await core.defineAuditConfiguration(2,
-      3, true,
-      AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-      [1], [2], ratesProvider.address, CHF_ADDRESS,
-      [true, true, true, true]);
+    const tx = await core.defineAuditConfiguration(2, 3,
+      AUDIT_MODE_TRIGGERS_ONLY,
+      [1], [2], ratesProvider.address, CHF_ADDRESS);
 
     assert.ok(tx.receipt.status, "Status");
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, "AuditConfigurationDefined", "event");
     assert.equal(tx.logs[0].args.configurationId, 2, "configurationId");
     assert.equal(tx.logs[0].args.scopeId, 3, "scopeId");
-    assert.equal(tx.logs[0].args.scopeCore, true, "scopeCore");
     assert.equal(tx.logs[0].args.mode, AUDIT_MODE_TRIGGERS_ONLY, "mode");
-    assert.equal(tx.logs[0].args.storageMode, AUDIT_STORAGE_MODE_SHARED, "storageMode");
     assert.deepEqual(tx.logs[0].args.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
     assert.deepEqual(tx.logs[0].args.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
     assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, "ratesProvider");
@@ -172,33 +169,25 @@ contract("TokenCore", function (accounts) {
 
   describe("with a delegate defined", async function () {
     beforeEach(async function () {
-      await core.defineAuditConfiguration(2,
-        3, true,
-        AUDIT_MODE_TRIGGERS_ONLY, AUDIT_STORAGE_MODE_SHARED,
-        [1], [2], ratesProvider.address, CHF_ADDRESS,
-        [true, true, true, true]);
+      await core.defineAuditConfiguration(2, 3,
+        AUDIT_MODE_TRIGGERS_ONLY,
+        [1], [2], ratesProvider.address, CHF_ADDRESS);
       await core.defineAuditTriggers(
         2, [accounts[1], accounts[2], accounts[3]],
         [false, false, true],
         [true, false, false],
         [false, true, false]);
-      await core.defineTokenDelegate(1, delegate.address, [2, 4]);
+      await core.defineTokenDelegate(1, delegate.address, [ 2, 4 ]);
     });
 
     it("should have an audit configuration", async function () {
       const configuration = await core.auditConfiguration(2);
       assert.equal(configuration.mode, AUDIT_MODE_TRIGGERS_ONLY, "audit mode");
-      assert.equal(configuration.storageMode, AUDIT_STORAGE_MODE_SHARED, "audit storage mode");
       assert.equal(configuration.scopeId, 3, "scope id");
-      assert.equal(configuration.scopeCore, true, "scope core");
       assert.deepEqual(configuration.senderKeys.map((x) => x.toString()), ["1"], "senderKeys");
       assert.deepEqual(configuration.receiverKeys.map((x) => x.toString()), ["2"], "receiverKeys");
       assert.equal(configuration.ratesProvider, ratesProvider.address, "ratesProvider");
       assert.equal(configuration.currency, CHF_ADDRESS, "currency");
-      assert.equal(configuration.fields[0], true, "createdAt");
-      assert.equal(configuration.fields[1], true, "lastTransactionAt");
-      assert.equal(configuration.fields[2], true, "cumulatedEmission");
-      assert.equal(configuration.fields[3], true, "cumulatedReception");
     });
 
     it("should have audit triggers", async function () {
@@ -252,6 +241,72 @@ contract("TokenCore", function (accounts) {
         token = await TokenProxy.new(core.address);
         await core.defineToken(
           token.address, 1, NAME, SYMBOL, DECIMALS);
+      });
+
+      it("should have a token data", async function () {
+        const tokenData = await core.token(token.address);
+        assert.ok(!tokenData.mintingFinished, "mintingFinished");
+        assert.equal(tokenData.allTimeMinted.toString(), "0", "all time minted");
+        assert.equal(tokenData.allTimeBurned.toString(), "0", "all time burned");
+        assert.equal(tokenData.allTimeSeized.toString(), "0", "all time seized");
+        assert.deepEqual(tokenData.lock.map((x) => x.toString()), ["0", "0"], "lock");
+        assert.deepEqual(tokenData.lockExceptions, [], "lock exceptions");
+        assert.equal(tokenData.frozenUntil.toString(), "0", "frozen until");
+        assert.deepEqual(tokenData.rules, [], "rules");
+      });
+
+      it("should have a minting finished", async function () {
+        await core.finishMinting(token.address);
+        let tokenData = await core.token(token.address);
+        assert.ok(tokenData.mintingFinished, "minting finished");
+      });
+
+      it("should have all time minted", async function () {
+        const VAULT1="11111", VAULT2="22222";
+        await core.mint(token.address, [accounts[0], accounts[1]], [VAULT1, VAULT2]);
+        let tokenData = await core.token(token.address);
+        assert.equal(tokenData.allTimeMinted.toString(),
+          new BN(VAULT1).add(new BN(VAULT2)).toString(), "all time minted");
+      });
+
+      it("should have all time burned", async function () {
+        const BURN="5555";
+        await core.mint(token.address, [accounts[0]], [BURN]);
+        await core.burn(token.address, BURN);
+        let tokenData = await core.token(token.address);
+        assert.equal(tokenData.allTimeBurned.toString(), BURN, "all time burned");
+      });
+
+      it("should have all time seize", async function () {
+        const SEIZE="5555";
+        await core.mint(token.address, [accounts[1]], [SEIZE]);
+        await core.seize(token.address, accounts[1], SEIZE);
+        let tokenData = await core.token(token.address);
+        assert.equal(tokenData.allTimeSeized.toString(), SEIZE, "all time seized");
+      });
+
+      it("should have a lock", async function () {
+        const LOCK_START = Math.floor(new Date().getTime()/1000);
+        const LOCK_END = Math.floor(new Date("2050-01-01").getTime()/1000);
+        await core.defineLock(token.address, LOCK_START, LOCK_END,
+          [ accounts[1], accounts[2] ]);
+        let tokenData = await core.token(token.address);
+        assert.deepEqual(tokenData.lock.map((x) => x.toString()), [LOCK_START + "", LOCK_END + ""], "lock");
+        assert.deepEqual(tokenData.lockExceptions, [accounts[1], accounts[2]], "lock exceptions");
+      });
+
+      it("should have a frozen until date", async function () {
+        const FREEZE_UNTIL = new Date("2100-01-01").getTime()/1000;
+        await core.freezeManyAddresses(token.address,
+          [token.address], FREEZE_UNTIL);
+        let tokenData = await core.token(token.address);
+        assert.equal(tokenData.frozenUntil.toString(), FREEZE_UNTIL, "frozen until");
+      });
+
+      it("should have a rules", async function () {
+        await core.defineRules(token.address, [token.address, accounts[0]]);
+        let tokenData = await core.token(token.address);
+        assert.deepEqual(tokenData.rules, [token.address, accounts[0]], "rules");
       });
 
       it("should let migrate token", async function () {

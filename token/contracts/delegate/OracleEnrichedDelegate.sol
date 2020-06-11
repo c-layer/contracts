@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "./STransferData.sol";
+import "./STransferAuditData.sol";
 import "../TokenStorage.sol";
 
 
@@ -24,11 +25,12 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev fetchSenderUser
    */
   function fetchSenderUser(STransferData memory _transferData,
-    uint256[] storage _userKeys) internal view
+     STransferAuditData memory _transferAuditData) internal view
   {
     if (!_transferData.senderFetched) {
       (_transferData.senderId, _transferData.senderKeys) =
-        userRegistry_.validUser(_transferData.sender, _userKeys);
+        userRegistry_.validUser(_transferData.sender,
+        auditConfigurations[_transferAuditData.auditConfigurationId].senderKeys);
       _transferData.senderFetched = true;
     }
   }
@@ -37,11 +39,12 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev fetchReceiverUser
    */
   function fetchReceiverUser(STransferData memory _transferData,
-    uint256[] storage _userKeys) internal view
+    STransferAuditData memory _transferAuditData) internal view
   {
     if (!_transferData.receiverFetched) {
       (_transferData.receiverId, _transferData.receiverKeys) =
-        userRegistry_.validUser(_transferData.receiver, _userKeys);
+        userRegistry_.validUser(_transferData.receiver,
+        auditConfigurations[_transferAuditData.auditConfigurationId].receiverKeys);
       _transferData.receiverFetched = true;
     }
   }
@@ -52,14 +55,15 @@ contract OracleEnrichedDelegate is TokenStorage {
    * @dev it is left to the code calling this function to handle this case
    */
   function fetchConvertedValue(STransferData memory _transferData,
-    AuditConfiguration storage _configuration) internal view
+    STransferAuditData memory _transferAuditData) internal view
   {
     if (_transferData.convertedValue == 0 && _transferData.value != 0) {
       address currencyFrom = _transferData.token;
-      _transferData.convertedValue = (currencyFrom != _configuration.currency) ?
-        _configuration.ratesProvider.convert(
-          _transferData.value, bytes32(bytes20(currencyFrom)),
-          bytes32(bytes20(_configuration.currency))) : _transferData.value;
+      _transferData.convertedValue = (
+         _transferAuditData.currency != address(0) && currencyFrom != _transferAuditData.currency
+      ) ? _transferAuditData.ratesProvider.convert(_transferData.value,
+            bytes32(bytes20(currencyFrom)), bytes32(bytes20(_transferAuditData.currency))
+          ) : _transferData.value;
     }
   }
 }

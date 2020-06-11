@@ -24,34 +24,32 @@ const NULL_ADDRESS = "0x".padEnd(42, "0");
 const EMPTY_BYTES = "0x".padEnd(42, "0");
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const CORE_GAS_COST = 4510002;
+const CORE_GAS_COST = 4599789;
 const MINTABLE_DELEGATE_GAS_COST = 1663879;
-const DELEGATE_GAS_COST = 3334284;
-const PROXY_GAS_COST = 824865;
+const DELEGATE_GAS_COST = 2953734;
+const PROXY_GAS_COST = 824853;
 
 const MINTABLE_FIRST_TRANSFER_COST = 64346;
-const MINTABLE_FIRST_TRANSFER_FROM_COST = 76256;
+const MINTABLE_FIRST_TRANSFER_FROM_COST = 76234;
 const MINTABLE_TRANSFER_COST = 48866;
-const FIRST_TRANSFER_COST = 82927;
-const FIRST_TRANSFER_FROM_COST = 94815;
-const TRANSFER_COST = 67447;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 290941;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 302829;
-const ISSUANCE_AUDITED_TRANSFER_COST = 177372;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 140019;
-const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 100390;
-const AUDITED_FIRST_TRANSFER_COST = 261433;
-const AUDITED_FIRST_TRANSFER_FROM_COST = 273321;
-const AUDITED_TRANSFER_COST = 169354;
-const AUDITED_FIRST_TRANSFER_AFTER_COST = 271388;
-const AUDITED_TRANSFER_AFTER_COST = 183644;
+const FIRST_TRANSFER_COST = 100149;
+const FIRST_TRANSFER_FROM_COST = 112015;
+const TRANSFER_COST = 65856;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 176089;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 187955;
+const ISSUANCE_AUDITED_TRANSFER_COST = 103825;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 102195;
+const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 66901;
+const AUDITED_FIRST_TRANSFER_COST = 187067;
+const AUDITED_FIRST_TRANSFER_FROM_COST = 198933;
+const AUDITED_TRANSFER_COST = 114803;
+const AUDITED_FIRST_TRANSFER_AFTER_COST = 209822;
+const AUDITED_TRANSFER_AFTER_COST = 122078;
 
 // const AUDIT_MODE_NEVER = 0;
 const AUDIT_MODE_ALWAYS = 1;
 const AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED = 2;
-// const AUDIT_MODE_TRIGGERS_ONLY = 3;
-const AUDIT_MODE_WHEN_TRIGGERS_MATCHED = 4;
-// const AUDIT_MODE_WHEN_TRIGGERS_UNMATCHED = 5;
+const AUDIT_MODE_WHEN_TRIGGERS_MATCHED = 3;
 
 const AUDIT_STORAGE_ADDRESS = 0;
 const AUDIT_STORAGE_USER_ID = 1;
@@ -100,7 +98,7 @@ contract("Performance", function (accounts) {
       core = await TokenCore.new("Test", [accounts[0]]);
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
-      await core.defineTokenDelegate(2, delegates[1].address, [1, 2]);
+      await core.defineTokenDelegate(2, delegates[1].address, [2]);
       await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
@@ -168,17 +166,10 @@ contract("Performance", function (accounts) {
 
       describe("With primary aml audit configuration", function () {
         beforeEach(async function () {
-          await core.defineTokenDelegate(2, delegates[1].address, [0, 1]);
-          await core.defineAuditConfiguration(0,
-            0, false,
-            AUDIT_MODE_ALWAYS, AUDIT_STORAGE_ADDRESS,
-            [], [], NULL_ADDRESS, EMPTY_BYTES,
-            [false, true, false, false]);
-          await core.defineAuditConfiguration(1,
-            0, true,
-            AUDIT_MODE_WHEN_TRIGGERS_MATCHED, AUDIT_STORAGE_USER_ID,
-            [1], [2], ratesProvider.address, CHF_ADDRESS,
-            [true, false, false, true]);
+          await core.defineTokenDelegate(2, delegates[1].address, [1]);
+          await core.defineAuditConfiguration(1, 0,
+            AUDIT_MODE_WHEN_TRIGGERS_MATCHED,
+            [1], [2], ratesProvider.address, CHF_ADDRESS);
           await core.defineAuditTriggers(
             1, [accounts[0]], [false], [true], [false]);
         });
@@ -230,17 +221,10 @@ contract("Performance", function (accounts) {
 
       describe("With secondary aml audit configuration", function () {
         beforeEach(async function () {
-          await core.defineTokenDelegate(2, delegates[1].address, [0, 1]);
-          await core.defineAuditConfiguration(0,
-            0, false,
-            AUDIT_MODE_ALWAYS, AUDIT_STORAGE_ADDRESS,
-            [], [], NULL_ADDRESS, EMPTY_BYTES,
-            [false, true, false, false]);
-          await core.defineAuditConfiguration(1,
-            0, true,
-            AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED, AUDIT_STORAGE_USER_ID,
-            [1], [2], ratesProvider.address, CHF_ADDRESS,
-            [true, false, true, true]);
+          await core.defineTokenDelegate(2, delegates[1].address, [2]);
+          await core.defineAuditConfiguration(1, 0,
+            AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED,
+            [1], [2], ratesProvider.address, CHF_ADDRESS);
           await core.defineAuditTriggers(
             1, [accounts[0]], [false], [true], [false]);
         });

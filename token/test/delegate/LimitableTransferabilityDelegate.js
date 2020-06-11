@@ -57,12 +57,9 @@ contract("LimitableTransferabilityDelegate", function (accounts) {
     await userRegistry.updateUserAllExtended(2, ["5", "50000", "50000"]);
     await userRegistry.updateUserAllExtended(3, ["5", "50000", "50000"]);
 
-    await delegate.defineAuditConfiguration(1,
-      0, true, // scopes
-      AUDIT_TRIGGERS_ONLY, AUDIT_STORAGE_USER_ID,
-      [1], [2], ratesProvider.address, CHF_BYTES,
-      [false, false, true, true] // fields
-   );
+    await delegate.defineAuditConfiguration(1, 0,
+      AUDIT_TRIGGERS_ONLY,
+      [1], [2], ratesProvider.address, CHF_BYTES);
   });
 
   it("should test", async function () {

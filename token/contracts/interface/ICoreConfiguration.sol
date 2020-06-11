@@ -17,8 +17,7 @@ import "../interface/ITokenCore.sol";
 abstract contract ICoreConfiguration is ITokenAccessDefinitions {
 
   enum Configuration {
-    NO_AUDITS,
-    PROOF_OF_OWNERSHIP,
+    DEFAULT,
     AML_PRIMARY,
     AML_FULL
   }

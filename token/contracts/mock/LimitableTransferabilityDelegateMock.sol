@@ -27,6 +27,7 @@ contract LimitableTransferabilityDelegateMock is LimitableTransferabilityDelegat
     STransferData memory transferData_ = transferData(
       _token, _caller, _sender, _receiver, _value);
 
-    return isTransferBelowLimits(transferData_);
+    return isTransferBelowLimits(transferData_,
+      prepareAuditInternal(transferData_));
   }
 }

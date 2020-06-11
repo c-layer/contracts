@@ -28,7 +28,7 @@ abstract contract LockableDelegate is TokenStorage {
     address[] memory _exceptions) public returns (bool)
   {
     require(_startAt <= _endAt, "LTD01");
-    tokens[_token].lock = Lock(_startAt, _endAt);
+    tokens[_token].lock = Lock(_startAt, _endAt, _exceptions);
     Lock storage tokenLock = tokens[_token].lock;
     for (uint256 i=0; i < _exceptions.length; i++) {
       tokenLock.exceptions[_exceptions[i]] = true;

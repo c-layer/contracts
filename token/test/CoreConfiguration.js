@@ -22,7 +22,7 @@ const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3("defineCoreConfigurations(" +
     "address,address,address[],address,address,address,address,address)"),
   web3.utils.sha3("defineAuditConfiguration(" +
-    "uint256,uint256,bool,uint8,uint8,uint256[],uint256[],address,address,bool[4])"),
+    "uint256,uint256,uint8,uint256[],uint256[],address,address)"),
   web3.utils.sha3("defineTokenDelegate(uint256,address,uint256[])"),
   web3.utils.sha3("defineRole(bytes32,bytes4[])"),
   web3.utils.sha3("assignOperators(bytes32,address[])"),
@@ -46,9 +46,10 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3("defineClaim(address,address,uint256)"),
 ].map((x) => x.substr(0, 10));
 
+const NEVER = 0;
 const ALWAYS = 1;
 const ALWAYS_TRIGGERS_EXCLUDED = 2;
-const WHEN_TRIGGERS_MATCHED = 4;
+const WHEN_TRIGGERS_MATCHED = 3;
 
 contract("CoreConfiguration", function (accounts) {
   let mintableDelegate, compliantDelegate;
@@ -143,40 +144,21 @@ contract("CoreConfiguration", function (accounts) {
         it("should have audit configuration 1", async function () {
           const a = await core.auditConfiguration(1);
           assert.equal(a.scopeId.toString(), 0, "scopeId");
-          assert.ok(!a.scopeCore, "scopeCore");
-          assert.equal(a.mode.toString(), ALWAYS, "auditMode");
-          assert.equal(a.storageMode.toString(), 0, "auditStorage");
+          assert.equal(a.mode.toString(), WHEN_TRIGGERS_MATCHED, "auditMode");
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), [], "sender keys");
-          assert.deepEqual(a.receiverKeys.map((x) => x.toString()), [], "receiver keys");
-          assert.equal(a.ratesProvider, NULL_ADDRESS, "ratesProvider");
-          assert.equal(a.currency, 0, "currency");
-          assert.deepEqual(a.fields, [false, true, false, false], "fields");
+          assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ["1"], "receiver keys");
+          assert.equal(a.ratesProvider, ratesProvider.address, "ratesProvider");
+          assert.equal(a.currency, CHF_ADDRESS, "currency");
         });
 
         it("should have audit configuration 2", async function () {
           const a = await core.auditConfiguration(2);
           assert.equal(a.scopeId.toString(), 0, "scopeId");
-          assert.ok(a.scopeCore, "scopeCore");
-          assert.equal(a.mode.toString(), WHEN_TRIGGERS_MATCHED, "auditMode");
-          assert.equal(a.storageMode.toString(), 1, "auditStorage");
-          assert.deepEqual(a.senderKeys.map((x) => x.toString()), [], "sender keys");
-          assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ["1"], "receiver keys");
-          assert.equal(a.ratesProvider, ratesProvider.address, "ratesProvider");
-          assert.equal(a.currency, CHF_ADDRESS, "currency");
-          assert.deepEqual(a.fields, [false, false, false, true], "fields");
-        });
-
-        it("should have audit configuration 3", async function () {
-          const a = await core.auditConfiguration(3);
-          assert.equal(a.scopeId.toString(), 0, "scopeId");
-          assert.ok(a.scopeCore, "scopeCore");
           assert.equal(a.mode.toString(), ALWAYS_TRIGGERS_EXCLUDED, "auditMode");
-          assert.equal(a.storageMode.toString(), 1, "auditStorage");
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), ["2"], "sender keys");
           assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ["1"], "receiver keys");
           assert.equal(a.ratesProvider, ratesProvider.address, "ratesProvider");
           assert.equal(a.currency, CHF_ADDRESS, "currency");
-          assert.deepEqual(a.fields, [true, false, true, true], "fields");
         });
 
         it("should have 0+7 delegates correctly configured", async function () {

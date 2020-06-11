@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../delegate/STransferData.sol";
+import "../delegate/STransferAuditData.sol";
 import "../TokenStorage.sol";
 
 
@@ -38,12 +39,25 @@ contract DelegateMock is TokenStorage {
   }
 
   /**
+   * @dev logTransferAudtData
+   */
+  function logTransferAuditData(STransferAuditData memory _transferAuditData) internal {
+    emit LogTransferAuditData (
+      _transferAuditData.auditConfigurationId,
+      _transferAuditData.scopeId,
+      _transferAuditData.currency,
+      _transferAuditData.ratesProvider,
+      _transferAuditData.senderAuditRequired,
+      _transferAuditData.receiverAuditRequired);
+  }
+
+  /**
    * @dev logAllAuditsData
    */
   function logAllAuditsData(uint256[] memory _configurationIds,
     STransferData memory _transferData) internal
   {
-    for (uint256 i=1; i < _configurationIds.length; i++) {
+    for (uint256 i=0; i < _configurationIds.length; i++) {
       logAuditData(_configurationIds[i], _transferData);
     }
   }
@@ -56,7 +70,7 @@ contract DelegateMock is TokenStorage {
   {
     AuditConfiguration storage configuration =
       auditConfigurations[_configurationId];
-    address scope = (configuration.scopeCore) ? address(this) : _transferData.token;
+    address scope = address(this);
     AuditStorage storage auditStorage = audits[scope][configuration.scopeId];
 
     AuditData storage audit = auditStorage.sharedData;
@@ -211,34 +225,21 @@ contract DelegateMock is TokenStorage {
   function defineAuditConfiguration(
     uint256 _configurationId,
     uint256 _scopeId,
-    bool _scopeCore,
     AuditMode _mode,
-    AuditStorageMode _storageMode,
     uint256[] memory _senderKeys,
     uint256[] memory _receiverKeys,
     IRatesProvider _ratesProvider,
-    address _currency,
-    bool[4] memory _fields) public returns (bool)
+    address _currency) public returns (bool)
   {
     // Mark permanently the core audit storage with the currency to be used with
-    if (_scopeCore) {
-      AuditStorage storage auditStorage = audits[address(this)][_scopeId];
-      auditStorage.currency = _currency;
-    }
+    audits[address(this)][_scopeId].currency = _currency;
 
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
     auditConfiguration_.mode = _mode;
-    auditConfiguration_.storageMode = _storageMode;
     auditConfiguration_.scopeId = _scopeId;
-    auditConfiguration_.scopeCore = _scopeCore;
     auditConfiguration_.senderKeys = _senderKeys;
     auditConfiguration_.receiverKeys = _receiverKeys;
     auditConfiguration_.ratesProvider = _ratesProvider;
-    auditConfiguration_.currency = _currency;
-    auditConfiguration_.fieldCreatedAt = _fields[0];
-    auditConfiguration_.fieldLastTransactionAt = _fields[1];
-    auditConfiguration_.fieldCumulatedEmission = _fields[2];
-    auditConfiguration_.fieldCumulatedReception = _fields[3];
     return true;
   }
 

@@ -27,5 +27,15 @@ module.exports = {
       value: log.value.toString(),
       convertedValue: log.convertedValue.toString(),
     }, expected, message);
+  },
+  assertTransferDataLog: function (log, expected, message) {
+    assert.deepEqual({
+      auditConfigurationId: log.auditConfigurationId.toString(),
+      scopeId: log.scopeId.toString(),
+      currency: log.currency,
+      ratesProvider: log.ratesProvider,
+      senderAuditRequired: log.senderAuditRequired,
+      receiverAuditRequired: log.receiverAuditRequired
+    }, expected, message);
   }
 };
