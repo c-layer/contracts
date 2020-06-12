@@ -29,7 +29,7 @@ contract LimitableTransferabilityDelegate is AuditableDelegate {
     }
 
     fetchConvertedValue(_transferData, _transferAuditData);
-    if (_transferData.convertedValue == 0) {
+    if (_transferData.value != 0 && _transferData.convertedValue == 0) {
       return TransferCode.INVALID_RATE;
     }
 

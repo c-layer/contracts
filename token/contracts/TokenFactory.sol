@@ -6,6 +6,7 @@ import "@c-layer/common/contracts/operable/OperableAsCore.sol";
 import "@c-layer/common/contracts/interface/IERC20.sol";
 import "./interface/ITokenCore.sol";
 import "./interface/ITokenFactory.sol";
+import "./rule/YesNoRule.sol";
 
 
 /**
@@ -32,7 +33,12 @@ import "./interface/ITokenFactory.sol";
  *   TF15: Allowances must be lower than the token balance
  *   TF16: Allowance must be successfull
  **/
-contract TokenFactory is ITokenFactory, Factory, OperableAsCore, Operable {
+contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Operable {
+
+  /*
+   * @dev constructor
+   */
+  constructor() public YesNoRule(false) {}
 
   /*
    * @dev has core access
