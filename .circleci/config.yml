@@ -31,6 +31,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+          path: ~/project
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
@@ -43,10 +44,15 @@ jobs:
           key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - << parameters.package_name >>
   lint:
     <<: *defaults
     steps:
       - checkout
+          path: ~/project
       - attach_workspace:
           at: ~/project
       - run:
@@ -56,6 +62,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+          path: ~/project
       - attach_workspace:
           at: ~/project
       - run:
@@ -65,6 +72,7 @@ jobs:
     <<: *defaults
     steps:
       - checkout
+          path: ~/project
       - attach_workspace:
           at: ~/project
       - run:
