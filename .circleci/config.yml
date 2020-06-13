@@ -4,10 +4,23 @@ aliases:
   - &defaults
     docker:
       - image: circleci/node:10
+    parameters:
+      package:
+        type: string
+        default: ~/
+    working_directory:
+      << parameters.package >>
 
   - &cache_key_node_modules
     key: v1-node_modules-{{ checksum "package-lock.json" }}
 
+  - &matrix_workflow_job
+    matrix:
+      parameters:
+        package: ["common", "token", "oracle"]
+    requires:
+      - dependencies
+ 
 jobs:
   dependencies:
     <<: *defaults
@@ -51,49 +64,18 @@ jobs:
           at: .
       - run:
           name: Unit tests with coverage report
-          command: npm run coverage
+          command: yarn run coverage
       - run:
           name: Upload coverage
           command: |
             bash <(curl -s https://codecov.io/bash) -F moduleA
 workflows:
-  version: 2
-  common:
+  workflow:
     jobs:
-      working_directory: ~/common
       - dependencies
       - lint:
-          requires:
-            - dependencies
+        <<: *matrix_worflow_job
       - test:
-          requires:
-            - dependencies
+        <<: *matrix_worflow_job
       - coverage:
-          requires:
-            - dependencies
-  token:
-    jobs:
-      working_directory: ~/token
-      - dependencies
-      - lint:
-          requires:
-            - dependencies
-      - test:
-          requires:
-            - dependencies
-      - coverage:
-          requires:
-              - dependencies
-  oracle:
-    jobs:
-      working_directory: ~/oracle
-      - dependencies
-      - lint:
-          requires:
-            - dependencies
-      - test:
-          requires:
-            - dependencies
-      - coverage:
-          requires:
-            - dependencies
+        <<: *matrix_worflow_job
