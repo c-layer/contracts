@@ -79,8 +79,8 @@ workflows:
     jobs:
       - dependencies
       - lint:
-        <<: *matrix_workflow_job
+          <<: *matrix_workflow_job
       - test:
-        <<: *matrix_workflow_job
+          <<: *matrix_workflow_job
       - coverage:
-        <<: *matrix_workflow_job
+          <<: *matrix_workflow_job
