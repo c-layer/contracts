@@ -45,7 +45,7 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     uint256[] memory _supplies,
     address[] memory _proxyOperators
   ) virtual public returns (IERC20);
-  function reviewToken(
+  function approveToken(
     ITokenCore _core,
     IERC20 _token) virtual public returns (bool);
   function configureTokensales(
@@ -60,7 +60,7 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     uint256[] memory _allowances) virtual public returns (bool);
 
   event TokenDeployed(IERC20 token);
-  event TokenReviewed(IERC20 token);
+  event TokenApproved(IERC20 token);
   event TokensalesConfigured(IERC20 token, address[] tokensales);
   event AllowanceUpdated(IERC20 token, address spender, uint256 allowance);
 }

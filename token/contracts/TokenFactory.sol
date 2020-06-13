@@ -99,7 +99,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     require(_core.assignProxyOperators(address(token), ISSUER_PROXY_ROLE, _proxyOperators), "TF07");
 
     // 4- Define rules
-    // Token is locked for review by core operators
+    // Token is locked for review and approval by core operators
     // Removing the token factory from the rules will unlocked the token
     IRule[] memory factoryRules = new IRule[](1);
     factoryRules[0] = IRule(address(this));
@@ -123,14 +123,14 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   }
 
   /**
-   * @dev reviewToken
+   * @dev approveToken
    */
-  function reviewToken(ITokenCore _core, IERC20 _token)
+  function approveToken(ITokenCore _core, IERC20 _token)
     override public onlyCoreOperator(_core) returns (bool)
   {
     require(hasCoreAccess(_core), "TF01");
     require(_core.defineRules(address(_token), new IRule[](0)), "TF12");
-    emit TokenReviewed(_token);
+    emit TokenApproved(_token);
     return true;
   }
 

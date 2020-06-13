@@ -34,8 +34,8 @@ const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3("defineLock(address,uint256,uint256,address[])"),
   web3.utils.sha3("defineRules(address,address[])"),
 ].map((x) => x.substr(0, 10));
-const REVIEW_PRIVILEGES = [
-  web3.utils.sha3("reviewToken(address,address)"),
+const APPROVE_PRIVILEGES = [
+  web3.utils.sha3("approveToken(address,address)"),
 ];
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3("configureTokensales(address,address,address[],uint256[])"),
@@ -44,7 +44,7 @@ const ISSUER_PRIVILEGES = [
 const FACTORY_CORE_ROLE = web3.utils.fromAscii("FactoryCoreRole").padEnd(66, "0");
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii("FactoryProxyRole").padEnd(66, "0");
 const ISSUER_PROXY_ROLE = web3.utils.fromAscii("IssuerProxyRole").padEnd(66, "0");
-const REVIEWER_PROXY_ROLE = web3.utils.fromAscii("ReviewerProxyRole").padEnd(66, "0");
+const APPROVER_PROXY_ROLE = web3.utils.fromAscii("ApproverProxyRole").padEnd(66, "0");
 
 contract("TokenFactory", function (accounts) {
   let proxyCode, proxyCodeHash;
@@ -182,8 +182,8 @@ contract("TokenFactory", function (accounts) {
         await assertRevert(token.transfer(accounts[0], 1, { from: accounts[2] }), "CO03");
       });
 
-      it("should not let non proxy operator to review token", async function () {
-        await assertRevert(factory.reviewToken(core.address,
+      it("should not let non proxy operator to approve token", async function () {
+        await assertRevert(factory.approveToken(core.address,
           token.address, { from: accounts[1] }), "OA01");
       });
 
@@ -195,25 +195,25 @@ contract("TokenFactory", function (accounts) {
         await assertRevert(factory.updateAllowances(core.address, token.address, [], []), "OA02");
       });
 
-      describe("With reviewer authorizations", function () {
+      describe("With approver authorizations", function () {
         beforeEach(async function () {
-          await core.defineRole(REVIEWER_PROXY_ROLE, REVIEW_PRIVILEGES);
-          await core.assignOperators(REVIEWER_PROXY_ROLE, [accounts[1]]);
+          await core.defineRole(APPROVER_PROXY_ROLE, APPROVE_PRIVILEGES);
+          await core.assignOperators(APPROVER_PROXY_ROLE, [accounts[1]]);
         });
 
-        it("should let reviewer review token with no selectors", async function () {
-          const tx = await factory.reviewToken(core.address, token.address, { from: accounts[1] });
+        it("should let approver approve token with no selectors", async function () {
+          const tx = await factory.approveToken(core.address, token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "TokenReviewed", "event");
+          assert.equal(tx.logs[0].event, "TokenApproved", "event");
           assert.equal(tx.logs[0].args.token, token.address, "token");
         });
 
-        it("should let reviewer review token with selectors", async function () {
-          const tx = await factory.reviewToken(core.address, token.address, { from: accounts[1] });
+        it("should let approver approve token with selectors", async function () {
+          const tx = await factory.approveToken(core.address, token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, "Status");
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "TokenReviewed", "event");
+          assert.equal(tx.logs[0].event, "TokenApproved", "event");
           assert.equal(tx.logs[0].args.token, token.address, "token");
         });
       });
