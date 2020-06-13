@@ -3,7 +3,7 @@ version: 2.1
 aliases:
   - &defaults
     docker:
-      - image: circleci/node:10
+      - image: sirhill/truffle
     parameters:
       package:
         type: string
