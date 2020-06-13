@@ -30,7 +30,7 @@ contract Core is Storage {
     _;
   }
 
-  function delegateCall(address _proxy) internal returns (bool status)
+  function _delegateCall(address _proxy) internal returns (bool status)
   {
     uint256 delegateId = proxyDelegateIds[_proxy];
     address delegate = delegates[delegateId];
@@ -40,13 +40,13 @@ contract Core is Storage {
     require(status, "CO03");
   }
 
-  function delegateCallUint256(address _proxy)
+  function _delegateCallUint256(address _proxy)
     internal returns (uint256)
   {
-    return delegateCallBytes(_proxy).toUint256();
+    return _delegateCallBytes(_proxy).toUint256();
   }
 
-  function delegateCallBytes(address _proxy)
+  function _delegateCallBytes(address _proxy)
     internal returns (bytes memory result)
   {
     bool status;
@@ -58,13 +58,13 @@ contract Core is Storage {
     require(status, "CO03");
   }
 
-  function defineDelegateInternal(uint256 _delegateId, address _delegate) internal returns (bool) {
+  function _defineDelegate(uint256 _delegateId, address _delegate) internal returns (bool) {
     require(_delegateId != 0, "CO04");
     delegates[_delegateId] = _delegate;
     return true;
   }
 
-  function defineProxyInternal(address _proxy, uint256 _delegateId)
+  function _defineProxy(address _proxy, uint256 _delegateId)
     virtual internal returns (bool)
   {
     require(delegates[_delegateId] != address(0), "CO02");
@@ -74,7 +74,7 @@ contract Core is Storage {
     return true;
   }
 
-  function migrateProxyInternal(address _proxy, address _newCore)
+  function _migrateProxy(address _proxy, address _newCore)
     internal returns (bool)
   {
     require(proxyDelegateIds[_proxy] != 0, "CO06");
@@ -82,7 +82,7 @@ contract Core is Storage {
     return true;
   }
 
-  function removeProxyInternal(address _proxy)
+  function _removeProxy(address _proxy)
     internal returns (bool)
   {
     require(proxyDelegateIds[_proxy] != 0, "CO06");

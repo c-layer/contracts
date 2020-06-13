@@ -14,13 +14,13 @@ import "../math/SafeMath.sol";
 abstract contract TokenERC20 is IERC20 {
   using SafeMath for uint256;
 
-  string internal name_;
-  string internal symbol_;
-  uint256 internal decimals_;
+  string public override name;
+  string public override symbol;
+  uint256 public override decimals;
 
-  uint256 internal totalSupply_;
-  mapping(address => uint256) internal balances;
-  mapping (address => mapping (address => uint256)) internal allowed;
+  uint256 public override totalSupply;
+  mapping(address => uint256) internal _balances;
+  mapping (address => mapping (address => uint256)) internal _allowed;
 
   constructor(
     string memory _name,
@@ -29,47 +29,31 @@ abstract contract TokenERC20 is IERC20 {
     address _initialAccount,
     uint256 _initialSupply
   ) public {
-    name_ = _name;
-    symbol_ = _symbol;
-    decimals_ = _decimals;
-    totalSupply_ = _initialSupply;
-    balances[_initialAccount] = _initialSupply;
+    name = _name;
+    symbol = _symbol;
+    decimals = _decimals;
+    totalSupply= _initialSupply;
+    _balances[_initialAccount] = _initialSupply;
 
     emit Transfer(address(0), _initialAccount, _initialSupply);
   }
-
-  function name() override public view returns (string memory) {
-    return name_;
-  }
-
-  function symbol() override public view returns (string memory) {
-    return symbol_;
-  }
-
-  function decimals() override public view returns (uint256) {
-    return decimals_;
-  }
-
-  function totalSupply() override public view returns (uint256) {
-    return totalSupply_;
-  }
-
+  
   function balanceOf(address _owner) override public view returns (uint256) {
-    return balances[_owner];
+    return _balances[_owner];
   }
 
   function allowance(address _owner, address _spender)
     override public view returns (uint256)
   {
-    return allowed[_owner][_spender];
+    return _allowed[_owner][_spender];
   }
 
   function transfer(address _to, uint256 _value) override public returns (bool) {
     require(_to != address(0));
-    require(_value <= balances[msg.sender]);
+    require(_value <= _balances[msg.sender]);
 
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
+    _balances[msg.sender] = _balances[msg.sender].sub(_value);
+    _balances[_to] = _balances[_to].add(_value);
     emit Transfer(msg.sender, _to, _value);
     return true;
   }
@@ -78,18 +62,18 @@ abstract contract TokenERC20 is IERC20 {
     override public returns (bool)
   {
     require(_to != address(0));
-    require(_value <= balances[_from]);
-    require(_value <= allowed[_from][msg.sender]);
+    require(_value <= _balances[_from]);
+    require(_value <= _allowed[_from][msg.sender]);
 
-    balances[_from] = balances[_from].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    _balances[_from] = _balances[_from].sub(_value);
+    _balances[_to] = _balances[_to].add(_value);
+    _allowed[_from][msg.sender] = _allowed[_from][msg.sender].sub(_value);
     emit Transfer(_from, _to, _value);
     return true;
   }
 
   function approve(address _spender, uint256 _value) override public returns (bool) {
-    allowed[msg.sender][_spender] = _value;
+    _allowed[msg.sender][_spender] = _value;
     emit Approval(msg.sender, _spender, _value);
     return true;
   }
@@ -97,22 +81,22 @@ abstract contract TokenERC20 is IERC20 {
   function increaseApproval(address _spender, uint _addedValue)
     override public returns (bool)
   {
-    allowed[msg.sender][_spender] = (
-      allowed[msg.sender][_spender].add(_addedValue));
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    _allowed[msg.sender][_spender] = (
+      _allowed[msg.sender][_spender].add(_addedValue));
+    emit Approval(msg.sender, _spender, _allowed[msg.sender][_spender]);
     return true;
   }
 
   function decreaseApproval(address _spender, uint _subtractedValue)
     override public returns (bool)
   {
-    uint oldValue = allowed[msg.sender][_spender];
+    uint oldValue = _allowed[msg.sender][_spender];
     if (_subtractedValue > oldValue) {
-      allowed[msg.sender][_spender] = 0;
+      _allowed[msg.sender][_spender] = 0;
     } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+      _allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
     }
-    emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
+    emit Approval(msg.sender, _spender, _allowed[msg.sender][_spender]);
     return true;
   }
 

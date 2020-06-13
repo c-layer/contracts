@@ -14,13 +14,13 @@ import "../operable/OperableAsCore.sol";
 contract OperableAsCoreMock is OperableAsCore {
 
   function testOnlyCoreOperator(IOperableCore _core)
-    onlyCoreOperator(_core) public view returns (bool)
+    public onlyCoreOperator(_core) view returns (bool)
   {
     return true;
   }
 
   function testOnlyProxyOperator(IOperableCore _core, address _proxy) 
-    onlyProxyOperator(_core, _proxy) public view returns (bool)
+    public onlyProxyOperator(_core, _proxy) view returns (bool)
   {
     return true;
   }

@@ -17,23 +17,23 @@ contract OperableCoreMock is OperableCore {
 
   mapping(address => bool) public successfulls;
 
-  constructor(address[] memory _sysOperators) OperableCore(_sysOperators)
-    public {}
+  constructor(address[] memory _sysOperators) public
+    OperableCore(_sysOperators) {}
 
   function defineDelegate(uint256 _delegateId, address _delegate) public returns (bool) {
-    return defineDelegateInternal(_delegateId, _delegate);
+    return _defineDelegate(_delegateId, _delegate);
   }
 
   function defineProxy(address _proxy, uint256 _delegateId) public returns (bool) {
-    return defineProxyInternal(_proxy, _delegateId);
+    return _defineProxy(_proxy, _delegateId);
   }
 
   function allPrivileges() public pure returns (bytes32) {
-    return ALL_PRIVILEGES;
+    return _ALL_PRIVILEGES;
   }
 
   function allProxies() public pure returns (address) {
-    return ALL_PROXIES;
+    return _ALL_PROXIES;
   }
 
   function successAsCoreOp(address _proxy)

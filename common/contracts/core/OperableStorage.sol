@@ -18,15 +18,15 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
 
   // Mapping address => role
   // Mapping role => bytes4 => bool
-  mapping (address => OperatorData) internal operators;
-  mapping (bytes32 => RoleData) internal roles;
+  mapping (address => OperatorData) internal _operators;
+  mapping (bytes32 => RoleData) internal _roles;
 
   /**
    * @dev core role
    * @param _address operator address
    */
   function coreRole(address _address) override public view returns (bytes32) {
-    return operators[_address].coreRole;
+    return _operators[_address].coreRole;
   }
 
   /**
@@ -36,7 +36,7 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
   function proxyRole(address _proxy, address _address)
     override public view returns (bytes32)
   {
-    return operators[_address].proxyRoles[_proxy];
+    return _operators[_address].proxyRoles[_proxy];
   }
 
   /**
@@ -47,14 +47,14 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
   function rolePrivilege(bytes32 _role, bytes4 _privilege)
     override public view returns (bool)
   {
-    return roles[_role].privileges[_privilege];
+    return _roles[_role].privileges[_privilege];
   }
 
   /**
    * @dev roleHasPrivilege
    */
   function roleHasPrivilege(bytes32 _role, bytes4 _privilege) override public view returns (bool) {
-    return (_role == ALL_PRIVILEGES) || roles[_role].privileges[_privilege];
+    return (_role == _ALL_PRIVILEGES) || _roles[_role].privileges[_privilege];
   }
 
   /**
@@ -62,8 +62,8 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
    * @param _address operator address
    */
   function hasCorePrivilege(address _address, bytes4 _privilege) override public view returns (bool) {
-    bytes32 role = operators[_address].coreRole;
-    return (role == ALL_PRIVILEGES) || roles[role].privileges[_privilege];
+    bytes32 role = _operators[_address].coreRole;
+    return (role == _ALL_PRIVILEGES) || _roles[role].privileges[_privilege];
   }
 
   /**
@@ -72,9 +72,9 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
    * @param _address operator address
    */
   function hasProxyPrivilege(address _address, address _proxy, bytes4 _privilege) override public view returns (bool) {
-    OperatorData storage data = operators[_address];
+    OperatorData storage data = _operators[_address];
     bytes32 role = (data.proxyRoles[_proxy] != bytes32(0)) ?
-      data.proxyRoles[_proxy] : data.proxyRoles[ALL_PROXIES];
-    return (role == ALL_PRIVILEGES) || roles[role].privileges[_privilege];
+      data.proxyRoles[_proxy] : data.proxyRoles[_ALL_PROXIES];
+    return (role == _ALL_PRIVILEGES) || _roles[role].privileges[_privilege];
   }
 }

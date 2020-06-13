@@ -17,11 +17,11 @@ import "../core/Core.sol";
 contract CoreMock is Core {
 
   function defineDelegateMock(uint256 _delegateId, address _delegate) public returns (bool) {
-    return defineDelegateInternal(_delegateId, _delegate);
+    return _defineDelegate(_delegateId, _delegate);
   }
 
   function defineProxyMock(address _proxy, uint256 _delegateId) public returns (bool) {
-    return defineProxyInternal(_proxy, _delegateId);
+    return _defineProxy(_proxy, _delegateId);
   }
 
   function successOnlyProxy(bool _success) public view onlyProxy returns (bool) {
@@ -29,22 +29,22 @@ contract CoreMock is Core {
   }
 
   function delegateCallMock(bool) public returns (bool) {
-    return delegateCall(msg.sender);
+    return _delegateCall(msg.sender);
   }
 
   function delegateCallUint256Mock(uint256) public returns (uint256) {
-    return delegateCallUint256(msg.sender);
+    return _delegateCallUint256(msg.sender);
   }
 
   function delegateCallBytesMock(bytes memory) public returns (bytes memory) {
-    return delegateCallBytes(msg.sender);
+    return _delegateCallBytes(msg.sender);
   }
 
   function migrateProxyMock(address _proxy, address _newCore) public returns (bool) {
-    return migrateProxyInternal(_proxy, _newCore);
+    return _migrateProxy(_proxy, _newCore);
   }
 
   function removeProxyMock(address _proxy) public returns (bool) {
-    return removeProxyInternal(_proxy);
+    return _removeProxy(_proxy);
   }
 }

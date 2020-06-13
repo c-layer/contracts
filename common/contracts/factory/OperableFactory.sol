@@ -20,7 +20,7 @@ contract OperableFactory is Operable, Factory {
   function defineCode(uint256 _id, bytes memory _code)
     public onlyOperator returns (bool)
   {
-    return defineCodeInternal(_id, _code);
+    return _defineCode(_id, _code);
   }
 
   /**
@@ -29,6 +29,6 @@ contract OperableFactory is Operable, Factory {
   function deployContract(uint256 _id, bytes memory _parameters)
     public onlyOperator returns (address)
   {
-    return deployContractInternal(_id, _parameters);
+    return _deployContract(_id, _parameters);
   }
 }
