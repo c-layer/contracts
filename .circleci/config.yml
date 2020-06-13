@@ -61,42 +61,39 @@ workflows:
   common:
     jobs:
       working_directory: ~/common
-      steps:
-        - dependencies
-        - lint:
-            requires:
-              - dependencies
-        - test:
-            requires:
-              - dependencies
-        - coverage:
-            requires:
-              - dependencies
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+          requires:
+            - dependencies
+      - coverage:
+          requires:
+            - dependencies
   token:
     jobs:
       working_directory: ~/token
-      steps:
-        - dependencies
-        - lint:
-            requires:
-              - dependencies
-        - test:
-            requires:
-              - dependencies
-        - coverage:
-            requires:
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+          requires:
+            - dependencies
+      - coverage:
+          requires:
               - dependencies
   oracle:
     jobs:
       working_directory: ~/oracle
-      steps:
-        - dependencies
-        - lint:
-            requires:
-              - dependencies
-        - test:
-            requires:
-              - dependencies
-        - coverage:
-            requires:
-              - dependencies
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+          requires:
+            - dependencies
+      - coverage:
+          requires:
+            - dependencies
