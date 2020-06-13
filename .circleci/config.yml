@@ -9,7 +9,7 @@ aliases:
         type: string
         default: .
     working_directory:
-      << parameters.package >>
+      project/<< parameters.package >>
 
   - &cache_key_node_modules
     key: v1-node_modules-{{ checksum "package-lock.json" }}
