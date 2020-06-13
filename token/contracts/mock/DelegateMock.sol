@@ -16,7 +16,7 @@ import "../TokenStorage.sol";
  */
 contract DelegateMock is TokenStorage {
 
-  uint256 constant CURRENCY_RATE = 1500;
+  uint256 internal constant CURRENCY_RATE = 1500;
   mapping(address => uint256[]) public users;
 
   /**

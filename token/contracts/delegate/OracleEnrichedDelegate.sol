@@ -18,8 +18,8 @@ import "../TokenStorage.sol";
  */
 contract OracleEnrichedDelegate is TokenStorage {
 
-  uint256 constant SENDER_LIMIT_ID = 0;
-  uint256 constant RECEIVER_LIMIT_ID = 0;
+  uint256 internal constant SENDER_LIMIT_ID = 0;
+  uint256 internal constant RECEIVER_LIMIT_ID = 0;
 
   /**
    * @dev fetchSenderUser

@@ -28,7 +28,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
    * @dev cannot be changed once the core has been deployed.
    */
   constructor(string memory _name, address[] memory _sysOperators)
-    OperableCore(_sysOperators) public
+    public OperableCore(_sysOperators)
   {
     name_ = _name;
   }
@@ -142,7 +142,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCallUint256(msg.sender);
   }
 
-  function balanceOf(address) onlyProxy override public returns (uint256) {
+  function balanceOf(address) public onlyProxy override returns (uint256) {
     return delegateCallUint256(msg.sender);
   }
 

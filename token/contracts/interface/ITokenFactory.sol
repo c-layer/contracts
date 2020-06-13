@@ -15,7 +15,7 @@ import "../interface/ITokenAccessDefinitions.sol";
  **/
 abstract contract ITokenFactory is ITokenAccessDefinitions {
 
-  uint256 constant TOKEN_PROXY = 0;
+  uint256 internal constant TOKEN_PROXY = 0;
 
   // The definitions below should be considered as a constant
   // Solidity 0.6.x do not provide ways to have arrays as constants

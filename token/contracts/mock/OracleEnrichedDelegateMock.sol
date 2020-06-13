@@ -17,7 +17,7 @@ import "../delegate/OracleEnrichedDelegate.sol";
  */
 contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
 
-  uint256 constant AUDIT_CONFIGURATION_DEFAULT = 0;
+  uint256 internal constant AUDIT_CONFIGURATION_DEFAULT = 0;
 
   /**
    * @dev testFetchSenderUser

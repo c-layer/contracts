@@ -1,29 +1,29 @@
-"user strict";
+'user strict';
 
 /**
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("./helpers/assertRevert");
-const TokenProxy = artifacts.require("TokenProxy.sol");
-const TokenCore = artifacts.require("TokenCore.sol");
-const MintableTokenDelegate = artifacts.require("MintableTokenDelegate.sol");
+const assertRevert = require('./helpers/assertRevert');
+const TokenProxy = artifacts.require('TokenProxy.sol');
+const TokenCore = artifacts.require('TokenCore.sol');
+const MintableTokenDelegate = artifacts.require('MintableTokenDelegate.sol');
 
-const NULL_ADDRESS = "0x".padEnd(42, "0");
-const NAME = "Token";
-const SYMBOL = "TKN";
+const NULL_ADDRESS = '0x'.padEnd(42, '0');
+const NAME = 'Token';
+const SYMBOL = 'TKN';
 const DECIMALS = 18;
 
-contract("Token", function (accounts) {
+contract('Token', function (accounts) {
   let core, delegate;
 
   beforeEach(async function () {
     delegate = await MintableTokenDelegate.new();
-    core = await TokenCore.new("Test", [accounts[0]]);
+    core = await TokenCore.new('Test', [accounts[0]]);
     await core.defineTokenDelegate(1, delegate.address, []);
   });
 
-  describe("With a token defined", async function () {
+  describe('With a token defined', async function () {
     let token;
 
     beforeEach(async function () {
@@ -32,186 +32,186 @@ contract("Token", function (accounts) {
         token.address, 1, NAME, SYMBOL, DECIMALS);
     });
 
-    it("should have a core for token", async function () {
+    it('should have a core for token', async function () {
       const coreAddress = await token.core();
-      assert.equal(coreAddress, core.address, "core");
+      assert.equal(coreAddress, core.address, 'core');
     });
 
-    it("should have a name for token", async function () {
+    it('should have a name for token', async function () {
       const name = await token.name();
-      assert.equal(name, NAME, "name");
+      assert.equal(name, NAME, 'name');
     });
 
-    it("should have a symbol for token", async function () {
+    it('should have a symbol for token', async function () {
       const symbol = await token.symbol();
-      assert.equal(symbol, SYMBOL, "symbol");
+      assert.equal(symbol, SYMBOL, 'symbol');
     });
 
-    it("should have decimals for token", async function () {
+    it('should have decimals for token', async function () {
       const decimals = await token.decimals();
-      assert.equal(decimals, DECIMALS, "decimals");
+      assert.equal(decimals, DECIMALS, 'decimals');
     });
 
-    it("should have no total supply for token", async function () {
+    it('should have no total supply for token', async function () {
       const supply = await token.totalSupply();
-      assert.equal(supply.toString(), 0, "supply");
+      assert.equal(supply.toString(), 0, 'supply');
     });
 
-    it("should have no balance for accounts[0]", async function () {
+    it('should have no balance for accounts[0]', async function () {
       const balance = await token.balanceOf(accounts[0]);
-      assert.equal(balance.toString(), 0, "balance");
+      assert.equal(balance.toString(), 0, 'balance');
     });
 
-    it("should have no allowance for accounts[0] to accounts[1]", async function () {
+    it('should have no allowance for accounts[0] to accounts[1]', async function () {
       const allowance = await token.allowance(accounts[0], accounts[1]);
-      assert.equal(allowance.toString(), 0, "allowance");
+      assert.equal(allowance.toString(), 0, 'allowance');
     });
 
-    it("should eval canTransfer Ok from acconuts[0] to accounts[1]", async function () {
+    it('should eval canTransfer Ok from acconuts[0] to accounts[1]', async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], 0);
-      assert.equal(result, 1, "canTransfer");
+      assert.equal(result, 1, 'canTransfer');
     });
 
-    it("should eval canTransfer 0 from no one to acconuts[0]", async function () {
+    it('should eval canTransfer 0 from no one to acconuts[0]', async function () {
       const result = await token.canTransfer.call(NULL_ADDRESS, accounts[0], 0);
-      assert.equal(result, 2, "canTransfer");
+      assert.equal(result, 2, 'canTransfer');
     });
 
-    it("should eval canTransfer 0 from acconuts[0] to no one", async function () {
+    it('should eval canTransfer 0 from acconuts[0] to no one', async function () {
       const result = await token.canTransfer.call(accounts[0], NULL_ADDRESS, 0);
-      assert.equal(result, 3, "canTransfer");
+      assert.equal(result, 3, 'canTransfer');
     });
 
-    it("should eval canTransfer 100 from acconuts[0] to accounts[1]", async function () {
+    it('should eval canTransfer 100 from acconuts[0] to accounts[1]', async function () {
       const result = await token.canTransfer.call(accounts[0], accounts[1], 100);
-      assert.equal(result, 4, "canTransfer");
+      assert.equal(result, 4, 'canTransfer');
     });
 
-    describe("With supplies defined", async function () {
-      const TOTAL_SUPPLY = "1000000";
+    describe('With supplies defined', async function () {
+      const TOTAL_SUPPLY = '1000000';
 
       beforeEach(async function () {
         await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
       });
 
-      it("should have a total supply for token", async function () {
+      it('should have a total supply for token', async function () {
         const supply = await token.totalSupply();
-        assert.equal(supply.toString(), TOTAL_SUPPLY, "supply");
+        assert.equal(supply.toString(), TOTAL_SUPPLY, 'supply');
       });
 
-      it("should have a balance for accounts[0]", async function () {
+      it('should have a balance for accounts[0]', async function () {
         const balance = await token.balanceOf(accounts[0]);
-        assert.equal(balance.toString(), TOTAL_SUPPLY, "balance");
+        assert.equal(balance.toString(), TOTAL_SUPPLY, 'balance');
       });
 
-      it("should have no balance for accounts[1] and accounts[2]", async function () {
+      it('should have no balance for accounts[1] and accounts[2]', async function () {
         const balance1 = await token.balanceOf(accounts[1]);
-        assert.equal(balance1.toString(), 0, "balance");
+        assert.equal(balance1.toString(), 0, 'balance');
         const balance2 = await token.balanceOf(accounts[2]);
-        assert.equal(balance2.toString(), 0, "balance");
+        assert.equal(balance2.toString(), 0, 'balance');
       });
 
-      it("should transfer from accounts[0] to accounts[1]", async function () {
-        const tx = await token.transfer(accounts[1], "3333");
-        assert.ok(tx.receipt.status, "Status");
+      it('should transfer from accounts[0] to accounts[1]', async function () {
+        const tx = await token.transfer(accounts[1], '3333');
+        assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, "Transfer", "event");
-        assert.equal(tx.logs[0].args.from, accounts[0], "from");
-        assert.equal(tx.logs[0].args.to, accounts[1], "to");
-        assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+        assert.equal(tx.logs[0].event, 'Transfer', 'event');
+        assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+        assert.equal(tx.logs[0].args.to, accounts[1], 'to');
+        assert.equal(tx.logs[0].args.value.toString(), '3333', 'value');
 
         const balance0 = await token.balanceOf(accounts[0]);
-        assert.equal(balance0.toString(), "996667", "balance");
+        assert.equal(balance0.toString(), '996667', 'balance');
         const balance1 = await token.balanceOf(accounts[1]);
-        assert.equal(balance1.toString(), "3333", "balance");
+        assert.equal(balance1.toString(), '3333', 'balance');
       });
 
-      it("should prevent transfer too much from accounts[0]", async function () {
-        await assertRevert(token.transfer(accounts[1], "1000001"), "CO03");
+      it('should prevent transfer too much from accounts[0]', async function () {
+        await assertRevert(token.transfer(accounts[1], '1000001'), 'CO03');
       });
 
-      it("should let accounts[0] provide allowance to accounts[1]", async function () {
-        const tx = await token.approve(accounts[1], "3333");
-        assert.ok(tx.receipt.status, "Status");
+      it('should let accounts[0] provide allowance to accounts[1]', async function () {
+        const tx = await token.approve(accounts[1], '3333');
+        assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, "Approval", "event");
-        assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
-        assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
-        assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+        assert.equal(tx.logs[0].event, 'Approval', 'event');
+        assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+        assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+        assert.equal(tx.logs[0].args.value.toString(), '3333', 'value');
 
         const allowance = await token.allowance(accounts[0], accounts[1]);
-        assert.equal(allowance.toString(), "3333", "allowance");
+        assert.equal(allowance.toString(), '3333', 'allowance');
       });
 
-      describe("With an allowance from accounts[0] to accounts[1]", function () {
+      describe('With an allowance from accounts[0] to accounts[1]', function () {
         beforeEach(async function () {
-          await token.approve(accounts[1], "3333");
+          await token.approve(accounts[1], '3333');
         });
 
-        it("should have an allowance between accounts[0] and accounts[1]", async function () {
+        it('should have an allowance between accounts[0] and accounts[1]', async function () {
           const allowance = await token.allowance(accounts[0], accounts[1]);
-          assert.equal(allowance.toString(), "3333", "allowance");
+          assert.equal(allowance.toString(), '3333', 'allowance');
         });
 
-        it("should allow accounts[1] to transferFrom accounts[0] tokens", async function () {
-          const tx = await token.transferFrom(accounts[0], accounts[2], "3333", { from: accounts[1] });
-          assert.ok(tx.receipt.status, "Status");
+        it('should allow accounts[1] to transferFrom accounts[0] tokens', async function () {
+          const tx = await token.transferFrom(accounts[0], accounts[2], '3333', { from: accounts[1] });
+          assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "Transfer", "event");
-          assert.equal(tx.logs[0].args.from, accounts[0], "from");
-          assert.equal(tx.logs[0].args.to, accounts[2], "to");
-          assert.equal(tx.logs[0].args.value.toString(), "3333", "value");
+          assert.equal(tx.logs[0].event, 'Transfer', 'event');
+          assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+          assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+          assert.equal(tx.logs[0].args.value.toString(), '3333', 'value');
 
           const balance0 = await token.balanceOf(accounts[0]);
-          assert.equal(balance0.toString(), "996667", "balance");
+          assert.equal(balance0.toString(), '996667', 'balance');
           const balance2 = await token.balanceOf(accounts[2]);
-          assert.equal(balance2.toString(), "3333", "balance");
+          assert.equal(balance2.toString(), '3333', 'balance');
 
           const allowance = await token.allowance(accounts[0], accounts[1]);
-          assert.equal(allowance.toString(), "0", "allowance");
+          assert.equal(allowance.toString(), '0', 'allowance');
         });
 
-        it("should prevent transferFrom too much from accounts[0]", async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], "3334", { from: accounts[1] }), "CO03");
+        it('should prevent transferFrom too much from accounts[0]', async function () {
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], '3334', { from: accounts[1] }), 'CO03');
         });
 
-        it("should let accounts[0] increase approval between accounts[0] and accounts[1]", async function () {
-          const tx = await token.increaseApproval(accounts[1], "1234");
-          assert.ok(tx.receipt.status, "Status");
+        it('should let accounts[0] increase approval between accounts[0] and accounts[1]', async function () {
+          const tx = await token.increaseApproval(accounts[1], '1234');
+          assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "Approval", "event");
-          assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
-          assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
-          assert.equal(tx.logs[0].args.value.toString(), "4567", "value");
+          assert.equal(tx.logs[0].event, 'Approval', 'event');
+          assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+          assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+          assert.equal(tx.logs[0].args.value.toString(), '4567', 'value');
 
           const allowance = await token.allowance(accounts[0], accounts[1]);
-          assert.equal(allowance.toString(), "4567", "allowance");
+          assert.equal(allowance.toString(), '4567', 'allowance');
         });
 
-        it("should let accounts[0] decrease approval between accounts[0] and accounts[1]", async function () {
-          const tx = await token.decreaseApproval(accounts[1], "1234");
-          assert.ok(tx.receipt.status, "Status");
+        it('should let accounts[0] decrease approval between accounts[0] and accounts[1]', async function () {
+          const tx = await token.decreaseApproval(accounts[1], '1234');
+          assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "Approval", "event");
-          assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
-          assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
-          assert.equal(tx.logs[0].args.value.toString(), "2099", "value");
+          assert.equal(tx.logs[0].event, 'Approval', 'event');
+          assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+          assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+          assert.equal(tx.logs[0].args.value.toString(), '2099', 'value');
 
           const allowance = await token.allowance(accounts[0], accounts[1]);
-          assert.equal(allowance.toString(), "2099", "allowance");
+          assert.equal(allowance.toString(), '2099', 'allowance');
         });
 
-        it("should let accounts[0] decrease approval too much from accounts[0]", async function () {
-          const tx = await token.decreaseApproval(accounts[1], "3334");
-          assert.ok(tx.receipt.status, "Status");
+        it('should let accounts[0] decrease approval too much from accounts[0]', async function () {
+          const tx = await token.decreaseApproval(accounts[1], '3334');
+          assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, "Approval", "event");
-          assert.equal(tx.logs[0].args.owner, accounts[0], "owner");
-          assert.equal(tx.logs[0].args.spender, accounts[1], "spender");
-          assert.equal(tx.logs[0].args.value.toString(), "0", "value");
+          assert.equal(tx.logs[0].event, 'Approval', 'event');
+          assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+          assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+          assert.equal(tx.logs[0].args.value.toString(), '0', 'value');
 
           const allowance = await token.allowance(accounts[0], accounts[1]);
-          assert.equal(allowance.toString(), "0", "allowance");
+          assert.equal(allowance.toString(), '0', 'allowance');
         });
       });
     });

@@ -1,14 +1,14 @@
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
 module.exports = async promise => {
   try {
     await promise;
-    assert.fail("Expected invalid opcode not received");
+    assert.fail('Expected invalid opcode not received');
   } catch (error) {
-    const invalidOpcodeReceived = error.message.search("invalid opcode") >= 0;
-    assert(invalidOpcodeReceived, `Expected "invalid opcode", got ${error} instead`);
+    const invalidOpcodeReceived = error.message.search('invalid opcode') >= 0;
+    assert(invalidOpcodeReceived, `Expected 'invalid opcode', got ${error} instead`);
   }
 };

@@ -17,7 +17,7 @@ import "./OracleEnrichedDelegate.sol";
  **/
 contract AuditableDelegate is OracleEnrichedDelegate {
 
-  uint256 constant AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY = 0;
+  uint256 internal constant AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY = 0;
 
   /**
    * @dev prepareAuditInternal

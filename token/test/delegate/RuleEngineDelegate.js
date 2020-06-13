@@ -1,20 +1,19 @@
-"user strict";
+'user strict';
 
 /**
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertRevert = require("../helpers/assertRevert");
-const RuleEngineDelegateMock = artifacts.require("RuleEngineDelegateMock.sol");
-const YesNoRule = artifacts.require("YesNoRule.sol");
+const RuleEngineDelegateMock = artifacts.require('RuleEngineDelegateMock.sol');
+const YesNoRule = artifacts.require('YesNoRule.sol');
 
-const TOKEN_ADDRESS = "0x" + "123456789".padStart(40, "0");
+const TOKEN_ADDRESS = '0x' + '123456789'.padStart(40, '0');
 
 const ESTIMATE_NO_RULES = 25000;
 const ESTIMATE_ONE_RULE = 28846;
 const ESTIMATE_TWO_RULES = 32611;
 
-contract("RuleEngineDelegate", function (accounts) {
+contract('RuleEngineDelegate', function (accounts) {
   let delegate, yesRule, noRule;
 
   before(async function () {
@@ -26,74 +25,74 @@ contract("RuleEngineDelegate", function (accounts) {
     delegate = await RuleEngineDelegateMock.new();
   });
 
-  it("should have rules valid for a transfer", async function () {
+  it('should have rules valid for a transfer', async function () {
     const result = await delegate.testAreTransferRulesValid(TOKEN_ADDRESS,
-      accounts[0], accounts[1], accounts[2], "1000");
-    assert.ok(result, "rules valid");
+      accounts[0], accounts[1], accounts[2], '1000');
+    assert.ok(result, 'rules valid');
   });
 
-  it("should let define rules", async function () {
+  it('should let define rules', async function () {
     const tx = await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address, noRule.address]);
-    assert.ok(tx.receipt.status, "Status");
+    assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, "RulesDefined", "event");
-    assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, "token");
-    assert.deepEqual(tx.logs[0].args.rules, [yesRule.address, noRule.address], "rules");
+    assert.equal(tx.logs[0].event, 'RulesDefined', 'event');
+    assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+    assert.deepEqual(tx.logs[0].args.rules, [yesRule.address, noRule.address], 'rules');
   });
 
-  it("should estimate no rules validation", async function () {
+  it('should estimate no rules validation', async function () {
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
-      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], "1000");
-    assert.equal(estimate.toString(), ESTIMATE_NO_RULES, "no rules estimate");
+      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
+    assert.equal(estimate.toString(), ESTIMATE_NO_RULES, 'no rules estimate');
   });
 
-  it("should estimate one rules validation", async function () {
+  it('should estimate one rules validation', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
-      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], "1000");
-    assert.equal(estimate.toString(), ESTIMATE_ONE_RULE, "one rule estimate");
+      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
+    assert.equal(estimate.toString(), ESTIMATE_ONE_RULE, 'one rule estimate');
   });
 
-  it("should estimate two rules validation", async function () {
+  it('should estimate two rules validation', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address, yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
-      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], "1000");
-    assert.equal(estimate.toString(), ESTIMATE_TWO_RULES, "two rules estimate");
+      TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
+    assert.equal(estimate.toString(), ESTIMATE_TWO_RULES, 'two rules estimate');
   });
 
-  describe("With a yes rule defined", function () {
+  describe('With a yes rule defined', function () {
     beforeEach(async function () {
       await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address]);
     });
 
-    it("should have rules valid for a transfer", async function () {
+    it('should have rules valid for a transfer', async function () {
       const result = await delegate.testAreTransferRulesValid(TOKEN_ADDRESS,
-        accounts[0], accounts[1], accounts[2], "1000");
-      assert.ok(result, "rules valid");
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(result, 'rules valid');
     });
   });
 
-  describe("With a no rule defined", function () {
+  describe('With a no rule defined', function () {
     beforeEach(async function () {
       await delegate.defineRules(TOKEN_ADDRESS, [noRule.address]);
     });
 
-    it("should have rules invalid for a transfer", async function () {
+    it('should have rules invalid for a transfer', async function () {
       const result = await delegate.testAreTransferRulesValid(TOKEN_ADDRESS,
-        accounts[0], accounts[1], accounts[2], "1000");
-      assert.ok(!result, "rules invalid");
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(!result, 'rules invalid');
     });
   });
 
-  describe("With a yes and a no rule defined", function () {
+  describe('With a yes and a no rule defined', function () {
     beforeEach(async function () {
       await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address, noRule.address]);
     });
 
-    it("should have rules invalid for a transfer", async function () {
+    it('should have rules invalid for a transfer', async function () {
       const result = await delegate.testAreTransferRulesValid(TOKEN_ADDRESS,
-        accounts[0], accounts[1], accounts[2], "1000");
-      assert.ok(!result, "rules invalid");
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(!result, 'rules invalid');
     });
   });
 });

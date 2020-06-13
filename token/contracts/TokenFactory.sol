@@ -106,6 +106,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     require(_core.defineRules(address(token), factoryRules), "TF08");
 
     // 5- Locking the token
+    // solhint-disable-next-line not-rely-on-time
     if (_lockEnd > now) {
       require(_core.defineLock(address(token), 0, _lockEnd, new address[](0)), "TF09");
     }

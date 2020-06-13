@@ -12,6 +12,6 @@ import "@c-layer/oracle/contracts/RatesProvider.sol";
  **/
 contract RatesProviderMock is RatesProvider {
 
-  constructor(string memory _name) RatesProvider(_name) public {
+  constructor(string memory _name) public RatesProvider(_name) {
   }
 }

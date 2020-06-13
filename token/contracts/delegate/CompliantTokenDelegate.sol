@@ -31,7 +31,7 @@ contract CompliantTokenDelegate is
   MintableTokenDelegate
 {
 
-  uint256 constant AUDIT_CONFIG_REQUIREMENTS = 1; // 1- Transfer Limitst
+  uint256 internal constant AUDIT_CONFIG_REQUIREMENTS = 1; // 1- Transfer Limitst
 
   /**
    * @dev check config requirements

@@ -39,9 +39,9 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
   uint256[] private primaryMarketAMLConfig = [ uint256(Configuration.AML_PRIMARY) ];
   uint256[] private secondaryMarketAMLConfig = [ uint256(Configuration.AML_FULL) ];
 
-  uint256[] emptyArray = new uint256[](0);
-  uint256[] senderKeys = [ uint256(IUserRegistry.KeyCode.EMISSION_LIMIT_KEY) ];
-  uint256[] receiverKeys = [ uint256(IUserRegistry.KeyCode.RECEPTION_LIMIT_KEY) ];
+  uint256[] private emptyArray = new uint256[](0);
+  uint256[] private senderKeys = [ uint256(IUserRegistry.KeyCode.EMISSION_LIMIT_KEY) ];
+  uint256[] private receiverKeys = [ uint256(IUserRegistry.KeyCode.RECEPTION_LIMIT_KEY) ];
 
   /**
    * @dev has core access

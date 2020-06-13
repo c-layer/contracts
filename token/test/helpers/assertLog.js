@@ -35,7 +35,7 @@ module.exports = {
       currency: log.currency,
       ratesProvider: log.ratesProvider,
       senderAuditRequired: log.senderAuditRequired,
-      receiverAuditRequired: log.receiverAuditRequired
+      receiverAuditRequired: log.receiverAuditRequired,
     }, expected, message);
-  }
+  },
 };

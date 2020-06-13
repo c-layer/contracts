@@ -1,6 +1,6 @@
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 const abi = web3.eth.abi;
 
@@ -14,9 +14,9 @@ module.exports = {
   },
   buildHashWithReplay: async function (destination, value, data, validity, replayProtection) {
     let encodedParams = 0;
-    if (data === "0x") {
+    if (data === '0x') {
       encodedParams = abi.encodeParameters(
-        ["address", "uint256", "uint256", "bytes32"],
+        ['address', 'uint256', 'uint256', 'bytes32'],
         [destination,
           this.web3.utils.toHex(value),
           this.web3.utils.toHex(validity),
@@ -25,7 +25,7 @@ module.exports = {
       );
     } else {
       encodedParams = abi.encodeParameters(
-        ["address", "uint256", "bytes", "uint256", "bytes32"],
+        ['address', 'uint256', 'bytes', 'uint256', 'bytes32'],
         [destination,
           this.web3.utils.toHex(value),
           data,
@@ -34,7 +34,7 @@ module.exports = {
         ],
       );
     }
-    const hash = this.web3.utils.sha3(encodedParams, { encoding: "hex" });
+    const hash = this.web3.utils.sha3(encodedParams, { encoding: 'hex' });
     return hash;
   },
   sign: async function (destination, value, data, validity, address) {
@@ -42,8 +42,8 @@ module.exports = {
     const signedHash = await this.web3.eth.sign(hash, address);
 
     return {
-      r: "0x" + signedHash.slice(2).slice(0, 64),
-      s: "0x" + signedHash.slice(2).slice(64, 128),
+      r: '0x' + signedHash.slice(2).slice(0, 64),
+      s: '0x' + signedHash.slice(2).slice(64, 128),
       v: this.web3.utils.toDecimal(signedHash.slice(2).slice(128, 130)),
     };
   },
