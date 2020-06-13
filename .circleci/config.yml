@@ -14,13 +14,18 @@ aliases:
   - &cache_key_node_modules
     key: v1-node_modules-{{ checksum "package-lock.json" }}
 
-  - &matrix_workflow_job
+  - &matrix_workflow_job2
     matrix:
       parameters:
         package: ["common", "token", "oracle"]
     requires:
       - dependencies
- 
+
+  - &matrix_workflow_job
+     package: common
+     requires:
+       - dependencies
+
 jobs:
   dependencies:
     <<: *defaults
