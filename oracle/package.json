@@ -14,8 +14,8 @@
     "coverage": "scripts/coverage.sh",
     "lint": "npm run lint:sol && npm run lint:js",
     "lint:fix": "npm run lint:js:fix",
-    "lint:js": "eslint .",
-    "lint:js:fix": "eslint . --fix",
+    "lint:js": "eslint test",
+    "lint:js:fix": "eslint test --fix",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "npm run compile && scripts/test.sh",
     "flatten": "node_modules/.bin/truffle-flattener"
@@ -43,19 +43,19 @@
    },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^6.4.0",
-    "eslint-config-standard": "^14.1.0",
-    "eslint-plugin-import": "^2.18.2",
-    "eslint-plugin-node": "^10.0.0",
+    "eslint": "^7.2.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "ethereumjs-util": "^6.1.0",
     "ganache-cli": "^6.7.0",
-    "solhint": "^2.3.0",
-    "solidity-coverage": "^0.6.7",
-    "solidity-docgen": "^0.3.1",
-    "truffle": "^5.0.38",
-    "truffle-flattener": "^1.4.2",
-    "@truffle/hdwallet-provider": "^1.0.34"
+    "solhint": "^3.0.0",
+    "solidity-coverage": "^0.7.7",
+    "solidity-docgen": "^0.5.3",
+    "truffle": "^5.1.30",
+    "truffle-flattener": "^1.4.4",
+    "@truffle/hdwallet-provider": "^1.0.35"
   }
 }
