@@ -30,7 +30,7 @@ jobs:
   dependencies:
     <<: *defaults
     steps:
-      - checkout
+      - checkout:
           path: ~/project
       - restore_cache:
           name: Restore Yarn Package Cache
@@ -51,7 +51,7 @@ jobs:
   lint:
     <<: *defaults
     steps:
-      - checkout
+      - checkout:
           path: ~/project
       - attach_workspace:
           at: ~/project
@@ -61,7 +61,7 @@ jobs:
   test:
     <<: *defaults
     steps:
-      - checkout
+      - checkout:
           path: ~/project
       - attach_workspace:
           at: ~/project
@@ -71,7 +71,7 @@ jobs:
   coverage:
     <<: *defaults
     steps:
-      - checkout
+      - checkout:
           path: ~/project
       - attach_workspace:
           at: ~/project
