@@ -47,7 +47,7 @@ jobs:
       - persist_to_workspace:
           root: ~/project
           paths:
-            - << parameters.package_name >>
+            - << parameters.package >>
   lint:
     <<: *defaults
     steps:
