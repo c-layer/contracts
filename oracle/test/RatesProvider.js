@@ -42,7 +42,7 @@ contract('RatesProvider', function (accounts) {
     assert.deepEqual(currencies[1].map((d) => d.toString()),
       ['18', '8', '4', '2', '2', '2', '2', '2', '2', '2', '2'],
       'decimals');
-    assert.equal(currencies[2].toString(), 1, 'rateOffset');
+    assert.equal(currencies[2].toString(), '10000', 'rateOffset');
   });
 
   it('should not have rates', async function () {
@@ -123,12 +123,14 @@ contract('RatesProvider', function (accounts) {
 
     it('should convert CHF Cent to ETH', async function () {
       const amountWEI = await provider.convert(1000, CHF, ETH);
-      assert.equal(amountWEI.toString(), aWEICHFSample + '000', 'WEICHFCents');
+      assert.equal(amountWEI.toString(),
+        new BN(aWEICHFSample).mul(new BN('1000')).div(new BN('10000')).toString(), 'WEICHFCents');
     });
 
     it('should convert WEI to CHFCent', async function () {
       const amountCHFCent = await provider.convert(ethToWei, ETH, CHF);
-      assert.equal(amountCHFCent.toString(), aETHCHFSample, 'CHFCentsWEI');
+      assert.equal(amountCHFCent.toString(),
+        new BN(aETHCHFSample).mul(new BN('10000')).toString(), 'CHFCentsWEI');
     });
   });
 
@@ -139,9 +141,9 @@ contract('RatesProvider', function (accounts) {
     const expectedDecimals = ['18', '8', '4', '2', '2', '2', '2', '2', '2', '2', '2', '6'];
 
     const tx = await provider.defineCurrencies(
-      expectedCurrencies, expectedDecimals, 1);
+      expectedCurrencies, expectedDecimals, '10000');
     assert.ok(tx.receipt.status, 'Status');
-    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs.length, 1, 'logs');
     assert.equal(tx.logs[0].event, 'Currencies', 'event');
     assert.deepEqual(tx.logs[0].args.currencies, expectedCurrencies, 'currencies');
     assert.deepEqual(tx.logs[0].args.decimals.map((d) => d.toString()),
