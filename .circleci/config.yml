@@ -3,7 +3,7 @@ version: 2.1
 aliases:
   - &defaults
     docker:
-      - image: sirhill/truffle
+      - image: circleci/node:10
     parameters:
       package:
         type: string
@@ -14,24 +14,17 @@ aliases:
   - &cache_key_node_modules
     key: node_modules-v1-{{ checksum "package-lock.json" }}
 
-  - &matrix_workflow_job2
+  - &matrix_workflow_job
     matrix:
       parameters:
         package: ["common", "token", "oracle"]
     requires:
       - dependencies
 
-  - &matrix_workflow_job
-     package: common
-     requires:
-       - dependencies
-
 jobs:
   dependencies:
     <<: *defaults
     steps:
-      - run:
-          command: pwd
       - checkout:
           path: ~/project
       - restore_cache:
