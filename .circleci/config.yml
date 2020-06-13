@@ -1,0 +1,95 @@
+version: 2.1
+
+aliases:
+  - &defaults
+    docker:
+      - image: circleci/node:10
+
+  - &cache_key_node_modules
+    key: v1-node_modules-{{ checksum "package-lock.json" }}
+
+jobs:
+  dependencies:
+    <<: *defaults
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Linter
+          command: yarn run lint
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Unit tests
+          command: yarn run test
+  coverage:
+    <<: *defaults
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run:
+          name: Unit tests with coverage report
+          command: npm run coverage
+      - run:
+          name: Upload coverage
+          command: |
+            bash <(curl -s https://codecov.io/bash) -F moduleA
+workflows:
+  version: 2
+  common:
+    jobs:
+      - working_directory: ~/common
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+          requires:
+            - dependencies
+      - coverage:
+          requires:
+            - dependencies
+      - 
+  token:
+      - working_directory: ~/token
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+          requires:
+            - dependencies
+      - coverage:
+            - dependencies
+  oracle:
+      - working_directory: ~/oracle
+      - dependencies
+      - lint:
+          requires:
+            - dependencies
+      - test:
+            - dependencies
+      - coverage:
+            - dependencies
