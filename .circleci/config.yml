@@ -12,7 +12,7 @@ aliases:
       ~/project/<< parameters.package >>
 
   - &cache_key_node_modules
-    key: node_modules-v1-{{ checksum "package-lock.json" }}
+    key: v1-node_modules-{{ checksum "package-lock.json" }}
 
   - &matrix_workflow_job
     matrix:
@@ -30,13 +30,13 @@ jobs:
       - restore_cache:
           name: Restore Yarn Package Cache
           keys:
-            - yarn-packages-v1-{{ checksum "yarn.lock" }}
+            - yarn-packages-{{ checksum "yarn.lock" }}
       - run:
           name: Install Dependencies
           command: yarn install --frozen-lockfile
       - save_cache:
           name: Save Yarn Package Cache
-          key: yarn-packages-v1-{{ checksum "yarn.lock" }}
+          key: yarn-packages-{{ checksum "yarn.lock" }}
           paths:
             - ~/.cache/yarn
       - persist_to_workspace:
