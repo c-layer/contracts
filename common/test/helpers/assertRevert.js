@@ -1,22 +1,36 @@
 
 /**
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
- *
- * Copyright © 2016 - 2019 Cyril Lapinte - All Rights Reserved
- * This content cannot be used, copied or reproduced in part or in whole
- * without the express and written permission of Cyril Lapinte.
- * Written by *Cyril Lapinte*, <cyril.lapinte@gmail.com>
- * All matters regarding the intellectual property of this code or software
- * are subjects to Swiss Law without reference to its conflicts of law rules.
- *
+ * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-module.exports = async function (promise) {
+module.exports = async function (promise, expectedReasonOrCode) {
+  let success = false;
   try {
     await promise;
-    assert.fail('Expected revert not received');
+    success = true;
   } catch (error) {
-    const revertFound = error.message.search('revert') >= 0;
-    assert(revertFound, `Expected "revert", got ${error} instead`);
+    if (typeof error == 'object') {
+      if (Object.keys(error).length > 1) {
+        const revertReasonFound =
+          (error.reason && error.reason === expectedReasonOrCode) ||
+            (error.code && error.code === expectedReasonOrCode);
+
+        if (!revertReasonFound || !expectedReasonOrCode) {
+          console.error(JSON.stringify(error));
+        }
+        assert(revertReasonFound,
+          'Expected "revert", got reason=' + error.reason + ' and code=' + error.code + ' instead!');
+      } else {
+        const errorStr = error.toString();
+        const revertReasonFound = errorStr.indexOf('revert ' + expectedReasonOrCode);
+        assert(revertReasonFound, 'Expected "revert ' + expectedReasonOrCode + '", got "' + errorStr + '"!');
+      }
+    } else {
+      assert(false, 'Invalid error format. Revert not found "' + error + '"!');
+    }
+  } finally {
+    if (success) {
+      assert.fail('Expected revert not received');
+    }
   }
 };

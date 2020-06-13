@@ -21,19 +21,19 @@ contract OperableCoreMock is OperableCore {
     OperableCore(_sysOperators) {}
 
   function defineDelegate(uint256 _delegateId, address _delegate) public returns (bool) {
-    return _defineDelegate(_delegateId, _delegate);
+    return defineDelegateInternal(_delegateId, _delegate);
   }
 
   function defineProxy(address _proxy, uint256 _delegateId) public returns (bool) {
-    return _defineProxy(_proxy, _delegateId);
+    return defineProxyInternal(_proxy, _delegateId);
   }
 
   function allPrivileges() public pure returns (bytes32) {
-    return _ALL_PRIVILEGES;
+    return ALL_PRIVILEGES;
   }
 
   function allProxies() public pure returns (address) {
-    return _ALL_PROXIES;
+    return ALL_PROXIES;
   }
 
   function successAsCoreOp(address _proxy)

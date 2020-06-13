@@ -17,13 +17,13 @@ import "./Ownable.sol";
  */
 contract Operable is Ownable {
 
-  mapping (address => bool) private _operators;
+  mapping (address => bool) private operators_;
 
   /**
    * @dev Throws if called by any account other than the operator
    */
   modifier onlyOperator {
-    require(_operators[msg.sender], "OP01");
+    require(operators_[msg.sender], "OP01");
     _;
   }
 
@@ -39,7 +39,7 @@ contract Operable is Ownable {
    * @param _address operator address
    */
   function isOperator(address _address) public view returns (bool) {
-    return _operators[_address];
+    return operators_[_address];
   }
 
   /**
@@ -47,8 +47,8 @@ contract Operable is Ownable {
    * @param _address operator address
    */
   function removeOperator(address _address) public onlyOwner {
-    require(_operators[_address], "OP02");
-    _operators[_address] = false;
+    require(operators_[_address], "OP02");
+    operators_[_address] = false;
     emit OperatorRemoved(_address);
   }
 
@@ -60,8 +60,8 @@ contract Operable is Ownable {
   function defineOperator(string memory _role, address _address)
     public onlyOwner
   {
-    require(!_operators[_address], "OP03");
-    _operators[_address] = true;
+    require(!operators_[_address], "OP03");
+    operators_[_address] = true;
     emit OperatorDefined(_role, _address);
   }
 

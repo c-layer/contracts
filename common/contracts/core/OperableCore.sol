@@ -22,8 +22,8 @@ import "./Core.sol";
 contract OperableCore is IOperableCore, Core, OperableStorage {
 
   constructor(address[] memory _sysOperators) public {
-    assignOperators(_ALL_PRIVILEGES, _sysOperators);
-    assignProxyOperators(_ALL_PROXIES, _ALL_PRIVILEGES, _sysOperators);
+    assignOperators(ALL_PRIVILEGES, _sysOperators);
+    assignProxyOperators(ALL_PROXIES, ALL_PRIVILEGES, _sysOperators);
   }
 
   /**
@@ -60,10 +60,10 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
   function defineRole(bytes32 _role, bytes4[] memory _privileges)
     override public onlySysOp returns (bool)
   {
-    require(_role != _ALL_PRIVILEGES, "OC04");
-    delete _roles[_role];
+    require(_role != ALL_PRIVILEGES, "OC04");
+    delete roles[_role];
     for (uint256 i=0; i < _privileges.length; i++) {
-      _roles[_role].privileges[_privileges[i]] = true;
+      roles[_role].privileges[_privileges[i]] = true;
     }
     emit RoleDefined(_role);
     return true;
@@ -72,52 +72,52 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
   /**
    * @dev assignOperators
    * @param _role operator role. May be a role not defined yet.
-   * @param _addresses operator addresses
+   * @param _operators addresses
    */
-  function assignOperators(bytes32 _role, address[] memory _addresses)
+  function assignOperators(bytes32 _role, address[] memory _operators)
     override public onlySysOp returns (bool)
   {
-    for (uint256 i=0; i < _addresses.length; i++) {
-      _operators[_addresses[i]].coreRole = _role;
-      emit OperatorAssigned(_role, _addresses[i]);
+    for (uint256 i=0; i < _operators.length; i++) {
+      operators[_operators[i]].coreRole = _role;
+      emit OperatorAssigned(_role, _operators[i]);
     }
     return true;
   }
 
-  function _defineProxy(address _proxy, uint256 _delegateId)
+  function defineProxyInternal(address _proxy, uint256 _delegateId)
     override internal returns (bool)
   {
-    require(_proxy != _ALL_PROXIES, "OC05");
-    return super._defineProxy(_proxy, _delegateId);
+    require(_proxy != ALL_PROXIES, "OC05");
+    return super.defineProxyInternal(_proxy, _delegateId);
   }
 
 
   /**
    * @dev assignProxyOperators
    * @param _role operator role. May be a role not defined yet.
-   * @param _addresses addresses
+   * @param _operators addresses
    */
   function assignProxyOperators(
-    address _proxy, bytes32 _role, address[] memory _addresses)
+    address _proxy, bytes32 _role, address[] memory _operators)
     override public onlySysOp returns (bool)
   {
-    for (uint256 i=0; i < _addresses.length; i++) {
-      _operators[_addresses[i]].proxyRoles[_proxy] = _role;
-      emit ProxyOperatorAssigned(_proxy, _role, _addresses[i]);
+    for (uint256 i=0; i < _operators.length; i++) {
+      operators[_operators[i]].proxyRoles[_proxy] = _role;
+      emit ProxyOperatorAssigned(_proxy, _role, _operators[i]);
     }
     return true;
   }
 
   /**
    * @dev removeOperator
-   * @param _addresses addresses
+   * @param _operators addresses
    */
-  function revokeOperators(address[] memory _addresses)
+  function revokeOperators(address[] memory _operators)
     override public onlySysOp returns (bool)
   {
-    for (uint256 i=0; i < _addresses.length; i++) {
-      delete _operators[_addresses[i]];
-      emit OperatorRevoked(_addresses[i]);
+    for (uint256 i=0; i < _operators.length; i++) {
+      delete operators[_operators[i]];
+      emit OperatorRevoked(_operators[i]);
     }
     return true;
   }

@@ -8,7 +8,7 @@ pragma solidity ^0.6.0;
  *
  * SPDX-License-Identifier: MIT
  */
-interface IERC20 {
+abstract contract IERC20 {
 
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(
@@ -17,24 +17,24 @@ interface IERC20 {
     uint256 value
   );
 
-  function name() external view returns (string memory);
-  function symbol() external view returns (string memory);
-  function decimals() external view returns (uint256);
-  function totalSupply() external view returns (uint256);
-  function balanceOf(address who) external view returns (uint256);
-  function transfer(address to, uint256 value) external returns (bool);
+  function name() virtual public view returns (string memory);
+  function symbol() virtual public view returns (string memory);
+  function decimals() virtual public view returns (uint256);
+  function totalSupply() virtual public view returns (uint256);
+  function balanceOf(address who) virtual public view returns (uint256);
+  function transfer(address to, uint256 value) virtual public returns (bool);
 
   function allowance(address owner, address spender)
-    external view returns (uint256);
+    virtual public view returns (uint256);
 
   function transferFrom(address from, address to, uint256 value)
-    external returns (bool);
+    virtual public returns (bool);
 
-  function approve(address spender, uint256 value) external returns (bool);
+  function approve(address spender, uint256 value) virtual public returns (bool);
 
   function increaseApproval(address spender, uint addedValue)
-    external returns (bool);
+    virtual public returns (bool);
 
   function decreaseApproval(address spender, uint subtractedValue)
-    external returns (bool);
+    virtual public returns (bool);
 }

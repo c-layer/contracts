@@ -40,7 +40,7 @@ contract Proxy {
    * @dev enforce static immutability (view)
    * @dev in order to read core value through internal core delegateCall
    */
-  function _staticCallUint256() internal view returns (uint256 result) {
+  function staticCallUint256() internal view returns (uint256 result) {
     (bool status, bytes memory value) = core.staticcall(msg.data);
     require(status, "PR02");
     // solhint-disable-next-line no-inline-assembly
