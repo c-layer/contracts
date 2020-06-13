@@ -7,7 +7,7 @@ aliases:
     parameters:
       package:
         type: string
-        default: ~/
+        default: .
     working_directory:
       << parameters.package >>
 
