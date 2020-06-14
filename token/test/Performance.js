@@ -4,7 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertGasEstimate = require('./helper/assertGasEstimate');
+const assertGasEstimate = require('./helpers/assertGasEstimate');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const MintableTokenDelegate = artifacts.require('MintableTokenDelegate.sol');
