@@ -260,17 +260,17 @@ contract('OracleEnrichedDelegate', function (accounts) {
       }, 'value is converted');
     });
 
-    it('should estimate gas to fetch sender user', async function () {
+    it('should estimate gas to fetch sender user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchSenderUser.estimateGas(accounts[2], [1, 2]);
       assert.equal(estimate, FETCH_SENDER_ESTIMATE, 'fetch user estimate');
     });
 
-    it('should estimate gas to fetch receiver user', async function () {
+    it('should estimate gas to fetch receiver user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchReceiverUser.estimateGas(accounts[2], [1, 2]);
       assert.equal(estimate, FETCH_RECEIVER_ESTIMATE, 'fetch user estimate');
     });
 
-    it('should estimate gas to fetch converted value', async function () {
+    it('should estimate gas to fetch converted value [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchConvertedValue.estimateGas(
         100, ratesProvider.address, TOKEN_ADDRESS, CHF_ADDRESS);
       assert.equal(estimate, FETCH_CONVERT_RATE, 'fetch convert estimate');

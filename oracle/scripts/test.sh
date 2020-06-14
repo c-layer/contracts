@@ -48,8 +48,8 @@ else
   start_ganache
 fi
 
-if [ "$SOLIDITY_COVERAGE" = true ]; then
-  if [ ! -L "node_modules/solidity-coverage"]; then
+if [[ "$SOLIDITY_COVERAGE" = true ]]; then
+  if [[ ! -L "node_modules/solidity-coverage" ]]; then
     echo "Creating solidity-coverage symlink"
     ln -s ../node_modules/solidity-coverage node_modules/
   fi

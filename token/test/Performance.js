@@ -45,7 +45,7 @@ const AUDITED_TRANSFER_AFTER_COST = 69567;
 const AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED = 2;
 const AUDIT_MODE_WHEN_TRIGGERS_MATCHED = 3;
 
-contract('Performance', function (accounts) {
+contract('Performance [ @skip-on-coverage ]', function (accounts) {
   let userRegistry, ratesProvider;
   let core;
 

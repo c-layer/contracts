@@ -115,7 +115,7 @@ contract('TokenFactory', function (accounts) {
       assert.ok(access, 'access');
     });
 
-    it('should estimate a new token deployment', async function () {
+    it('should estimate a new token deployment [ @skip-on-coverage ]', async function () {
       const gasCost = await factory.deployToken.estimateGas(
         core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, true,
         VAULTS, SUPPLIES, [accounts[0]]);

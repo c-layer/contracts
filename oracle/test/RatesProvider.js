@@ -111,7 +111,7 @@ contract('RatesProvider', function (accounts) {
       await provider.defineRates([1, 1, 1, 1, aWEICHFSample, 1, 1, 1, 1]);
     });
 
-    it('should have correct gas estimate for defining rates', async function () {
+    it('should have correct gas estimate for defining rates [ @skip-on-coverage ]', async function () {
       const gas = await provider.defineRates.estimateGas([1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2]);
       assert.equal(gas, DEFINE_RATES_ESTIMATE, 'gas estimate');
     });
