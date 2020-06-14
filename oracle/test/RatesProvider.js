@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
+const assertGasEstimate = require('./helpers/assertGasEstimate');
 const assertRevert = require('./helpers/assertRevert');
 const BN = require('bn.js');
 const RatesProvider = artifacts.require('RatesProvider.sol');
@@ -113,7 +114,7 @@ contract('RatesProvider', function (accounts) {
 
     it('should have correct gas estimate for defining rates [ @skip-on-coverage ]', async function () {
       const gas = await provider.defineRates.estimateGas([1, 1, 1, 1, aWEICHFSample, 2, 2, 2, 2]);
-      assert.equal(gas, DEFINE_RATES_ESTIMATE, 'gas estimate');
+      assertGasEstimate(gas, DEFINE_RATES_ESTIMATE, 'gas estimate');
     });
 
     it('should have an update date', async function () {
