@@ -3,7 +3,7 @@
 
 ### Requirements
 
-Your environment is setup as described [here](https://github.com/c-layer/contracts/blob/tutorials/tutorials/Tutorials.md#requirements).
+Your environment is setup as described [here](./Tutorials.md#requirements).
 
 ### Goals
 
@@ -14,7 +14,7 @@ The token will only provides you with the basic ERC20 features.
 
 ##### 1- Go into the Core module and start truffle
 ```bash
-  cd c-layer-core && truffle develop
+  cd token && truffle develop
 ```
 
 ##### 2- Always reompile the contracts to ensure you will be using the latest version
@@ -31,9 +31,9 @@ Compiling your contracts...
 
 ### Steps
 
-##### 3- Create a token delegate
+##### 3- Create the simplest token delegate
 ```javascript
-delegate = await TokenDelegate.new()
+delegate = await MintableTokenDelegate.new()
 delegate.address
 ```
 
@@ -42,7 +42,7 @@ If you are on a live network, you might want to backup this address for later us
 
 ##### 4- Create a token core
 ```javascript
-core = await TokenCore.new('My Token Core')
+core = await TokenCore.new('My Token Core', [ accounts[0] ])
 core.address
 ```
 
@@ -51,7 +51,7 @@ If you are on a live network, you might want to backup this address for later us
 
 ##### 5- Configure the token core with a delegate
 ```javascript
-core.defineTokenDelegate(0, delegate.address, [])
+core.defineTokenDelegate(1, delegate.address, [])
 ```
 
 The result from the above command should returns with the receipt of the transaction
@@ -81,7 +81,7 @@ Object.keys(token.methods)
 
 In the command below, you need to provide the desired name, symbol et decimals
 ``` javascript
-await core.defineToken(token.address, 0, "My Token", "MTK", 18)
+await core.defineToken(token.address, 1, "My Token", "MTK", 18)
 ```
 
 You can replay the token proxy methods you called at the step 6 to verify that it has now all its attribute defined.
@@ -91,7 +91,7 @@ The token supplies are still empty as we haven't minted any tokens.
 Let's do it now:
 ``` javascript
 supply = "42".padEnd(18, "0")
-await core.mint(token.address, accounts[0], supply)
+await core.mint(token.address, [ accounts[0] ], [ supply ])
 token.totalSupply()
 ```
 

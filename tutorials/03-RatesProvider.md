@@ -3,7 +3,7 @@
 
 ### Requirements
 
-Your environment is setup as described [here](https://github.com/c-layer/contracts/blob/tutorials/tutorials/Tutorials.md#requirements).
+Your environment is setup as described [here](./Tutorials.md#requirements).
 
 ### Goals
 
@@ -11,9 +11,9 @@ This tutorial will guide you to deploy a rates provider and learn how to manage 
 
 ### Start
 
-You must start `truffle` from the c-layer-oracle module
+You must start `truffle` from the oracle module
 ```bash
-  cd c-layer-oracle && truffle develop
+  cd oracle && truffle develop
 ```
 
 ### Steps
