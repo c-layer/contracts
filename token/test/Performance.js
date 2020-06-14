@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
+const assertGasEstimate = require('./helper/assertGasEstimate');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const MintableTokenDelegate = artifacts.require('MintableTokenDelegate.sol');
@@ -59,23 +60,23 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
   it('should have a core gas cost at ' + CORE_GAS_COST, async function () {
     const gas = await TokenCore.new.estimateGas('Test', [accounts[0]]);
-    assert.equal(gas, CORE_GAS_COST, 'gas');
+    assertGasEstimate(gas, CORE_GAS_COST, 'gas');
   });
 
   it('should have a mintable delegate gas cost at ' + MINTABLE_DELEGATE_GAS_COST, async function () {
     const gas = await MintableTokenDelegate.new.estimateGas();
-    assert.equal(gas, MINTABLE_DELEGATE_GAS_COST, 'gas');
+    assertGasEstimate(gas, MINTABLE_DELEGATE_GAS_COST, 'gas');
   });
 
   it('should have a mintable C delegate gas cost at ' + DELEGATE_GAS_COST, async function () {
     const gas = await TokenDelegate.new.estimateGas();
-    assert.equal(gas, DELEGATE_GAS_COST, 'gas');
+    assertGasEstimate(gas, DELEGATE_GAS_COST, 'gas');
   });
 
   it('should have a proxy gas cost at ' + PROXY_GAS_COST, async function () {
     core = await TokenCore.new('Test', [accounts[0]]);
     const gas = await TokenProxy.new.estimateGas(core.address);
-    assert.equal(gas, PROXY_GAS_COST, 'gas');
+    assertGasEstimate(gas, PROXY_GAS_COST, 'gas');
   });
 
   describe('With delegates defined', function () {
@@ -104,19 +105,19 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
       it('should estimate a first transfer accounts[0]', async function () {
         const gas = await token.transfer.estimateGas(accounts[1], '3333');
-        assert.equal(gas, MINTABLE_FIRST_TRANSFER_COST, 'estimate');
+        assertGasEstimate(gas, MINTABLE_FIRST_TRANSFER_COST, 'estimate');
       });
 
       it('should estimate a first transfer from accounts[0]', async function () {
         const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], '3333', { from: accounts[1] });
-        assert.equal(gas, MINTABLE_FIRST_TRANSFER_FROM_COST, 'estimate');
+        assertGasEstimate(gas, MINTABLE_FIRST_TRANSFER_FROM_COST, 'estimate');
       });
 
       // Later transfer does not have to allocate extra memory and should be cheaper
       it('should estimate more transfer from accounts[0]', async function () {
         await token.transfer(accounts[1], '3333');
         const gas = await token.transfer.estimateGas(accounts[1], '3333');
-        assert.equal(gas, MINTABLE_TRANSFER_COST, 'estimate');
+        assertGasEstimate(gas, MINTABLE_TRANSFER_COST, 'estimate');
       });
     });
 
@@ -139,19 +140,19 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
       it('should estimate a first transfer accounts[0]', async function () {
         const gas = await token.transfer.estimateGas(accounts[1], '3333');
-        assert.equal(gas, FIRST_TRANSFER_COST, 'estimate');
+        assertGasEstimate(gas, FIRST_TRANSFER_COST, 'estimate');
       });
 
       it('should estimate a first transfer from accounts[0]', async function () {
         const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], '3333', { from: accounts[1] });
-        assert.equal(gas, FIRST_TRANSFER_FROM_COST, 'estimate');
+        assertGasEstimate(gas, FIRST_TRANSFER_FROM_COST, 'estimate');
       });
 
       // Later transfer does not have to allocate extra memory and should be cheaper
       it('should estimate more transfer from accounts[0]', async function () {
         await token.transfer(accounts[1], '3333');
         const gas = await token.transfer.estimateGas(accounts[1], '3333');
-        assert.equal(gas, TRANSFER_COST, 'estimate');
+        assertGasEstimate(gas, TRANSFER_COST, 'estimate');
       });
 
       describe('With primary aml audit configuration', function () {
@@ -171,19 +172,19 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
         it('should estimate a first transfer accounts[0]', async function () {
           const gas = await token.transfer.estimateGas(accounts[1], '3333');
-          assert.equal(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_COST, 'estimate');
+          assertGasEstimate(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_COST, 'estimate');
         });
 
         it('should estimate a first transfer from accounts[0]', async function () {
           const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], '3333', { from: accounts[1] });
-          assert.equal(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST, 'estimate');
+          assertGasEstimate(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST, 'estimate');
         });
 
         // Later transfer does not have to allocate extra memory and should be cheaper
         it('should estimate more transfer from accounts[0]', async function () {
           await token.transfer(accounts[1], '3333');
           const gas = await token.transfer.estimateGas(accounts[1], '1111');
-          assert.equal(gas, ISSUANCE_AUDITED_TRANSFER_COST, 'estimate');
+          assertGasEstimate(gas, ISSUANCE_AUDITED_TRANSFER_COST, 'estimate');
         });
 
         describe('and after issuance', function () {
@@ -198,13 +199,13 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
           it('should estimate a first transfer by accounts[1] to acounts[2]', async function () {
             const gas = await token.transfer.estimateGas(accounts[2], '1111', { from: accounts[1] });
-            assert.equal(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST, 'estimate');
+            assertGasEstimate(gas, ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST, 'estimate');
           });
 
           it('should estimate more transfer by accounts[1] to acounts[2]', async function () {
             await token.transfer(accounts[2], '1111', { from: accounts[1] });
             const gas = await token.transfer.estimateGas(accounts[2], '1111', { from: accounts[1] });
-            assert.equal(gas, ISSUANCE_AUDITED_TRANSFER_AFTER_COST, 'estimate');
+            assertGasEstimate(gas, ISSUANCE_AUDITED_TRANSFER_AFTER_COST, 'estimate');
           });
         });
       });
@@ -226,19 +227,19 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
         it('should estimate a first transfer accounts[0]', async function () {
           const gas = await token.transfer.estimateGas(accounts[1], '3333');
-          assert.equal(gas, AUDITED_FIRST_TRANSFER_COST, 'estimate');
+          assertGasEstimate(gas, AUDITED_FIRST_TRANSFER_COST, 'estimate');
         });
 
         it('should estimate a first transfer from accounts[0]', async function () {
           const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], '3333', { from: accounts[1] });
-          assert.equal(gas, AUDITED_FIRST_TRANSFER_FROM_COST, 'estimate');
+          assertGasEstimate(gas, AUDITED_FIRST_TRANSFER_FROM_COST, 'estimate');
         });
 
         // Later transfer does not have to allocate extra memory and should be cheaper
         it('should estimate more transfer from accounts[0]', async function () {
           await token.transfer(accounts[1], '3333');
           const gas = await token.transfer.estimateGas(accounts[1], '3333');
-          assert.equal(gas, AUDITED_TRANSFER_COST, 'estimate');
+          assertGasEstimate(gas, AUDITED_TRANSFER_COST, 'estimate');
         });
 
         describe('and after issuance', function () {
@@ -253,13 +254,13 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
           it('should estimate a first transfer by accounts[1] to acounts[2]', async function () {
             const gas = await token.transfer.estimateGas(accounts[2], '1111', { from: accounts[1] });
-            assert.equal(gas, AUDITED_FIRST_TRANSFER_AFTER_COST, 'estimate');
+            assertGasEstimate(gas, AUDITED_FIRST_TRANSFER_AFTER_COST, 'estimate');
           });
 
           it('should estimate more transfer by accounts[1] to acounts[2]', async function () {
             await token.transfer(accounts[2], '1111', { from: accounts[1] });
             const gas = await token.transfer.estimateGas(accounts[2], '1111', { from: accounts[1] });
-            assert.equal(gas, AUDITED_TRANSFER_AFTER_COST, 'estimate');
+            assertGasEstimate(gas, AUDITED_TRANSFER_AFTER_COST, 'estimate');
           });
         });
       });
