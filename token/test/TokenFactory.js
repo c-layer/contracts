@@ -5,6 +5,7 @@
  */
 
 const assertRevert = require('./helpers/assertRevert');
+const assertGasEstimate = require('./helpers/assertGasEstimate');
 const TokenDelegate = artifacts.require('TokenDelegate.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
@@ -119,7 +120,7 @@ contract('TokenFactory', function (accounts) {
       const gasCost = await factory.deployToken.estimateGas(
         core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, true,
         VAULTS, SUPPLIES, [accounts[0]]);
-      assert.equal(gasCost, TOKEN_DEPLOYMENT_COST, 'gas cost');
+      assertGasEstimate(gasCost, TOKEN_DEPLOYMENT_COST, 'gas cost');
     });
 
     it('should deploy a new token', async function () {
