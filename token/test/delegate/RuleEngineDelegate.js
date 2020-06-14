@@ -40,20 +40,20 @@ contract('RuleEngineDelegate', function (accounts) {
     assert.deepEqual(tx.logs[0].args.rules, [yesRule.address, noRule.address], 'rules');
   });
 
-  it('should estimate no rules validation', async function () {
+  it('should estimate no rules validation [ @skip-on-coverage ]', async function () {
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
     assert.equal(estimate.toString(), ESTIMATE_NO_RULES, 'no rules estimate');
   });
 
-  it('should estimate one rules validation', async function () {
+  it('should estimate one rules validation [ @skip-on-coverage ]', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
     assert.equal(estimate.toString(), ESTIMATE_ONE_RULE, 'one rule estimate');
   });
 
-  it('should estimate two rules validation', async function () {
+  it('should estimate two rules validation [ @skip-on-coverage ]', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address, yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
