@@ -74,7 +74,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
 
   // DelegateId => AuditConfiguration[]
   mapping (uint256 => AuditConfiguration) internal auditConfigurations;
-  mapping (uint256 => uint256[]) internal delegatesConfigurations;
+  mapping (uint256 => uint256[]) internal delegatesConfigurations_;
   mapping (address => TokenData) internal tokens;
 
   // Scope x ScopeId => AuditStorage

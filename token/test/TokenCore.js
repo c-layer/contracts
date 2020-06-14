@@ -26,6 +26,10 @@ const AUDIT_MODE_TRIGGERS_ONLY = 1;
 // const AUDIT_MODE_ALWAYS = 3;
 // const AUDIT_STORAGE_MODE_SHARED = 2;
 
+const AUDIT_STORAGE_ADDRESS = 0;
+const AUDIT_STORAGE_USER_ID = 1;
+const AUDIT_STORAGE_SHARED = 2;
+
 contract('TokenCore', function (accounts) {
   let token, core, delegate, userRegistry, ratesProvider;
 
@@ -180,6 +184,11 @@ contract('TokenCore', function (accounts) {
       await core.defineTokenDelegate(1, delegate.address, [2, 4]);
     });
 
+    it('should have a delegate configurations', async function () {
+      const configurations = await core.delegatesConfigurations(1);
+      assert.deepEqual(configurations.map((x) => x.toString()), ['2', '4'], 'delegate configurations');
+    });
+
     it('should have an audit configuration', async function () {
       const configuration = await core.auditConfiguration(2);
       assert.equal(configuration.mode, AUDIT_MODE_TRIGGERS_ONLY, 'audit mode');
@@ -195,6 +204,35 @@ contract('TokenCore', function (accounts) {
       assert.deepEqual(triggers.tokens, [false, false, true], 'tokens');
       assert.deepEqual(triggers.senders, [true, false, false], 'senders');
       assert.deepEqual(triggers.receivers, [false, true, false], 'receivers');
+    });
+
+    it('should have an audit currency', async function () {
+      const currency = await core.auditCurrency(core.address, 3);
+      assert.equal(currency, CHF_ADDRESS, 'currency');
+    });
+
+    it('should have shared audit', async function () {
+      const audit = await core.audit(core.address, 2, AUDIT_STORAGE_SHARED, NULL_ADDRESS);
+      assert.equal(audit.createdAt, 0, 'createdAt');
+      assert.equal(audit.lastTransactionAt, 0, 'lastTransactionAt');
+      assert.equal(audit.cumulatedEmission, 0, 'cumulatedEmission');
+      assert.equal(audit.cumulatedReception, 0, 'cumulatedReception');
+    });
+
+    it('should have address audit', async function () {
+      const audit = await core.audit(core.address, 2, AUDIT_STORAGE_ADDRESS, accounts[0]);
+      assert.equal(audit.createdAt, 0, 'createdAt');
+      assert.equal(audit.lastTransactionAt, 0, 'lastTransactionAt');
+      assert.equal(audit.cumulatedEmission, 0, 'cumulatedEmission');
+      assert.equal(audit.cumulatedReception, 0, 'cumulatedReception');
+    });
+
+    it('should have user id audit', async function () {
+      const audit = await core.audit(core.address, 2, AUDIT_STORAGE_USER_ID, web3.utils.toHex(1));
+      assert.equal(audit.createdAt, 0, 'createdAt');
+      assert.equal(audit.lastTransactionAt, 0, 'lastTransactionAt');
+      assert.equal(audit.cumulatedEmission, 0, 'cumulatedEmission');
+      assert.equal(audit.cumulatedReception, 0, 'cumulatedReception');
     });
 
     it('should let remove audit', async function () {

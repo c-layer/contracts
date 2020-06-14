@@ -25,7 +25,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
   function prepareAuditInternal(STransferData memory _transferData)
     internal view returns (STransferAuditData memory)
   {
-    uint256 configurationId = delegatesConfigurations[proxyDelegateIds[_transferData.token]
+    uint256 configurationId = delegatesConfigurations_[proxyDelegateIds[_transferData.token]
       ][AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY];
     AuditConfiguration storage configuration = auditConfigurations[configurationId];
 

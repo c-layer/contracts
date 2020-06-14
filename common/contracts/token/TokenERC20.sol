@@ -10,8 +10,13 @@ import "../math/SafeMath.sol";
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
+ *
+ * Error messages
+ *   TE01: Address is invalid
+ *   TE02: Not enougth tokens available
+ *   TE03: Approval too low
  */
-abstract contract TokenERC20 is IERC20 {
+contract TokenERC20 is IERC20 {
   using SafeMath for uint256;
 
   string internal name_;
@@ -38,35 +43,35 @@ abstract contract TokenERC20 is IERC20 {
     emit Transfer(address(0), _initialAccount, _initialSupply);
   }
 
-  function name() override public view returns (string memory) {
+  function name() external override view returns (string memory) {
     return name_;
   }
 
-  function symbol() override public view returns (string memory) {
+  function symbol() external override view returns (string memory) {
     return symbol_;
   }
 
-  function decimals() override public view returns (uint256) {
+  function decimals() external override view returns (uint256) {
     return decimals_;
   }
 
-  function totalSupply() override public view returns (uint256) {
+  function totalSupply() external override view returns (uint256) {
     return totalSupply_;
   }
 
-  function balanceOf(address _owner) override public view returns (uint256) {
+  function balanceOf(address _owner) external override view returns (uint256) {
     return balances[_owner];
   }
 
   function allowance(address _owner, address _spender)
-    override public view returns (uint256)
+    external override view returns (uint256)
   {
     return allowed[_owner][_spender];
   }
 
-  function transfer(address _to, uint256 _value) override public returns (bool) {
-    require(_to != address(0));
-    require(_value <= balances[msg.sender]);
+  function transfer(address _to, uint256 _value) external override returns (bool) {
+    require(_to != address(0), "TE01");
+    require(_value <= balances[msg.sender], "TE02");
 
     balances[msg.sender] = balances[msg.sender].sub(_value);
     balances[_to] = balances[_to].add(_value);
@@ -75,11 +80,11 @@ abstract contract TokenERC20 is IERC20 {
   }
 
   function transferFrom(address _from, address _to, uint256 _value)
-    override public returns (bool)
+    external override returns (bool)
   {
-    require(_to != address(0));
-    require(_value <= balances[_from]);
-    require(_value <= allowed[_from][msg.sender]);
+    require(_to != address(0), "TE01");
+    require(_value <= balances[_from], "TE02");
+    require(_value <= allowed[_from][msg.sender], "TE03");
 
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
@@ -88,14 +93,14 @@ abstract contract TokenERC20 is IERC20 {
     return true;
   }
 
-  function approve(address _spender, uint256 _value) override public returns (bool) {
+  function approve(address _spender, uint256 _value) external override returns (bool) {
     allowed[msg.sender][_spender] = _value;
     emit Approval(msg.sender, _spender, _value);
     return true;
   }
 
   function increaseApproval(address _spender, uint _addedValue)
-    override public returns (bool)
+    external override returns (bool)
   {
     allowed[msg.sender][_spender] = (
       allowed[msg.sender][_spender].add(_addedValue));
@@ -104,7 +109,7 @@ abstract contract TokenERC20 is IERC20 {
   }
 
   function decreaseApproval(address _spender, uint _subtractedValue)
-    override public returns (bool)
+    external override returns (bool)
   {
     uint oldValue = allowed[msg.sender][_spender];
     if (_subtractedValue > oldValue) {
@@ -115,12 +120,4 @@ abstract contract TokenERC20 is IERC20 {
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
-
-  event Transfer(address indexed from, address indexed to, uint256 value);
-  event Approval(
-    address indexed owner,
-    address indexed spender,
-    uint256 value
-  );
-
 }

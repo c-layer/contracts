@@ -18,4 +18,8 @@ contract ProxyMock is Proxy {
   function successOnlyCore(bool _success) public view onlyCore returns (bool) {
     return _success;
   }
+
+  function delegateCallUint256Mock(uint256) public view returns (uint256) {
+    return staticCallUint256();
+  }
 }

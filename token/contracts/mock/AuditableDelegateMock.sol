@@ -28,7 +28,7 @@ contract AuditableDelegateMock is AuditableDelegate, DelegateMock {
       _token, _caller, _sender, _receiver, _value);
 
     proxyDelegateIds[_token] = 1;
-    delegatesConfigurations[1] = _configurationIds;
+    delegatesConfigurations_[1] = _configurationIds;
 
     STransferAuditData memory transferAuditData = prepareAuditInternal(transferData_);
     
@@ -47,7 +47,7 @@ contract AuditableDelegateMock is AuditableDelegate, DelegateMock {
       _token, _caller, _sender, _receiver, _value);
 
     proxyDelegateIds[_token] = 1;
-    delegatesConfigurations[1] = _configurationIds;
+    delegatesConfigurations_[1] = _configurationIds;
 
     updateAllAuditsInternal(transferData_,
       prepareAuditInternal(transferData_));

@@ -8,7 +8,7 @@ const assertRevert = require('../helpers/assertRevert');
 const OperableAsCoreMock = artifacts.require('OperableAsCoreMock.sol');
 const OperableCoreMock = artifacts.require('OperableCoreMock.sol');
 
-contract('Proxy', function (accounts) {
+contract('OperableAsCore', function (accounts) {
   let contract, core;
 
   beforeEach(async function () {

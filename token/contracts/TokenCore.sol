@@ -85,10 +85,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     }
   }
 
-  function delegateConfigurations(uint256 _delegateId)
+  function delegatesConfigurations(uint256 _delegateId)
     override public view returns (uint256[] memory)
   {
-    return delegatesConfigurations[_delegateId];
+    return delegatesConfigurations_[_delegateId];
   }
 
   function auditCurrency(
@@ -210,12 +210,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     rules = tokenData.rules;
   }
 
-  function frozenUntil(address _token, address _holder)
-    override public view returns (uint256)
-  {
-    return tokens[_token].frozenUntils[_holder];
-  }
-
   /***********  TOKEN ADMIN  ***********/
   function mint(address _token, address[] calldata, uint256[] calldata)
     override external onlyProxyOp(_token) returns (bool)
@@ -256,12 +250,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   function defineRules(address _token, IRule[] calldata)
-    override external onlyProxyOp(_token) returns (bool)
-  {
-    return delegateCall(_token);
-  }
-
-  function defineClaim(address _token, address, uint256)
     override external onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
@@ -329,10 +317,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
     defineDelegateInternal(_delegateId, _delegate);
     if(_delegate != address(0)) {
-      delegatesConfigurations[_delegateId] = _auditConfigurations;
+      delegatesConfigurations_[_delegateId] = _auditConfigurations;
       emit TokenDelegateDefined(_delegateId, _delegate, _auditConfigurations);
     } else {
-      delete delegatesConfigurations[_delegateId];
+      delete delegatesConfigurations_[_delegateId];
       emit TokenDelegateRemoved(_delegateId);
     }
     return true;

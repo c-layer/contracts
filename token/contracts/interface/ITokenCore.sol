@@ -34,7 +34,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     bool[] memory senders,
     bool[] memory receivers,
     bool[] memory tokens);
-  function delegateConfigurations(uint256 _delegateId)
+  function delegatesConfigurations(uint256 _delegateId)
     virtual public view returns (uint256[] memory);
 
   function auditCurrency(
@@ -80,8 +80,6 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     address[] memory lockExceptions,
     uint256 freezedUntil,
     IRule[] memory);
-  function frozenUntil(address _token, address _holder)
-    virtual public view returns (uint256);
   function canTransfer(address, address, uint256)
     virtual public returns (uint256);
 
@@ -101,7 +99,6 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function defineLock(address, uint256, uint256, address[] calldata)
     virtual external returns (bool);
   function defineRules(address, IRule[] calldata) virtual external returns (bool);
-  function defineClaim(address, address, uint256) virtual external returns (bool);
 
   /************  CORE ADMIN  ************/
   function defineToken(
