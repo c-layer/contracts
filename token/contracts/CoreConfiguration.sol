@@ -126,12 +126,13 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     privileges[3] = DEFINE_LOCK_PRIV;
     require(_core.defineRole(COMPLIANCE_PROXY_ROLE, privileges), "CC16");
 
-    privileges = new bytes4[](5);
+    privileges = new bytes4[](6);
     privileges[0] = MINT_PRIV;
     privileges[1] = BURN_PRIV;
     privileges[2] = FINISH_MINTING_PRIV;
     privileges[3] = DEFINE_LOCK_PRIV;
-    privileges[4] = DEFINE_CLAIM_PRIV;
+    privileges[4] = CONFIGURE_TOKENSALES_PRIV;
+    privileges[5] = UPDATE_ALLOWANCE_PRIV;
     require(_core.defineRole(ISSUER_PROXY_ROLE, privileges), "CC17");
 
     // Assign Oracle

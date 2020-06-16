@@ -41,7 +41,8 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('burn(address,uint256)'),
   web3.utils.sha3('finishMinting(address)'),
   web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
-  web3.utils.sha3('defineClaim(address,address,uint256)'),
+  web3.utils.sha3('configureTokensales(address,address,address[],uint256[])'),
+  web3.utils.sha3('updateAllowances(address,address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));
 
 const ALWAYS_TRIGGERS_EXCLUDED = 2;
@@ -182,10 +183,10 @@ contract('CoreConfiguration', function (accounts) {
           assert.deepEqual(result, [true, true, true, true], 'compliance proxy privilege');
         });
 
-        it('should have define compliance proxy role with privileges', async function () {
+        it('should have define issuer proxy role with privileges', async function () {
           const result = await Promise.all(ISSUER_PROXY_PRIVILEGES.map(
             (privilege) => core.rolePrivilege(ISSUER_PROXY_ROLE, privilege)));
-          assert.deepEqual(result, [true, true, true, true, true], 'issuer proxy provilege');
+          assert.deepEqual(result, [true, true, true, true, true, true], 'issuer proxy provilege');
         });
       });
     });
