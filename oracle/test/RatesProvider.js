@@ -224,7 +224,7 @@ contract('RatesProvider', function (accounts) {
       const foundRates = await provider.rates();
       assert.ok(foundRates[0] > 0, 'updatedAt');
       assert.deepEqual(foundRates[1].map((d) => d.toString()),
-        rates.concat(['0']).map((d) => d.toString()), 'rates');
+        rates.map((d) => d.toString()), 'rates');
     });
 
     it('should convert CHFCent to WEI', async function () {

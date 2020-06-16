@@ -140,7 +140,7 @@ contract RatesProvider is IRatesProvider, Operable {
     while (rates_.length < _currencies.length) {
       rates_.push(0);
     }
-    while (rates_.length > _currencies.length) {
+    while (rates_.length >= _currencies.length) {
       rates_.pop();
     }
 
