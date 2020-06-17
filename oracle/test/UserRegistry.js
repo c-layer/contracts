@@ -586,6 +586,22 @@ contract('UserRegistry', function (accounts) {
       assert.equal(validity1[1], true, 'suspended1');
     });
 
+    it('should update user (unsuspended)', async function () {
+      await userRegistry.suspendUser(1);
+      const tx = await userRegistry.updateUser(1, dayPlusTwoTime, false);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, 'UserValidity', 'event');
+      assert.equal(tx.logs[0].args.userId, 1, 'userIdLog');
+      assert.equal(tx.logs[0].args.validUntilTime, dayPlusTwoTime, 'validUntilTimeLog');
+      assert.equal(tx.logs[1].event, 'UserRestored', 'event');
+      assert.equal(tx.logs[1].args.userId, 1, 'userIdLog');
+
+      const validity1 = await userRegistry.validity(1);
+      assert.equal(validity1[0], dayPlusTwoTime, 'validUntil1');
+      assert.equal(validity1[1], false, 'suspended1');
+    });
+
     it('should prevent non operator to update user', async function () {
       await assertRevert(
         userRegistry.updateManyUsersExternal([1, 2], dayPlusTwoTime, true,

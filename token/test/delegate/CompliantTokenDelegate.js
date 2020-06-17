@@ -89,7 +89,13 @@ contract('CompliantTokenDelegate', function (accounts) {
     assert.equal(balance1.toString(), '3333', 'balance');
   });
 
-  it('should be transferable from accounts[0] to accounts[1]', async function () {
+  it('should be transferable from accounts[0] to accounts[1] with no audits', async function () {
+    await core.defineTokenDelegate(1, delegate.address, [0]);
+    const result = await token.canTransfer(accounts[0], accounts[1], '3333');
+    assert.equal(result, TRANSFER_CODE_OK, 'canTransfer');
+  });
+
+  it('should be transferable from accounts[0] to accounts[1] with audits', async function () {
     const result = await token.canTransfer(accounts[0], accounts[1], '3333');
     assert.equal(result, TRANSFER_CODE_OK, 'canTransfer');
   });
