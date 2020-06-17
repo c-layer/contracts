@@ -54,6 +54,11 @@ contract('RatesProvider', function (accounts) {
       'rates');
   });
 
+  it('should convert 10.00 CHF Cent to 10.00 CHF', async function () {
+    const converted = await provider.convert(1000, CHF, CHF);
+    assert.equal(converted, '1000', '10.00 WEI');
+  });
+
   it('should convert 10.00 CHF Cent to 0 WEI', async function () {
     const converted = await provider.convert(1000, CHF, ETH);
     assert.equal(converted, '0', '0 WEI');

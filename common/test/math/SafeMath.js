@@ -37,6 +37,11 @@ contract('SafeMath', function (accounts) {
     assert.equal(c.toString(), '6', 'multiplication');
   });
 
+  it('should mul with shortcut when first element is 0', async function () {
+    const c = await contract.mul(0, 3);
+    assert.equal(c.toString(), '0', 'multiplication');
+  });
+
   it('should prevent mul overflow', async function () {
     await assertJump(contract.mul(-1, 2));
   });

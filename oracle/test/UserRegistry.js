@@ -71,6 +71,13 @@ contract('UserRegistry', function (accounts) {
     it('should have no users', async function () {
       const userCount = await userRegistry.userCount();
       assert.equal(userCount.toNumber(), 0, 'userCount');
+
+      const validUserId = await userRegistry.validUserId(accounts[0]);
+      assert.equal(validUserId.toNumber(), 0, 'invalidUserId');
+
+      const validUser = await userRegistry.validUser(accounts[0], [1]);
+      assert.equal(validUser[0], 0, 'validUser id');
+      assert.equal(validUser[1].length, 0, 'invalidUser keys');
     });
 
     it('should register a user', async function () {
