@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../interface/IOperableCore.sol";
+import "../core/Proxy.sol";
 
 
 /**
@@ -21,9 +22,10 @@ contract OperableAsCore {
     _;
   }
 
-  modifier onlyProxyOperator(IOperableCore _core, address _proxy) {
-    require(_core.hasProxyPrivilege(
-      msg.sender, _proxy, msg.sig), "OA02");
+  modifier onlyProxyOperator(Proxy _proxy) {
+    IOperableCore core = IOperableCore(_proxy.core());
+    require(core.hasProxyPrivilege(
+      msg.sender, address(_proxy), msg.sig), "OA02");
     _;
   }
 }

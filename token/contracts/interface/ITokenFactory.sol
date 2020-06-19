@@ -54,7 +54,6 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     address[] memory _tokensales,
     uint256[] memory _allowances) virtual public returns (bool);
   function updateAllowances(
-    ITokenCore _core,
     IERC20 _token,
     address[] memory _spenders,
     uint256[] memory _allowances) virtual public returns (bool);

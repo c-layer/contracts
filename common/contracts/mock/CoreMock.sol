@@ -10,9 +10,6 @@ import "../core/Core.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   AM01: Must be successfull
- *   AM02: Value must be not null
- *   AM03: Message must be defined
  */
 contract CoreMock is Core {
 

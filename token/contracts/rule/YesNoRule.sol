@@ -5,9 +5,8 @@ import "../interface/IRule.sol";
 
 /**
  * @title YesNoRule
- * @dev YesNoRule interface
+ * @dev YesNoRule
  * The rule always answer the same response through isValid
- * Usefull for testing IWithRule implementation
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT

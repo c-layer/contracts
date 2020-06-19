@@ -40,7 +40,7 @@ const APPROVE_PRIVILEGES = [
 ];
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3('configureTokensales(address,address,address[],uint256[])'),
-  web3.utils.sha3('updateAllowances(address,address,address[],uint256[])'),
+  web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ];
 const FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0');
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii('FactoryProxyRole').padEnd(66, '0');
@@ -193,7 +193,7 @@ contract('TokenFactory', function (accounts) {
       });
 
       it('should not let non proxy operator to update allowances', async function () {
-        await assertRevert(factory.updateAllowances(core.address, token.address, [], []), 'OA02');
+        await assertRevert(factory.updateAllowances(token.address, [], []), 'OA02');
       });
 
       describe('With approver authorizations', function () {
@@ -244,15 +244,14 @@ contract('TokenFactory', function (accounts) {
         });
 
         it('should let issuer update allowances with no spenders', async function () {
-          const tx = await factory.updateAllowances(core.address,
-            token.address, [], []);
+          const tx = await factory.updateAllowances(token.address, [], []);
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 0);
         });
 
         it('should let issuer update allowance with spenders', async function () {
-          const tx = await factory.updateAllowances(core.address,
-            token.address, [accounts[1], accounts[2]], ['0', '100000']);
+          const tx = await factory.updateAllowances(token.address,
+            [accounts[1], accounts[2]], ['0', '100000']);
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, 'AllowanceUpdated', 'event1');

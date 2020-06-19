@@ -16,11 +16,11 @@ import "./Proxy.sol";
  * Error messages
  *   CO01: Only Proxy may access the function
  *   CO02: Address 0 is an invalid delegate address
- *   CO03: Delegatecall should be successfull
+ *   CO03: Delegatecall should be successful
  *   CO04: DelegateId must be greater than 0
  *   CO05: Proxy must exist
  *   CO06: Proxy must be already defined
- *   CO07: Proxy update must be successfull
+ *   CO07: Proxy update must be successful
  **/
 contract Core is Storage {
   using BytesConvert for bytes;

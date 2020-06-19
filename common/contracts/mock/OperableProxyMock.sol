@@ -15,12 +15,12 @@ import "../core/OperableProxy.sol";
  */
 contract OperableProxyMock is OperableProxy {
 
-  bool public successfull;
+  bool public success;
 
   // solhint-disable-next-line no-empty-blocks
   constructor(address _core) public OperableProxy(_core) { }
 
-  function success() public onlyOperator returns (bool) {
-    successfull = true;
+  function setSuccess() public onlyOperator returns (bool) {
+    success = true;
   }
 }

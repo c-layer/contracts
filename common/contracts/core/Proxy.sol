@@ -1,5 +1,8 @@
 pragma solidity ^0.6.0;
 
+import "../interface/IProxy.sol";
+
+
 /**
  * @title Proxy
  *
@@ -8,14 +11,14 @@ pragma solidity ^0.6.0;
  *
  * Error messages
  *   PR01: Only accessible by core
- *   PR02: Core request should be successfull
+ *   PR02: Core request should be successful
  **/
-contract Proxy {
+contract Proxy is IProxy {
 
-  address public core;
+  address public override core;
 
   /**
-   * @dev Throws if called by any account other than a proxy
+   * @dev Throws if called by any account other than a core
    */
   modifier onlyCore {
     require(core == msg.sender, "PR01");

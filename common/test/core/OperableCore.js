@@ -180,12 +180,12 @@ contract('OperableCore', function (accounts) {
   });
 
   it('should let proxy operator to operate proxy', async function () {
-    const tx = await proxy.success({ from: sysOperator });
+    const tx = await proxy.setSuccess({ from: sysOperator });
     assert.ok(tx.receipt.status, 'Status');
   });
 
   it('should prevent non proxy operator to operate proxy', async function () {
-    await assertRevert(proxy.success({ from: nonOperator }), 'OP01');
+    await assertRevert(proxy.setSuccess({ from: nonOperator }), 'OP01');
   });
 
   describe('with two roles and 3 accounts setup', function () {

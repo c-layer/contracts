@@ -12,7 +12,7 @@ const CoreMock = artifacts.require('CoreMock.sol');
 contract('Proxy', function (accounts) {
   let core, delegate, proxy;
 
-  it('should have static call successfull', async function () {
+  it('should have static call successful', async function () {
     delegate = await DelegateMock.new();
     core = await CoreMock.new();
     proxy = await ProxyMock.new(core.address);

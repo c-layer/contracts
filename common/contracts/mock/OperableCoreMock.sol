@@ -15,7 +15,7 @@ import "../core/OperableCore.sol";
  */
 contract OperableCoreMock is OperableCore {
 
-  mapping(address => bool) public successfulls;
+  mapping(address => bool) public successes;
 
   constructor(address[] memory _sysOperators) public
     OperableCore(_sysOperators) {}
@@ -39,12 +39,12 @@ contract OperableCoreMock is OperableCore {
   function successAsCoreOp(address _proxy)
     public onlyCoreOp returns (bool)
   {
-    successfulls[_proxy] = true;
+    successes[_proxy] = true;
   }
 
   function successAsProxyOp(address _proxy)
     public onlyProxyOp(_proxy) returns (bool)
   {
-    successfulls[_proxy] = true;
+    successes[_proxy] = true;
   }
 }

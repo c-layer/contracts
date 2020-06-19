@@ -7,13 +7,15 @@
 const assertRevert = require('../helpers/assertRevert');
 const OperableAsCoreMock = artifacts.require('OperableAsCoreMock.sol');
 const OperableCoreMock = artifacts.require('OperableCoreMock.sol');
+const Proxy = artifacts.require('Proxy.sol');
 
 contract('OperableAsCore', function (accounts) {
-  let contract, core;
+  let contract, core, proxy;
 
   beforeEach(async function () {
     contract = await OperableAsCoreMock.new();
     core = await OperableCoreMock.new([ accounts[1] ]);
+    proxy = await Proxy.new(core.address);
   });
 
   it('should let core operator access', async function () {
@@ -29,12 +31,12 @@ contract('OperableAsCore', function (accounts) {
 
   it('should let proxy operator access', async function () {
     const success = await contract.testOnlyProxyOperator(
-      core.address, contract.address, { from: accounts[1] });
+      proxy.address, { from: accounts[1] });
     assert.ok(success, 'success');
   });
 
   it('should prevent non proxy operator access', async function () {
     await assertRevert(contract.testOnlyProxyOperator(
-      core.address, contract.address, { from: accounts[2] }));
+      proxy.address, { from: accounts[2] }));
   });
 });

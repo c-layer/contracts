@@ -19,8 +19,8 @@ contract OperableAsCoreMock is OperableAsCore {
     return true;
   }
 
-  function testOnlyProxyOperator(IOperableCore _core, address _proxy) 
-    public onlyProxyOperator(_core, _proxy) view returns (bool)
+  function testOnlyProxyOperator(Proxy _proxy)
+    public onlyProxyOperator(_proxy) view returns (bool)
   {
     return true;
   }

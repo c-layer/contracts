@@ -31,7 +31,7 @@ import "./interface/ICoreConfiguration.sol";
  *   CC17: Issuer proxy role definition failed
  *   CC18: Oracle definition failed
  *   CC19: Revoking core configuration access failed
- *   CC20: Revoking access from the core configuration was successfull
+ *   CC20: Revoking access from the core configuration was successful
  */
 contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
 

@@ -10,7 +10,7 @@ import "../core/Delegate.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   AM01: Must be successfull
+ *   AM01: Must be successful
  *   AM02: Value must be not null
  *   AM03: Message must be defined
  */
