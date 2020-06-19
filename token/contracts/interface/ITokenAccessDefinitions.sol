@@ -47,7 +47,7 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
 
   // Factory prilieges
   bytes4 internal constant CONFIGURE_TOKENSALES_PRIV =
-    bytes4(keccak256("configureTokensales(address,address,address[],uint256[])"));
+    bytes4(keccak256("configureTokensales(address,address[],uint256[])"));
   bytes4 internal constant UPDATE_ALLOWANCE_PRIV =
-    bytes4(keccak256("updateAllowances(address,address,address[],uint256[])"));
+    bytes4(keccak256("updateAllowances(address,address[],uint256[])"));
 }

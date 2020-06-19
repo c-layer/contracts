@@ -39,7 +39,7 @@ const APPROVE_PRIVILEGES = [
   web3.utils.sha3('approveToken(address,address)'),
 ];
 const ISSUER_PRIVILEGES = [
-  web3.utils.sha3('configureTokensales(address,address,address[],uint256[])'),
+  web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ];
 const FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0');
@@ -189,7 +189,7 @@ contract('TokenFactory', function (accounts) {
       });
 
       it('should not let non proxy operator to configure tokensale', async function () {
-        await assertRevert(factory.configureTokensales(core.address, token.address, [], []), 'OA02');
+        await assertRevert(factory.configureTokensales(token.address, [], []), 'OA02');
       });
 
       it('should not let non proxy operator to update allowances', async function () {
@@ -203,7 +203,8 @@ contract('TokenFactory', function (accounts) {
         });
 
         it('should let approver approve token with no selectors', async function () {
-          const tx = await factory.approveToken(core.address, token.address, { from: accounts[1] });
+          const tx = await factory.approveToken(core.address,
+            token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'TokenApproved', 'event');
@@ -211,7 +212,8 @@ contract('TokenFactory', function (accounts) {
         });
 
         it('should let approver approve token with selectors', async function () {
-          const tx = await factory.approveToken(core.address, token.address, { from: accounts[1] });
+          const tx = await factory.approveToken(core.address,
+            token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'TokenApproved', 'event');
@@ -225,7 +227,7 @@ contract('TokenFactory', function (accounts) {
         });
 
         it('should let issuer configure tokensales with no tokensales', async function () {
-          const tx = await factory.configureTokensales(core.address, token.address, [], []);
+          const tx = await factory.configureTokensales(token.address, [], []);
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'TokensalesConfigured', 'event');
@@ -234,8 +236,8 @@ contract('TokenFactory', function (accounts) {
         });
 
         it('should let issuer configure tokensales with tokensales', async function () {
-          const tx = await factory.configureTokensales(core.address,
-            token.address, [accounts[1], accounts[2]], ['10000', '20000']);
+          const tx = await factory.configureTokensales(token.address,
+            [accounts[1], accounts[2]], ['10000', '20000']);
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 3);
           assert.equal(tx.logs[2].event, 'TokensalesConfigured', 'event');

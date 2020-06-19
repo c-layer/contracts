@@ -2,6 +2,7 @@ pragma solidity ^0.6.0;
 
 import "@c-layer/common/contracts/interface/IERC20.sol";
 import "../interface/ITokenCore.sol";
+import "../interface/ITokenProxy.sol";
 import "../interface/ITokenAccessDefinitions.sol";
 
 
@@ -45,16 +46,14 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     uint256[] memory _supplies,
     address[] memory _proxyOperators
   ) virtual public returns (IERC20);
-  function approveToken(
-    ITokenCore _core,
-    IERC20 _token) virtual public returns (bool);
+  function approveToken(ITokenCore _core,
+    ITokenProxy _token) virtual public returns (bool);
   function configureTokensales(
-    ITokenCore _core,
-    IERC20 _token,
+    ITokenProxy _token,
     address[] memory _tokensales,
     uint256[] memory _allowances) virtual public returns (bool);
   function updateAllowances(
-    IERC20 _token,
+    ITokenProxy _token,
     address[] memory _spenders,
     uint256[] memory _allowances) virtual public returns (bool);
 

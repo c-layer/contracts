@@ -27,11 +27,12 @@ import "./rule/YesNoRule.sol";
  *   TF09: The token must be locked
  *   TF10: Token must be minted
  *   TF11: Token minting must be finished
- *   TF12: The rule must be removed
- *   TF13: Same number of tokensales and allowances must be provided
- *   TF14: Exceptions must be added to the lock
- *   TF15: Allowances must be lower than the token balance
- *   TF16: Allowance must be successful
+ *   TF12: Incorrect core provided
+ *   TF13: The rule must be removed
+ *   TF14: Same number of tokensales and allowances must be provided
+ *   TF15: Exceptions must be added to the lock
+ *   TF16: Allowances must be lower than the token balance
+ *   TF17: Allowance must be successful
  **/
 contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Operable {
 
@@ -125,14 +126,17 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   /**
    * @dev approveToken
    */
-  function approveToken(ITokenCore _core, IERC20 _token)
+  function approveToken(ITokenCore _core, ITokenProxy _token)
     override public onlyCoreOperator(_core) returns (bool)
   {
     require(hasCoreAccess(_core), "TF01");
+    require(_token.core() == address(_core), "TF12");
+
+    // This ensure that the call does not change a custom made rules configuration
     (,,,,,,,IRule[] memory rules) = _core.token(address(_token));
-    if (rules.length == 1 && rules[0] == address(this) {
+    if (rules.length == 1 && rules[0] == IRule(this)) {
       require(_core.defineRules(
-        address(_token), new IRule[](0)), "TF12");
+        address(_token), new IRule[](0)), "TF13");
     }
     emit TokenApproved(_token);
     return true;
@@ -142,17 +146,17 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
    * @dev configureTokensales
    */
   function configureTokensales(
-    ITokenCore _core,
-    IERC20 _token,
+    ITokenProxy _token,
     address[] memory _tokensales,
     uint256[] memory _allowances)
     override public onlyProxyOperator(Proxy(address(_token))) returns (bool)
   {
-    require(hasCoreAccess(_core), "TF01");
-    require(_tokensales.length == _allowances.length, "TF13");
+    ITokenCore core = ITokenCore(_token.core());
+    require(hasCoreAccess(core), "TF01");
+    require(_tokensales.length == _allowances.length, "TF14");
 
-    (,,,,uint256[2] memory schedule,,,) = _core.token(address(_token));
-    require(_core.defineLock(address(_token), schedule[0], schedule[1], _tokensales), "TF14");
+    (,,,,uint256[2] memory schedule,,,) = core.token(address(_token));
+    require(core.defineLock(address(_token), schedule[0], schedule[1], _tokensales), "TF15");
 
     updateAllowances(_token, _tokensales, _allowances);
     emit TokensalesConfigured(_token, _tokensales);
@@ -162,15 +166,15 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
    * @dev updateAllowance
    */
   function updateAllowances(
-    IERC20 _token,
+    ITokenProxy _token,
     address[] memory _spenders,
     uint256[] memory _allowances)
-    override public onlyProxyOperator(Proxy(address(_token))) returns (bool)
+    override public onlyProxyOperator(_token) returns (bool)
   {
     uint256 balance = _token.balanceOf(address(this));
     for(uint256 i=0; i < _spenders.length; i++) {
-      require(_allowances[i] <= balance, "TF15");
-      require(_token.approve(_spenders[i], _allowances[i]), "TF16");
+      require(_allowances[i] <= balance, "TF16");
+      require(_token.approve(_spenders[i], _allowances[i]), "TF17");
       emit AllowanceUpdated(_token, _spenders[i], _allowances[i]);
     }
   }

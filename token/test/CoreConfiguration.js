@@ -41,8 +41,8 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('burn(address,uint256)'),
   web3.utils.sha3('finishMinting(address)'),
   web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
-  web3.utils.sha3('configureTokensales(address,address,address[],uint256[])'),
-  web3.utils.sha3('updateAllowances(address,address,address[],uint256[])'),
+  web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
+  web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));
 
 const ALWAYS_TRIGGERS_EXCLUDED = 2;
