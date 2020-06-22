@@ -40,38 +40,38 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function auditCurrency(
     address _scope,
     uint256 _scopeId
-  ) virtual public view returns (address currency);
+  ) virtual external view returns (address currency);
   function audit(
     address _scope,
     uint256 _scopeId,
     AuditStorageMode _storageMode,
-    bytes32 _storageId) virtual public view returns (
+    bytes32 _storageId) virtual external view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint256 cumulatedEmission,
     uint256 cumulatedReception);
 
   /**************  ERC20  **************/
-  function tokenName() virtual public view returns (string memory);
-  function tokenSymbol() virtual public view returns (string memory);
+  function tokenName() virtual external view returns (string memory);
+  function tokenSymbol() virtual external view returns (string memory);
 
-  function decimals() virtual public returns (uint256);
-  function totalSupply() virtual public returns (uint256);
-  function balanceOf(address) virtual public returns (uint256);
-  function allowance(address, address) virtual public returns (uint256);
+  function decimals() virtual external returns (uint256);
+  function totalSupply() virtual external returns (uint256);
+  function balanceOf(address) virtual external returns (uint256);
+  function allowance(address, address) virtual external returns (uint256);
   function transfer(address, address, uint256)
-    virtual public returns (bool status);
+    virtual external returns (bool status);
   function transferFrom(address, address, address, uint256)
-    virtual public returns (bool status);
+    virtual external returns (bool status);
   function approve(address, address, uint256)
-    virtual public returns (bool status);
+    virtual external returns (bool status);
   function increaseApproval(address, address, uint256)
-    virtual public returns (bool status);
+    virtual external returns (bool status);
   function decreaseApproval(address, address, uint256)
-    virtual public returns (bool status);
+    virtual external returns (bool status);
 
   /***********  TOKEN DATA   ***********/
-  function token(address _token) virtual public view returns (
+  function token(address _token) external view virtual returns (
     bool mintingFinished,
     uint256 allTimeMinted,
     uint256 allTimeBurned,
@@ -81,7 +81,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     uint256 freezedUntil,
     IRule[] memory);
   function canTransfer(address, address, uint256)
-    virtual public returns (uint256);
+    virtual external returns (uint256);
 
   /***********  TOKEN ADMIN  ***********/
   function mint(address, address[] calldata, uint256[] calldata)

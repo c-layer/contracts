@@ -94,7 +94,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function auditCurrency(
     address _scope,
     uint256 _scopeId
-  ) override public view returns (address currency) {
+  ) override external view returns (address currency) {
     return audits[_scope][_scopeId].currency;
   }
 
@@ -102,7 +102,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     address _scope,
     uint256 _scopeId,
     AuditStorageMode _storageMode,
-    bytes32 _storageId) override public view returns (
+    bytes32 _storageId) override external view returns (
     uint64 createdAt,
     uint64 lastTransactionAt,
     uint256 cumulatedEmission,
@@ -126,70 +126,64 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   /**************  ERC20  **************/
-  function tokenName() override public view returns (string memory) {
+  function tokenName() override external view returns (string memory) {
     return tokens[msg.sender].name;
   }
 
-  function tokenSymbol() override public view returns (string memory) {
+  function tokenSymbol() override external view returns (string memory) {
     return tokens[msg.sender].symbol;
   }
 
-  function decimals() override public onlyProxy returns (uint256) {
+  function decimals() override external onlyProxy returns (uint256) {
     return delegateCallUint256(msg.sender);
   }
 
-  function totalSupply() override public onlyProxy returns (uint256) {
+  function totalSupply() override external onlyProxy returns (uint256) {
     return delegateCallUint256(msg.sender);
   }
 
-  function balanceOf(address) public onlyProxy override returns (uint256) {
+  function balanceOf(address) external onlyProxy override returns (uint256) {
     return delegateCallUint256(msg.sender);
   }
 
   function allowance(address, address)
-    override public onlyProxy returns (uint256)
+    override external onlyProxy returns (uint256)
   {
     return delegateCallUint256(msg.sender);
   }
 
   function transfer(address, address, uint256)
-    override public onlyProxy returns (bool status)
+    override external onlyProxy returns (bool status)
   {
     return delegateCall(msg.sender);
   }
 
   function transferFrom(address, address, address, uint256)
-    override public onlyProxy returns (bool status)
+    override external onlyProxy returns (bool status)
   {
     return delegateCall(msg.sender);
   }
 
   function approve(address, address, uint256)
-    override public onlyProxy returns (bool status)
+    override external onlyProxy returns (bool status)
   {
     return delegateCall(msg.sender);
   }
 
   function increaseApproval(address, address, uint256)
-    override public onlyProxy returns (bool status)
+    override external onlyProxy returns (bool status)
   {
     return delegateCall(msg.sender);
   }
 
   function decreaseApproval(address, address, uint256)
-    override public onlyProxy returns (bool status)
+    override external onlyProxy returns (bool status)
   {
     return delegateCall(msg.sender);
   }
 
-  function canTransfer(address, address, uint256)
-    override public onlyProxy returns (uint256)
-  {
-    return delegateCallUint256(msg.sender);
-  }
-
   /***********  TOKEN DATA   ***********/
-  function token(address _token) override public view returns (
+  function token(address _token) override external view returns (
     bool mintingFinished,
     uint256 allTimeMinted,
     uint256 allTimeBurned,
@@ -208,6 +202,12 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     lockExceptions = tokenData.lock.exceptionsList;
     frozenUntil = tokenData.frozenUntils[_token];
     rules = tokenData.rules;
+  }
+
+  function canTransfer(address, address, uint256)
+    override external onlyProxy returns (uint256)
+  {
+    return delegateCallUint256(msg.sender);
   }
 
   /***********  TOKEN ADMIN  ***********/
