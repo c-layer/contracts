@@ -369,7 +369,7 @@ contract('TokenCore', function (accounts) {
       });
 
       it('should let remove and redefine it with same mapping history', async function () {
-        await core.mint(token.address, [ accounts[0], accounts[1] ], [ 123, 456 ]);
+        await core.mint(token.address, [accounts[0], accounts[1]], [123, 456]);
         await core.removeToken(token.address);
         await core.defineToken(
           token.address, 1, NAME, SYMBOL, DECIMALS);
