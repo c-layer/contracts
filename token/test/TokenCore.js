@@ -88,7 +88,7 @@ contract('TokenCore', function (accounts) {
       await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
-    it('should let define a user registry with the samet currency', async function () {
+    it('should let define a user registry with the same currency', async function () {
       userRegistry = await UserRegistryMock.new('Test', CHF_ADDRESS, accounts, 0);
       const tx = await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
       assert.ok(tx.receipt.status, 'Status');
@@ -366,6 +366,15 @@ contract('TokenCore', function (accounts) {
         assert.equal(tx.logs.length, 1);
         assert.equal(tx.logs[0].event, 'TokenRemoved', 'event');
         assert.equal(tx.logs[0].args.token, token.address, 'token');
+      });
+
+      it('should let remove and redefine it with same mapping history', async function () {
+        await core.mint(token.address, [ accounts[0], accounts[1] ], [ 123, 456 ]);
+        await core.defineToken(
+          token.address, 1, NAME, SYMBOL, DECIMALS);
+        const balance1 = await token.balanceOf(accounts[1]);
+
+        assert.equal(balance1, 456, 'balance 1');
       });
 
       describe('With the token removed', function () {
