@@ -22,7 +22,7 @@ const CHF_ADDRESS = web3.utils.toHex('CHF').padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const CORE_GAS_COST = 4101401;
-const MINTABLE_DELEGATE_GAS_COST = 1663879;
+const MINTABLE_DELEGATE_GAS_COST = 1784136;
 const DELEGATE_GAS_COST = 2974905;
 const PROXY_GAS_COST = 824865;
 
