@@ -350,7 +350,7 @@ contract('BaseTokensale', function (accounts) {
       assertGasEstimate(refundCost.toString(), '64603', 'refund gas estimate');
     });
 
-    it('should have account refunded', async function () {
+    it('should have account refunded [ @skip-on-coverage ]', async function () {
       const balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
 
       const memorySpaceFreed = new BN(15734);

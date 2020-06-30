@@ -227,7 +227,7 @@ contract('UserTokensale', function (accounts) {
       assert.equal(tokens.toString(), '666', 'tokenInvestment');
     });
 
-    it('should invest 70 ETH', async function () {
+    it('should invest 70 ETH [ @skip-on-coverage ]', async function () {
       const wei = web3.utils.toWei('70', 'ether');
       const tx = await sale.investETH({ value: wei, from: accounts[3] });
       assert.ok(tx.receipt.status, 'Status');
@@ -282,7 +282,7 @@ contract('UserTokensale', function (accounts) {
       assert.equal(tokens.toString(), '666', 'tokenInvestment');
     });
 
-    it('should invest 70 ETH', async function () {
+    it('should invest 70 ETH [ @skip-on-coverage ]', async function () {
       const wei = web3.utils.toWei('70', 'ether');
       const tx = await sale.investETH({ value: wei, from: accounts[3] });
       assert.ok(tx.receipt.status, 'Status');
