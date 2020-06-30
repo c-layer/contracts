@@ -17,7 +17,7 @@ aliases:
   - &matrix_workflow_job
     matrix:
       parameters:
-        package: ["common", "token", "oracle"]
+        package: ["common", "token", "oracle", "distribution", "governance"]
     requires:
       - dependencies
 

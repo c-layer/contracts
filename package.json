@@ -6,7 +6,9 @@
   "workspaces": [
     "common",
     "token",
-    "oracle"
+    "oracle",
+    "distribution",
+    "governance"
   ],
   "scripts": {
     "clean": "yarn workspaces run clean;",
