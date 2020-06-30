@@ -4,7 +4,7 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertGasEstimate = require('./helpers/assertGasEstimate');
+const assertGasEstimate = require('../helpers/assertGasEstimate');
 const assertRevert = require('../helpers/assertRevert');
 const Tokensale = artifacts.require('tokensale/BaseTokensale.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
