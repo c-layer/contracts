@@ -19,4 +19,6 @@ This repository is a monorepos of the different component of the projects.
   - Common: contains the core and security architectures among other utilities
   - Oracle: contains an oracle
   - Token: contains the token core, all token delegates, a token factory with their own default configurations
+  - Distribution: contains tokensale and vault contracts
+  - Governance: contains voting and multisig contracts
 
