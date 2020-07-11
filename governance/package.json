@@ -43,19 +43,19 @@
    },
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^7.2.0",
+    "eslint": "^7.4.0",
     "eslint-config-standard": "^14.1.1",
-    "eslint-plugin-import": "^2.21.2",
+    "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "ethereumjs-util": "^6.1.0",
-    "ganache-cli": "^6.7.0",
+    "ethereumjs-util": "^7.0.3",
+    "ganache-cli": "^6.9.1",
     "solhint": "^3.0.0",
-    "solidity-coverage": "^0.7.7",
-    "solidity-docgen": "^0.5.3",
-    "truffle": "^5.1.30",
+    "solidity-coverage": "^0.7.9",
+    "solidity-docgen": "^0.5.4",
+    "truffle": "^5.1.33",
     "truffle-flattener": "^1.4.4",
-    "@truffle/hdwallet-provider": "^1.0.35"
+    "@truffle/hdwallet-provider": "^1.0.38"
   }
 }
