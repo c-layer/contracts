@@ -26,12 +26,12 @@ If you are on a live network you can reimport the core contract using the follow
 core = await TokenCore.at("0x.......")
 ```
 
-Otherwise, you will have to replay the following steps from the [token creation tutorial](./01-TokenCreation.md)
+Otherwise, you will have to replay the following step from the [token creation tutorial](./01-TokenCreation.md)
 ```javascript
 core = await TokenCore.new('My Token Core', [ accounts[0] ])
 ```
 
-Let's now create and configure a different delegate:
+Let's now create and configure a delegate which contains a token logic different from first tutorial:
 ```javascript
 delegate = await TokenDelegate.new()
 core.defineTokenDelegate(2, delegate.address, [1, 2])
