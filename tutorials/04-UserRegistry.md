@@ -34,7 +34,7 @@ If you are on a live network, you might want to backup this address for later us
 
 You may then check for the user count
 ```javascript
-users.userCount().then((x) => x.toString())
+users.userCount().then((val) => val.toString())
 ```
 
 The first user id is 1 as 0 is considered in solidity as undefined.
@@ -60,7 +60,7 @@ users.registerUser(address, new Date("2025-01-01").getTime() / 1000)
 
 You may then check again for the user count
 ```javascript
-users.userCount().then((x) => x.toString())
+users.userCount().then((val) => val.toString())
 ```
 
 And you may also retrieve the validity for this user
@@ -134,12 +134,12 @@ By convention,
 
 To display the available keys in the registry, you may use the command below
 ```javascript
-users.extendedKeys().then((x) => x.toString())
+users.extendedKeys().then((val) => val.toString())
 ```
 
 You can then query the keys for different users
 ```javascript
-users.extended(1, 2).then((x) => x.toString())
+users.extended(1, 2).then((val) => val.toString())
 ```
 
 To update the key 1 for the user 2 to 1000, you can execute:

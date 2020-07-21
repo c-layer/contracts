@@ -127,8 +127,8 @@ core.seize(token.address, accounts[1], 1000)
 
 We should have retrieve all our tokens back:
 ```javascript
-token.balanceOf(accounts[0]).then((x) => x.toString())
-token.balanceOf(accounts[1]).then((x) => x.toString())
+token.balanceOf(accounts[0]).then((val) => val.toString())
+token.balanceOf(accounts[1]).then((val) => val.toString())
 ```
 
 You should be able by now to handle most compliance requirements

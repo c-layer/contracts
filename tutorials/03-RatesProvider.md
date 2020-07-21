@@ -41,7 +41,7 @@ The order in which the rates are defined is important.
 The first currency (ETH by default) will be the counter currency against which all rates are defined.
 
 ```javascript
-rates.rates().then((result) => result[1].map((x) => x.toString()))
+rates.rates().then((result) => result[1].map((val) => val.toString()))
 ```
 
 You may also look at the different methods available

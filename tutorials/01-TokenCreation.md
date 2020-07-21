@@ -92,20 +92,20 @@ Let's do it now:
 ``` javascript
 supply = "42".padEnd(18, "0")
 await core.mint(token.address, [ accounts[0] ], [ supply ])
-token.totalSupply()
+token.totalSupply().then((val) => val.toString())
 ```
 
 ``` javascript
-token.totalSupply()
-token.balanceOf(accounts[0])
+token.totalSupply().then((val) => val.toString())
+token.balanceOf(accounts[0]).then((val) => val.toString())
 ```
 
 ##### 9- Test a first transfer
 
 ``` javascript
 await token.transfer(accounts[1], "3333")
-token.balanceOf(accounts[0])
-token.balanceOf(accounts[1])
+token.balanceOf(accounts[0]).then((val) => val.toString())
+token.balanceOf(accounts[1]).then((val) => val.toString())
 ```
 
 And voila, you do own now a C-Layer token!
