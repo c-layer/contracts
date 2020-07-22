@@ -1,5 +1,5 @@
 
-# Running a token factory
+# Running a Token Factory
 
 ### Requirements
 
