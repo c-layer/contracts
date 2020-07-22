@@ -43,7 +43,7 @@ await core.defineTokenDelegate(2, delegate.address, [0, 1])
 
 ##### 1- Setup a token factory
 
-First, you will nedd to create the factory as follow
+First, you will need to create the factory as follow
 
 ```javascript
     factory = await TokenFactory.new()
