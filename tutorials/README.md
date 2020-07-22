@@ -23,7 +23,7 @@ See the [requirements](#requirements) for more information.
 
 ### Expert level
 
-21. Setup a factory
+21. [Setup a token factory](./21-TokenFactory.md)
 22. Use a token with limited AML
 23. Enterprise access control
 24. Update a token delegate
