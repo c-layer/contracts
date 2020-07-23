@@ -16,16 +16,16 @@ See the [requirements](#requirements) for more information.
 ### Intermediate level
 
 11. [A Simple Token Sale](./11-TokenSale.md)
-12. Let's the crowd vote
-13. Distributing gDividends
-14. Playing with the rules
+12. [Planning a sale and bonuses](./12-AdvancedSale.md)
+13. Let's the crowd vote
+14. Distributing gDividends
+15. Playing with the rules
 
 ### Expert level
 
 21. [Running a Token Factory](./21-TokenFactory.md)
 22. Operating a token with AML and KYC compliance
-23. Advanced Tokensale with a schedule and bonuses plan
-24. Compliance Tokensale with offchain investments and AML
+23. Compliance Tokensale with offchain investments and AML
 24. Enterprise access control
 25. Upgrading Tokens
 

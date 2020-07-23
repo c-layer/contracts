@@ -5,8 +5,6 @@
 
 Your environment is setup as described [here](./Tutorials.md#requirements).
 
-You should also have created a token. See the first tutorial [here](./01-TokenCreation.md) if needed.
-
 ### Goals
 
 This tutorial will guide you how to setup and operate a token factory.
@@ -28,7 +26,7 @@ Once `truffle` is started, you may need to compile contracts as follow.
 
 ##### 1- Setup a tokensale
 
-Let's frst create a simple ERC20 token.
+Let's frst create a simple ERC20 token with 100'000 supplies and 0 decimals.
 
 ```javascript
    supply = 100000
@@ -90,8 +88,8 @@ As we did the first investment, we may want to check few values:
 
 - Statistics on the investor (ETH unspent, ETH invested and token bought)
 ```javascript
-   await sale.investorUnspentETH(accounts[0]).then((value) => value.toString())
-   await sale.investorInvested(accounts[0]).then((value) => value.toString())
+   await sale.investorUnspentETH(accounts[0]).then((value) => web3.utils.fromWei(value, 'ether'))
+   await sale.investorInvested(accounts[0]).then((value) => web3.utils.fromWei(value, 'ether'))
    await sale.investorTokens(accounts[0]).then((value) => value.toString())
 ```
 
@@ -114,15 +112,21 @@ Unpausing can be done at any time while paused.
    await sale.unpause()
 ```
 
-##### 3- Withdraw funds
+##### 4- Withdraw funds
 
 ETH received by the tokensale contract should be redirected to the ETH vault address.
-However when round up,  may be unspent (when rounding up, ETH does not match)
+However when round up, may be unspent (when rounding up, ETH does not match)
 
 If at some point, as an investor, you want to withdraw your unspent ETH, you can proceed as below.
 An exception is raised (TOS04), if there is no ETH unspent for the investor.
 ```javascript
    await sale.refundUnspentETH()
+```
+
+You may check that you don't have any unspent anymore
+
+```javascript
+   await sale.investorUnspentETH(accounts[0]).then((value) => web3.utils.fromWei(value, 'ether'))
 ```
 
 As an operator, you may need at the end of the sale to recover all unspent ETH. In this case the following command will do it.
