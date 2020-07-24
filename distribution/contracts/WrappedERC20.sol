@@ -17,21 +17,32 @@ import "./interface/IWrappedERC20.sol";
  */
 contract WrappedERC20 is TokenERC20, IWrappedERC20 {
 
-  TokenERC20 internal base_;
+  IERC20 internal base_;
 
+  /**
+   * @dev constructor
+   */
   constructor(
     string memory _name,
     string memory _symbol,
     uint256 _decimals,
-    TokenERC20 _base
-  ) public TokenERC20(_name, _symbol, _decimals, address(0), 0) {
+    IERC20 _base
+  ) public
+    TokenERC20(_name, _symbol, _decimals, address(0), 0)
+  {
     base_ = _base;
   }
 
-  function base() public view override returns (TokenERC20) {
+  /**
+   * @dev base token
+   */
+  function base() public view override returns (IERC20) {
     return base_;
   }
 
+  /**
+   * @dev deposit
+   */
   function deposit(uint256 _value) public override returns (bool) {
     require(base_.allowance(msg.sender, address(this)) >= _value, "WE01");
     require(base_.transferFrom(msg.sender, address(this), _value), "WE02");
@@ -41,7 +52,10 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
 
     return true;
   }
-  
+
+  /**
+   * @dev withdraw
+   */
   function withdraw(uint256 _value) public override returns (bool) {
     require(balances[msg.sender] >= _value, "WE03");
     require(base_.transfer(msg.sender, _value), "WE04");

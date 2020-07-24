@@ -13,7 +13,7 @@ import "@c-layer/common/contracts/token/TokenERC20.sol";
  */
 abstract contract IWrappedERC20 {
 
-  function base() public view virtual returns (TokenERC20);
+  function base() public view virtual returns (IERC20);
 
   function deposit(uint256 _value) public virtual returns (bool);
   function withdraw(uint256 _value) public virtual returns (bool);

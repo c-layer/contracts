@@ -7,7 +7,6 @@
 const assertRevert = require('./helpers/assertRevert');
 const WrappedERC20 = artifacts.require('WrappedERC20.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
-const BN = require('bn.js');
 
 contract('WrappedERC20', function (accounts) {
   let wToken, token;
@@ -32,7 +31,7 @@ contract('WrappedERC20', function (accounts) {
   it('should deposit some tokens', async function () {
     const tx = await wToken.deposit(1000, { from: accounts[1] });
     assert.ok(tx.receipt.status, 'Status');
-    assert.deepEqual(tx.logs.map((log) => log.event), [ 'Transfer', 'Deposit' ], 'events');
+    assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Deposit'], 'events');
     assert.equal(tx.logs[0].args.from, accounts[1], 'from');
     assert.equal(tx.logs[0].args.to, wToken.address, 'to');
     assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
@@ -45,7 +44,6 @@ contract('WrappedERC20', function (accounts) {
   });
 
   describe('With some wrapped tokens', function () {
-
     beforeEach(async function () {
       await wToken.deposit(1000, { from: accounts[1] });
     });
@@ -67,7 +65,7 @@ contract('WrappedERC20', function (accounts) {
     it('should withdraw some tokens', async function () {
       const tx = await wToken.withdraw(1000, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.deepEqual(tx.logs.map((log) => log.event), [ 'Transfer', 'Withdrawal' ], 'events');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Withdrawal'], 'events');
       assert.equal(tx.logs[0].args.from, wToken.address, 'from');
       assert.equal(tx.logs[0].args.to, accounts[1], 'to');
       assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
