@@ -18,7 +18,7 @@ See the [requirements](#requirements) for more information.
 11. [A Simple Token Sale](./11-TokenSale.md)
 12. [Planning a sale and bonuses](./12-AdvancedSale.md)
 13. Let's the crowd vote
-14. Distributing gDividends
+14. Distributing Dividends
 15. Playing with the rules
 
 ### Expert level

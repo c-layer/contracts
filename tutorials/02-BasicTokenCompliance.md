@@ -5,8 +5,6 @@
 
 Your environment is setup as described [here](./Tutorials.md#requirements).
 
-You should also have created a token. See the first tutorial [here](./01-TokenCreation.md) if needed.
-
 ### Goals
 
 This tutorial will guide you how to manage the basic compliance features of a C-Layer token: seize, freeze, and canTransfer.

@@ -5,8 +5,6 @@
 
 Your environment is setup as described [here](./Tutorials.md#requirements).
 
-You should also have created a token. See the first tutorial [here](./01-TokenCreation.md) if needed.
-
 ### Goals
 
 This tutorial will guide you how to plan and operate a bonus token sale.

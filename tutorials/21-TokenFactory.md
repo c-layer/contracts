@@ -5,8 +5,6 @@
 
 Your environment is setup as described [here](./Tutorials.md#requirements).
 
-You should also have created a token. See the first tutorial [here](./01-TokenCreation.md) if needed.
-
 ### Goals
 
 This tutorial will guide you how to setup and operate a token factory.
@@ -58,10 +56,10 @@ Second, you need to configure the factory with the token proxy code that will be
 if you need to double check which code is configured, you can use the following commands to get the hash of the bytecode
 
 ```javascript
-    const expectedCodeHash = web3.utils.sha3(TokenProxy.bytecode)
+    expectedCodeHash = web3.utils.sha3(TokenProxy.bytecode)
     foundCodeHash = await factory.contractCode(0).then((bytecode) => web3.utils.sha3(bytecode))
 
-    expectedCodeHash == web3.utils.sha3(TokenProxy.bytecode)
+    expectedCodeHash == foundCodeHash
 ```
 
 And finally, the factory need to have the proper role access configured on the core.
@@ -94,7 +92,7 @@ To configure the core with these privileges, proceed as follow:
     await core.assignProxyOperators(ALL_PROXIES, FACTORY_PROXY_ROLE, [factory.address])
 ```
 
-Hence, the factory will have both roles `FACTOR_CORE_ROLE` and `FACTORY_PROXY_ROLE`.
+Hence, the factory will have both roles `FACTORY_CORE_ROLE` and `FACTORY_PROXY_ROLE`.
 The proxy privileges will be applicable on all the proxies configured on the core.
 
 Now, you may want to check again that the factory has access to the core.
@@ -117,7 +115,7 @@ Once you factory is configured, you are free to proceed and deploy a token.
     SUPPLIES = [ '1000', '42' ].map((value) => (value + ''.padEnd(18, '0')))
     ISSUERS = [ accounts[0] ]
     
-    tx = await factory.deployToken(core.address, 1, NAME, SYMBOL, DECIMALS, 0, true, VAULTS, SUPPLIES, ISSUERS)
+    tx = await factory.deployToken(core.address, 2, NAME, SYMBOL, DECIMALS, 0, true, VAULTS, SUPPLIES, ISSUERS)
 ```
 
 If the deployment was successfull, you will find the deployed token address can be then found in the log:
@@ -147,7 +145,7 @@ The token should not be transferable and canTransfer should return 7.
 
 As everyone is free to use the factory, there is a rule which prevent the token to be immediatly transferrable upon deployment.
 Core compliance operator may review and approve the token as follow.
-Please note, that a token without compliance (and or no rule engine) will be directly usable. If this is the case, then thhe token delegate configuration should be made in a way that it does not impact existing token.
+Please note, that a token without compliance (with or without no rules engine) will be directly usable. If this is the case, then the token delegate configuration should be made in a way that it does not impact existing token.
 
 ```javascript
    await factory.approveToken(core.address, token.address)
