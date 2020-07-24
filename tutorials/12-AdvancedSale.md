@@ -1,5 +1,5 @@
 
-# A First Sale
+# Adding Bonuses and schedule to the Token Sale
 
 ### Requirements
 
