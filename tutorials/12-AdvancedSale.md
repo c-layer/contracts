@@ -86,7 +86,7 @@ Once 20'000 tokens will be sold, there will still be the following bonus :
 
 ##### 3- We love it when a plan comes together
 
-We also need to schedule the plan. This is how to do it.
+We also need to schedule the plan. This is how to do it by using `Date().getTime()` which returns the current timestamp in milliseconds.
 
 ```javascript
    DAY_IN_SEC = 24*3600
