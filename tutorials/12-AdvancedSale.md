@@ -33,15 +33,14 @@ Let's frst create a simple ERC20 token.
    token = await TokenERC20.new('Name', 'Symbol', 0, accounts[1], supply)
 ```
 
-We will sell half of the token minted at a price of 0.15 Ether per 1000 tokens.
+We will sell half of the tokens minted at a price of 0.15 Ether per 1000 tokens.
 The sale will initially happen all day tomorrow.
 The bonus will given be as follow:
-- For the first 10% sold, we will give +50% more tokens.
-- For the first half sold, investors will receive +25%
-- And no bonus will be given for the remaining of the tokens
+- For the first 5000 tokens sold, we will give +50% more tokens.
+- Then until 25000 tokens sold, investors will receive +25%.
+- And no bonus will be given for the remaining of the tokens.
 
-The following command will let you create a basic tokensale.
-
+The following command will let you create a basic tokensale:
 
 ```javascript
    vaultERC20 = accounts[1]
@@ -52,13 +51,13 @@ The following command will let you create a basic tokensale.
    sale = await BonusTokensale.new(token.address, vaultERC20, vaultETH, tokenPrice, priceUnit)
 ```
 
-To allow the sale to distribute half of the tokens, we must increase the allowance.
+To allow the sale to distribute half of the tokens, we must increase the allowance:
 
 ```javascript
    await token.approve(sale.address, supply/2, { from: accounts[1] })
 ```
 
-Finally, you may want to note the initial amount available in the ETH vault.
+Finally, you may want to note the initial amount available in the ETH vault:
 ```javascript
    await web3.eth.getBalance(vaultETH)
 ```
@@ -73,14 +72,14 @@ In our scenario, we want the first investors to receive bonuses.
    await sale.defineBonuses(2, [50, 25, 0], [ 5000, 25000, 50000 ])
 ```
 
-To review this parameters, you may check as follow the bonus that will be available at different stage of the sale.
+To review this parameters, you may check with the following commands the bonus that will be available at different stage of the sale.
 
-Once 4'000 tokens will be sold, there will still be the following bonus 
+Once 4'000 tokens will be sold, there will still be the following bonus :
 ```javascript
    await sale.firstBonus(4000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
-Once 20'000 tokens will be sold, there will still be the following bonus
+Once 20'000 tokens will be sold, there will still be the following bonus :
 ```javascript
    await sale.firstBonus(20000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
