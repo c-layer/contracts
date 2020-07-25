@@ -105,7 +105,7 @@ You may review it as follow
 ##### 4- Buy tokens
 
 The sale is currently close. You therefore have two options now.
-You may either call the day and retry tomorrow, or speed things up by updating once again the planning.
+You may either call it a day and retry tomorrow, or speed things up by updating once again the planning.
 
 Let's start it now!
 ```javascript
