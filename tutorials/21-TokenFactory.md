@@ -41,7 +41,7 @@ await core.defineTokenDelegate(2, delegate.address, [0, 1])
 
 ##### 1- Setup a token factory
 
-First, you will need to create the factory as follow
+First, you will need to create the factory as follows:
 
 ```javascript
 factory = await TokenFactory.new()
@@ -83,7 +83,7 @@ REQUIRED_CORE_PRIVILEGES = [ 'assignProxyOperators(address,bytes32,address[])', 
 REQUIRED_PROXY_PRIVILEGES = [ 'mint(address,address[],uint256[])', 'finishMinting(address)', 'defineLock(address,uint256,uint256,address[])', 'defineRules(address,address[])' ].map((x) => web3.utils.sha3(x).substr(0, 10))
 ```
 
-To configure the core with these privileges, proceed as follow:
+To configure the core with these privileges, proceed as follows:
 
 ```javascript
 await core.defineRole(FACTORY_CORE_ROLE, REQUIRED_CORE_PRIVILEGES)
@@ -144,7 +144,7 @@ await token.canTransfer(accounts[2], accounts[0], 1).then((value) => value.toStr
 ```
 
 As everyone is free to use the factory, there is a rule which prevent the token to be immediatly transferrable upon deployment.
-Core compliance operator may review and approve the token as follow.
+Core compliance operator may review and approve the token as follows:
 Please note, that a token without compliance (with or without no rules engine) will be directly usable. If this is the case, then the token delegate configuration should be made in a way that it does not impact existing token.
 
 ```javascript
@@ -157,7 +157,7 @@ And now the token should be freely usable and the command below will return 0.
 await token.canTransfer(accounts[2], accounts[0], 1).then((value) => value.toString())
 ```
 
-If the token were to not be approved, it may also be removed from the core as follow.
+If the token were to not be approved, it may also be removed from the core as follows:
 
 ```javascript
 tx = await factory.deployToken(core.address, 2, 'InvalidToken', 'ITN', 18, 0, true, [ accounts[0] ], [ '100' + ''.padEnd(18, '0') ], [ accounts[0] ])

@@ -16,7 +16,7 @@ You must start `truffle` from the token module
 cd distribution && truffle develop
 ```
 
-Once `truffle` is started, you may need to compile contracts as follow.
+Once `truffle` is started, you may need to compile contracts as follows:
 ```bash
 compile
 ```
@@ -35,7 +35,7 @@ token = await TokenERC20.new('Name', 'Symbol', 0, accounts[1], supply)
 
 We will sell half of the tokens minted at a price of 0.15 Ether per 1000 tokens.
 The sale will initially happen all day tomorrow.
-The bonus will given be as follow:
+The bonus will given be as follows:
 - For the first 5000 tokens sold, we will give +50% more tokens.
 - Then until 25000 tokens sold, investors will receive +25%.
 - And no bonus will be given for the remaining of the tokens.
@@ -64,7 +64,7 @@ await web3.eth.getBalance(vaultETH)
 
 ##### 2- Giving extra
 
-We shall now define the bonuses as follow.
+We shall now define the bonuses as follows:
 BonusMode may be either 0 (None), 1 (Early) or 2 (First).
 In our scenario, we want the first investors to receive bonuses.
 
@@ -96,7 +96,7 @@ ONE_DAY_AFTER = TOMORROW+1
 await sale.updateSchedule(TOMORROW*DAY_IN_SEC, ONE_DAY_AFTER*DAY_IN_SEC)
 ```
 
-You may review it as follow
+You may review it as follows:
 
 ```javascript
 await sale.schedule().then((values) => Object.values(values).map((v) => new Date(v * 1000)))
@@ -168,7 +168,7 @@ In this case all you have to do is to execute the following command
 await sale.closeEarly()
 ```
 
-You can check that the sale was closed as follow.
+You can check that the sale was closed as follows:
 
 ```javascript
 await sale.isClosed()
