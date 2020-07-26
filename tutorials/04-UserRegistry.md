@@ -63,12 +63,10 @@ You may then check again for the user count
 users.userCount().then((val) => val.toString())
 ```
 
-And you may also retrieve the validity for this user
+You may also retrieve the validity for this user
 ```javascript
 users.validity(2).then((x) => new Date(x[0]*1000) + ", suspended: " + x[1])
 ```
-
-or 
 
 You can also request the valid user id for that user
 ```javascript
@@ -105,20 +103,19 @@ The userId should be valid again.
 Multiple addresses may be attached to a single user.
 An address can only be attached to one user.
 
-In order to attach addresses, you may proceed as follow:
+Let's detach the new address as follows:
 ```javascript
-address = "0x...."
+users.detachAddress(address)
+```
+
+In order to attach addresses, you may proceed as follows:
+```javascript
 users.attachAddress(1, address)
 ```
 
 You may then retrieve the user id for that new address
 ```javascript
-users.userId(1)
-```
-
-You can also detach an address on the same principle
-```javascript
-users.detachAddress(1, address)
+users.userId(address)
 ```
 
 ##### 5- Extended keys
@@ -132,19 +129,24 @@ By convention,
 - key 1 is the RECEPTION_LIMIT_KEY (amount),
 - key 2 is EMISSION_LIMIT_KEY (amount)
 
-To display the available keys in the registry, you may use the command below
+To display the available keys in the registry, you may use the command below:
 ```javascript
 users.extendedKeys().then((val) => val.toString())
 ```
 
-You can then query the keys for different users
+You can then query the key 1 for the user 2 with the command below:
 ```javascript
-users.extended(1, 2).then((val) => val.toString())
+users.extended(2, 1).then((val) => val.toString())
 ```
 
 To update the key 1 for the user 2 to 1000, you can execute:
 ```javascript
-users.updateUserExtended(1, 1, 1000)
+users.updateUserExtended(2, 1, 1000)
 ```
 
-This end the tutorial for the user registry.
+You can then query again the key 1 for the user 2 to verify the updated value:
+```javascript
+users.extended(2, 1).then((val) => val.toString())
+```
+
+The end of the tutorial for the user registry.

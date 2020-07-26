@@ -16,7 +16,7 @@ You must start `truffle` from the token module
 cd distribution && truffle develop
 ```
 
-Once `truffle` is started, you may need to compile contracts as follow.
+Once `truffle` is started, you may need to compile contracts as follows:
 ```bash
 compile
 ```
