@@ -1,18 +1,18 @@
 pragma solidity ^0.6.0;
 
-import "./interface/IDistributionDelegate.sol";
-import "./DistributionStorage.sol";
+import "../interface/IDistributionDelegate.sol";
+import "../DistributionStorage.sol";
 
 
 /**
- * @title DistributionFaucetDelegate contract
- * @dev DistributionFaucetDelegate contract
+ * @title FaucetDistributionDelegate contract
+ * @dev FaucetDistributionDelegate contract
  *
  * @author Cyril Lapinte - <cyril@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  */
-abstract contract DistributionFaucetDelegate is IDistributionDelegate, DistributionStorage {
+contract FaucetDistributionDelegate is IDistributionDelegate, DistributionStorage {
  
   /**
    * @dev tokensAvailable
@@ -26,6 +26,7 @@ abstract contract DistributionFaucetDelegate is IDistributionDelegate, Distribut
     uint256 amount = distributionData.parameters[DistributionParameter.AMOUNT];
     uint256 period = distributionData.parameters[DistributionParameter.PERIOD];
 
+    // solhint-disable-next-line not-rely-on-time
     uint256 timeDelta = (now - investorData.lastTransferOutAt);
 
     return (timeDelta < period) ? amount * timeDelta / period : amount;

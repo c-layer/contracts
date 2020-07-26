@@ -15,6 +15,6 @@ import "./IDistributionDefinitions.sol";
 abstract contract IDistributionProxy is IDistributionDefinitions, Proxy {
 
   receive() external virtual payable;
-  function deposit(IERC20 _token, uint256 _amount) public virtual returns (bool);
-  function withdraw(IERC20 _token, uint256 _amount) public virtual returns (bool);
+  function deposit(uint256 _amount) public virtual returns (bool);
+  function withdraw(uint256 _amount) public virtual returns (bool);
 }

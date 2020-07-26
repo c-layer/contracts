@@ -18,11 +18,19 @@ abstract contract IDistributionCore is IDistributionStorage {
     public view virtual returns (address);
   function distribution(address _proxy) public view virtual
     returns (uint256 delegateId, IVault vault, IERC20 token);
-  function vault() public view virtual returns (IVault);
  
   function investor(address _proxy, address _investor)
     public view virtual returns (uint256 transferOut, uint256 lastTransferOutAt);
 
+  function defineDistributionDelegate(uint256 _delegateId, address _delegate)
+    virtual external returns (bool);
+  function defineDistribution(
+    address _distribution,
+    uint256 _delegateId,
+    IVault _vault,
+    IERC20 _token) public virtual returns (bool);
+  function removeDistribution(address _distribution)
+    public virtual returns (bool);
 
   function distribute(
     address _distribution,
@@ -32,16 +40,8 @@ abstract contract IDistributionCore is IDistributionStorage {
     address[] memory _investors, uint256[] memory _amounts)
     public virtual returns (bool);
 
-  function deposit(IERC20 _token, address _investor, uint256 _amount)
+  function deposit(address _investor, uint256 _amount)
     public virtual returns (bool);
-  function withdraw(IERC20 _token, address _investor, uint256 _amount)
-    public virtual returns (bool);
- 
- function defineDistribution(
-    address _distribution,
-    uint256 _delegateId,
-    IVault _vault,
-    IERC20 _token) public virtual returns (bool);
-  function removeDistribution(address _distribution)
+  function withdraw(address _investor, uint256 _amount)
     public virtual returns (bool);
 }

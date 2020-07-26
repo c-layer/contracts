@@ -37,11 +37,15 @@ abstract contract IDistributionStorage is IDistributionDefinitions {
     //MAX_INVESTMENT
   }
 
-
+  event DistributionDelegateDefined(uint256 delegateId, address delegate);
+  event DistributionDelegateRemoved(uint256 delegateId);
   event DistributionDefined(
     address distribution,
     uint256 delegateId,
     IVault vault,
     IERC20 token);
   event DistributionRemoved(address _distribution);
+
+  event Deposit(IERC20 token, uint256 amount);
+  event Withdraw(IERC20 token, uint256 amount);
 }

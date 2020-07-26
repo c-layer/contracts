@@ -15,8 +15,9 @@ import "./interface/IDistributionCore.sol";
  * Error messages
  * DP01: ETH must be successfully transferred
  * DP02: Deposit operation must be successful
- * DP03: No ETH provided
- * DP04: Unable to transfer funds
+ * DP03: Ether must be received
+ * DP04: No ETH provided
+ * DP05: Unable to transfer funds
 */
 contract DistributionProxy is IDistributionProxy, OperableProxy {
 
@@ -29,33 +30,40 @@ contract DistributionProxy is IDistributionProxy, OperableProxy {
   receive() external override payable {
     require(msg.value > 0, "DP01");
     IDistributionCore distributionCore = IDistributionCore(core);
-    IVault vault = distributionCore.vault();
+
+    (, IVault vault, IERC20 token) = distributionCore.distribution(msg.sender);
+    require(token == ETHER, "DP03");
+
+    // FIXME: Ether might be transferred by the code fail after that
+    // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
     (bool success,) = address(vault).call{ value: msg.value }("");
+
     require(success, "DP01");
-    require(distributionCore.deposit(ETHER, msg.sender, msg.value), "DP02");
+    require(distributionCore.deposit(msg.sender, msg.value), "DP02");
   }
 
   /**
    * @dev deposit
    */
-  function deposit(IERC20 _token, uint256 _value) public override returns (bool) {
+  function deposit(uint256 _value) public override returns (bool) {
     IDistributionCore distributionCore = IDistributionCore(core);
 
-    // ETH must be received through the receive function
-    require(_token != ETHER, "DP03");
-
     require(_value > 0, "DP01");
-    IVault vault = distributionCore.vault();
-    require(_token.transferFrom(msg.sender, address(vault), _value), "DP04");
-    return distributionCore.deposit(_token, msg.sender, _value);
+    (, IVault vault, IERC20 token) = distributionCore.distribution(msg.sender);
+
+    // ETH must be received through the receive function
+    require(token != ETHER, "DP04");
+
+    require(token.transferFrom(msg.sender, address(vault), _value), "DP05");
+    return distributionCore.deposit(msg.sender, _value);
   }
 
   /**
    * @dev withdraw
    */
-  function withdraw(IERC20 _token, uint256 _value) public override returns (bool)
+  function withdraw(uint256 _value) public override returns (bool)
   {
     IDistributionCore distributionCore = IDistributionCore(core);
-    return distributionCore.withdraw(_token, msg.sender, _value);
+    return distributionCore.withdraw(msg.sender, _value);
   }
 }

@@ -72,13 +72,6 @@ contract DistributionCore is IDistributionCore, OperableCore, DistributionStorag
   }
 
   /**
-   * @dev vault
-   */
-  function vault() public view override onlyProxy returns (IVault) {
-    return distributions[msg.sender].vault;
-  }
-
-  /**
    * @dev investor
    */
   function investor(address _distribution, address _investor)
@@ -86,6 +79,21 @@ contract DistributionCore is IDistributionCore, OperableCore, DistributionStorag
   {
     InvestorData storage investorData = investors[_distribution][_investor];
     return (investorData.transferOut, investorData.lastTransferOutAt);
+  }
+
+  /**
+   * @dev define distribution delegate
+   */
+  function defineDistributionDelegate(uint256 _delegateId, address _delegate)
+    override external onlyCoreOp returns (bool)
+  {
+    defineDelegateInternal(_delegateId, _delegate);
+    if(_delegate != address(0)) {
+      emit DistributionDelegateDefined(_delegateId, _delegate);
+    } else {
+      emit DistributionDelegateRemoved(_delegateId);
+    }
+    return true;
   }
 
   /**
@@ -137,7 +145,11 @@ contract DistributionCore is IDistributionCore, OperableCore, DistributionStorag
   {
     DistributionData storage distributionData = distributions[_distribution];
 
-    vaultTransferInternal(distributionData.vault, distributionData.token, _investor, _amount);
+    uint256 available =
+      IDistributionDelegate(delegates[distributionData.delegateId]).tokensAvailable(_distribution, _investor);
+
+    vaultTransferInternal(distributionData.vault, distributionData.token, _investor,
+      (_amount < available) ? _amount : available);
     return true;
   }
 
@@ -160,7 +172,7 @@ contract DistributionCore is IDistributionCore, OperableCore, DistributionStorag
   /**
    * @dev deposit
    */
-  function deposit(IERC20 /*_token*/, address _investor, uint256 /*_amount*/)
+  function deposit(address _investor, uint256 /*_amount*/)
     public override onlyProxy returns (bool)
   {
     InvestorData storage investorData = investors[msg.sender][_investor];
@@ -174,15 +186,15 @@ contract DistributionCore is IDistributionCore, OperableCore, DistributionStorag
   /**
    * @dev withdraw
    */
-  function withdraw(IERC20 _token, address _investor, uint256 _amount)
+  function withdraw(address _investor, uint256 _amount)
     public override onlyProxy returns (bool)
   {
     DistributionData storage distributionData = distributions[msg.sender];
 
     uint256 available =
       IDistributionDelegate(delegates[distributionData.delegateId]).tokensAvailable(msg.sender, _investor);
-    uint256 withdrawable = (available > _amount) ? _amount: available;
-    vaultTransferInternal(distributionData.vault, _token, _investor, withdrawable); 
+    uint256 amountToWithdraw = (available > _amount) ? _amount: available;
+    vaultTransferInternal(distributionData.vault, distributionData.token, _investor, amountToWithdraw); 
     return true;
   }
 

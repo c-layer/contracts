@@ -35,7 +35,7 @@ contract DistributionStorage is IDistributionStorage, OperableStorage {
 
   string internal name_;
 
-  uint256 distributionCount_;
+  uint256 internal distributionCount_;
   mapping(uint256 => address) internal distributionAddresses;
   mapping(address => DistributionData) internal distributions;
 
