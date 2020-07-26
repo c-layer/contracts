@@ -23,9 +23,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
   /**
    * @dev constructor
-   *
-   * @dev It is desired for now that delegates
-   * @dev cannot be changed once the core has been deployed.
    */
   constructor(string memory _name, address[] memory _sysOperators)
     public OperableCore(_sysOperators)
