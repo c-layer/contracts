@@ -13,7 +13,7 @@ This tutorial will guide you to deploy a user registry and learn how to manage i
 
 You must start `truffle` from the *oracle* module
 ```bash
-  cd oracle && truffle develop
+cd oracle && truffle develop
 ```
 
 ### Steps

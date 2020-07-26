@@ -13,7 +13,7 @@ This tutorial will guide you how to manage the basic compliance features of a C-
 
 You must start `truffle` from the token module
 ```bash
-  cd token && truffle develop
+cd token && truffle develop
 ```
 
 ### Load contracts

@@ -13,12 +13,12 @@ This tutorial will guide you how to plan and operate a bonus token sale.
 
 You must start `truffle` from the token module
 ```bash
-  cd distribution && truffle develop
+cd distribution && truffle develop
 ```
 
 Once `truffle` is started, you may need to compile contracts as follow.
 ```bash
-  compile
+compile
 ```
 
 
@@ -29,8 +29,8 @@ Once `truffle` is started, you may need to compile contracts as follow.
 Let's frst create a simple ERC20 token.
 
 ```javascript
-   supply = 100000
-   token = await TokenERC20.new('Name', 'Symbol', 0, accounts[1], supply)
+supply = 100000
+token = await TokenERC20.new('Name', 'Symbol', 0, accounts[1], supply)
 ```
 
 We will sell half of the tokens minted at a price of 0.15 Ether per 1000 tokens.
@@ -43,23 +43,23 @@ The bonus will given be as follow:
 The following command will let you create a basic tokensale:
 
 ```javascript
-   vaultERC20 = accounts[1]
-   vaultETH = accounts[2]
-   tokenPrice = web3.utils.toWei('0.15', 'ether')
-   priceUnit = 1000
+vaultERC20 = accounts[1]
+vaultETH = accounts[2]
+tokenPrice = web3.utils.toWei('0.15', 'ether')
+priceUnit = 1000
 
-   sale = await BonusTokensale.new(token.address, vaultERC20, vaultETH, tokenPrice, priceUnit)
+sale = await BonusTokensale.new(token.address, vaultERC20, vaultETH, tokenPrice, priceUnit)
 ```
 
 To allow the sale to distribute half of the tokens, we must increase the allowance:
 
 ```javascript
-   await token.approve(sale.address, supply/2, { from: accounts[1] })
+await token.approve(sale.address, supply/2, { from: accounts[1] })
 ```
 
 Finally, you may want to note the initial amount available in the ETH vault:
 ```javascript
-   await web3.eth.getBalance(vaultETH)
+await web3.eth.getBalance(vaultETH)
 ```
 
 ##### 2- Giving extra
@@ -69,19 +69,19 @@ BonusMode may be either 0 (None), 1 (Early) or 2 (First).
 In our scenario, we want the first investors to receive bonuses.
 
 ```javascript
-   await sale.defineBonuses(2, [50, 25, 0], [ 5000, 25000, 50000 ])
+await sale.defineBonuses(2, [50, 25, 0], [ 5000, 25000, 50000 ])
 ```
 
 To review this parameters, you may check with the following commands the bonus that will be available at different stage of the sale.
 
 Once 4'000 tokens will be sold, there will still be the following bonus :
 ```javascript
-   await sale.firstBonus(4000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
+await sale.firstBonus(4000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
 Once 20'000 tokens will be sold, there will still be the following bonus :
 ```javascript
-   await sale.firstBonus(20000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
+await sale.firstBonus(20000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
 ##### 3- We love it when a plan comes together
@@ -89,17 +89,17 @@ Once 20'000 tokens will be sold, there will still be the following bonus :
 We also need to schedule the plan. This is how to do it by using `Date().getTime()` which returns the current timestamp in milliseconds.
 
 ```javascript
-   DAY_IN_SEC = 24*3600
-   TOMORROW = Math.ceil(new Date().getTime()/(1000*DAY_IN_SEC))
-   ONE_DAY_AFTER = TOMORROW+1
+DAY_IN_SEC = 24*3600
+TOMORROW = Math.ceil(new Date().getTime()/(1000*DAY_IN_SEC))
+ONE_DAY_AFTER = TOMORROW+1
 
-   await sale.updateSchedule(TOMORROW*DAY_IN_SEC, ONE_DAY_AFTER*DAY_IN_SEC)
+await sale.updateSchedule(TOMORROW*DAY_IN_SEC, ONE_DAY_AFTER*DAY_IN_SEC)
 ```
 
 You may review it as follow
 
 ```javascript
-   await sale.schedule().then((values) => Object.values(values).map((v) => new Date(v * 1000)))
+await sale.schedule().then((values) => Object.values(values).map((v) => new Date(v * 1000)))
 ```
 
 ##### 4- Buy tokens
@@ -109,54 +109,54 @@ You may either call it a day and retry tomorrow, or speed things up by updating 
 
 Let's start it now!
 ```javascript
-   NOW = Math.floor(new Date().getTime()/1000)
-   await sale.updateSchedule(NOW, ONE_DAY_AFTER*DAY_IN_SEC)
+NOW = Math.floor(new Date().getTime()/1000)
+await sale.updateSchedule(NOW, ONE_DAY_AFTER*DAY_IN_SEC)
 ```
 
 So how many token would you receive, if you were to invest 1 ETH ?
 Let's find out with the following command below to query before the real investment.
 
 ```javascript
-   await sale.tokenInvestment(accounts[3], web3.utils.toWei('1', 'ether')).then((value) => value.toString())
+await sale.tokenInvestment(accounts[3], web3.utils.toWei('1', 'ether')).then((value) => value.toString())
 ```
 
 You can play with different value, if you want to see what happens, particularly on edge cases.
 It should match our expectation. Let's really invest now!
 
 ```javascript
-   await sale.investETH({ value: web3.utils.toWei('0.01', 'ether') })
+await sale.investETH({ value: web3.utils.toWei('0.01', 'ether') })
 ```
 
 As we did the first investment, we may want to check few values:
 
 - The amount of ETH contained in the vault
 ```javascript
-   await web3.eth.getBalance(vaultETH)
+await web3.eth.getBalance(vaultETH)
 ```
 
 - The amount of ERC20 we have received
 ```javascript
-   await token.balanceOf(accounts[0]).then((value) => value.toString())
+await token.balanceOf(accounts[0]).then((value) => value.toString())
 ```
 
 - Statistics on the investor (ETH unspent, ETH invested and token bought)
 ```javascript
-   await sale.investorUnspentETH(accounts[0]).then((value) => value.toString())
-   await sale.investorInvested(accounts[0]).then((value) => value.toString())
-   await sale.investorTokens(accounts[0]).then((value) => value.toString())
+await sale.investorUnspentETH(accounts[0]).then((value) => value.toString())
+await sale.investorInvested(accounts[0]).then((value) => value.toString())
+await sale.investorTokens(accounts[0]).then((value) => value.toString())
 ```
 
 You can try to invest some more ethers until you do consume all the +50% bonus.
 
 ```javascript
-   await sale.investETH({ value: web3.utils.toWei('1', 'ether') })
+await sale.investETH({ value: web3.utils.toWei('1', 'ether') })
 ```
 
 You can review and count how many tokens you have received and how many the next investor will get
 
 ```javascript
-   totalSold = await sale.totalTokensSold()
-   await sale.firstBonus(totalSold).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
+totalSold = await sale.totalTokensSold()
+await sale.firstBonus(totalSold).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
 ##### 5- Closing early
@@ -165,13 +165,13 @@ You may need to close the sale early.
 In this case all you have to do is to execute the following command
 
 ```javascript
-   await sale.closeEarly()
+await sale.closeEarly()
 ```
 
 You can check that the sale was closed as follow.
 
 ```javascript
-   await sale.isClosed()
+await sale.isClosed()
 ```
 
 ##### 6- Experimenting
