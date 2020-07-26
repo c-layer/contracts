@@ -14,7 +14,7 @@ The token will only provides you with the basic ERC20 features.
 
 ##### 1- Go into the Core module and start truffle
 ```bash
-  cd token && truffle develop
+cd token && truffle develop
 ```
 
 ##### 2- Always reompile the contracts to ensure you will be using the latest version

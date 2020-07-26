@@ -13,7 +13,7 @@ This tutorial will guide you to deploy a rates provider and learn how to manage 
 
 You must start `truffle` from the oracle module
 ```bash
-  cd oracle && truffle develop
+cd oracle && truffle develop
 ```
 
 ### Steps
@@ -109,5 +109,3 @@ The first currency (ie ETH here) will be the counter currency.
 ```javascript
 rates.currencies().then((result) => result[0].map((currency, i) => web3.utils.toAscii(currency).substr(0, 3)))
 ```
-
-
