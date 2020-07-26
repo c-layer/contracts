@@ -16,6 +16,11 @@ You must start `truffle` from the oracle module
 cd oracle && truffle develop
 ```
 
+Once `truffle` is started, you may need to compile contracts as follow.
+```bash
+compile
+```
+
 ### Steps
 
 ##### 1- Create a rates provider
