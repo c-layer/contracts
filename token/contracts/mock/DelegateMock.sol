@@ -180,6 +180,16 @@ contract DelegateMock is TokenStorage {
   }
 
   /**
+   * @dev validUserId
+   */
+  function validUserId(address _address)
+    external view returns (uint256)
+  {
+    uint256[] storage user = users[_address];
+    return user[0];
+  }
+
+  /**
    * @dev validUser
    */
   function validUser(address _address, uint256[] calldata _keys)

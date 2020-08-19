@@ -2,3 +2,5 @@ node_modules
 build
 .secret.json*
 .DS_Store
+coverage
+coverage.json

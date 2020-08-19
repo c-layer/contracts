@@ -20,6 +20,20 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
   uint256 internal constant AUDIT_CONFIGURATION_DEFAULT = 0;
 
   /**
+   * @dev testFetchSenderUserId
+   */
+  function testFetchSenderUserId(address _sender)
+    public returns (bool)
+  {
+    STransferData memory transferData_ = transferData(
+      address(0), address(0), _sender, address(0), 0);
+
+    super.fetchSenderUserId(transferData_);
+    logTransferData(transferData_);
+    return true;
+  }
+
+  /**
    * @dev testFetchSenderUser
    */
   function testFetchSenderUser(address _sender, uint256[] memory _userKeys)
@@ -37,6 +51,20 @@ contract OracleEnrichedDelegateMock is OracleEnrichedDelegate, DelegateMock {
     configuration.senderKeys = _userKeys;
 
     super.fetchSenderUser(transferData_, transferAuditData_);
+    logTransferData(transferData_);
+    return true;
+  }
+
+  /**
+   * @dev testFetchReceiverUserId
+   */
+  function testFetchReceiverUserId(address _receiver)
+    public returns (bool)
+  {
+    STransferData memory transferData_ = transferData(
+      address(0), address(0), address(0), _receiver, 0);
+
+    super.fetchReceiverUserId(transferData_);
     logTransferData(transferData_);
     return true;
   }

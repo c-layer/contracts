@@ -8,6 +8,7 @@ const assertGasEstimate = require('./helpers/assertGasEstimate');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const MintableTokenDelegate = artifacts.require('MintableTokenDelegate.sol');
+const KYCOnlyTokenDelegate = artifacts.require('KYCOnlyTokenDelegate.sol');
 const TokenDelegate = artifacts.require('TokenDelegate.sol');
 
 const UserRegistryMock = artifacts.require('UserRegistryMock.sol');
@@ -23,12 +24,16 @@ const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const CORE_GAS_COST = 4077673;
 const MINTABLE_DELEGATE_GAS_COST = 1766835;
+const KYCONLY_DELEGATE_GAS_COST = 2471233;
 const DELEGATE_GAS_COST = 2948014;
 const PROXY_GAS_COST = 824865;
 
 const MINTABLE_FIRST_TRANSFER_COST = 64356;
 const MINTABLE_FIRST_TRANSFER_FROM_COST = 76215;
 const MINTABLE_TRANSFER_COST = 48876;
+const KYCONLY_FIRST_TRANSFER_COST = 81200;
+const KYCONLY_FIRST_TRANSFER_FROM_COST = 93035;
+const KYCONLY_TRANSFER_COST = 65719;
 const FIRST_TRANSFER_COST = 104867;
 const FIRST_TRANSFER_FROM_COST = 116700;
 const TRANSFER_COST = 69572;
@@ -68,7 +73,12 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
     assertGasEstimate(gas, MINTABLE_DELEGATE_GAS_COST, 'gas');
   });
 
-  it('should have a mintable C delegate gas cost at ' + DELEGATE_GAS_COST, async function () {
+  it('should have a KYCOnly delegate gas cost at ' + KYCONLY_DELEGATE_GAS_COST, async function () {
+    const gas = await KYCOnlyTokenDelegate.new.estimateGas();
+    assertGasEstimate(gas, KYCONLY_DELEGATE_GAS_COST, 'gas');
+  });
+
+  it('should have a compliant delegate gas cost at ' + DELEGATE_GAS_COST, async function () {
     const gas = await TokenDelegate.new.estimateGas();
     assertGasEstimate(gas, DELEGATE_GAS_COST, 'gas');
   });
@@ -84,12 +94,13 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
     beforeEach(async function () {
       delegates = await Promise.all([
-        MintableTokenDelegate.new(), TokenDelegate.new(),
+        MintableTokenDelegate.new(), TokenDelegate.new(), KYCOnlyTokenDelegate.new(),
       ]);
       core = await TokenCore.new('Test', [accounts[0]]);
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
       await core.defineTokenDelegate(2, delegates[1].address, [2]);
+      await core.defineTokenDelegate(3, delegates[2].address, []);
       await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
@@ -121,7 +132,35 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
       });
     });
 
-    describe('With a c token defined', function () {
+    describe('With a KYCOnly token defined', function () {
+      beforeEach(async function () {
+        token = await TokenProxy.new(core.address);
+        await core.defineToken(
+          token.address, 3, NAME, SYMBOL, DECIMALS);
+        await core.mint(token.address, [accounts[0]], [TOTAL_SUPPLY]);
+        await token.transfer(accounts[3], '3333');
+        await token.approve(accounts[1], '3333');
+      });
+
+      it('should estimate a first transfer accounts[0]', async function () {
+        const gas = await token.transfer.estimateGas(accounts[1], '3333');
+        assertGasEstimate(gas, KYCONLY_FIRST_TRANSFER_COST, 'estimate');
+      });
+
+      it('should estimate a first transfer from accounts[0]', async function () {
+        const gas = await token.transferFrom.estimateGas(accounts[0], accounts[2], '3333', { from: accounts[1] });
+        assertGasEstimate(gas, KYCONLY_FIRST_TRANSFER_FROM_COST, 'estimate');
+      });
+
+      // Later transfer does not have to allocate extra memory and should be cheaper
+      it('should estimate more transfer from accounts[0]', async function () {
+        await token.transfer(accounts[1], '3333');
+        const gas = await token.transfer.estimateGas(accounts[1], '3333');
+        assertGasEstimate(gas, KYCONLY_TRANSFER_COST, 'estimate');
+      });
+    });
+
+    describe('With a compliant token defined', function () {
       beforeEach(async function () {
         token = await TokenProxy.new(core.address);
         await ratesProvider.defineCurrencies([CHF_BYTES, token.address],
