@@ -22,6 +22,17 @@ contract OracleEnrichedDelegate is TokenStorage {
   uint256 internal constant RECEIVER_LIMIT_ID = 0;
 
   /**
+   * @dev fetchSenderUserId
+   */
+  function fetchSenderUserId(STransferData memory _transferData) internal view
+  {
+    if (!_transferData.senderFetched) {
+      _transferData.senderId = userRegistry_.validUserId(_transferData.sender);
+      _transferData.senderFetched = true;
+    }
+  }
+
+  /**
    * @dev fetchSenderUser
    */
   function fetchSenderUser(STransferData memory _transferData,
@@ -32,6 +43,17 @@ contract OracleEnrichedDelegate is TokenStorage {
         userRegistry_.validUser(_transferData.sender,
         auditConfigurations[_transferAuditData.auditConfigurationId].senderKeys);
       _transferData.senderFetched = true;
+    }
+  }
+
+  /**
+   * @dev fetchReceiverUserId
+   */
+  function fetchReceiverUserId(STransferData memory _transferData) internal view
+  {
+    if (!_transferData.receiverFetched) {
+      _transferData.receiverId = userRegistry_.validUserId(_transferData.receiver);
+      _transferData.receiverFetched = true;
     }
   }
 

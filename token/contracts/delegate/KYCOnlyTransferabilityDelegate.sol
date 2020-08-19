@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "./AuditableDelegate.sol";
+import "./OracleEnrichedDelegate.sol";
 
 
 /**
@@ -11,54 +11,24 @@ import "./AuditableDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
- * Error messagesa
+ * Error messages
  * LR01: The transfer constraints must remain valid
 */
-contract KYCOnlyTransferabilityDelegate is AuditableDelegate {
+contract KYCOnlyTransferabilityDelegate is OracleEnrichedDelegate {
 
   /**
-   * @dev isTransferBelowLimits
+   * @dev hasTransferValidUsers
    */
-  function isTransferBelowLimits(STransferData memory _transferData,
-      STransferAuditData memory _transferAuditData) internal view returns (TransferCode code)
+  function hasTransferValidUsers(STransferData memory _transferData) internal view returns (TransferCode code)
   {
-    if (!_transferAuditData.senderAuditRequired
-      && !_transferAuditData.receiverAuditRequired)
-    {
-      return TransferCode.OK;
+    fetchSenderUserId(_transferData);
+    if (_transferData.senderId == 0) {
+      return TransferCode.NON_REGISTRED_SENDER;
     }
 
-    fetchConvertedValue(_transferData, _transferAuditData);
-    if (_transferData.value != 0 && _transferData.convertedValue == 0) {
-      return TransferCode.INVALID_RATE;
-    }
-
-    AuditStorage storage auditStorage = audits[address(this)][_transferAuditData.scopeId];
-
-    if (_transferAuditData.senderAuditRequired) {
-      fetchSenderUser(_transferData, _transferAuditData);
-      if (_transferData.senderId == 0) {
-        return TransferCode.NON_REGISTRED_SENDER;
-      }
-
-      if (auditStorage.userData[_transferData.senderId].cumulatedEmission.add(_transferData.convertedValue)
-        > _transferData.senderKeys[SENDER_LIMIT_ID])
-      {
-        return TransferCode.LIMITED_EMISSION;
-      }
-    }
-
-    if (_transferAuditData.receiverAuditRequired) {
-      fetchReceiverUser(_transferData, _transferAuditData);
-      if (_transferData.receiverId == 0) {
-        return TransferCode.NON_REGISTRED_RECEIVER;
-      }
-
-      if (auditStorage.userData[_transferData.receiverId].cumulatedReception.add(_transferData.convertedValue)
-        >  _transferData.receiverKeys[RECEIVER_LIMIT_ID])
-      {  
-         return TransferCode.LIMITED_RECEPTION;
-      }
+    fetchReceiverUserId(_transferData);
+    if (_transferData.receiverId == 0) {
+      return TransferCode.NON_REGISTRED_RECEIVER;
     }
 
     return TransferCode.OK;
