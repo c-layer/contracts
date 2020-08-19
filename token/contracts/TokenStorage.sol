@@ -72,8 +72,9 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     mapping (address => bool) triggerTokens;
   }
 
-  // DelegateId => AuditConfiguration[]
+  // AuditConfigurationId => AuditConfiguration
   mapping (uint256 => AuditConfiguration) internal auditConfigurations;
+  // DelegateId => AuditConfigurationId[]
   mapping (uint256 => uint256[]) internal delegatesConfigurations_;
   mapping (address => TokenData) internal tokens;
 

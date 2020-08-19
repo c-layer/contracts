@@ -19,9 +19,11 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const EMPTY_ADDRESS = '0x'.padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const FETCH_SENDER_ESTIMATE = 102909;
-const FETCH_RECEIVER_ESTIMATE = 102869;
-const FETCH_CONVERT_RATE = 39930;
+const FETCH_SENDER_ID_ESTIMATE = 33400;
+const FETCH_SENDER_ESTIMATE = 102865;
+const FETCH_RECEIVER_ID_ESTIMATE = 33357;
+const FETCH_RECEIVER_ESTIMATE = 102891;
+const FETCH_CONVERT_RATE = 39952;
 
 contract('OracleEnrichedDelegate', function (accounts) {
   let delegate, userRegistry, ratesProvider;
@@ -31,8 +33,16 @@ contract('OracleEnrichedDelegate', function (accounts) {
       delegate = await OracleEnrichedDelegateMock.new();
     });
 
+    it('should fail to fetch sender user id', async function () {
+      await assertThrow(delegate.testFetchSenderUserId(accounts[0]));
+    });
+
     it('should fail to fetch sender user', async function () {
       await assertThrow(delegate.testFetchSenderUser(accounts[0], [1, 2]));
+    });
+
+    it('should fail to fetch receiver user id', async function () {
+      await assertThrow(delegate.testFetchReceiverUserId(accounts[0]));
     });
 
     it('should fail to fetch receiver user', async function () {
@@ -83,13 +93,13 @@ contract('OracleEnrichedDelegate', function (accounts) {
       }, 'converted value is 0');
     });
 
-    it('should failed to fetch converted value for 100 in a different currency', async function () {
+    it('should fail to fetch converted value for 100 in a different currency', async function () {
       await assertThrow(delegate.testFetchConvertedValue(
         100, NULL_ADDRESS, TOKEN_ADDRESS, CHF_ADDRESS));
     });
   });
 
-  describe('with oracle mock defined', function () {
+  describe('With oracle mock defined', function () {
     beforeEach(async function () {
       delegate = await OracleEnrichedDelegateMock.new();
       await delegate.defineUsers(
@@ -99,15 +109,36 @@ contract('OracleEnrichedDelegate', function (accounts) {
       userRegistry = delegate;
     });
 
-    it('should let mock provides rates', async function () {
+    it('should provides rates', async function () {
       const rate = await ratesProvider.convert(100, EMPTY_ADDRESS, CHF_ADDRESS);
       assert.equal(rate.toString(), '150', 'mocked rate');
     });
 
-    it('should let mock provides users', async function () {
+    it('should provides users', async function () {
       const user = await userRegistry.validUser(accounts[1], [1, 2]);
       assert.equal(user[0].toString(), '2', 'user id');
       assert.deepEqual(user[1].map((x) => x.toString()), ['1000', '2000']);
+    });
+
+    it('should fetch sender user id', async function () {
+      const tx = await delegate.testFetchSenderUserId(accounts[1]);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'LogTransferData', 'event');
+      assertTransferLog(tx.logs[0].args, {
+        token: NULL_ADDRESS,
+        caller: NULL_ADDRESS,
+        sender: accounts[1],
+        receiver: NULL_ADDRESS,
+        senderId: '2',
+        senderKeys: [],
+        senderFetched: true,
+        receiverId: '0',
+        receiverKeys: [],
+        receiverFetched: false,
+        value: '0',
+        convertedValue: '0',
+      }, 'sender user id is fetched');
     });
 
     it('should fetch sender user', async function () {
@@ -128,7 +159,28 @@ contract('OracleEnrichedDelegate', function (accounts) {
         receiverFetched: false,
         value: '0',
         convertedValue: '0',
-      }, 'value is converted');
+      }, 'sender user is fetched');
+    });
+
+    it('should fetch receiver user id', async function () {
+      const tx = await delegate.testFetchReceiverUserId(accounts[2]);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'LogTransferData', 'event');
+      assertTransferLog(tx.logs[0].args, {
+        token: NULL_ADDRESS,
+        caller: NULL_ADDRESS,
+        sender: NULL_ADDRESS,
+        receiver: accounts[2],
+        senderId: '0',
+        senderKeys: [],
+        senderFetched: false,
+        receiverId: '3',
+        receiverKeys: [],
+        receiverFetched: true,
+        value: '0',
+        convertedValue: '0',
+      }, 'receiver user id is fetched');
     });
 
     it('should fetch receiver user', async function () {
@@ -149,7 +201,7 @@ contract('OracleEnrichedDelegate', function (accounts) {
         receiverFetched: true,
         value: '0',
         convertedValue: '0',
-      }, 'value is converted');
+      }, 'receiver user is fetched');
     });
 
     it('should fetch converted value', async function () {
@@ -190,10 +242,25 @@ contract('OracleEnrichedDelegate', function (accounts) {
       await delegate.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
-    it('should let oracle provides users', async function () {
-      const user = await userRegistry.validUser(accounts[1], [1, 2]);
-      assert.equal(user[0].toString(), '2', 'user id');
-      assert.deepEqual(user[1].map((x) => x.toString()), ['1000', '2000']);
+    it('should fetch sender user id', async function () {
+      const tx = await delegate.testFetchSenderUserId(accounts[1]);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'LogTransferData', 'event');
+      assertTransferLog(tx.logs[0].args, {
+        token: NULL_ADDRESS,
+        caller: NULL_ADDRESS,
+        sender: accounts[1],
+        receiver: NULL_ADDRESS,
+        senderId: '2',
+        senderKeys: [],
+        senderFetched: true,
+        receiverId: '0',
+        receiverKeys: [],
+        receiverFetched: false,
+        value: '0',
+        convertedValue: '0',
+      }, 'sender user id is fetched');
     });
 
     it('should fetch sender user', async function () {
@@ -214,7 +281,28 @@ contract('OracleEnrichedDelegate', function (accounts) {
         receiverFetched: false,
         value: '0',
         convertedValue: '0',
-      }, 'value is converted');
+      }, 'sender user is fetched');
+    });
+
+    it('should fetch receiver user id', async function () {
+      const tx = await delegate.testFetchReceiverUserId(accounts[2]);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'LogTransferData', 'event');
+      assertTransferLog(tx.logs[0].args, {
+        token: NULL_ADDRESS,
+        caller: NULL_ADDRESS,
+        sender: NULL_ADDRESS,
+        receiver: accounts[2],
+        senderId: '0',
+        senderKeys: [],
+        senderFetched: false,
+        receiverId: '3',
+        receiverKeys: [],
+        receiverFetched: true,
+        value: '0',
+        convertedValue: '0',
+      }, 'receiver user id is fetched');
     });
 
     it('should fetch receiver user', async function () {
@@ -235,7 +323,7 @@ contract('OracleEnrichedDelegate', function (accounts) {
         receiverFetched: true,
         value: '0',
         convertedValue: '0',
-      }, 'value is converted');
+      }, 'receiver user is fetched');
     });
 
     it('should fetch converted value', async function () {
@@ -260,14 +348,24 @@ contract('OracleEnrichedDelegate', function (accounts) {
       }, 'value is converted');
     });
 
+    it('should estimate gas to fetch sender user id [ @skip-on-coverage ]', async function () {
+      const estimate = await delegate.testFetchSenderUserId.estimateGas(accounts[2]);
+      assert.equal(estimate, FETCH_SENDER_ID_ESTIMATE, 'fetch sender user id estimate');
+    });
+
     it('should estimate gas to fetch sender user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchSenderUser.estimateGas(accounts[2], [1, 2]);
-      assert.equal(estimate, FETCH_SENDER_ESTIMATE, 'fetch user estimate');
+      assert.equal(estimate, FETCH_SENDER_ESTIMATE, 'fetch sender user estimate');
+    });
+
+    it('should estimate gas to fetch receiver user id [ @skip-on-coverage ]', async function () {
+      const estimate = await delegate.testFetchReceiverUserId.estimateGas(accounts[2]);
+      assert.equal(estimate, FETCH_RECEIVER_ID_ESTIMATE, 'fetch receiver user id estimate');
     });
 
     it('should estimate gas to fetch receiver user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchReceiverUser.estimateGas(accounts[2], [1, 2]);
-      assert.equal(estimate, FETCH_RECEIVER_ESTIMATE, 'fetch user estimate');
+      assert.equal(estimate, FETCH_RECEIVER_ESTIMATE, 'fetch receiver user estimate');
     });
 
     it('should estimate gas to fetch converted value [ @skip-on-coverage ]', async function () {
