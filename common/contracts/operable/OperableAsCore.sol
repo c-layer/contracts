@@ -23,9 +23,13 @@ contract OperableAsCore {
   }
 
   modifier onlyProxyOperator(Proxy _proxy) {
-    IOperableCore core = IOperableCore(_proxy.core());
-    require(core.hasProxyPrivilege(
-      msg.sender, address(_proxy), msg.sig), "OA02");
+    require(isProxyOperator(msg.sender, _proxy), "OA02");
     _;
+  }
+
+  function isProxyOperator(address _operator, Proxy _proxy) internal view returns (bool) {
+    IOperableCore core = IOperableCore(_proxy.core());
+    return core.hasProxyPrivilege(
+      _operator, address(_proxy), msg.sig);
   }
 }
