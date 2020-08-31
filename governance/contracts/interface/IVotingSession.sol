@@ -47,7 +47,9 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint256 quorum);
 
   function sessionsCount() public virtual view returns (uint256);
-  
+
+  function currentSessionId() public virtual view returns (uint256);
+
   function session(uint256 _sessionId) public virtual view returns (
     uint64 startAt,
     uint256 sessionProposalsCount,

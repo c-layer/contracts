@@ -8,6 +8,9 @@ import "../voting/VotingSession.sol";
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
+ *
+ * Error messages
+ *   VSM01: Session is already closed
  **/
 contract VotingSessionMock is VotingSession {
 
@@ -26,7 +29,7 @@ contract VotingSessionMock is VotingSession {
     SessionState state = sessionStateAt(sessionsCount_ - 1, time);
     Session storage session_ = sessions[sessionsCount_ - 1];
 
-    require(state != SessionState.CLOSED, "VSMXX");
+    require(state != SessionState.CLOSED, "VSM01");
     uint256 startAt = time;
 
     if (state == SessionState.PLANNED) {

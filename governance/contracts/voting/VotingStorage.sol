@@ -18,10 +18,10 @@ contract VotingStorage is IVotingDefinitions {
   using SafeMath for uint256;
 
   struct SessionRule {
-    uint64 gracePeriod; // delay between two votes
     uint64 campaignPeriod; // Before it starts, the vote will be locked
     uint64 votingPeriod; // Time period for voters to submit their votes
     uint64 revealPeriod; // Once the vote is closed, secret voters may have an additionnal delay to reveal their existing votes
+    uint64 gracePeriod; // delay between two votes
   
     uint8 maxProposals;
     uint8 maxProposalsQuaestor;
@@ -61,10 +61,10 @@ contract VotingStorage is IVotingDefinitions {
  }
 
   SessionRule internal sessionRule_ = SessionRule(
-    GRACE_PERIOD,
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
     REVEAL_PERIOD,
+    GRACE_PERIOD,
     MAX_PROPOSALS,
     MAX_PROPOSALS_QUAESTOR,
     NEW_PROPOSAL_THRESHOLD,
@@ -92,12 +92,12 @@ contract VotingStorage is IVotingDefinitions {
     return block.timestamp;
   }
 
-  event SessionRulesUpdated(
-    uint64 gracePeriod,
+  event SessionRuleUpdated(
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 revealPeriod,
-    uint8 _maxProposals,
+    uint64 gracePeriod,
+    uint8 maxProposals,
     uint8 maxProposalsQuaestor,
     uint256 newProposalThreshold,
     uint256 defaultMajority,
