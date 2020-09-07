@@ -12,7 +12,6 @@ import "./VotingStorage.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   VS01: Only the contract can call it
  *   VS02: Not the proposal author
  *   VS03: Session doesn't exist
  *   VS04: Proposal doesn't exist
@@ -40,13 +39,9 @@ import "./VotingStorage.sol";
  *   VS26: Voting and grace period cannot be zero
  *   VS27: Session period must not overflow
  *   VS28: At least one proposal should be allowed
+ *   VS29: New proposal threshold must be greater than 0
  */
 contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
-
-  modifier onlyContract {
-    require(msg.sender == address(this), "VS01");
-    _;
-  }
 
   modifier onlyProposalAuthor(uint256 _proposalId) {
     require(_proposalId < proposalsCount_, "VS04");
@@ -114,7 +109,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    */
   function currentSessionId() public override view returns (uint256) {
     require(sessionsCount_ > 0, "VS03");
-    return sessionsCount_-1;
+    return sessionsCount_;
   }
 
   /**
@@ -124,7 +119,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint64 startAt,
     uint256 proposalsCount,
     uint256 participation) {
-    require(_sessionId < sessionsCount_, "VS03");
+    require(_sessionId > 0 && _sessionId <= sessionsCount_, "VS03");
     Session storage session_ = sessions[_sessionId];
     return (
       session_.startAt,
@@ -217,17 +212,10 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   }
 
   /**
-   * @dev isQuaestor
-   * FIXME replace by a modifier
-   */
-  function isQuaestor(address _operator) public override view returns (bool) {
-    return isProxyOperator(_operator, token_);
-  }
-
-  /**
    * @dev sessionStateAt
    */
   function sessionStateAt(uint256 _sessionId, uint256 _time) public override view returns (SessionState) {
+    require(_sessionId > 0 && _sessionId <= sessionsCount_, "VS03");
     Session storage session_ = sessions[_sessionId];
 
     uint256 startAt = uint256(session_.startAt);
@@ -284,7 +272,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint256 _newProposalThreshold,
     uint256 _defaultMajority,
     uint256 _defaultQuorum
-  )  public override onlyContract returns (bool) {
+  )  public override onlyProxyOperator(token_) returns (bool) {
     require(_votingPeriod != 0 && _gracePeriod != 0, "VS26");
     uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
       .add(sessionRule_.votingPeriod)
@@ -326,7 +314,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     bytes4[] memory _methodSignatures,
     uint256[] memory _majorities,
     uint256[] memory _quorums
-  ) public override onlyContract returns (bool)
+  ) public override onlyProxyOperator(token_) returns (bool)
   {
     require(_methodSignatures.length == _majorities.length, "VS05");
     require(_methodSignatures.length == _quorums.length, "VS06");
@@ -350,60 +338,19 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     address _resolutionTarget,
     bytes memory _resolutionAction) public override returns (bool)
   {
+    Session storage session_ = loadSessionInternal();
     uint256 balance = token_.balanceOf(msg.sender);
-    require(balance >= sessionRule_.newProposalThreshold, "VS07");
 
-    Session storage session_;
-    uint256 time = currentTime();
-
-    uint256 currentSessionId_ = 0;
-    SessionState state = SessionState.CLOSED;
-    if (sessionsCount_ != 0) {
-      currentSessionId_ = currentSessionId();
-      state = sessionStateAt(currentSessionId_, time);
-    }
-
-    if(state != SessionState.PLANNED) {
-      // Creation of a new session
-      require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS09");
-      uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
-        .add(sessionRule_.votingPeriod)
-        .add(sessionRule_.revealPeriod)
-        .add(sessionRule_.gracePeriod);
-
-      uint256 previousStartAt =
-        (sessionsCount_ != 0) ? sessions[currentSessionId_].startAt : 0;
-      uint nextAvailableSession;
-      if (state == SessionState.GRACE) {
-        nextAvailableSession =
-          ((time.sub(previousStartAt)).div(sessionPeriod)).add(1);
-      } else {
-        nextAvailableSession =
-          (((time.sub(previousStartAt)).add(sessionRule_.campaignPeriod)).div(sessionPeriod)).add(1);
-      }
-
-      uint256 nextStartAt = nextAvailableSession.mul(sessionPeriod).add(previousStartAt);
-
-      session_ = sessions[sessionsCount_];
-      session_.startAt = uint64(nextStartAt);
-
-      require(core_.defineLock(
-        address(token_),
-        nextStartAt,
-        nextStartAt.add(sessionRule_.votingPeriod).add(sessionRule_.revealPeriod),
-        new address[](0)), "VS22");
-
-      emit SessionScheduled(sessionsCount_, session_.startAt);
-      sessionsCount_++;
+    if (isProxyOperator(msg.sender, token_)) {
+      require(session_.proposalsCount < sessionRule_.maxProposalsQuaestor, "VS08");
     } else {
-      session_ = sessions[currentSessionId_];
-      require(session_.proposalsCount < (isQuaestor(msg.sender) ?
-        sessionRule_.maxProposalsQuaestor : sessionRule_.maxProposals
-      ), "VS08");
+      require(balance >= sessionRule_.newProposalThreshold, "VS07");
+      require(session_.proposalsCount < sessionRule_.maxProposals, "VS08");
     }
 
     uint256 proposalId = proposalsCount_++;
     Proposal storage proposal_ = proposals[proposalId];
+    proposal_.sessionId = currentSessionId();
     proposal_.name = _name;
     proposal_.url = _url;
     proposal_.proposedBy = msg.sender;
@@ -498,7 +445,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   /**
    * @dev execute resolution
    * FIXME: test reentrancy
-   * TODO: Proposal.Executor (Author/Quaestor/Public ?)
    */
   function executeResolution(uint256 _proposalId) public override returns (bool)
   {
@@ -524,7 +470,20 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
     (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
     require(success, "VS17");
+
     emit ResolutionExecuted(_proposalId);
+    return true;
+  }
+
+  /**
+   * @dev execute many resolution
+   */
+  function executeManyResolutions(uint256[] memory _proposalIds) public override returns (bool)
+  {
+    for (uint256 i=0; i < _proposalIds.length; i++) {
+      executeResolution(_proposalIds[i]);
+    }
+    return true;
   }
 
   /**
@@ -535,6 +494,55 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     // solhint-disable-next-line no-inline-assembly
     assembly {
       signature := mload(add(_data, 0x20))
+    }
+  }
+
+  /**
+   * @dev load session internal
+   */
+  function loadSessionInternal() internal returns (Session storage session_) {
+    uint256 time = currentTime();
+
+    uint256 currentSessionId_ = 0;
+    SessionState state = SessionState.CLOSED;
+    if (sessionsCount_ != 0) {
+      currentSessionId_ = currentSessionId();
+      state = sessionStateAt(currentSessionId_, time);
+    }
+
+    if(state != SessionState.PLANNED) {
+      // Creation of a new session
+      require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS09");
+      uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
+        .add(sessionRule_.votingPeriod)
+        .add(sessionRule_.revealPeriod)
+        .add(sessionRule_.gracePeriod);
+
+      uint256 previousStartAt =
+        (sessionsCount_ != 0) ? sessions[currentSessionId_].startAt : 0;
+      uint nextAvailableSession;
+      if (state == SessionState.GRACE) {
+        nextAvailableSession =
+          ((time.sub(previousStartAt)).div(sessionPeriod)).add(1);
+      } else {
+        nextAvailableSession =
+          (((time.sub(previousStartAt)).add(sessionRule_.campaignPeriod)).div(sessionPeriod)).add(1);
+      }
+
+      uint256 nextStartAt = nextAvailableSession.mul(sessionPeriod).add(previousStartAt);
+
+      session_ = sessions[++sessionsCount_];
+      session_.startAt = uint64(nextStartAt);
+
+      require(core_.defineLock(
+        address(token_),
+        nextStartAt,
+        nextStartAt.add(sessionRule_.votingPeriod).add(sessionRule_.revealPeriod),
+        new address[](0)), "VS22");
+
+      emit SessionScheduled(sessionsCount_, session_.startAt);
+    } else {
+      session_ = sessions[currentSessionId_];
     }
   }
 

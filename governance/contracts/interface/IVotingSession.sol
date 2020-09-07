@@ -59,8 +59,6 @@ abstract contract IVotingSession is IVotingDefinitions {
   
   function secretHash(address _voter) public virtual view returns (bytes32);
 
-  function isQuaestor(address _operator) public virtual view returns (bool);
-
   function sessionStateAt(uint256 _sessionId, uint256 _time) public virtual view returns (SessionState);
 
   function buildHash(bytes memory _data) public virtual view returns (bytes32);
@@ -111,4 +109,5 @@ abstract contract IVotingSession is IVotingDefinitions {
   function revealVoteSecret(bool[] memory _votes, bytes32 _salt) public virtual returns (bool);
 
   function executeResolution(uint256 _proposalId) public virtual returns (bool);
+  function executeManyResolutions(uint256[] memory _proposalIds) public virtual returns (bool);
 }

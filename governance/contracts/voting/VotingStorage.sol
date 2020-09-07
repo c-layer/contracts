@@ -49,7 +49,6 @@ contract VotingStorage is IVotingDefinitions {
     string url;
     bytes32 proposalHash;
     address proposedBy;
-    mapping(address => bool) supportedBy;
     address resolutionTarget;
     bytes resolutionAction;
 
