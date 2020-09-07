@@ -70,12 +70,12 @@ contract('VotingSession', function (accounts) {
   const proposalUrl = 'http://url.url';
 
   const signatures = function (i) {
-    let sigs = votingSession.abi.filter((method) =>
+    const sigs = votingSession.abi.filter((method) =>
       method.name === 'updateResolutionRequirements' ||
       method.name === 'updateSessionRule').map((method) => method.signature);
 
     if (i >= 0) {
-      return sigs[i]
+      return sigs[i];
     }
     return sigs;
   };
@@ -538,7 +538,7 @@ contract('VotingSession', function (accounts) {
     let request;
 
     beforeEach(async function () {
-     request = votingSession.contract.methods.updateResolutionRequirements(
+      request = votingSession.contract.methods.updateResolutionRequirements(
         signatures(), ['10', '15'], ['10', '15']).encodeABI();
       await votingSession.defineProposal(
         'Changing the requirements',
