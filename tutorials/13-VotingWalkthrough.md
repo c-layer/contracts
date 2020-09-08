@@ -26,13 +26,10 @@ You should get a bash prompt inside the container. All the instructions from thi
 ### Module installation
 Let's first make sure that all required modules are installed and compile all the contracts:
 ```
-bash-5.0$ yarn clean
-bash-5.0$ yarn install
-bash-5.0$ yarn compile
+bash-5.0$ yarn clean && yarn install && yarn compile
 ```
 
 ### Truffle initialisation
-
 Let's start `truffle` from the governance module
 ```bash
 bash-5.0$ cd governance && truffle develop
@@ -43,15 +40,15 @@ truffle(develop)>
 
 First things first! We need a new Token to play with. Here we are simply repeating the main steps from the [token creation tutorial](./01-TokenCreation.md)
 ```javascript
-core = await TokenCore.new('Token Core for Voting Tutorial', [ accounts[0] ])
+core = await TokenCore.new('TokenCore', [ accounts[0] ])
 delegate = await TokenDelegate.new()
 core.defineTokenDelegate(1, delegate.address, [0,1])
 token = await TokenProxy.new(core.address)
-await core.defineToken(token.address, 1, "VotingToken", "VOTE", "18")
+await core.defineToken(token.address, 1, "Token", "TKN", "18")
 await core.mint(token.address, [accounts[0], accounts[1]], ['1000','500'])
 ```
 
-So far so good? We have just created a new `VOTE` token and minted a few tokens for `accounts[0]` and `account[1]`. Let's double check:
+So far so good? We have just created a new `TKN` token and minted a few tokens for `accounts[0]` and `accounts[1]`. Let's double check:
 ```javascript
 token.totalSupply().then(x => x.toString())
 token.balanceOf(accounts[0]).then(x => x.toString())
@@ -59,16 +56,40 @@ token.balanceOf(accounts[1]).then(x => x.toString())
 ```
 
 ### Setup of a new voting contract 
-In production, voting sessions should be created using the `VotingSession` contract. Here we are using the `VotingSessionMock` contract instead so we can simulate the progression of the voting session over time:
+A new voting session can be created using the `VotingSession` contract. A voting session will be made of several session instances, so do not get confused by the name of the contract. In the rest of this tutorial, the VotingSession contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
 ```
-session = await VotingSessionMock.new(token.address) 
+session = await VotingSession.new(token.address) 
 ```
 
-The voting contract needs to be granted sufficient permissions to operate the token (we will not enter into the details here, the privileges  topic being covered in another tutorial):
+The voting contract needs to be granted sufficient permissions to operate the token, so it can lock the tokens during the voting period. We will grant the 'AllPriviledges' role to the voting contract for the token (the privileges topic is covered in more details in another tutorial):
 ```
 ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
 core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ session.address ]);
 ```
+
+Each voting session will go through the following states:
+- 0: PLANNED, a new session is planned and proposals can be submitted
+- 1: CAMPAIGN, proposals can not be submitted anymore, poeple can promote their proposals
+- 2: VOTING, votes can be submitted
+- 3: REVEAL, votes can be revealed if they were submitted secretely 
+- 4: GRACE, proposals can be executed
+- 5: CLOSED
+
+By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
+- grace period of 5 minutes
+- campaign period of 5 minutes
+- voting period of 5 minutes
+- reveal period of 0 minutes (no secret votes)
+- maximum of 100 proposals for each voting session
+- maximum of 255 proposals that can be submitted by the quaestor
+- requirement to have a minimum of 10 tokens to be able to submit proposals
+- default majority of 50%
+- default quorum of 40%
+```
+session.updateSessionRule(5*60, 5*60, 5*60, 0, 100, 255, 10, 50, 40)
+```
+So now it is possible to schedule a new voting session every 15 minutes. 
+
 
 ### Submit a proposal 
 Let's assume that our proposal consists in minting 500 new tokens for accounts[2]. We first need to encode this request: 
@@ -87,58 +108,70 @@ session.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.addr
 ```
 
 ### Inspect the current voting session 
-
 We can get the number of voting sessions using this function:
 ```
 session.sessionsCount().then(x => x.toString())
  ```
 This returns "1" as a new voting session has been dynamically created when we submitted our proposal. 
 
-Each voting session will go through the following states:
-- 0: PLANNED,
-- 1: CAMPAIGN,
-- 2: VOTING,
-- 3: REVEAL,
-- 4: GRACE,
-- 5: CLOSED
+Let's check where we are with session 1:
+```
+session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+```
+This returns "0", indicating that the session is in the PLANNED stage.
+After a few minutes, "1" will be returned instead, indicating that the voting session is in the CAMPAIGN state.
 
-Let's check where we are with session 0:
-```
-session.sessionStateAt(0,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
-```
-This returns "0", indicating that the session is 0 is now planned.
+The length of the voting sessions being 15 minutes, the next voting session will start with the next quarter (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:15).
 
-We can also check if our proposal is approved:
+We can double check by querying the session:
 ```
-session.isApproved(0)
+await session.session(1).then(x => new Date(x.startAt*1000))
 ```
+
+
+### Modify the proposal
+Until the CAMPAIGN period starts, it is still possible to update the proposal:
+```
+session.updateProposal(0, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
+```
+We can check that the proposal has been properly updated:
+```
+session.proposal(0)
+```
+
 
 ### Voting 
-
-By default, the voting contract uses a majority of 50% and a quorum of 40%. 
-
-Let's move the session state to "VOTING" and vote for the proposal as account[0]:
+When the VOTING period begins, we can simulate a vote from account[1] for the proposal:
 ```
-session.nextSessionStepTest()
-session.nextSessionStepTest()
-session.submitVote([true])
+session.submitVote([true], {from: accounts[1]})
 ```
-Note here that we used an Array of booleans to submit our vote. 
+Note here that we used an Array of booleans to submit our vote, indicating our voting decision for every proposal. 
 
-We can verify that the first proposal has been approved:
+We can check if the proposal has been approved:
 ```
 session.isApproved(0)
 ```
+The proposal is not approved, as accounts[1] only holds 1/3 of the tokens.
+
+Let's simulate a new vote supporting the proposal from accounts[0] and check that the proposal is then approved:
+```
+session.submitVote([true])
+session.isApproved(0)
+```
+
 
 ### Execution of the proposal
-Let's move the session state to "GRACE" and execute the proposal. 
+When the VOTING period is closed (in our case 5 minutes after it began), the session state will enter the GRACE period:
 ```
-session.nextSessionStepTest()
-session.nextSessionStepTest()
-session.executeResolution(0)
+session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
-We can verify that the new tokens have been minted:
+Anyone can now trigger the execution of the approved resolutions, including people who did not participate to the vote:
+```
+session.executeResolution(0, {from: accounts[5]})
+```
+
+Let's verify that the new tokens have been minted:
 ```
 token.totalSupply().then(x => x.toString())
 token.balanceOf(accounts[2]).then(x => x.toString())
