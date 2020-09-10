@@ -11,6 +11,9 @@ pragma solidity ^0.6.0;
  */
 abstract contract IVotingDefinitions {
 
+  address internal constant UNDEFINED_TARGET = address(bytes20("UndefinedTarget"));
+  bytes4 internal constant ANY_METHODS = bytes4(bytes32("AnyMethods"));
+
   enum SessionState {
     PLANNED,
     CAMPAIGN,
@@ -27,9 +30,10 @@ abstract contract IVotingDefinitions {
 
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;
+  uint256 internal constant EXECUTE_RESOLUTION_THRESHOLD = 1;
   uint256 internal constant DEFAULT_MAJORITY = 50;
-  uint256 internal constant DEFAULT_QUORUM = 40;
+  uint256 internal constant DEFAULT_QUORUM = 60;
 
   uint8 internal constant MAX_PROPOSALS = 100;
-  uint8 internal constant MAX_PROPOSALS_QUAESTOR = 255;
+  uint8 internal constant MAX_PROPOSALS_OPERATOR = 255;
 }

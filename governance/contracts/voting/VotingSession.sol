@@ -40,6 +40,9 @@ import "./VotingStorage.sol";
  *   VS27: Session period must not overflow
  *   VS28: At least one proposal should be allowed
  *   VS29: New proposal threshold must be greater than 0
+ *   VS30: Execute resolution threshold must be greater than 0
+ *   VS31: Not enougth tokens to execute
+ *   VS32: Inconsistent numbers of methods signatures
  */
 contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
@@ -56,41 +59,41 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     token_ = _token;
     core_ = ITokenCore(token_.core());
     require(address(core_) != address(0), "VS21");
+    resolutionRequirements[UNDEFINED_TARGET][ANY_METHODS] =
+      ResolutionRequirement(DEFAULT_MAJORITY, DEFAULT_QUORUM);
   }
 
   /**
    * @dev sessionRule
    */
   function sessionRule() public override view returns (
-    uint64 gracePeriod,
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 revealPeriod,
+    uint64 gracePeriod,
     uint8 maxProposals,
-    uint8 maxProposalsQuaestor,
+    uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
-    uint256 defaultMajority,
-    uint256 defaultQuorum) {
+    uint256 executeResolutionThreshold) {
     return (
-      sessionRule_.gracePeriod,
       sessionRule_.campaignPeriod,
       sessionRule_.votingPeriod,
       sessionRule_.revealPeriod,
+      sessionRule_.gracePeriod,
       sessionRule_.maxProposals,
-      sessionRule_.maxProposalsQuaestor,
+      sessionRule_.maxProposalsOperator,
       sessionRule_.newProposalThreshold,
-      sessionRule_.defaultMajority,
-      sessionRule_.defaultQuorum);
+      sessionRule_.executeResolutionThreshold);
   }
 
   /**
    * @dev resolutionRequirement
    */
-  function resolutionRequirement(bytes4 _method) public override view returns (
+  function resolutionRequirement(address _target, bytes4 _method) public override view returns (
     uint256 majority,
     uint256 quorum) {
     ResolutionRequirement storage requirement =
-      resolutionRequirements[_method];
+      resolutionRequirements[_target][_method];
 
     return (
       requirement.majority,
@@ -191,17 +194,35 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    * @dev isApproved
    */
   function isApproved(uint256 _proposalId) public override view returns (bool) {
+    require(_proposalId < proposalsCount_, "VS04");
+
     Proposal storage proposal_ = proposals[_proposalId];
+    require(!proposal_.cancelled, "VS10");
+
     Session storage session_ = sessions[proposal_.sessionId];
+    bytes4 actionSignature = readSignatureInternal(proposal_.resolutionAction);
     ResolutionRequirement storage requirement =
-      resolutionRequirements[readSignatureInternal(proposal_.resolutionAction)];
+      resolutionRequirements[proposal_.resolutionTarget][actionSignature];
 
     uint256 majority = requirement.majority;
     uint256 quorum = requirement.quorum;
 
     if (majority == 0 && quorum == 0) {
-      majority = sessionRule_.defaultMajority;
-      quorum = sessionRule_.defaultQuorum;
+      requirement = resolutionRequirements[proposal_.resolutionTarget][bytes4(ANY_METHODS)];
+      majority = requirement.majority;
+      quorum = requirement.quorum;
+    }
+
+    if (majority == 0 && quorum == 0) {
+      requirement = resolutionRequirements[UNDEFINED_TARGET][actionSignature];
+      majority = requirement.majority;
+      quorum = requirement.quorum;
+    }
+
+    if (majority == 0 && quorum == 0) {
+      requirement = resolutionRequirements[UNDEFINED_TARGET][bytes4(ANY_METHODS)];
+      majority = requirement.majority;
+      quorum = requirement.quorum;
     }
 
     uint256 totalSupply = token_.totalSupply();
@@ -263,15 +284,14 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    * FIXME: Add defensive restriction on risky methods
    */
   function updateSessionRule(
-    uint64 _gracePeriod,
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
     uint64 _revealPeriod,
+    uint64 _gracePeriod,
     uint8 _maxProposals,
-    uint8 _maxProposalsQuaestor,
+    uint8 _maxProposalsOperator,
     uint256 _newProposalThreshold,
-    uint256 _defaultMajority,
-    uint256 _defaultQuorum
+    uint256 _executeResolutionThreshold
   )  public override onlyProxyOperator(token_) returns (bool) {
     require(_votingPeriod != 0 && _gracePeriod != 0, "VS26");
     uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
@@ -279,9 +299,9 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       .add(sessionRule_.revealPeriod)
       .add(sessionRule_.gracePeriod);
     require(sessionPeriod != 0, "VS27");
-    require(_maxProposals != 0 || _maxProposalsQuaestor != 0, "VS28");
+    require(_maxProposals != 0 || _maxProposalsOperator != 0, "VS28");
     require(_newProposalThreshold != 0, "VS29");
-    require(_defaultMajority != 0 || _defaultQuorum != 0, "VS20");
+    require(_executeResolutionThreshold != 0, "VS30");
  
     sessionRule_ = SessionRule(
       _campaignPeriod,
@@ -289,10 +309,9 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       _revealPeriod,
       _gracePeriod,
       _maxProposals,
-      _maxProposalsQuaestor,
+      _maxProposalsOperator,
       _newProposalThreshold,
-      _defaultMajority,
-      _defaultQuorum);
+      _executeResolutionThreshold);
 
     emit SessionRuleUpdated(
       _campaignPeriod,
@@ -300,10 +319,9 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       _revealPeriod,
       _gracePeriod,
       _maxProposals,
-      _maxProposalsQuaestor,
+      _maxProposalsOperator,
       _newProposalThreshold,
-      _defaultMajority,
-      _defaultQuorum);
+      _executeResolutionThreshold);
     return true;
   }
 
@@ -311,19 +329,25 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    * @dev updateResolutionRequirements
    */
   function updateResolutionRequirements(
+    address[] memory _targets,
     bytes4[] memory _methodSignatures,
     uint256[] memory _majorities,
     uint256[] memory _quorums
   ) public override onlyProxyOperator(token_) returns (bool)
   {
+    require(_targets.length == _methodSignatures.length, "VS32");
     require(_methodSignatures.length == _majorities.length, "VS05");
     require(_methodSignatures.length == _quorums.length, "VS06");
 
     for(uint256 i=0; i < _methodSignatures.length; i++) {
-      resolutionRequirements[_methodSignatures[i]] =
+      if (_targets[i] == UNDEFINED_TARGET && _methodSignatures[i] == ANY_METHODS) {
+        require(_majorities[i] != 0 || _quorums[i] != 0, "VS20");
+      }
+
+      resolutionRequirements[_targets[i]][_methodSignatures[i]] =
         ResolutionRequirement(_majorities[i], _quorums[i]);
       emit ResolutionRequirementUpdated(
-         _methodSignatures[i], _majorities[i], _quorums[i]);
+         _targets[i], _methodSignatures[i], _majorities[i], _quorums[i]);
     }
     return true;
   }
@@ -342,7 +366,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint256 balance = token_.balanceOf(msg.sender);
 
     if (isProxyOperator(msg.sender, token_)) {
-      require(session_.proposalsCount < sessionRule_.maxProposalsQuaestor, "VS08");
+      require(session_.proposalsCount < sessionRule_.maxProposalsOperator, "VS08");
     } else {
       require(balance >= sessionRule_.newProposalThreshold, "VS07");
       require(session_.proposalsCount < sessionRule_.maxProposals, "VS08");
@@ -449,6 +473,12 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   function executeResolution(uint256 _proposalId) public override returns (bool)
   {
     uint256 sessionId_ = currentSessionId();
+
+    if (!isProxyOperator(msg.sender, token_)) {
+      uint256 balance = token_.balanceOf(msg.sender);
+      require(balance >= sessionRule_.executeResolutionThreshold, "VS31");
+    }
+
     SessionState currentSessionState = sessionStateAt(sessionId_, currentTime());
     if(currentSessionState != SessionState.GRACE) {
       require(currentSessionState == SessionState.PLANNED, "VS24");
@@ -461,15 +491,16 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     Proposal storage proposal_ = proposals[_proposalId];
 
     require(proposal_.sessionId == sessionId_, "VS25");
-    require(!proposal_.cancelled, "VS10");
     require(!proposal_.resolutionExecuted, "VS16");
     require(isApproved(_proposalId), "VS19");
 
     proposal_.resolutionExecuted = true;
 
-    // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
-    (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
-    require(success, "VS17");
+    if (proposal_.resolutionTarget != UNDEFINED_TARGET) {
+      // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
+      (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
+      require(success, "VS17");
+    }
 
     emit ResolutionExecuted(_proposalId);
     return true;
@@ -561,7 +592,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       if(_votes[i]) {
         uint256 proposalId = proposalsCount_ - session_.proposalsCount + i;
         Proposal storage proposal_ = proposals[proposalId];
-        proposal_.approvals += weight;
+        proposal_.approvals += (proposal_.cancelled) ? 0: weight;
       }
     }
 

@@ -24,11 +24,9 @@ contract VotingStorage is IVotingDefinitions {
     uint64 gracePeriod; // delay between two votes
   
     uint8 maxProposals;
-    uint8 maxProposalsQuaestor;
+    uint8 maxProposalsOperator;
     uint256 newProposalThreshold;
-
-    uint256 defaultMajority;
-    uint256 defaultQuorum;
+    uint256 executeResolutionThreshold;
   }
 
   struct ResolutionRequirement {
@@ -65,12 +63,11 @@ contract VotingStorage is IVotingDefinitions {
     REVEAL_PERIOD,
     GRACE_PERIOD,
     MAX_PROPOSALS,
-    MAX_PROPOSALS_QUAESTOR,
+    MAX_PROPOSALS_OPERATOR,
     NEW_PROPOSAL_THRESHOLD,
-    DEFAULT_MAJORITY,
-    DEFAULT_QUORUM);
+    EXECUTE_RESOLUTION_THRESHOLD);
 
-  mapping(bytes4 => ResolutionRequirement) internal resolutionRequirements;
+  mapping(address => mapping(bytes4 => ResolutionRequirement)) internal resolutionRequirements;
 
   uint256 internal sessionsCount_;
   mapping(uint256 => Session) internal sessions;
@@ -97,12 +94,12 @@ contract VotingStorage is IVotingDefinitions {
     uint64 revealPeriod,
     uint64 gracePeriod,
     uint8 maxProposals,
-    uint8 maxProposalsQuaestor,
+    uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
-    uint256 defaultMajority,
-    uint256 defaultQuorum);
+    uint256 executeResolutionThreshold);
 
   event ResolutionRequirementUpdated(
+    address target,
     bytes4 methodSignature,
     uint256 majority,
     uint256 quorum

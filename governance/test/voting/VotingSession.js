@@ -10,6 +10,8 @@ const TokenDelegate = artifacts.require('mock/TokenDelegateMock.sol');
 const TokenCore = artifacts.require('mock/TokenCoreMock.sol');
 const VotingSession = artifacts.require('voting/VotingSessionMock.sol');
 
+const UNDEFINED_TARGET = web3.utils.fromAscii('UndefinedTarget').padEnd(42, '0');
+const ANY_METHODS = web3.utils.fromAscii('AnyMethods').padEnd(10, '0');
 const ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const NULL_BYTES32 = '0x'.padEnd(66, '0');
@@ -60,7 +62,7 @@ const SessionState = {
 };
 
 contract('VotingSession', function (accounts) {
-  let core, delegate, token, votingSession;
+  let core, delegate, token, votingSession, signatures;
 
   const recipients = [accounts[0], accounts[1], accounts[2], accounts[3]];
   const supplies = ['100', '3000000', '2000000', '2000000'];
@@ -68,17 +70,6 @@ contract('VotingSession', function (accounts) {
   const proposalName = 'Would you like to vote ?';
   const proposalHash = web3.utils.sha3('alphabet', { encoding: 'hex' });
   const proposalUrl = 'http://url.url';
-
-  const signatures = function (i) {
-    const sigs = votingSession.abi.filter((method) =>
-      method.name === 'updateResolutionRequirements' ||
-      method.name === 'updateSessionRule').map((method) => method.signature);
-
-    if (i >= 0) {
-      return sigs[i];
-    }
-    return sigs;
-  };
 
   before(async function () {
     delegate = await TokenDelegate.new();
@@ -93,6 +84,10 @@ contract('VotingSession', function (accounts) {
     await core.mint(token.address, recipients, supplies);
     votingSession = await VotingSession.new(token.address);
     await core.assignProxyOperators(token.address, ALL_PRIVILEGES, [votingSession.address]);
+
+    signatures = votingSession.abi.filter((method) =>
+      method.name === 'updateResolutionRequirements' ||
+      method.name === 'updateSessionRule').map((method) => method.signature);
   });
 
   it('should have a token', async function () {
@@ -102,19 +97,24 @@ contract('VotingSession', function (accounts) {
 
   it('should have session rule', async function () {
     const sessionRule = await votingSession.sessionRule();
-    assert.equal(sessionRule.gracePeriod.toString(), '432000', 'gracePeriod');
     assert.equal(sessionRule.campaignPeriod.toString(), '432000', 'campaignPeriod');
     assert.equal(sessionRule.votingPeriod.toString(), '172800', 'votingPeriod');
     assert.equal(sessionRule.revealPeriod.toString(), '172800', 'revealPeriod');
+    assert.equal(sessionRule.gracePeriod.toString(), '432000', 'gracePeriod');
     assert.equal(sessionRule.maxProposals.toString(), '100', 'maxProposals');
-    assert.equal(sessionRule.maxProposalsQuaestor.toString(), '255', 'maxProposalsQuaestor');
+    assert.equal(sessionRule.maxProposalsOperator.toString(), '255', 'maxProposalsOperator');
     assert.equal(sessionRule.newProposalThreshold.toString(), '1', 'newProposalThreshold');
-    assert.equal(sessionRule.defaultMajority.toString(), '50', 'defaultMajority');
-    assert.equal(sessionRule.defaultQuorum.toString(), '40', 'defaultQuorum');
+    assert.equal(sessionRule.executeResolutionThreshold.toString(), '1', 'executeResolutionThreshold');
   });
 
   it('should have default resolution requirements', async function () {
-    const requirement = await votingSession.resolutionRequirement('0x00000000');
+    const requirement = await votingSession.resolutionRequirement(UNDEFINED_TARGET, ANY_METHODS);
+    assert.equal(requirement.majority.toString(), '50', 'majority');
+    assert.equal(requirement.quorum.toString(), '60', 'quorum');
+  });
+
+  it('should have no resolution requirements for address 0x, methods 0x', async function () {
+    const requirement = await votingSession.resolutionRequirement(NULL_ADDRESS, '0x00000000');
     assert.equal(requirement.majority.toString(), '0', 'majority');
     assert.equal(requirement.quorum.toString(), '0', 'quorum');
   });
@@ -159,7 +159,7 @@ contract('VotingSession', function (accounts) {
       proposalName,
       proposalUrl,
       proposalHash,
-      NULL_ADDRESS,
+      UNDEFINED_TARGET,
       '0x', { from: accounts[9] }), 'VS07');
   });
 
@@ -168,7 +168,7 @@ contract('VotingSession', function (accounts) {
       proposalName,
       proposalUrl,
       proposalHash,
-      NULL_ADDRESS,
+      UNDEFINED_TARGET,
       '0x', { from: accounts[1] });
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
@@ -184,7 +184,7 @@ contract('VotingSession', function (accounts) {
       proposalName,
       proposalUrl,
       proposalHash,
-      NULL_ADDRESS,
+      UNDEFINED_TARGET,
       '0x', { from: accounts[4] });
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
@@ -197,42 +197,45 @@ contract('VotingSession', function (accounts) {
 
   it('should prevent anyone to update session rules', async function () {
     await assertRevert(votingSession.updateSessionRule(
-      '60', '60', '60', '60', '1', '2', '3000000', '10', '10', { from: accounts[9] }), 'OA02');
+      '60', '60', '60', '60', '1', '2', '3000000', '3000001', { from: accounts[9] }), 'OA02');
   });
 
   it('should let token operator to update session rules', async function () {
     const tx = await votingSession.updateSessionRule(
-      '60', '60', '60', '60', '1', '2', '3000000', '10', '10');
+      '61', '62', '63', '64', '1', '2', '3000000', '3000001');
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
-    assert.equal(tx.logs[0].args.campaignPeriod.toString(), '60', 'campaign period');
-    assert.equal(tx.logs[0].args.votingPeriod.toString(), '60', 'voting period');
-    assert.equal(tx.logs[0].args.revealPeriod.toString(), '60', 'reveal period');
-    assert.equal(tx.logs[0].args.gracePeriod.toString(), '60', 'grace period');
+    assert.equal(tx.logs[0].args.campaignPeriod.toString(), '61', 'campaign period');
+    assert.equal(tx.logs[0].args.votingPeriod.toString(), '62', 'voting period');
+    assert.equal(tx.logs[0].args.revealPeriod.toString(), '63', 'reveal period');
+    assert.equal(tx.logs[0].args.gracePeriod.toString(), '64', 'grace period');
     assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
-    assert.equal(tx.logs[0].args.maxProposalsQuaestor.toString(), '2', 'max proposals quaestor');
+    assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
     assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
-    assert.equal(tx.logs[0].args.defaultMajority.toString(), '10', 'default majority');
-    assert.equal(tx.logs[0].args.defaultQuorum.toString(), '10', 'default quorum');
+    assert.equal(tx.logs[0].args.executeResolutionThreshold.toString(), '3000001', 'execute resolution threshold');
   });
 
   it('should prevent anyone to update resolution requirements', async function () {
     await assertRevert(votingSession.updateResolutionRequirements(
-      signatures(), ['10', '15'], ['10', '15'], { from: accounts[9] }), 'OA02');
+      [UNDEFINED_TARGET, votingSession.address],
+      signatures, ['10', '15'], ['10', '15'],
+      { from: accounts[9] }), 'OA02');
   });
 
   it('should let token operator to update resolution requirements', async function () {
     const tx = await votingSession.updateResolutionRequirements(
-      signatures(), ['10', '15'], ['10', '15']);
+      [UNDEFINED_TARGET, votingSession.address], signatures, ['10', '15'], ['10', '15']);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, 'ResolutionRequirementUpdated', 'event');
-    assert.equal(tx.logs[0].args.methodSignature.toString(), '0xaa135712', 'method signature');
+    assert.equal(tx.logs[0].args.target.toString().toLowerCase(), UNDEFINED_TARGET, 'undefined target');
+    assert.equal(tx.logs[0].args.methodSignature.toString(), signatures[0], 'method signature');
     assert.equal(tx.logs[0].args.majority.toString(), '10', 'majority');
     assert.equal(tx.logs[0].args.quorum.toString(), '10', 'quorum');
     assert.equal(tx.logs[1].event, 'ResolutionRequirementUpdated', 'event');
-    assert.equal(tx.logs[1].args.methodSignature.toString(), '0xba955b42', 'method signature');
+    assert.equal(tx.logs[1].args.target.toString(), votingSession.address, 'core address');
+    assert.equal(tx.logs[1].args.methodSignature.toString(), signatures[1], 'method signature');
     assert.equal(tx.logs[1].args.majority.toString(), '15', 'majority');
     assert.equal(tx.logs[1].args.quorum.toString(), '15', 'quorum');
   });
@@ -248,7 +251,7 @@ contract('VotingSession', function (accounts) {
         proposalName,
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x');
     });
 
@@ -277,7 +280,7 @@ contract('VotingSession', function (accounts) {
       assert.equal(proposal.proposalHash, proposalHash, 'hash');
       assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
       assert.equal(proposal.resolutionAction, null, 'action');
-      assert.equal(proposal.resolutionTarget, NULL_ADDRESS, 'target');
+      assert.equal(proposal.resolutionTarget.toLowerCase(), UNDEFINED_TARGET, 'target');
       assert.equal(proposal.weight.toString(), '100', 'weight');
       assert.equal(proposal.approvals.toString(), '0', 'approvals');
       assert.ok(!proposal.resolutionExecuted, 'executed');
@@ -302,7 +305,7 @@ contract('VotingSession', function (accounts) {
         proposalName + '2',
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x');
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 1);
@@ -315,7 +318,7 @@ contract('VotingSession', function (accounts) {
         proposalName + '2',
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x', { from: accounts[1] }), 'VS02');
     });
 
@@ -324,7 +327,7 @@ contract('VotingSession', function (accounts) {
         proposalName + '2',
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x'), 'VS04');
     });
 
@@ -354,7 +357,7 @@ contract('VotingSession', function (accounts) {
           proposalName,
           proposalUrl,
           proposalHash,
-          NULL_ADDRESS,
+          UNDEFINED_TARGET,
           '0x'), 'VS09');
       });
     });
@@ -395,7 +398,7 @@ contract('VotingSession', function (accounts) {
           proposalName + '2',
           proposalUrl,
           proposalHash,
-          NULL_ADDRESS,
+          UNDEFINED_TARGET,
           '0x'), 'VS23');
       });
 
@@ -489,7 +492,7 @@ contract('VotingSession', function (accounts) {
   describe('with an approved proposal to change the session rules', function () {
     beforeEach(async function () {
       const request = votingSession.contract.methods.updateSessionRule(
-        '60', '60', '60', '60', '1', '2', '3000000', '10', '10').encodeABI();
+        '61', '62', '63', '64', '1', '2', '3000000', '3000001').encodeABI();
       await votingSession.defineProposal(
         'Changing the rules',
         proposalUrl,
@@ -509,28 +512,26 @@ contract('VotingSession', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
-      assert.equal(tx.logs[0].args.campaignPeriod.toString(), '60', 'campaign period');
-      assert.equal(tx.logs[0].args.votingPeriod.toString(), '60', 'voting period');
-      assert.equal(tx.logs[0].args.revealPeriod.toString(), '60', 'reveal period');
-      assert.equal(tx.logs[0].args.gracePeriod.toString(), '60', 'grace period');
+      assert.equal(tx.logs[0].args.campaignPeriod.toString(), '61', 'campaign period');
+      assert.equal(tx.logs[0].args.votingPeriod.toString(), '62', 'voting period');
+      assert.equal(tx.logs[0].args.revealPeriod.toString(), '63', 'reveal period');
+      assert.equal(tx.logs[0].args.gracePeriod.toString(), '64', 'grace period');
       assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
-      assert.equal(tx.logs[0].args.maxProposalsQuaestor.toString(), '2', 'max proposals quaestor');
+      assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
       assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
-      assert.equal(tx.logs[0].args.defaultMajority.toString(), '10', 'default majority');
-      assert.equal(tx.logs[0].args.defaultQuorum.toString(), '10', 'default quorum');
+      assert.equal(tx.logs[0].args.executeResolutionThreshold.toString(), '3000001', 'execute resolution threshold');
       assert.equal(tx.logs[1].event, 'ResolutionExecuted', 'event');
       assert.equal(tx.logs[1].args.proposalId.toString(), '0', 'proposal id');
 
       const sessionRule = await votingSession.sessionRule();
-      assert.equal(sessionRule.gracePeriod.toString(), '60', 'gracePeriod');
-      assert.equal(sessionRule.campaignPeriod.toString(), '60', 'campaignPeriod');
-      assert.equal(sessionRule.votingPeriod.toString(), '60', 'votingPeriod');
-      assert.equal(sessionRule.revealPeriod.toString(), '60', 'revealPeriod');
+      assert.equal(sessionRule.campaignPeriod.toString(), '61', 'campaignPeriod');
+      assert.equal(sessionRule.votingPeriod.toString(), '62', 'votingPeriod');
+      assert.equal(sessionRule.revealPeriod.toString(), '63', 'revealPeriod');
+      assert.equal(sessionRule.gracePeriod.toString(), '64', 'gracePeriod');
       assert.equal(sessionRule.maxProposals.toString(), '1', 'maxProposals');
-      assert.equal(sessionRule.maxProposalsQuaestor.toString(), '2', 'maxProposalsQuaestor');
+      assert.equal(sessionRule.maxProposalsOperator.toString(), '2', 'maxProposalsOperator');
       assert.equal(sessionRule.newProposalThreshold.toString(), '3000000', 'newProposalThreshold');
-      assert.equal(sessionRule.defaultMajority.toString(), '10', 'defaultMajority');
-      assert.equal(sessionRule.defaultQuorum.toString(), '10', 'defaultQuorum');
+      assert.equal(sessionRule.executeResolutionThreshold.toString(), '3000001', 'executeResolutionThreshold');
     });
   });
 
@@ -539,7 +540,8 @@ contract('VotingSession', function (accounts) {
 
     beforeEach(async function () {
       request = votingSession.contract.methods.updateResolutionRequirements(
-        signatures(), ['10', '15'], ['10', '15']).encodeABI();
+        [UNDEFINED_TARGET, votingSession.address],
+        signatures, ['10', '15'], ['10', '15']).encodeABI();
       await votingSession.defineProposal(
         'Changing the requirements',
         proposalUrl,
@@ -559,21 +561,21 @@ contract('VotingSession', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 3);
       assert.equal(tx.logs[0].event, 'ResolutionRequirementUpdated', 'event');
-      assert.equal(tx.logs[0].args.methodSignature.toString(), '0xaa135712', 'method signature');
+      assert.equal(tx.logs[0].args.methodSignature.toString(), signatures[0], 'method signature');
       assert.equal(tx.logs[0].args.majority.toString(), '10', 'majority');
       assert.equal(tx.logs[0].args.quorum.toString(), '10', 'quorum');
       assert.equal(tx.logs[1].event, 'ResolutionRequirementUpdated', 'event');
-      assert.equal(tx.logs[1].args.methodSignature.toString(), '0xba955b42', 'method signature');
+      assert.equal(tx.logs[1].args.methodSignature.toString(), signatures[1], 'method signature');
       assert.equal(tx.logs[1].args.majority.toString(), '15', 'majority');
       assert.equal(tx.logs[1].args.quorum.toString(), '15', 'quorum');
       assert.equal(tx.logs[2].event, 'ResolutionExecuted', 'event');
       assert.equal(tx.logs[2].args.proposalId.toString(), '0', 'proposal id');
 
-      const requirement1 = await votingSession.resolutionRequirement(signatures(0));
+      const requirement1 = await votingSession.resolutionRequirement(UNDEFINED_TARGET, signatures[0]);
       assert.equal(requirement1.majority.toString(), '10', 'majority');
       assert.equal(requirement1.quorum.toString(), '10', 'quorum');
 
-      const requirement2 = await votingSession.resolutionRequirement(signatures(1));
+      const requirement2 = await votingSession.resolutionRequirement(votingSession.address, signatures[1]);
       assert.equal(requirement2.majority.toString(), '15', 'majority');
       assert.equal(requirement2.quorum.toString(), '15', 'quorum');
     });
@@ -585,7 +587,7 @@ contract('VotingSession', function (accounts) {
         proposalName,
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x');
       await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
@@ -600,7 +602,7 @@ contract('VotingSession', function (accounts) {
           proposalName,
           proposalUrl,
           proposalHash,
-          NULL_ADDRESS,
+          UNDEFINED_TARGET,
           '0x');
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 2);
@@ -624,7 +626,7 @@ contract('VotingSession', function (accounts) {
           proposalName,
           proposalUrl,
           proposalHash,
-          NULL_ADDRESS,
+          UNDEFINED_TARGET,
           '0x');
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 2);
@@ -648,7 +650,7 @@ contract('VotingSession', function (accounts) {
         proposalName,
         proposalUrl,
         proposalHash,
-        NULL_ADDRESS,
+        UNDEFINED_TARGET,
         '0x');
 
       request1 = core.contract.methods.mint(token.address, [accounts[4]], ['13999900']).encodeABI();
@@ -661,7 +663,7 @@ contract('VotingSession', function (accounts) {
 
       request2 = core.contract.methods.seize(token.address, accounts[1], '1000000').encodeABI();
       await votingSession.defineProposal(
-        'seize dat bastard!',
+        'seize dat guy',
         proposalUrl,
         proposalHash,
         core.address,
@@ -804,6 +806,16 @@ contract('VotingSession', function (accounts) {
         assert.equal(totalSupply.toString(), '21000000', 'totalSupply');
         const balance4 = await token.balanceOf(accounts[4]);
         assert.equal(balance4.toString(), '13999900', 'balance4');
+      });
+
+      it('should execute many resolution', async function () {
+        const tx = await votingSession.executeManyResolutions([0, 1]);
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+        assert.equal(tx.logs[0].event, 'ResolutionExecuted', 'event');
+        assert.equal(tx.logs[0].args.proposalId.toString(), '0', 'proposal id');
+        assert.equal(tx.logs[1].event, 'ResolutionExecuted', 'event');
+        assert.equal(tx.logs[1].args.proposalId.toString(), '1', 'proposal id');
       });
 
       it('should not be possible to execute seize proposal', async function () {

@@ -32,17 +32,16 @@ abstract contract IVotingSession is IVotingDefinitions {
   );
   
   function sessionRule() public virtual view returns (
-    uint64 gracePeriod,
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 revealPeriod,
+    uint64 gracePeriod,
     uint8 maxProposals,
-    uint8 maxProposalsQuaestor,
+    uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
-    uint256 defaultMajority,
-    uint256 defaultQuorum);
+    uint256 executeProposalThreshold);
 
-  function resolutionRequirement(bytes4 _method) public virtual view returns (
+  function resolutionRequirement(address _target, bytes4 _method) public virtual view returns (
     uint256 majority,
     uint256 quorum);
 
@@ -66,18 +65,18 @@ abstract contract IVotingSession is IVotingDefinitions {
   function isApproved(uint256 _proposalId) public virtual view returns (bool);
 
   function updateSessionRule(
-    uint64 _gracePeriod,
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
     uint64 _revealPeriod,
+    uint64 _gracePeriod,
     uint8 _maxProposals,
     uint8 _maxProposalsQuaestor,
     uint256 _newProposalThreshold,
-    uint256 _defaultMajority,
-    uint256 _defaultQuorum
+    uint256 _executeResolutionThreshold
   ) public virtual returns (bool);
   
   function updateResolutionRequirements(
+    address[] memory _targets,
     bytes4[] memory _methodSignatures,
     uint256[] memory _majority,
     uint256[] memory _quorum
