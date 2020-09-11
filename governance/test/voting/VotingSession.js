@@ -224,7 +224,7 @@ contract('VotingSession', function (accounts) {
       { from: accounts[9] }), 'OA02');
   });
 
-  it('should prevent operator to update resolution requirements global default to 0 quorum/majority', async function () {
+  it('should prevent operator to update resolution requirements global resolution requirement', async function () {
     await assertRevert(votingSession.updateResolutionRequirements(
       [UNDEFINED_TARGET, UNDEFINED_TARGET, votingSession.address],
       ['0x00000000', ANY_METHODS, '0x12345678'],
@@ -933,7 +933,6 @@ contract('VotingSession', function (accounts) {
   const EXECUTE_ALL_COST = 670332;
 
   describe('Performance [ @skip-on-coverage ]', function () {
-
     it('shoould estimate a first proposal', async function () {
       const gas = await votingSession.defineProposal.estimateGas(
         proposalName,
@@ -965,7 +964,7 @@ contract('VotingSession', function (accounts) {
 
       beforeEach(async function () {
         votes = [];
-        for(let i=0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
           await votingSession.defineProposal(
             proposalName,
             proposalUrl,
@@ -997,7 +996,7 @@ contract('VotingSession', function (accounts) {
       beforeEach(async function () {
         votes = [];
         proposals = [];
-        for(let i=0; i < 10; i++) {
+        for (let i = 0; i < 10; i++) {
           await votingSession.defineProposal(
             proposalName,
             proposalUrl,
