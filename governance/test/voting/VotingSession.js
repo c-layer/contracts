@@ -5,6 +5,7 @@
  */
 
 const assertRevert = require('../helpers/assertRevert');
+const assertGasEstimate = require('../helpers/assertGasEstimate');
 const TokenProxy = artifacts.require('mock/TokenProxyMock.sol');
 const TokenDelegate = artifacts.require('mock/TokenDelegateMock.sol');
 const TokenCore = artifacts.require('mock/TokenCoreMock.sol');
@@ -221,6 +222,13 @@ contract('VotingSession', function (accounts) {
       [UNDEFINED_TARGET, votingSession.address],
       signatures, ['10', '15'], ['10', '15'],
       { from: accounts[9] }), 'OA02');
+  });
+
+  it('should prevent operator to update resolution requirements global default to 0 quorum/majority', async function () {
+    await assertRevert(votingSession.updateResolutionRequirements(
+      [UNDEFINED_TARGET, UNDEFINED_TARGET, votingSession.address],
+      ['0x00000000', ANY_METHODS, '0x12345678'],
+      ['10', '0', '15'], ['10', '0', '15']), 'VS20');
   });
 
   it('should let token operator to update resolution requirements', async function () {
@@ -505,6 +513,10 @@ contract('VotingSession', function (accounts) {
       await votingSession.submitVote([true], { from: accounts[2] });
       await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
+    });
+
+    it('should prevent anyone to execute the resolution', async function () {
+      await assertRevert(votingSession.executeResolution(0, { from: accounts[9] }), 'VS31');
     });
 
     it('should be possible to execute the resolution', async function () {
@@ -822,6 +834,52 @@ contract('VotingSession', function (accounts) {
         await assertRevert(votingSession.executeResolution(2), 'VS19');
       });
 
+      it('should be possible to add a proposal', async function () {
+        const tx = await votingSession.defineProposal(
+          proposalName,
+          proposalUrl,
+          proposalHash,
+          UNDEFINED_TARGET,
+          '0x');
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+        assert.equal(tx.logs[0].event, 'SessionScheduled', 'event');
+        assert.equal(tx.logs[0].args.sessionId.toString(), '2', 'session id');
+        assert.equal(tx.logs[1].event, 'ProposalDefined', 'event');
+        assert.equal(tx.logs[1].args.proposalId.toString(), '3', 'proposalId');
+      });
+
+      describe('with the next session planned', function () {
+        beforeEach(async function () {
+          await votingSession.defineProposal(
+            proposalName,
+            proposalUrl,
+            proposalHash,
+            UNDEFINED_TARGET,
+            '0x');
+        });
+
+        it('should be possible to execute approved resolutions', async function () {
+          const tx = await votingSession.executeManyResolutions([0, 1]);
+          assert.ok(tx.receipt.status, 'Status');
+          assert.equal(tx.logs.length, 2);
+          assert.equal(tx.logs[0].event, 'ResolutionExecuted', 'event');
+          assert.equal(tx.logs[0].args.proposalId.toString(), '0', 'proposal id');
+          assert.equal(tx.logs[1].event, 'ResolutionExecuted', 'event');
+          assert.equal(tx.logs[1].args.proposalId.toString(), '1', 'proposal id');
+        });
+
+        describe('with the next session started', function () {
+          beforeEach(async function () {
+            await votingSession.nextStepTest(1);
+          });
+
+          it('should not be possible to execute approved resolution', async function () {
+            await assertRevert(votingSession.executeResolution(0), 'VS15');
+          });
+        });
+      });
+
       describe('after minting', function () {
         beforeEach(async function () {
           await votingSession.executeResolution(1);
@@ -863,6 +921,110 @@ contract('VotingSession', function (accounts) {
 
       it('should not be possible to execute mint proposal anymore', async function () {
         await assertRevert(votingSession.executeResolution(1), 'VS24');
+      });
+    });
+  });
+
+  const DEFINE_FIRST_PROPOSAL_COST = 339857;
+  const DEFINE_SECOND_PROPOSAL_COST = 211335;
+  const FIRST_VOTE_COST = 332795;
+  const SECOND_VOTE_COST = 167795;
+  const EXECUTE_ONE_COST = 86068;
+  const EXECUTE_ALL_COST = 670332;
+
+  describe('Performance [ @skip-on-coverage ]', function () {
+
+    it('shoould estimate a first proposal', async function () {
+      const gas = await votingSession.defineProposal.estimateGas(
+        proposalName,
+        proposalUrl,
+        proposalHash,
+        UNDEFINED_TARGET,
+        '0x');
+      await assertGasEstimate(gas, DEFINE_FIRST_PROPOSAL_COST, 'estimate');
+    });
+
+    it('shoould estimate a second proposal', async function () {
+      await votingSession.defineProposal(
+        proposalName,
+        proposalUrl,
+        proposalHash,
+        UNDEFINED_TARGET,
+        '0x');
+      const gas = await votingSession.defineProposal.estimateGas(
+        proposalName,
+        proposalUrl,
+        proposalHash,
+        UNDEFINED_TARGET,
+        '0x');
+      await assertGasEstimate(gas, DEFINE_SECOND_PROPOSAL_COST, 'estimate');
+    });
+
+    describe('during voting', function () {
+      let votes;
+
+      beforeEach(async function () {
+        votes = [];
+        for(let i=0; i < 10; i++) {
+          await votingSession.defineProposal(
+            proposalName,
+            proposalUrl,
+            proposalHash,
+            UNDEFINED_TARGET,
+            '0x');
+          votes.push(true);
+        }
+
+        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest();
+      });
+
+      it('should estimate first vote', async function () {
+        const gas = await votingSession.submitVote.estimateGas(votes);
+        await assertGasEstimate(gas, FIRST_VOTE_COST, 'estimate');
+      });
+
+      it('should estimate a second vote', async function () {
+        await votingSession.submitVote(votes);
+        const gas = await votingSession.submitVote.estimateGas(votes, { from: accounts[1] });
+        await assertGasEstimate(gas, SECOND_VOTE_COST, 'estimate');
+      });
+    });
+
+    describe('during gace period', function () {
+      let votes, proposals;
+
+      beforeEach(async function () {
+        votes = [];
+        proposals = [];
+        for(let i=0; i < 10; i++) {
+          await votingSession.defineProposal(
+            proposalName,
+            proposalUrl,
+            proposalHash,
+            UNDEFINED_TARGET,
+            '0x');
+          votes.push(true);
+          proposals.push(i);
+        }
+
+        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest();
+        await votingSession.submitVote(votes, { from: accounts[1] });
+        await votingSession.submitVote(votes, { from: accounts[2] });
+
+        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest();
+      });
+
+      it('should estimate resolution of one proposal', async function () {
+        const gas = await votingSession.executeResolution.estimateGas(0);
+        await assertGasEstimate(gas, EXECUTE_ONE_COST, 'estimate');
+      });
+
+      it('should estimate resolution of all proposal', async function () {
+        const gas = await votingSession.executeManyResolutions.estimateGas(proposals);
+        await assertGasEstimate(gas, EXECUTE_ALL_COST, 'estimate');
       });
     });
   });

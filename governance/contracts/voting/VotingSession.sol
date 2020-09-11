@@ -30,7 +30,7 @@ import "./VotingStorage.sol";
  *   VS17: The resolution failed
  *   VS18: The provided salt does not match the secret hash
  *   VS19: The resolution has not been approved
- *   VS20: Default majority and quorum cannot be null
+ *   VS20: Default majority cannot be null
  *   VS21: Token must have a valid core
  *   VS22: Token must be successfully locked
  *   VS23: Session is not in PLANNED state
@@ -340,9 +340,8 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     require(_methodSignatures.length == _quorums.length, "VS06");
 
     for(uint256 i=0; i < _methodSignatures.length; i++) {
-      if (_targets[i] == UNDEFINED_TARGET && _methodSignatures[i] == ANY_METHODS) {
-        require(_majorities[i] != 0 || _quorums[i] != 0, "VS20");
-      }
+      require(!(_targets[i] == UNDEFINED_TARGET && _methodSignatures[i] == ANY_METHODS) ||
+        _majorities[i] != 0, "VS20");
 
       resolutionRequirements[_targets[i]][_methodSignatures[i]] =
         ResolutionRequirement(_majorities[i], _quorums[i]);

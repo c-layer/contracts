@@ -25,9 +25,16 @@ contract VotingSessionMock is VotingSession {
    * @dev nextSessionStepTest
    */
   function nextSessionStepTest() public returns (bool) {
+    return nextStepTest(currentSessionId());
+  }
+
+  /**
+   * @dev nextStepTest
+   */
+  function nextStepTest(uint256 _sessionId) public returns (bool) {
     uint256 time = currentTime();
-    SessionState state = sessionStateAt(sessionsCount_, time);
-    Session storage session_ = sessions[sessionsCount_];
+    SessionState state = sessionStateAt(_sessionId, time);
+    Session storage session_ = sessions[_sessionId];
 
     require(state != SessionState.CLOSED, "VSM01");
     uint256 startAt = time;
