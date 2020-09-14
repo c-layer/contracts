@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "@c-layer/common/contracts/token/TokenERC20.sol";
+import "@c-layer/common/contracts/interface/IERC20.sol";
 
 
 /**
@@ -11,7 +11,7 @@ import "@c-layer/common/contracts/token/TokenERC20.sol";
  *
  * Error messages
  */
-abstract contract IWrappedERC20 {
+abstract contract IWrappedERC20 is IERC20 {
 
   function base() public view virtual returns (IERC20);
 

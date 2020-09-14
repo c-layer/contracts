@@ -1,5 +1,6 @@
 pragma solidity ^0.6.0;
 
+import "@c-layer/common/contracts/token/TokenERC20.sol";
 import "./interface/IWrappedERC20.sol";
 
 
@@ -25,10 +26,9 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
   constructor(
     string memory _name,
     string memory _symbol,
-    uint256 _decimals,
     IERC20 _base
   ) public
-    TokenERC20(_name, _symbol, _decimals, address(0), 0)
+    TokenERC20(_name, _symbol, _base.decimals(), address(0), 0)
   {
     base_ = _base;
   }
@@ -48,8 +48,8 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
     require(base_.transferFrom(msg.sender, address(this), _value), "WE02");
 
     balances[msg.sender] = balances[msg.sender].add(_value);
-    emit Deposit(msg.sender, _value);
-
+    totalSupply_ = totalSupply_.add(_value);
+    emit Transfer(address(0), msg.sender, _value);
     return true;
   }
 
@@ -58,11 +58,11 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
    */
   function withdraw(uint256 _value) public override returns (bool) {
     require(balances[msg.sender] >= _value, "WE03");
-    require(base_.transfer(msg.sender, _value), "WE04");
-
     balances[msg.sender] = balances[msg.sender].sub(_value);
-    emit Withdrawal(msg.sender, _value);
+    totalSupply_ = totalSupply_.sub(_value);
+    emit Transfer(msg.sender, address(0), _value);
 
+    require(base_.transfer(msg.sender, _value), "WE04");
     return true;
   }
 }
