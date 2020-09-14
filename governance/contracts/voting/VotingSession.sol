@@ -281,7 +281,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
   /**
    * @dev updateSessionRule
-   * FIXME: Add defensive restriction on risky methods
    */
   function updateSessionRule(
     uint64 _campaignPeriod,
@@ -467,7 +466,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
   /**
    * @dev execute resolution
-   * FIXME: test reentrancy
    */
   function executeResolution(uint256 _proposalId) public override returns (bool)
   {
