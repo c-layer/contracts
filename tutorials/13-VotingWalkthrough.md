@@ -12,16 +12,10 @@ We will guide you through the following steps:
 ### Environment setup
 This tutorial has been validated with a Truffle installation running in the sirhill/truffle docker image. However, the same steps can be followed in a different environment. See [requirements](./Tutorials.md#requirements) for more details.
 
-After cloning the contracts repository, start the truffle docker image form the contracts directory directly and mount this directory to the container:
-```
-docker run --name clayer -it \
--p 33000:3000 -p 33001:3001 -p 8080:8080 \
--p 8545:8545 -p 9545:9545 \
--v $PWD:/home/node/project \
-sirhill/truffle
-```
+After cloning the contracts repository, start the truffle docker using the `start.sh` script in the contracts directory.
+It will start the image from the contracts directory and mount this directory into the container.
 
-You should get a bash prompt inside the container. All the instructions from this tutorial should to be executed from this environment.
+You will get a bash prompt inside the container. All the instructions from this tutorial should then to be executed from this environment.
 
 ### Module installation
 Let's first make sure that all required modules are installed and compile all the contracts:
@@ -42,14 +36,20 @@ First things first! We need a new Token to play with. Here we are simply repeati
 ```javascript
 core = await TokenCore.new('TokenCore', [ accounts[0] ])
 delegate = await TokenDelegate.new()
+```
+
+```
 core.defineTokenDelegate(1, delegate.address, [0,1])
 token = await TokenProxy.new(core.address)
+```
+
+```
 await core.defineToken(token.address, 1, "Token", "TKN", "18")
 await core.mint(token.address, [accounts[0], accounts[1]], ['1000','500'])
 ```
 
 So far so good? We have just created a new `TKN` token and minted a few tokens for `accounts[0]` and `accounts[1]`. Let's double check:
-```javascript
+```
 token.totalSupply().then(x => x.toString())
 token.balanceOf(accounts[0]).then(x => x.toString())
 token.balanceOf(accounts[1]).then(x => x.toString())
@@ -76,17 +76,16 @@ Each voting session will go through the following states:
 - 5: CLOSED
 
 By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
-- grace period of 5 minutes
 - campaign period of 5 minutes
 - voting period of 5 minutes
 - reveal period of 0 minutes (no secret votes)
+- grace period of 10 minutes
 - maximum of 100 proposals for each voting session
 - maximum of 255 proposals that can be submitted by the quaestor
 - requirement to have a minimum of 10 tokens to be able to submit proposals
-- default majority of 50%
-- default quorum of 40%
+- requirement to have a minimum of 10 tokens to be able to execute proposals
 ```
-session.updateSessionRule(5*60, 5*60, 5*60, 0, 100, 255, 10, 50, 40)
+session.updateSessionRule(5*60, 5*60, 0, 10*60, 100, 255, 10, 10)
 ```
 So now it is possible to schedule a new voting session every 15 minutes. 
 
@@ -108,7 +107,7 @@ session.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.addr
 ```
 
 ### Inspect the current voting session 
-We can get the number of voting sessions using this function:
+We can get the id of the current voting session using the sessions count function:
 ```
 session.sessionsCount().then(x => x.toString())
  ```
@@ -166,9 +165,9 @@ When the VOTING period is closed (in our case 5 minutes after it began), the ses
 session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
-Anyone can now trigger the execution of the approved resolutions, including people who did not participate to the vote:
+Anyone who owns enought tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:
 ```
-session.executeResolution(0, {from: accounts[5]})
+session.executeResolution(0, {from: accounts[1]})
 ```
 
 Let's verify that the new tokens have been minted:
@@ -177,9 +176,3 @@ token.totalSupply().then(x => x.toString())
 token.balanceOf(accounts[2]).then(x => x.toString())
 ```
 
-### Clean-up
-Exit from the container and delete it:
-```
-docker rm -f clayer
-```
-  
