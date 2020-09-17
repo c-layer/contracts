@@ -128,7 +128,7 @@ await session.session(1).then(x => new Date(x.startAt*1000))
 ```
 
 
-### Modify the proposal
+### Modify the proposal
 Until the CAMPAIGN period starts, it is still possible to update the proposal:
 ```
 session.updateProposal(0, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
