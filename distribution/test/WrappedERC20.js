@@ -15,7 +15,7 @@ contract('WrappedERC20', function (accounts) {
 
   beforeEach(async function () {
     token = await Token.new('Name', 'Symbol', 0, accounts[1], 1000000);
-    wToken = await WrappedERC20.new('Name', 'Symbol', token.address);
+    wToken = await WrappedERC20.new('Name', 'Symbol', 0, token.address);
 
     await token.approve(wToken.address, 1000, { from: accounts[1] });
   });
@@ -79,6 +79,56 @@ contract('WrappedERC20', function (accounts) {
 
     it('should not withdraw too many tokens', async function () {
       await assertRevert(wToken.withdraw(1001, { from: accounts[1] }), 'WE03');
+    });
+  });
+
+  describe('With a 19 decimals wrapped token', async function () {
+    beforeEach(async function () {
+      wToken = await WrappedERC20.new('Name', 'Symbol', 18, token.address);
+      await token.approve(wToken.address, 1000, { from: accounts[1] });
+    });
+
+    it('should deposit some tokens', async function () {
+      const tx = await wToken.deposit(1000, { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
+      assert.equal(tx.logs[0].args.from, accounts[1], 'from');
+      assert.equal(tx.logs[0].args.to, wToken.address, 'to');
+      assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
+      assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
+      assert.equal(tx.logs[1].args.to, accounts[1], 'to');
+      assert.equal(tx.logs[1].args.value.toString(), '1000' + '0'.padEnd(18, '0'),  'value');
+    });
+
+    it('should not deposit too many tokens', async function () {
+      await assertRevert(wToken.deposit(1001, { from: accounts[1] }), 'WE01');
+    });
+
+    describe('With some wrapped tokens', function () {
+      beforeEach(async function () {
+        await wToken.deposit(1000, { from: accounts[1] });
+      });
+
+      it('should have some wTokens', async function () {
+        const value = await wToken.balanceOf(accounts[1]);
+        assert.equal(value.toString(), '1000' + '0'.padEnd(18, '0'), 'value');
+      });
+
+      it('should withdraw some tokens', async function () {
+        const tx = await wToken.withdraw(1000, { from: accounts[1] });
+        assert.ok(tx.receipt.status, 'Status');
+        assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
+        assert.equal(tx.logs[0].args.from, accounts[1], 'from');
+        assert.equal(tx.logs[0].args.to, NULL_ADDRESS, 'to');
+        assert.equal(tx.logs[0].args.value.toString(), '1000' + '0'.padEnd(18, '0'), 'value');
+        assert.equal(tx.logs[1].args.from, wToken.address, 'from');
+        assert.equal(tx.logs[1].args.to, accounts[1], 'to');
+        assert.equal(tx.logs[1].args.value.toString(), 1000, 'value');
+      });
+
+      it('should not withdraw too many tokens', async function () {
+        await assertRevert(wToken.withdraw(1001, { from: accounts[1] }), 'WE03');
+      });
     });
   });
 });
