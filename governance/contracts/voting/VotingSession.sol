@@ -44,6 +44,7 @@ import "./VotingStorage.sol";
  *   VS32: Inconsistent numbers of methods signatures
  *   VS33: Submit votes requires voters
  *   VS34: Account is not self managed
+ *   VS35: Invalid proposalIds to vote for
  */
 contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
@@ -583,7 +584,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VS13");
     Session storage session_ = sessions[currentSessionId_];
     require(lastVotes[msg.sender] < session_.startAt, "VS11");
-    require(_votes.length == _proposalIds.length, "VS12");
+    require(_votes.length == _proposalIds.length, "VS35");
     require(_voters.length > 0, "VS33");
 
     uint256 weight = 0;
@@ -606,8 +607,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     }
 
     session_.participation += weight;
-
-    emit Vote(currentSessionId_, msg.sender, weight);
     return true;
   }
 }

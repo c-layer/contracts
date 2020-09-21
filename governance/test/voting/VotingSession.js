@@ -62,6 +62,7 @@ contract('VotingSession', function (accounts) {
     delegate = await TokenDelegate.new();
     core = await TokenCore.new('Test', [accounts[0], accounts[4]]);
     await core.defineTokenDelegate(1, delegate.address, [0, 1]);
+    await core.manageSelf(true, { from: accounts[5] });
   });
 
   beforeEach(async function () {
@@ -358,6 +359,46 @@ contract('VotingSession', function (accounts) {
         assert.equal(tx.logs[0].args.weight, '100', 'weight');
       });
 
+      it('should be possible to submit a vote for proposals', async function () {
+        const tx = await votingSession.submitVoteForProposals([0], [true]);
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, 'Vote', 'event');
+        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
+        assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
+        assert.equal(tx.logs[0].args.weight, '100', 'weight');
+      });
+
+      it('should be possible to submit a vote on behalf', async function () {
+        const tx = await votingSession.submitVoteOnBehalf([0], [true],
+          [accounts[0], accounts[1]]);
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+        assert.equal(tx.logs[0].event, 'Vote', 'event');
+        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
+        assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
+        assert.equal(tx.logs[0].args.weight, '100', 'weight');
+        assert.equal(tx.logs[1].event, 'Vote', 'event');
+        assert.equal(tx.logs[1].args.sessionId.toString(), '1', 'session id');
+        assert.equal(tx.logs[1].args.voter, accounts[1], 'voter');
+        assert.equal(tx.logs[1].args.weight, '3000000', 'weight');
+      });
+
+      it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
+        await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
+          [accounts[0], accounts[5]], { from: accounts[0] }), 'VS34');
+      });
+
+      it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
+        await assertRevert(votingSession.submitVoteOnBehalf([], [true],
+          [accounts[0], accounts[1]]), 'VS35');
+      });
+
+      it('should prevent operator to submit vote without voters', async function () {
+        await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
+          []), 'VS33');
+      });
+
       it('should prevent author to update a proposal', async function () {
         await assertRevert(votingSession.updateProposal(0,
           proposalName + '2',
@@ -374,6 +415,16 @@ contract('VotingSession', function (accounts) {
       describe('after submitted a vote', function () {
         beforeEach(async function () {
           await votingSession.submitVote([true]);
+        });
+
+        it('should not be possible to vote twice', async function () {
+          await assertRevert(votingSession.submitVote([true]), 'VS11');
+        });
+      });
+
+      describe('after submitted a vote for proposals', function () {
+        beforeEach(async function () {
+          await votingSession.submitVoteForProposals([0], [true]);
         });
 
         it('should not be possible to vote twice', async function () {
@@ -578,6 +629,15 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote([true, false, false]);
       });
 
+      it('should be possible to vote for proposals', async function () {
+        await votingSession.submitVoteForProposals([0, 2], [true, true]);
+      });
+
+      it('should be possible to vote on behalf', async function () {
+        await votingSession.submitVoteOnBehalf([0, 2], [true, true],
+          [accounts[1], accounts[2]]);
+      });
+
       it('should have the token locked', async function () {
         const tokenData = await core.token(token.address);
         assert.equal(tokenData.lock[0].toString(), Times.voting, 'lock start');
@@ -635,10 +695,8 @@ contract('VotingSession', function (accounts) {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
-        await votingSession.submitVote([false, false, false]);
-        await votingSession.submitVote([true, true, false], { from: accounts[1] });
-        await votingSession.submitVote([true, false, true], { from: accounts[2] });
-        await votingSession.submitVote([true, true, false], { from: accounts[3] });
+        await votingSession.submitVoteOnBehalf([0, 1], [true, true],
+          [accounts[0], accounts[1], accounts[2], accounts[3]]);
         await votingSession.nextSessionStepTest();
       });
 
@@ -650,17 +708,17 @@ contract('VotingSession', function (accounts) {
 
       it('should have approvals for blank proposal', async function () {
         const proposal = await votingSession.proposal(0);
-        assert.equal(proposal.approvals.toString(), '7000000', 'approvals');
+        assert.equal(proposal.approvals.toString(), '7000100', 'approvals');
       });
 
       it('should have approvals for mint proposal', async function () {
         const proposal = await votingSession.proposal(1);
-        assert.equal(proposal.approvals.toString(), '5000000', 'approvals');
+        assert.equal(proposal.approvals.toString(), '7000100', 'approvals');
       });
 
       it('should have approvals for seize proposal', async function () {
         const proposal = await votingSession.proposal(2);
-        assert.equal(proposal.approvals.toString(), '2000000', 'approvals');
+        assert.equal(proposal.approvals.toString(), '0', 'approvals');
       });
 
       it('should have blank proposal approved', async function () {
@@ -774,7 +832,7 @@ contract('VotingSession', function (accounts) {
           assert.equal(proposal.resolutionAction, request1, 'action');
           assert.equal(proposal.resolutionTarget, core.address, 'target');
           assert.equal(proposal.weight.toString(), '100', 'weight');
-          assert.equal(proposal.approvals.toString(), '5000000', 'approvals');
+          assert.equal(proposal.approvals.toString(), '7000100', 'approvals');
           assert.ok(proposal.resolutionExecuted, 'executed');
           assert.ok(!proposal.cancelled, 'cancelled');
         });
@@ -789,10 +847,8 @@ contract('VotingSession', function (accounts) {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
-        await votingSession.submitVote([false, true, false]);
-        await votingSession.submitVote([false, true, false], { from: accounts[1] });
-        await votingSession.submitVote([false, true, false], { from: accounts[2] });
-        await votingSession.submitVote([false, true, false], { from: accounts[3] });
+        await votingSession.submitVoteOnBehalf([1], [true],
+          [accounts[0], accounts[1], accounts[2], accounts[3]]);
         await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
       });
@@ -807,6 +863,8 @@ contract('VotingSession', function (accounts) {
   const DEFINE_SECOND_PROPOSAL_COST = 211310;
   const FIRST_VOTE_COST = 332161;
   const SECOND_VOTE_COST = 167161;
+  const VOTE_FOR_TWO_PROPOSALS_COST = 131408;
+  const VOTE_ON_BEHALF_COST = 180905;
   const EXECUTE_ONE_COST = 84979;
   const EXECUTE_ALL_COST = 659222;
 
@@ -865,6 +923,17 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote(votes);
         const gas = await votingSession.submitVote.estimateGas(votes, { from: accounts[1] });
         await assertGasEstimate(gas, SECOND_VOTE_COST, 'estimate');
+      });
+
+      it('should estimate a vote for two proposals', async function () {
+        const gas = await votingSession.submitVoteForProposals.estimateGas([0,5], [true, true], { from: accounts[1] });
+        await assertGasEstimate(gas, VOTE_FOR_TWO_PROPOSALS_COST, 'estimate');
+      });
+
+      it('should estimate a vote on behalf', async function () {
+        const gas = await votingSession.submitVoteOnBehalf.estimateGas([0,5], [true, true],
+          [accounts[1], accounts[2]]);
+        await assertGasEstimate(gas, VOTE_ON_BEHALF_COST, 'estimate');
       });
     });
 
