@@ -97,7 +97,7 @@ contract('WrappedERC20', function (accounts) {
       assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
       assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
       assert.equal(tx.logs[1].args.to, accounts[1], 'to');
-      assert.equal(tx.logs[1].args.value.toString(), '1000' + '0'.padEnd(18, '0'),  'value');
+      assert.equal(tx.logs[1].args.value.toString(), '1000' + '0'.padEnd(18, '0'), 'value');
     });
 
     it('should not deposit too many tokens', async function () {
