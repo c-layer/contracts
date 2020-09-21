@@ -863,8 +863,8 @@ contract('VotingSession', function (accounts) {
   const DEFINE_SECOND_PROPOSAL_COST = 211310;
   const FIRST_VOTE_COST = 332161;
   const SECOND_VOTE_COST = 167161;
-  const VOTE_FOR_TWO_PROPOSALS_COST = 131408;
-  const VOTE_ON_BEHALF_COST = 180905;
+  const VOTE_FOR_TWO_PROPOSALS_COST = 138431;
+  const VOTE_ON_BEHALF_COST = 188891;
   const EXECUTE_ONE_COST = 84979;
   const EXECUTE_ALL_COST = 659222;
 
@@ -926,13 +926,14 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should estimate a vote for two proposals', async function () {
-        const gas = await votingSession.submitVoteForProposals.estimateGas([0,5], [true, true], { from: accounts[1] });
+        const gas = await votingSession.submitVoteForProposals.estimateGas([0, 5],
+          [true, true], { from: accounts[1] });
         await assertGasEstimate(gas, VOTE_FOR_TWO_PROPOSALS_COST, 'estimate');
       });
 
       it('should estimate a vote on behalf', async function () {
-        const gas = await votingSession.submitVoteOnBehalf.estimateGas([0,5], [true, true],
-          [accounts[1], accounts[2]]);
+        const gas = await votingSession.submitVoteOnBehalf.estimateGas([0, 5],
+          [true, true], [accounts[1], accounts[2]]);
         await assertGasEstimate(gas, VOTE_ON_BEHALF_COST, 'estimate');
       });
     });

@@ -131,6 +131,13 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   }
 
   /**
+   * @dev delegate
+   */
+  function delegate(address _voter) public override view returns (address) {
+    return delegates[_voter];
+  }
+
+  /**
    * @dev lastVote
    */
   function lastVote(address _voter) public override view returns (uint64 at) {
@@ -323,6 +330,15 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       emit ResolutionRequirementUpdated(
          _targets[i], _methodSignatures[i], _majorities[i], _quorums[i]);
     }
+    return true;
+  }
+
+  /**
+   * @dev defineDelegate
+   */
+  function defineDelegate(address _delegate) public override returns (bool) {
+    delegates[msg.sender] = _delegate;
+    emit DelegateDefined(msg.sender, _delegate);
     return true;
   }
 
@@ -583,15 +599,20 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint256 currentSessionId_ = currentSessionId();
     require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VS13");
     Session storage session_ = sessions[currentSessionId_];
-    require(lastVotes[msg.sender] < session_.startAt, "VS11");
     require(_votes.length == _proposalIds.length, "VS35");
     require(_voters.length > 0, "VS33");
 
     uint256 weight = 0;
     uint64 time = uint64(currentTime());
+    bool isOperator = isProxyOperator(msg.sender, token_);
+
     for(uint256 i=0; i < _voters.length; i++) {
       address voter = _voters[i];
-      require(voter == msg.sender || !core_.isSelfManaged(voter), "VS34");
+
+      require(voter == msg.sender ||
+        (isOperator && !core_.isSelfManaged(voter)) ||
+        delegates[voter] == msg.sender, "VS34");
+      require(lastVotes[voter] < session_.startAt, "VS11");
       uint256 balance = token_.balanceOf(voter);
       weight += balance;
       lastVotes[voter] = time;

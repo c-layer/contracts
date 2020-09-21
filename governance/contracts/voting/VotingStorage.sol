@@ -70,6 +70,7 @@ contract VotingStorage is IVotingDefinitions {
   uint256 internal sessionsCount_;
   mapping(uint256 => Session) internal sessions;
   mapping(address => uint64) internal lastVotes;
+  mapping(address => address) internal delegates;
  
   ITokenProxy internal token_;
   ITokenCore internal core_;
@@ -100,6 +101,8 @@ contract VotingStorage is IVotingDefinitions {
     uint256 majority,
     uint256 quorum
   );
+
+  event DelegateDefined(address voter, address delegate);
 
   event SessionScheduled(uint256 sessionId, uint64 startAt);
   event ProposalDefined(uint256 proposalId);

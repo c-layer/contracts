@@ -53,6 +53,8 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint256 sessionProposalsCount,
     uint256 participation);
 
+  function delegate(address _voter) public virtual view returns (address);
+
   function lastVote(address _voter) public virtual view returns (uint64 at);
 
   function sessionStateAt(uint256 _sessionId, uint256 _time) public virtual view returns (SessionState);
@@ -75,6 +77,8 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint256[] memory _majority,
     uint256[] memory _quorum
   ) public virtual returns (bool);
+
+  function defineDelegate(address _delegate) public virtual returns (bool);
 
   function defineProposal(
     string memory _name,
