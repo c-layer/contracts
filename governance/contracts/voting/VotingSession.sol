@@ -24,7 +24,6 @@ import "./VotingStorage.sol";
  *   VS11: The voter has already voted
  *   VS12: Wrong votes number
  *   VS13: Session is not in VOTING state
- *   VS14: Session is not in REVEAL state
  *   VS15: Previous session is not in GRACE state anymore
  *   VS16: The resolution is already executed
  *   VS17: The resolution failed
@@ -43,6 +42,8 @@ import "./VotingStorage.sol";
  *   VS30: Execute resolution threshold must be greater than 0
  *   VS31: Not enougth tokens to execute
  *   VS32: Inconsistent numbers of methods signatures
+ *   VS33: Submit votes requires voters
+ *   VS34: Account is not self managed
  */
 contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
@@ -69,7 +70,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   function sessionRule() public override view returns (
     uint64 campaignPeriod,
     uint64 votingPeriod,
-    uint64 revealPeriod,
     uint64 gracePeriod,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
@@ -78,7 +78,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     return (
       sessionRule_.campaignPeriod,
       sessionRule_.votingPeriod,
-      sessionRule_.revealPeriod,
       sessionRule_.gracePeriod,
       sessionRule_.maxProposals,
       sessionRule_.maxProposalsOperator,
@@ -135,13 +134,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    */
   function lastVote(address _voter) public override view returns (uint64 at) {
     return lastVotes[_voter];
-  }
-
-  /**
-   * @dev secretHash
-   */
-  function secretHash(address _voter) public override view returns (bytes32) {
-    return secretHashes[_voter];
   }
 
   /**
@@ -258,13 +250,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     }
 
     if (_time < startAt.add(
-      sessionRule_.votingPeriod).add(sessionRule_.revealPeriod))
-    {
-      return SessionState.REVEAL;
-    }
-
-    if (_time < startAt.add(
-      sessionRule_.votingPeriod).add(sessionRule_.revealPeriod).add(sessionRule_.gracePeriod))
+      sessionRule_.votingPeriod).add(sessionRule_.gracePeriod))
     {
       return SessionState.GRACE;
     }
@@ -273,19 +259,11 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   }
 
   /**
-   * @dev buildHash
-   */
-  function buildHash(bytes memory _data) public override view returns (bytes32) {
-    return keccak256(_data);
-  }
-
-  /**
    * @dev updateSessionRule
    */
   function updateSessionRule(
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
-    uint64 _revealPeriod,
     uint64 _gracePeriod,
     uint8 _maxProposals,
     uint8 _maxProposalsOperator,
@@ -295,7 +273,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     require(_votingPeriod != 0 && _gracePeriod != 0, "VS26");
     uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
       .add(sessionRule_.votingPeriod)
-      .add(sessionRule_.revealPeriod)
       .add(sessionRule_.gracePeriod);
     require(sessionPeriod != 0, "VS27");
     require(_maxProposals != 0 || _maxProposalsOperator != 0, "VS28");
@@ -305,7 +282,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     sessionRule_ = SessionRule(
       _campaignPeriod,
       _votingPeriod,
-      _revealPeriod,
       _gracePeriod,
       _maxProposals,
       _maxProposalsOperator,
@@ -315,7 +291,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     emit SessionRuleUpdated(
       _campaignPeriod,
       _votingPeriod,
-      _revealPeriod,
       _gracePeriod,
       _maxProposals,
       _maxProposalsOperator,
@@ -426,42 +401,38 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   }
 
   /**
-   * @dev vote
+   * @dev submitVote
    */
-  function submitVote(bool[] memory _votes) public override returns (bool)
+  function submitVote(bool[] memory _vote) public override returns (bool)
   {
-    require(sessionStateAt(currentSessionId(), currentTime()) == SessionState.VOTING, "VS13");
-    return submitVoteInternal(_votes);
+    return submitVoteInternal(_vote);
   }
 
   /**
-   * @dev voteSecret
+   * @dev submitVoteForPropposals
    */
-  function submitVoteSecret(bytes32 _secretHash) public override returns (bool)
+  function submitVoteForProposals(
+    uint256[] memory _proposalIds,
+    bool[] memory _vote
+  ) public override returns (bool)
   {
-    uint256 currentSessionId_ = currentSessionId();
-    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VS13");
-    Session storage session_ = sessions[currentSessionId_];
-    require(lastVotes[msg.sender] < session_.startAt, "VS11");
-
-    secretHashes[msg.sender] = _secretHash;
-    emit VoteSecret(currentSessionId_, msg.sender);
-    return true;
+    address[] memory voters = new address[](1);
+    voters[0] = msg.sender;
+    return submitVoteForProposalsInternal(_proposalIds, _vote, voters);
   }
 
   /**
-   * @dev reveal
+   * @dev submitVoteOnBehalf
    */
-  function revealVoteSecret(bool[] memory _votes, bytes32 /*_salt*/) public override returns (bool)
+  function submitVoteOnBehalf(
+    uint256[] memory _proposalIds,
+    bool[] memory _vote,
+    address[] memory _voters
+  ) public override returns (bool)
   {
-    uint256 currentSessionId_ = currentSessionId();
-    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.REVEAL, "VS14");
-    Session storage session_ = sessions[currentSessionId_];
-    require(lastVotes[msg.sender] < session_.startAt, "VS11");
-    require(buildHash(msg.data) == secretHashes[msg.sender], "VS18");
-
-    emit VoteRevealed(currentSessionId_, msg.sender);
-    return submitVoteInternal(_votes);
+    if (isProxyOperator(msg.sender, token_)) {
+      return submitVoteForProposalsInternal(_proposalIds, _vote, _voters);
+    }
   }
 
   /**
@@ -543,7 +514,6 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS09");
       uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
         .add(sessionRule_.votingPeriod)
-        .add(sessionRule_.revealPeriod)
         .add(sessionRule_.gracePeriod);
 
       uint256 previousStartAt =
@@ -565,7 +535,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       require(core_.defineLock(
         address(token_),
         nextStartAt,
-        nextStartAt.add(sessionRule_.votingPeriod).add(sessionRule_.revealPeriod),
+        nextStartAt.add(sessionRule_.votingPeriod),
         new address[](0)), "VS22");
 
       emit SessionScheduled(sessionsCount_, session_.startAt);
@@ -580,6 +550,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   function submitVoteInternal(bool[] memory _votes) internal returns (bool)
   {
     uint256 currentSessionId_ = currentSessionId();
+    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VS13");
     Session storage session_ = sessions[currentSessionId_];
     require(lastVotes[msg.sender] < session_.startAt, "VS11");
     require(_votes.length == session_.proposalsCount, "VS12");
@@ -594,7 +565,46 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     }
 
     lastVotes[msg.sender] = uint64(currentTime());
-    delete secretHashes[msg.sender];
+    session_.participation += weight;
+
+    emit Vote(currentSessionId_, msg.sender, weight);
+    return true;
+  }
+
+  /**
+   * @dev submit vote for proposals internal
+   */
+  function submitVoteForProposalsInternal(
+    uint256[] memory _proposalIds,
+    bool[] memory _votes,
+    address[] memory _voters) internal returns (bool)
+  {
+    uint256 currentSessionId_ = currentSessionId();
+    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VS13");
+    Session storage session_ = sessions[currentSessionId_];
+    require(lastVotes[msg.sender] < session_.startAt, "VS11");
+    require(_votes.length == _proposalIds.length, "VS12");
+    require(_voters.length > 0, "VS33");
+
+    uint256 weight = 0;
+    uint64 time = uint64(currentTime());
+    for(uint256 i=0; i < _voters.length; i++) {
+      address voter = _voters[i];
+      require(voter == msg.sender || !core_.isSelfManaged(voter), "VS34");
+      uint256 balance = token_.balanceOf(voter);
+      weight += balance;
+      lastVotes[voter] = time;
+      emit Vote(currentSessionId_, voter, balance);
+    }
+
+    for(uint256 i=0; i < _proposalIds.length; i++) {
+      if(_votes[i]) {
+        uint256 proposalId = _proposalIds[i];
+        Proposal storage proposal_ = proposals[proposalId];
+        proposal_.approvals += (proposal_.cancelled) ? 0: weight;
+      }
+    }
+
     session_.participation += weight;
 
     emit Vote(currentSessionId_, msg.sender, weight);

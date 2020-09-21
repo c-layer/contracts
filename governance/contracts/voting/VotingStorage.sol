@@ -20,7 +20,6 @@ contract VotingStorage is IVotingDefinitions {
   struct SessionRule {
     uint64 campaignPeriod; // Before it starts, the vote will be locked
     uint64 votingPeriod; // Time period for voters to submit their votes
-    uint64 revealPeriod; // Once the vote is closed, secret voters may have an additionnal delay to reveal their existing votes
     uint64 gracePeriod; // delay between two votes
   
     uint8 maxProposals;
@@ -60,7 +59,6 @@ contract VotingStorage is IVotingDefinitions {
   SessionRule internal sessionRule_ = SessionRule(
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
-    REVEAL_PERIOD,
     GRACE_PERIOD,
     MAX_PROPOSALS,
     MAX_PROPOSALS_OPERATOR,
@@ -72,7 +70,6 @@ contract VotingStorage is IVotingDefinitions {
   uint256 internal sessionsCount_;
   mapping(uint256 => Session) internal sessions;
   mapping(address => uint64) internal lastVotes;
-  mapping(address => bytes32) internal secretHashes;
  
   ITokenProxy internal token_;
   ITokenCore internal core_;
@@ -91,7 +88,6 @@ contract VotingStorage is IVotingDefinitions {
   event SessionRuleUpdated(
     uint64 campaignPeriod,
     uint64 votingPeriod,
-    uint64 revealPeriod,
     uint64 gracePeriod,
     uint8 maxProposals,
     uint8 maxProposalsOperator,

@@ -34,7 +34,6 @@ abstract contract IVotingSession is IVotingDefinitions {
   function sessionRule() public virtual view returns (
     uint64 campaignPeriod,
     uint64 votingPeriod,
-    uint64 revealPeriod,
     uint64 gracePeriod,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
@@ -55,19 +54,14 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint256 participation);
 
   function lastVote(address _voter) public virtual view returns (uint64 at);
-  
-  function secretHash(address _voter) public virtual view returns (bytes32);
 
   function sessionStateAt(uint256 _sessionId, uint256 _time) public virtual view returns (SessionState);
-
-  function buildHash(bytes memory _data) public virtual view returns (bytes32);
 
   function isApproved(uint256 _proposalId) public virtual view returns (bool);
 
   function updateSessionRule(
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
-    uint64 _revealPeriod,
     uint64 _gracePeriod,
     uint8 _maxProposals,
     uint8 _maxProposalsQuaestor,
@@ -104,8 +98,15 @@ abstract contract IVotingSession is IVotingDefinitions {
   ) public virtual returns (bool);
 
   function submitVote(bool[] memory _votes) public virtual returns (bool);
-  function submitVoteSecret(bytes32 _secretHash) public virtual returns (bool);
-  function revealVoteSecret(bool[] memory _votes, bytes32 _salt) public virtual returns (bool);
+  function submitVoteForProposals(
+    uint256[] memory _proposalIds,
+    bool[] memory _votes
+  ) public virtual returns (bool);
+  function submitVoteOnBehalf(
+    uint256[] memory _proposalIds,
+    bool[] memory _votes,
+    address[] memory _voters
+  ) public virtual returns (bool);
 
   function executeResolution(uint256 _proposalId) public virtual returns (bool);
   function executeManyResolutions(uint256[] memory _proposalIds) public virtual returns (bool);

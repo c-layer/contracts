@@ -52,16 +52,9 @@ contract VotingSessionMock is VotingSession {
         - sessionRule_.votingPeriod;
     }
 
-    if (state == SessionState.REVEAL) {
-      startAt = time
-        - sessionRule_.votingPeriod
-        - sessionRule_.revealPeriod;
-    }
-
     if (state == SessionState.GRACE) {
       startAt = time
         - sessionRule_.votingPeriod
-        - sessionRule_.revealPeriod
         - sessionRule_.gracePeriod;
     }
 

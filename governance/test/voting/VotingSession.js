@@ -15,19 +15,15 @@ const UNDEFINED_TARGET = web3.utils.fromAscii('UndefinedTarget').padEnd(42, '0')
 const ANY_METHODS = web3.utils.fromAscii('AnyMethods').padEnd(10, '0');
 const ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
-const NULL_BYTES32 = '0x'.padEnd(66, '0');
 const NAME = 'Token';
 const SYMBOL = 'TKN';
 const DECIMALS = '2';
-const SALT = web3.utils.sha3('Salt');
-const SECRET_HASH = '0xfb567be8aa39630759001961ea1b6e2739ef38f01d6c02afc37e63420ae78452';
 
 const DAY_IN_SEC = 24 * 3600;
 const Periods = {
   campaign: 5 * DAY_IN_SEC,
   voting: 2 * DAY_IN_SEC,
-  reveal: 2 * DAY_IN_SEC,
-  grace: 5 * DAY_IN_SEC,
+  grace: 7 * DAY_IN_SEC,
 };
 const DEFAULT_PERIOD_LENGTH =
   Object.values(Periods).reduce((sum, elem) => sum + elem, 0);
@@ -36,30 +32,20 @@ const NEXT_START_AT =
   (Math.floor((TODAY + Periods.campaign) /
     DEFAULT_PERIOD_LENGTH) + 1
   ) * DEFAULT_PERIOD_LENGTH;
-const NEXT2_START_AT_WITHIN_GRACE =
-  NEXT_START_AT + DEFAULT_PERIOD_LENGTH;
-const NEXT2_START_AT_AFTER_GRACE =
-  NEXT_START_AT + 2 * DEFAULT_PERIOD_LENGTH;
 const Times = {
   today: TODAY,
   campaign: NEXT_START_AT - Periods.campaign,
   voting: NEXT_START_AT,
-  reveal: NEXT_START_AT + Periods.voting,
-  grace: NEXT_START_AT + (Periods.voting + Periods.reveal),
-  closed: NEXT_START_AT + (Periods.voting + Periods.reveal + Periods.grace),
+  grace: NEXT_START_AT + (Periods.voting),
+  closed: NEXT_START_AT + (Periods.voting + Periods.grace),
 };
 
-console.log(NEXT_START_AT);
-console.log(Times);
-console.log(NEXT2_START_AT_WITHIN_GRACE);
-console.log(NEXT2_START_AT_AFTER_GRACE);
 const SessionState = {
   PLANNED: '0',
   CAMPAIGN: '1',
   VOTING: '2',
-  REVEAL: '3',
-  GRACE: '4',
-  CLOSED: '5',
+  GRACE: '3',
+  CLOSED: '4',
 };
 
 contract('VotingSession', function (accounts) {
@@ -100,8 +86,7 @@ contract('VotingSession', function (accounts) {
     const sessionRule = await votingSession.sessionRule();
     assert.equal(sessionRule.campaignPeriod.toString(), '432000', 'campaignPeriod');
     assert.equal(sessionRule.votingPeriod.toString(), '172800', 'votingPeriod');
-    assert.equal(sessionRule.revealPeriod.toString(), '172800', 'revealPeriod');
-    assert.equal(sessionRule.gracePeriod.toString(), '432000', 'gracePeriod');
+    assert.equal(sessionRule.gracePeriod.toString(), '604800', 'gracePeriod');
     assert.equal(sessionRule.maxProposals.toString(), '100', 'maxProposals');
     assert.equal(sessionRule.maxProposalsOperator.toString(), '255', 'maxProposalsOperator');
     assert.equal(sessionRule.newProposalThreshold.toString(), '1', 'newProposalThreshold');
@@ -130,11 +115,6 @@ contract('VotingSession', function (accounts) {
     assert.equal(lastVote.toString(), '0', 'last vote');
   });
 
-  it('should have no secret hash for accounts[0]', async function () {
-    const secretHash = await votingSession.secretHash(accounts[0]);
-    assert.equal(secretHash, NULL_BYTES32, 'secret hash');
-  });
-
   it('should have no proposals', async function () {
     const proposalsCount = await votingSession.proposalsCount();
     assert.equal(proposalsCount, '0', 'count');
@@ -146,13 +126,6 @@ contract('VotingSession', function (accounts) {
 
   it('should not have no session state for session 0', async function () {
     await assertRevert(votingSession.sessionStateAt(0, 0), 'VS03');
-  });
-
-  it('should build hash', async function () {
-    const message = votingSession.contract.methods.revealVoteSecret(
-      [false], SALT).encodeABI();
-    const hash = await votingSession.buildHash(message);
-    assert.equal(hash, SECRET_HASH, 'secret');
   });
 
   it('should prevent anyone to add a new proposal', async function () {
@@ -198,19 +171,18 @@ contract('VotingSession', function (accounts) {
 
   it('should prevent anyone to update session rules', async function () {
     await assertRevert(votingSession.updateSessionRule(
-      '60', '60', '60', '60', '1', '2', '3000000', '3000001', { from: accounts[9] }), 'OA02');
+      '60', '60', '60', '1', '2', '3000000', '3000001', { from: accounts[9] }), 'OA02');
   });
 
   it('should let token operator to update session rules', async function () {
     const tx = await votingSession.updateSessionRule(
-      '61', '62', '63', '64', '1', '2', '3000000', '3000001');
+      '61', '62', '63', '1', '2', '3000000', '3000001');
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
     assert.equal(tx.logs[0].args.campaignPeriod.toString(), '61', 'campaign period');
     assert.equal(tx.logs[0].args.votingPeriod.toString(), '62', 'voting period');
-    assert.equal(tx.logs[0].args.revealPeriod.toString(), '63', 'reveal period');
-    assert.equal(tx.logs[0].args.gracePeriod.toString(), '64', 'grace period');
+    assert.equal(tx.logs[0].args.gracePeriod.toString(), '63', 'grace period');
     assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
     assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
     assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
@@ -249,12 +221,7 @@ contract('VotingSession', function (accounts) {
   });
 
   describe('with a new proposal', function () {
-    let secretHash;
-
     beforeEach(async function () {
-      const hash = votingSession.contract.methods.revealVoteSecret(
-        [false], SALT).encodeABI();
-      secretHash = await votingSession.buildHash(hash);
       await votingSession.defineProposal(
         proposalName,
         proposalUrl,
@@ -302,7 +269,6 @@ contract('VotingSession', function (accounts) {
         SessionState.PLANNED,
         SessionState.CAMPAIGN,
         SessionState.VOTING,
-        SessionState.REVEAL,
         SessionState.GRACE,
         SessionState.CLOSED,
       ], 'statuses');
@@ -392,15 +358,6 @@ contract('VotingSession', function (accounts) {
         assert.equal(tx.logs[0].args.weight, '100', 'weight');
       });
 
-      it('should be possible to submit a vote secretly', async function () {
-        const tx = await votingSession.submitVoteSecret(secretHash);
-        assert.ok(tx.receipt.status, 'Status');
-        assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, 'VoteSecret', 'event');
-        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
-        assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
-      });
-
       it('should prevent author to update a proposal', async function () {
         await assertRevert(votingSession.updateProposal(0,
           proposalName + '2',
@@ -422,77 +379,6 @@ contract('VotingSession', function (accounts) {
         it('should not be possible to vote twice', async function () {
           await assertRevert(votingSession.submitVote([true]), 'VS11');
         });
-
-        it('should not be possible to vote secretly once voted', async function () {
-          await assertRevert(votingSession.submitVoteSecret(secretHash), 'VS11');
-        });
-
-        it('should not be possible to reveal vote secret once voted', async function () {
-          await assertRevert(votingSession.revealVoteSecret([false], SALT), 'VS14');
-        });
-      });
-
-      describe('after submitted a secret vote', function () {
-        beforeEach(async function () {
-          await votingSession.submitVoteSecret(secretHash);
-        });
-
-        it('should be possible to vote', async function () {
-          const tx = await votingSession.submitVote([true]);
-          assert.ok(tx.receipt.status, 'Status');
-          assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, 'Vote', 'event');
-          assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
-          assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
-          assert.equal(tx.logs[0].args.weight, '100', 'weight');
-        });
-
-        it('should be possible vote secretly twice', async function () {
-          const tx = await votingSession.submitVoteSecret(secretHash);
-          assert.ok(tx.receipt.status, 'Status');
-          assert.equal(tx.logs.length, 1);
-          assert.equal(tx.logs[0].event, 'VoteSecret', 'event');
-          assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
-          assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
-        });
-
-        it('should not be possible to reveal vote secret once voted', async function () {
-          await assertRevert(votingSession.revealVoteSecret([false], SALT), 'VS14');
-        });
-      });
-    });
-
-    describe('during reveal', function () {
-      beforeEach(async function () {
-        await votingSession.nextSessionStepTest();
-        await votingSession.nextSessionStepTest();
-        await votingSession.submitVoteSecret(secretHash);
-        await votingSession.nextSessionStepTest();
-      });
-
-      it('should not be possible to vote', async function () {
-        await assertRevert(votingSession.submitVote([true]), 'VS13');
-      });
-
-      it('should not be possible vote secretly twice', async function () {
-        await assertRevert(votingSession.submitVoteSecret(secretHash), 'VS13');
-      });
-
-      it('should be possible to reveal vote secret with the correct salt', async function () {
-        const tx = await votingSession.revealVoteSecret([false], SALT);
-        assert.ok(tx.receipt.status, 'Status');
-        assert.equal(tx.logs.length, 2);
-        assert.equal(tx.logs[0].event, 'VoteRevealed', 'event');
-        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
-        assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
-        assert.equal(tx.logs[1].event, 'Vote', 'event');
-        assert.equal(tx.logs[1].args.sessionId.toString(), '1', 'session id');
-        assert.equal(tx.logs[1].args.voter, accounts[0], 'voter');
-        assert.equal(tx.logs[1].args.weight, '100', 'weight');
-      });
-
-      it('should not be possible to reveal vote secret with an incorrect salt', async function () {
-        await assertRevert(votingSession.revealVoteSecret([false], web3.utils.sha3('WrongSalt')), 'VS18');
       });
     });
   });
@@ -500,7 +386,7 @@ contract('VotingSession', function (accounts) {
   describe('with an approved proposal to change the session rules', function () {
     beforeEach(async function () {
       const request = votingSession.contract.methods.updateSessionRule(
-        '61', '62', '63', '64', '1', '2', '3000000', '3000001').encodeABI();
+        '61', '62', '63', '1', '2', '3000000', '3000001').encodeABI();
       await votingSession.defineProposal(
         'Changing the rules',
         proposalUrl,
@@ -511,7 +397,6 @@ contract('VotingSession', function (accounts) {
       await votingSession.nextSessionStepTest();
       await votingSession.submitVote([true], { from: accounts[1] });
       await votingSession.submitVote([true], { from: accounts[2] });
-      await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
     });
 
@@ -526,8 +411,7 @@ contract('VotingSession', function (accounts) {
       assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
       assert.equal(tx.logs[0].args.campaignPeriod.toString(), '61', 'campaign period');
       assert.equal(tx.logs[0].args.votingPeriod.toString(), '62', 'voting period');
-      assert.equal(tx.logs[0].args.revealPeriod.toString(), '63', 'reveal period');
-      assert.equal(tx.logs[0].args.gracePeriod.toString(), '64', 'grace period');
+      assert.equal(tx.logs[0].args.gracePeriod.toString(), '63', 'grace period');
       assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
       assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
       assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
@@ -538,8 +422,7 @@ contract('VotingSession', function (accounts) {
       const sessionRule = await votingSession.sessionRule();
       assert.equal(sessionRule.campaignPeriod.toString(), '61', 'campaignPeriod');
       assert.equal(sessionRule.votingPeriod.toString(), '62', 'votingPeriod');
-      assert.equal(sessionRule.revealPeriod.toString(), '63', 'revealPeriod');
-      assert.equal(sessionRule.gracePeriod.toString(), '64', 'gracePeriod');
+      assert.equal(sessionRule.gracePeriod.toString(), '63', 'gracePeriod');
       assert.equal(sessionRule.maxProposals.toString(), '1', 'maxProposals');
       assert.equal(sessionRule.maxProposalsOperator.toString(), '2', 'maxProposalsOperator');
       assert.equal(sessionRule.newProposalThreshold.toString(), '3000000', 'newProposalThreshold');
@@ -564,7 +447,6 @@ contract('VotingSession', function (accounts) {
       await votingSession.nextSessionStepTest();
       await votingSession.submitVote([true], { from: accounts[1] });
       await votingSession.submitVote([true], { from: accounts[2] });
-      await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
     });
 
@@ -601,7 +483,6 @@ contract('VotingSession', function (accounts) {
         proposalHash,
         UNDEFINED_TARGET,
         '0x');
-      await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
       await votingSession.nextSessionStepTest();
@@ -711,7 +592,6 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote([true, true, true]);
         await votingSession.submitVote([true, true, false], { from: accounts[3] });
         await votingSession.nextSessionStepTest();
-        await votingSession.nextSessionStepTest();
       });
 
       it('should have a session', async function () {
@@ -759,7 +639,6 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote([true, true, false], { from: accounts[1] });
         await votingSession.submitVote([true, false, true], { from: accounts[2] });
         await votingSession.submitVote([true, true, false], { from: accounts[3] });
-        await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
       });
 
@@ -916,7 +795,6 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote([false, true, false], { from: accounts[3] });
         await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
-        await votingSession.nextSessionStepTest();
       });
 
       it('should not be possible to execute mint proposal anymore', async function () {
@@ -925,12 +803,12 @@ contract('VotingSession', function (accounts) {
     });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 339857;
-  const DEFINE_SECOND_PROPOSAL_COST = 211335;
-  const FIRST_VOTE_COST = 332795;
-  const SECOND_VOTE_COST = 167795;
-  const EXECUTE_ONE_COST = 86068;
-  const EXECUTE_ALL_COST = 670332;
+  const DEFINE_FIRST_PROPOSAL_COST = 339642;
+  const DEFINE_SECOND_PROPOSAL_COST = 211310;
+  const FIRST_VOTE_COST = 332161;
+  const SECOND_VOTE_COST = 167161;
+  const EXECUTE_ONE_COST = 84979;
+  const EXECUTE_ALL_COST = 659222;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('shoould estimate a first proposal', async function () {
@@ -1012,7 +890,6 @@ contract('VotingSession', function (accounts) {
         await votingSession.submitVote(votes, { from: accounts[1] });
         await votingSession.submitVote(votes, { from: accounts[2] });
 
-        await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
       });
 

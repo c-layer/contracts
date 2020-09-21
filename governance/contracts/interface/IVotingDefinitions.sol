@@ -18,15 +18,13 @@ abstract contract IVotingDefinitions {
     PLANNED,
     CAMPAIGN,
     VOTING,
-    REVEAL,
     GRACE,
     CLOSED
   }
 
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;
   uint64 internal constant VOTING_PERIOD = 2 days;
-  uint64 internal constant REVEAL_PERIOD = 2 days;
-  uint64 internal constant GRACE_PERIOD = 5 days;
+  uint64 internal constant GRACE_PERIOD = 7 days;
 
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;
