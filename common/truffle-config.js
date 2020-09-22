@@ -86,7 +86,7 @@ let config = {
     },
     rinkeby: {
       provider: () => new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/v3/"+projectId, 0, 5),
-      network_id: 4,       // Goerli's id
+      network_id: 4,       // Rinkeby's id
       gas: 5500000,        //
       confirmations: 2,    // # of confs to wait between deployments. (default: 0)
       timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)

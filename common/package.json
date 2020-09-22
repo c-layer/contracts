@@ -1,6 +1,6 @@
 {
   "name": "@c-layer/common",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "SmartContract common componnents for the Compliance Layer",
   "files": [
     "build",
@@ -41,19 +41,19 @@
   "homepage": "https://c-layer.org",
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^7.4.0",
+    "eslint": "^7.9.0",
     "eslint-config-standard": "^14.1.1",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "ethereumjs-util": "^7.0.3",
-    "ganache-cli": "^6.9.1",
-    "solhint": "^3.0.0",
+    "ethereumjs-util": "^7.0.5",
+    "ganache-cli": "^6.10.2",
+    "solhint": "^3.2.0",
     "solidity-coverage": "^0.7.9",
-    "solidity-docgen": "^0.5.4",
-    "truffle": "^5.1.33",
-    "truffle-flattener": "^1.4.4",
-    "@truffle/hdwallet-provider": "^1.0.38"
+    "solidity-docgen": "^0.5.6",
+    "truffle": "^5.1.45",
+    "truffle-flattener": "^1.5.0",
+    "@truffle/hdwallet-provider": "^1.1.0"
   }
 }
