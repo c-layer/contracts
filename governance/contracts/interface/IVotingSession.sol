@@ -114,4 +114,32 @@ abstract contract IVotingSession is IVotingDefinitions {
 
   function executeResolution(uint256 _proposalId) public virtual returns (bool);
   function executeManyResolutions(uint256[] memory _proposalIds) public virtual returns (bool);
+
+  event SessionRuleUpdated(
+    uint64 campaignPeriod,
+    uint64 votingPeriod,
+    uint64 gracePeriod,
+    uint8 maxProposals,
+    uint8 maxProposalsOperator,
+    uint256 newProposalThreshold,
+    uint256 executeResolutionThreshold);
+
+  event ResolutionRequirementUpdated(
+    address target,
+    bytes4 methodSignature,
+    uint256 majority,
+    uint256 quorum
+  );
+
+  event DelegateDefined(address voter, address delegate);
+
+  event SessionScheduled(uint256 sessionId, uint64 startAt);
+  event ProposalDefined(uint256 proposalId);
+  event ProposalUpdated(uint256 proposalId);
+  event ProposalCancelled(uint256 proposalId);
+  event ResolutionExecuted(uint256 proposalId);
+
+  event Vote(uint256 sessionId, address voter, uint256 weight);
+  event VoteSecret(uint256 sessionId, address voter);
+  event VoteRevealed(uint256 sessionId, address voter);
 }

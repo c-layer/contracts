@@ -88,8 +88,8 @@ contract('VotingSession', function (accounts) {
     assert.equal(sessionRule.campaignPeriod.toString(), '432000', 'campaignPeriod');
     assert.equal(sessionRule.votingPeriod.toString(), '172800', 'votingPeriod');
     assert.equal(sessionRule.gracePeriod.toString(), '604800', 'gracePeriod');
-    assert.equal(sessionRule.maxProposals.toString(), '100', 'maxProposals');
-    assert.equal(sessionRule.maxProposalsOperator.toString(), '255', 'maxProposalsOperator');
+    assert.equal(sessionRule.maxProposals.toString(), '10', 'maxProposals');
+    assert.equal(sessionRule.maxProposalsOperator.toString(), '25', 'maxProposalsOperator');
     assert.equal(sessionRule.newProposalThreshold.toString(), '1', 'newProposalThreshold');
     assert.equal(sessionRule.executeResolutionThreshold.toString(), '1', 'executeResolutionThreshold');
   });
@@ -111,6 +111,11 @@ contract('VotingSession', function (accounts) {
     assert.equal(sessionsCount.toString(), '0', 'count');
   });
 
+  it('should have no voting delegates defined for accounts[0]', async function () {
+    const votingDelegate = await votingSession.delegate(accounts[0]);
+    assert.equal(votingDelegate, NULL_ADDRESS);
+  });
+
   it('should have no last vote for accounts[0]', async function () {
     const lastVote = await votingSession.lastVote(accounts[0]);
     assert.equal(lastVote.toString(), '0', 'last vote');
@@ -129,13 +134,22 @@ contract('VotingSession', function (accounts) {
     await assertRevert(votingSession.sessionStateAt(0, 0), 'VS03');
   });
 
+  it('should let accounts[1] choose accounts[0] for voting delegate', async function () {
+    const tx = await votingSession.defineDelegate(accounts[0], { from: accounts[1] });
+    assert.ok(tx.receipt.status, 'Status');
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, 'DelegateDefined', 'event');
+    assert.equal(tx.logs[0].args.voter, accounts[1], 'voter');
+    assert.equal(tx.logs[0].args.delegate, accounts[0], 'delegate');
+  });
+
   it('should prevent anyone to add a new proposal', async function () {
     await assertRevert(votingSession.defineProposal(
       proposalName,
       proposalUrl,
       proposalHash,
       UNDEFINED_TARGET,
-      '0x', { from: accounts[9] }), 'VS07');
+      '0x', { from: accounts[9] }), 'VS18');
   });
 
   it('should let investor add a new proposal', async function () {
@@ -201,7 +215,7 @@ contract('VotingSession', function (accounts) {
     await assertRevert(votingSession.updateResolutionRequirements(
       [UNDEFINED_TARGET, UNDEFINED_TARGET, votingSession.address],
       ['0x00000000', ANY_METHODS, '0x12345678'],
-      ['10', '0', '15'], ['10', '0', '15']), 'VS20');
+      ['10', '0', '15'], ['10', '0', '15']), 'VS16');
   });
 
   it('should let token operator to update resolution requirements', async function () {
@@ -303,7 +317,7 @@ contract('VotingSession', function (accounts) {
         proposalUrl,
         proposalHash,
         UNDEFINED_TARGET,
-        '0x'), 'VS04');
+        '0x'), 'VS01');
     });
 
     it('should let its author cancel the proposal', async function () {
@@ -319,7 +333,7 @@ contract('VotingSession', function (accounts) {
     });
 
     it('should prevent author to cancel a non existing proposal', async function () {
-      await assertRevert(votingSession.cancelProposal(1), 'VS04');
+      await assertRevert(votingSession.cancelProposal(1), 'VS01');
     });
 
     describe('during campaign', function () {
@@ -333,7 +347,7 @@ contract('VotingSession', function (accounts) {
           proposalUrl,
           proposalHash,
           UNDEFINED_TARGET,
-          '0x'), 'VS09');
+          '0x'), 'VS28');
       });
     });
 
@@ -386,17 +400,17 @@ contract('VotingSession', function (accounts) {
 
       it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
-          [accounts[0], accounts[5]], { from: accounts[0] }), 'VS34');
+          [accounts[0], accounts[5]], { from: accounts[0] }), 'VS35');
       });
 
       it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([], [true],
-          [accounts[0], accounts[1]]), 'VS35');
+          [accounts[0], accounts[1]]), 'VS33');
       });
 
       it('should prevent operator to submit vote without voters', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
-          []), 'VS33');
+          []), 'VS34');
       });
 
       it('should prevent author to update a proposal', async function () {
@@ -405,11 +419,11 @@ contract('VotingSession', function (accounts) {
           proposalUrl,
           proposalHash,
           UNDEFINED_TARGET,
-          '0x'), 'VS23');
+          '0x'), 'VS20');
       });
 
-      it('should prevent non author to cancel a proposal', async function () {
-        await assertRevert(votingSession.cancelProposal(0), 'VS23');
+      it('should prevent author to cancel a proposal', async function () {
+        await assertRevert(votingSession.cancelProposal(0), 'VS20');
       });
 
       describe('after submitted a vote', function () {
@@ -418,7 +432,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote([true]), 'VS11');
+          await assertRevert(votingSession.submitVote([true]), 'VS31');
         });
       });
 
@@ -428,7 +442,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote([true]), 'VS11');
+          await assertRevert(votingSession.submitVote([true]), 'VS31');
         });
       });
     });
@@ -452,7 +466,7 @@ contract('VotingSession', function (accounts) {
     });
 
     it('should prevent anyone to execute the resolution', async function () {
-      await assertRevert(votingSession.executeResolution(0, { from: accounts[9] }), 'VS31');
+      await assertRevert(votingSession.executeResolution(0, { from: accounts[9] }), 'VS21');
     });
 
     it('should be possible to execute the resolution', async function () {
@@ -768,7 +782,7 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should not be possible to execute seize proposal', async function () {
-        await assertRevert(votingSession.executeResolution(2), 'VS19');
+        await assertRevert(votingSession.executeResolution(2), 'VS26');
       });
 
       it('should be possible to add a proposal', async function () {
@@ -812,7 +826,7 @@ contract('VotingSession', function (accounts) {
           });
 
           it('should not be possible to execute approved resolution', async function () {
-            await assertRevert(votingSession.executeResolution(0), 'VS15');
+            await assertRevert(votingSession.executeResolution(0), 'VS23');
           });
         });
       });
@@ -838,7 +852,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to mint twice', async function () {
-          await assertRevert(votingSession.executeResolution(1), 'VS16');
+          await assertRevert(votingSession.executeResolution(1), 'VS25');
         });
       });
     });
@@ -854,15 +868,15 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should not be possible to execute mint proposal anymore', async function () {
-        await assertRevert(votingSession.executeResolution(1), 'VS24');
+        await assertRevert(votingSession.executeResolution(1), 'VS22');
       });
     });
   });
 
   const DEFINE_FIRST_PROPOSAL_COST = 339642;
   const DEFINE_SECOND_PROPOSAL_COST = 211310;
-  const FIRST_VOTE_COST = 332161;
-  const SECOND_VOTE_COST = 167161;
+  const FIRST_VOTE_COST = 321425;
+  const SECOND_VOTE_COST = 156425;
   const VOTE_FOR_TWO_PROPOSALS_COST = 138431;
   const VOTE_ON_BEHALF_COST = 188891;
   const EXECUTE_ONE_COST = 84979;
@@ -938,7 +952,7 @@ contract('VotingSession', function (accounts) {
       });
     });
 
-    describe('during gace period', function () {
+    describe('during grace period', function () {
       let votes, proposals;
 
       beforeEach(async function () {
