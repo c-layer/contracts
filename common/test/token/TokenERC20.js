@@ -116,6 +116,7 @@ contract('TokenERC20', function (accounts) {
     it('should let account1 transfer token from account 0', async function () {
       const tx = await token.transferFrom(
         accounts[0], accounts[1], '1000', { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, 'Transfer', 'event');
       assert.equal(tx.logs[0].args.from, accounts[0], 'from');
