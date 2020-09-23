@@ -73,10 +73,22 @@ jobs:
       - run:
           name: Unit tests with coverage report
           command: yarn run coverage
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - << parameters.package >>/coverage
+            - << parameters.package >>/coverage.json
+  publish_coverage:
+    <<: *defaults
+    steps:
+      - checkout:
+          path: ~/project
+      - attach_workspace:
+          at: ~/project
       - run:
           name: Upload coverage
           command: |
-            bash <(curl -s https://codecov.io/bash) -F << parameters.package >>
+            bash <(curl -s https://codecov.io/bash)
 workflows:
   workflow:
     jobs:
@@ -87,3 +99,6 @@ workflows:
           <<: *matrix_workflow_job
       - coverage:
           <<: *matrix_workflow_job
+      - publish_coverage:
+          requires:
+            - coverage
