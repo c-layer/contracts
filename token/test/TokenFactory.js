@@ -11,8 +11,9 @@ const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1281560;
-const CAN_TRANSFER = 5; // LOCKED
+const TOKEN_DEPLOYMENT_COST = 1342198;
+const TRANSFER_LOCKED = 5;
+const TRANSFER_RULED = 7;
 
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const NAME = 'Token';
@@ -33,6 +34,7 @@ const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
   web3.utils.sha3('finishMinting(address)'),
   web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
+  web3.utils.sha3('defineTokenLock(address,address[])'),
   web3.utils.sha3('defineRules(address,address[])'),
 ].map((x) => x.substr(0, 10));
 const APPROVE_PRIVILEGES = [
@@ -170,13 +172,20 @@ contract('TokenFactory', function (accounts) {
         assert.equal(tokenData.allTimeMinted.toString(), TOTAL_SUPPLY, 'all time minted');
         assert.equal(tokenData.allTimeBurned.toString(), 0, 'all time burned');
         assert.equal(tokenData.allTimeSeized.toString(), 0, 'all time seized');
-        assert.deepEqual(tokenData.lock.map((x) => x.toString()), ['0', LOCK_END], 'lock');
+        assert.deepEqual(tokenData.locks, [token.address], 'locks');
         assert.deepEqual(tokenData.rules, [factory.address], 'rules');
+      });
+
+      it('should have token locked', async function () {
+        const lockData = await core.lock(token.address);
+        assert.equal(lockData.startAt.toString(), '0', 'startAt');
+        assert.equal(lockData.endAt.toString(), LOCK_END, 'endAt');
+        assert.deepEqual(lockData.exceptions, [], 'locks');
       });
 
       it('should return canTransfer tokens', async function () {
         const canTransfer = await token.canTransfer.call(accounts[2], accounts[0], 1);
-        assert.equal(canTransfer.toString(), CAN_TRANSFER, 'canTransfer locked');
+        assert.equal(canTransfer.toString(), TRANSFER_LOCKED, 'canTransfer locked');
       });
 
       it('should not be possible to transfer tokens', async function () {
@@ -243,6 +252,25 @@ contract('TokenFactory', function (accounts) {
           assert.equal(tx.logs[2].event, 'TokensalesConfigured', 'event');
           assert.equal(tx.logs[2].args.token, token.address, 'token');
           assert.deepEqual(tx.logs[2].args.tokensales, [accounts[1], accounts[2]], 'tokensales');
+        });
+
+        describe('with tokensale configured', function () {
+          beforeEach(async function () {
+            await factory.configureTokensales(token.address,
+              [accounts[1], accounts[2]], ['10000', '20000']);
+          });
+
+          it('should have token locked', async function () {
+            const lockData = await core.lock(token.address);
+            assert.equal(lockData.startAt.toString(), '0', 'startAt');
+            assert.equal(lockData.endAt.toString(), LOCK_END, 'endAt');
+            assert.deepEqual(lockData.exceptions, [accounts[1], accounts[2]], 'locks');
+          });
+
+          it('should return canTransfer tokens', async function () {
+            const canTransfer = await token.canTransfer.call(accounts[2], accounts[0], 1);
+            assert.equal(canTransfer.toString(), TRANSFER_RULED, 'canTransfer ruled');
+          });
         });
 
         it('should let issuer update allowances with no spenders', async function () {

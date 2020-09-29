@@ -287,8 +287,7 @@ contract('TokenCore', function (accounts) {
         assert.equal(tokenData.allTimeMinted.toString(), '0', 'all time minted');
         assert.equal(tokenData.allTimeBurned.toString(), '0', 'all time burned');
         assert.equal(tokenData.allTimeSeized.toString(), '0', 'all time seized');
-        assert.deepEqual(tokenData.lock.map((x) => x.toString()), ['0', '0'], 'lock');
-        assert.deepEqual(tokenData.lockExceptions, [], 'lock exceptions');
+        assert.deepEqual(tokenData.locks, [], 'locks');
         assert.equal(tokenData.frozenUntil.toString(), '0', 'frozen until');
         assert.deepEqual(tokenData.rules, [], 'rules');
       });
@@ -324,14 +323,27 @@ contract('TokenCore', function (accounts) {
         assert.equal(tokenData.allTimeSeized.toString(), SEIZE, 'all time seized');
       });
 
-      it('should have a lock', async function () {
+      describe('With a lock on the token', function () {
         const LOCK_START = Math.floor(new Date().getTime() / 1000);
         const LOCK_END = Math.floor(new Date('2050-01-01').getTime() / 1000);
-        await core.defineLock(token.address, LOCK_START, LOCK_END,
-          [accounts[1], accounts[2]]);
-        const tokenData = await core.token(token.address);
-        assert.deepEqual(tokenData.lock.map((x) => x.toString()), [LOCK_START + '', LOCK_END + ''], 'lock');
-        assert.deepEqual(tokenData.lockExceptions, [accounts[1], accounts[2]], 'lock exceptions');
+
+        beforeEach(async function () {
+          await core.defineLock(token.address, LOCK_START, LOCK_END,
+            [accounts[1], accounts[2]]);
+          await core.defineTokenLock(token.address, [token.address]);
+        });
+
+        it('should have a lock', async function () {
+          const lockData = await core.lock(token.address);
+          assert.equal(lockData.startAt, LOCK_START, 'startAt');
+          assert.equal(lockData.endAt, LOCK_END, 'endAt');
+          assert.deepEqual(lockData.exceptions, [accounts[1], accounts[2]], 'lock exceptions');
+        });
+
+        it('should have the lock on the token', async function () {
+          const tokenData = await core.token(token.address);
+          assert.deepEqual(tokenData.locks, [token.address]);
+        });
       });
 
       it('should have a frozen until date', async function () {

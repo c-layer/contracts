@@ -71,15 +71,16 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     virtual external returns (bool status);
 
   /***********  TOKEN DATA   ***********/
-  function token(address _token) external view virtual returns (
+  function token(address _token) virtual external view returns (
     bool mintingFinished,
     uint256 allTimeMinted,
     uint256 allTimeBurned,
     uint256 allTimeSeized,
-    uint256[2] memory lock,
-    address[] memory lockExceptions,
+    address[] memory locks,
     uint256 freezedUntil,
     IRule[] memory);
+  function lock(address _lock) virtual external view returns (
+    uint256 startAt, uint256 endAt, address[] memory exceptions);
   function canTransfer(address, address, uint256)
     virtual external returns (uint256);
 
@@ -92,12 +93,14 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     virtual external returns (bool);
   function seize(address _token, address, uint256)
     virtual external returns (bool);
+  function defineLock(address, uint256, uint256, address[] calldata)
+    virtual external returns (bool);
+  function defineTokenLock(address _token, address[] memory locks)
+    virtual external returns (bool);
   function freezeManyAddresses(
     address _token,
     address[] calldata _addresses,
     uint256 _until) virtual external returns (bool);
-  function defineLock(address, uint256, uint256, address[] calldata)
-    virtual external returns (bool);
   function defineRules(address, IRule[] calldata) virtual external returns (bool);
 
   /************  CORE ADMIN  ************/

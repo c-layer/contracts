@@ -80,6 +80,9 @@ abstract contract ITokenStorage {
     address indexed token,
     address indexed claim,
     uint256 claimAt);
+  event TokenLocksDefined(
+    address indexed token,
+    address[] locks);
   event TokenDefined(
     address indexed token,
     uint256 delegateId,

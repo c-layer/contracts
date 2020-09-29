@@ -358,9 +358,10 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should have the token locked', async function () {
-        const tokenData = await core.token(token.address);
-        assert.equal(tokenData.lock[0].toString(), Times.voting, 'lock start');
-        assert.equal(tokenData.lock[1].toString(), Times.grace, 'lock end');
+        const tokenData = await core.lock(token.address);
+        assert.equal(tokenData.startAt.toString(), Times.voting, 'lock start');
+        assert.equal(tokenData.endAt.toString(), Times.grace, 'lock end');
+        assert.deepEqual(tokenData.exceptions, [], 'exceptions');
       });
 
       it('should be possible to submit a vote', async function () {
@@ -653,9 +654,10 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should have the token locked', async function () {
-        const tokenData = await core.token(token.address);
-        assert.equal(tokenData.lock[0].toString(), Times.voting, 'lock start');
-        assert.equal(tokenData.lock[1].toString(), Times.grace, 'lock end');
+        const tokenData = await core.lock(token.address);
+        assert.equal(tokenData.startAt.toString(), Times.voting, 'lock start');
+        assert.equal(tokenData.endAt.toString(), Times.grace, 'lock end');
+        assert.deepEqual(tokenData.exceptions, [], 'exceptions');
       });
     });
 
@@ -873,14 +875,14 @@ contract('VotingSession', function (accounts) {
     });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 339642;
-  const DEFINE_SECOND_PROPOSAL_COST = 211310;
+  const DEFINE_FIRST_PROPOSAL_COST = 339727;
+  const DEFINE_SECOND_PROPOSAL_COST = 211404;
   const FIRST_VOTE_COST = 321425;
   const SECOND_VOTE_COST = 156425;
   const VOTE_FOR_TWO_PROPOSALS_COST = 138431;
-  const VOTE_ON_BEHALF_COST = 188891;
-  const EXECUTE_ONE_COST = 84979;
-  const EXECUTE_ALL_COST = 659222;
+  const VOTE_ON_BEHALF_COST = 188981;
+  const EXECUTE_ONE_COST = 85063;
+  const EXECUTE_ALL_COST = 660062;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('shoould estimate a first proposal', async function () {

@@ -23,6 +23,15 @@ contract('LockableDelegate', function (accounts) {
     assert.ok(!result, 'not locked');
   });
 
+  it('should let define the token lock', async function () {
+    const tx = await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+    assert.ok(tx.receipt.status, 'Status');
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, 'TokenLocksDefined', 'event');
+    assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+    assert.deepEqual(tx.logs[0].args.locks, [TOKEN_ADDRESS], 'locks');
+  });
+
   it('should let define a lock', async function () {
     const tx = await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR, NEXT_YEAR, [accounts[0]]);
     assert.ok(tx.receipt.status, 'Status');
@@ -36,6 +45,7 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a lock defined in the past', function () {
     beforeEach(async function () {
+      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
       await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR - 1, PREVIOUS_YEAR, []);
     });
 
@@ -59,7 +69,8 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a lock defined and active now, excepts for accounts 2', function () {
     beforeEach(async function () {
-      delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR, NEXT_YEAR, [accounts[3]]);
+      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR, NEXT_YEAR, [accounts[3]]);
     });
 
     it('should have transfer locked', async function () {
@@ -98,9 +109,22 @@ contract('LockableDelegate', function (accounts) {
     });
   });
 
+  describe('With a lock defined active now but not configured', function () {
+    beforeEach(async function () {
+      await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR, NEXT_YEAR, [accounts[3]]);
+    });
+
+    it('should have transfer unlocked', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(!result, 'unlocked');
+    });
+  });
+
   describe('With a lock defined in the future', function () {
     beforeEach(async function () {
-      delegate.defineLock(TOKEN_ADDRESS, NEXT_YEAR, NEXT_YEAR + 1, [accounts[3]]);
+      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineLock(TOKEN_ADDRESS, NEXT_YEAR, NEXT_YEAR + 1, [accounts[3]]);
     });
 
     it('should have transfer unlocked', async function () {

@@ -24,15 +24,16 @@ import "./rule/YesNoRule.sol";
  *   TF06: Factory role must be granted on the proxy
  *   TF07: Issuer role must be granted on the proxy
  *   TF08: The rule must be set
- *   TF09: The token must be locked
- *   TF10: Token must be minted
- *   TF11: Token minting must be finished
- *   TF12: Incorrect core provided
- *   TF13: The rule must be removed
- *   TF14: Same number of tokensales and allowances must be provided
- *   TF15: Exceptions must be added to the lock
- *   TF16: Allowances must be lower than the token balance
- *   TF17: Allowance must be successful
+ *   TF09: The token must have its locks
+ *   TF10: The token must be locked
+ *   TF11: Token must be minted
+ *   TF12: Token minting must be finished
+ *   TF13: Incorrect core provided
+ *   TF14: The rule must be removed
+ *   TF15: Same number of tokensales and allowances must be provided
+ *   TF16: Exceptions must be added to the lock
+ *   TF17: Allowances must be lower than the token balance
+ *   TF18: Allowance must be successful
  **/
 contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Operable {
 
@@ -108,15 +109,18 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     // 5- Locking the token
     // solhint-disable-next-line not-rely-on-time
     if (_lockEnd > now) {
-      require(_core.defineLock(address(token), 0, _lockEnd, new address[](0)), "TF09");
+      address[] memory locks = new address[](1);
+      locks[0] = address(token);
+      require(_core.defineTokenLock(address(token), locks), "TF09");
+      require(_core.defineLock(address(token), 0, _lockEnd, new address[](0)), "TF10");
     }
 
     // 6- Minting the token
-    require(_core.mint(address(token), _vaults, _supplies), "TF10");
+    require(_core.mint(address(token), _vaults, _supplies), "TF11");
 
     // 7 - Finish the minting
     if(_finishMinting) {
-      require(_core.finishMinting(address(token)), "TF11");
+      require(_core.finishMinting(address(token)), "TF12");
     }
 
     emit TokenDeployed(token);
@@ -130,13 +134,13 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     override public onlyCoreOperator(_core) returns (bool)
   {
     require(hasCoreAccess(_core), "TF01");
-    require(_token.core() == address(_core), "TF12");
+    require(_token.core() == address(_core), "TF13");
 
     // This ensure that the call does not change a custom made rules configuration
-    (,,,,,,,IRule[] memory rules) = _core.token(address(_token));
+    (,,,,,,IRule[] memory rules) = _core.token(address(_token));
     if (rules.length == 1 && rules[0] == IRule(this)) {
       require(_core.defineRules(
-        address(_token), new IRule[](0)), "TF13");
+        address(_token), new IRule[](0)), "TF14");
     }
     emit TokenApproved(_token);
     return true;
@@ -153,10 +157,10 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   {
     ITokenCore core = ITokenCore(_token.core());
     require(hasCoreAccess(core), "TF01");
-    require(_tokensales.length == _allowances.length, "TF14");
+    require(_tokensales.length == _allowances.length, "TF15");
 
-    (,,,,uint256[2] memory schedule,,,) = core.token(address(_token));
-    require(core.defineLock(address(_token), schedule[0], schedule[1], _tokensales), "TF15");
+    (uint256 startAt, uint256 endAt,) = core.lock(address(_token));
+    require(core.defineLock(address(_token), startAt, endAt, _tokensales), "TF16");
 
     updateAllowances(_token, _tokensales, _allowances);
     emit TokensalesConfigured(_token, _tokensales);
@@ -173,8 +177,8 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   {
     uint256 balance = _token.balanceOf(address(this));
     for(uint256 i=0; i < _spenders.length; i++) {
-      require(_allowances[i] <= balance, "TF16");
-      require(_token.approve(_spenders[i], _allowances[i]), "TF17");
+      require(_allowances[i] <= balance, "TF17");
+      require(_token.approve(_spenders[i], _allowances[i]), "TF18");
       emit AllowanceUpdated(_token, _spenders[i], _allowances[i]);
     }
   }

@@ -28,6 +28,7 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     MINT_PRIV,
     FINISH_MINTING_PRIV,
     DEFINE_LOCK_PRIV,
+    DEFINE_TOKEN_LOCK_PRIV,
     DEFINE_RULES_PRIV
   ];
 

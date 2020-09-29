@@ -19,35 +19,49 @@ import "../TokenStorage.sol";
 abstract contract LockableDelegate is TokenStorage {
 
   /**
+   * @dev define token lock
+   */
+  function defineTokenLock(address _token, address[] memory _locks)
+    public returns (bool)
+  {
+    tokens[_token].locks = _locks;
+    emit TokenLocksDefined(_token, _locks);
+  }
+
+  /**
    * @dev define lock
    */
   function defineLock(
-    address _token,
+    address _lock,
     uint256 _startAt,
     uint256 _endAt,
     address[] memory _exceptions) public returns (bool)
   {
     require(_startAt <= _endAt, "LTD01");
-    tokens[_token].lock = Lock(_startAt, _endAt, _exceptions);
-    Lock storage tokenLock = tokens[_token].lock;
+    locks[_lock] = Lock(_startAt, _endAt, _exceptions);
+    Lock storage lock = locks[_lock];
     for (uint256 i=0; i < _exceptions.length; i++) {
-      tokenLock.exceptions[_exceptions[i]] = true;
+      lock.exceptions[_exceptions[i]] = true;
     }
-    emit LockDefined(_token, _startAt, _endAt, _exceptions);
+    emit LockDefined(_lock, _startAt, _endAt, _exceptions);
     return true;
   }
 
   /**
    * @dev isLocked
    */
-  function isLocked(STransferData memory _transferData) internal view returns (bool) {
-    Lock storage tokenLock = tokens[_transferData.token].lock;
-    // solhint-disable-next-line not-rely-on-time
-    uint256 currentTime = now;
-    return currentTime < tokenLock.endAt
-      && currentTime >= tokenLock.startAt
-      && !tokenLock.exceptions[_transferData.caller]
-      && !tokenLock.exceptions[_transferData.sender]
-      && !tokenLock.exceptions[_transferData.receiver];
+  function isLocked(STransferData memory _transferData) internal view returns (bool isLocked_) {
+    address[] storage lockAddresses = tokens[_transferData.token].locks;
+
+    for (uint256 i=0; i < lockAddresses.length; i++) {
+      Lock storage tokenLock = locks[lockAddresses[i]];
+      // solhint-disable-next-line not-rely-on-time
+      uint256 currentTime = now;
+      isLocked_ = isLocked_ || (currentTime < tokenLock.endAt
+        && currentTime >= tokenLock.startAt
+        && !tokenLock.exceptions[_transferData.caller]
+        && !tokenLock.exceptions[_transferData.sender]
+        && !tokenLock.exceptions[_transferData.receiver]);
+    }
   }
 }

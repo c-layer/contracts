@@ -39,8 +39,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     uint256 allTimeSeized;
 
     mapping (address => uint256) frozenUntils;
-
-    Lock lock;
+    address[] locks;
     IRule[] rules;
   }
 
@@ -81,8 +80,10 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   // Scope x ScopeId => AuditStorage
   mapping (address => mapping (uint256 => AuditStorage)) internal audits;
 
-  // Prevents transfer on behalf
+  // Prevents operator to act on behalf
   mapping (address => bool) internal selfManaged;
+
+  mapping (address => Lock) internal locks;
 
   IUserRegistry internal userRegistry_;
   IRatesProvider internal ratesProvider_;

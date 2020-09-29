@@ -185,8 +185,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     uint256 allTimeMinted,
     uint256 allTimeBurned,
     uint256 allTimeSeized,
-    uint256[2] memory lock,
-    address[] memory lockExceptions,
+    address[] memory locks,
     uint256 frozenUntil,
     IRule[] memory rules) {
     TokenData storage tokenData = tokens[_token];
@@ -195,10 +194,17 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     allTimeMinted = tokenData.allTimeMinted;
     allTimeBurned = tokenData.allTimeBurned;
     allTimeSeized = tokenData.allTimeSeized;
-    lock = [ tokenData.lock.startAt, tokenData.lock.endAt ];
-    lockExceptions = tokenData.lock.exceptionsList;
+    locks = tokenData.locks;
     frozenUntil = tokenData.frozenUntils[_token];
     rules = tokenData.rules;
+  }
+
+  function lock(address _lock) override external view returns (
+    uint256 startAt, uint256 endAt,
+    address[] memory exceptions)
+  {
+    Lock storage lock_ = locks[_lock];
+    return (lock_.startAt, lock_.endAt, lock_.exceptionsList);
   }
 
   function canTransfer(address, address, uint256)
@@ -240,7 +246,13 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function defineLock(address _token, uint256, uint256, address[] calldata)
+  function defineLock(address _lock, uint256, uint256, address[] calldata)
+    override external onlyProxyOp(_lock) returns (bool)
+  {
+    return delegateCall(_lock);
+  }
+
+  function defineTokenLock(address _token, address[] calldata)
     override external onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);
