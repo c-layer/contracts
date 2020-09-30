@@ -58,7 +58,11 @@ contract VotingSessionMock is VotingSession {
         - sessionRule_.gracePeriod;
     }
 
+    session_.campaignAt = uint64(startAt.sub(sessionRule_.campaignPeriod));
     session_.startAt = uint64(startAt);
+    session_.graceAt = uint64(startAt.add(sessionRule_.votingPeriod));
+    session_.closedAt = uint64(startAt
+      .add(sessionRule_.votingPeriod).add(sessionRule_.gracePeriod));
     return true;
   }
 }

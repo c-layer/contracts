@@ -49,7 +49,10 @@ abstract contract IVotingSession is IVotingDefinitions {
   function currentSessionId() public virtual view returns (uint256);
 
   function session(uint256 _sessionId) public virtual view returns (
+    uint64 campaignAt,
     uint64 startAt,
+    uint64 graceAt,
+    uint64 closedAt,
     uint256 sessionProposalsCount,
     uint256 participation);
 

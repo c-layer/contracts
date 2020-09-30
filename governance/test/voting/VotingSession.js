@@ -27,6 +27,7 @@ const Periods = {
 };
 const DEFAULT_PERIOD_LENGTH =
   Object.values(Periods).reduce((sum, elem) => sum + elem, 0);
+const MAX_PERIOD_LENGTH = 3652500 * 24 * 3600;
 const TODAY = Math.floor(new Date().getTime() / 1000);
 const NEXT_START_AT =
   (Math.floor((TODAY + Periods.campaign) /
@@ -131,7 +132,7 @@ contract('VotingSession', function (accounts) {
   });
 
   it('should not have no session state for session 0', async function () {
-    await assertRevert(votingSession.sessionStateAt(0, 0), 'VS03');
+    await assertRevert(votingSession.sessionStateAt(0, 0), 'VS05');
   });
 
   it('should let accounts[1] choose accounts[0] for voting delegate', async function () {
@@ -189,15 +190,30 @@ contract('VotingSession', function (accounts) {
       '60', '60', '60', '1', '2', '3000000', '3000001', { from: accounts[9] }), 'OA02');
   });
 
+  it('should prevent token operator to update session rules above campaign period length limit', async function () {
+    await assertRevert(votingSession.updateSessionRule(
+      MAX_PERIOD_LENGTH + 1, '60', '60', '1', '2', '3000000', '3000001'), 'VS07');
+  });
+
+  it('should prevent token operator to update session rules above voting period length limit', async function () {
+    await assertRevert(votingSession.updateSessionRule(
+      '60', MAX_PERIOD_LENGTH + 1, '60', '1', '2', '3000000', '3000001'), 'VS08');
+  });
+
+  it('should prevent token operator to update session rules above grace period length limit', async function () {
+    await assertRevert(votingSession.updateSessionRule(
+      '60', '60', MAX_PERIOD_LENGTH + 1, '1', '2', '3000000', '3000001'), 'VS09');
+  });
+
   it('should let token operator to update session rules', async function () {
     const tx = await votingSession.updateSessionRule(
-      '61', '62', '63', '1', '2', '3000000', '3000001');
+      MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH, '1', '2', '3000000', '3000001');
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
-    assert.equal(tx.logs[0].args.campaignPeriod.toString(), '61', 'campaign period');
-    assert.equal(tx.logs[0].args.votingPeriod.toString(), '62', 'voting period');
-    assert.equal(tx.logs[0].args.gracePeriod.toString(), '63', 'grace period');
+    assert.equal(tx.logs[0].args.campaignPeriod.toString(), MAX_PERIOD_LENGTH, 'campaign period');
+    assert.equal(tx.logs[0].args.votingPeriod.toString(), MAX_PERIOD_LENGTH, 'voting period');
+    assert.equal(tx.logs[0].args.gracePeriod.toString(), MAX_PERIOD_LENGTH, 'grace period');
     assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
     assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
     assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
@@ -257,7 +273,10 @@ contract('VotingSession', function (accounts) {
 
     it('should have a session', async function () {
       const session = await votingSession.session(1);
-      assert.equal(session.startAt.toString(), NEXT_START_AT, 'startAt');
+      assert.equal(session.campaignAt.toString(), Times.campaign, 'campaignAt');
+      assert.equal(session.startAt.toString(), Times.voting, 'startAt');
+      assert.equal(session.graceAt.toString(), Times.grace, 'graceAt');
+      assert.equal(session.closedAt.toString(), Times.closed, 'closedAt');
       assert.equal(session.proposalsCount, 1, 'proposalsCount');
       assert.equal(session.participation, 0, 'participation');
     });
@@ -875,14 +894,14 @@ contract('VotingSession', function (accounts) {
     });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 339727;
-  const DEFINE_SECOND_PROPOSAL_COST = 211404;
-  const FIRST_VOTE_COST = 321425;
-  const SECOND_VOTE_COST = 156425;
-  const VOTE_FOR_TWO_PROPOSALS_COST = 138431;
-  const VOTE_ON_BEHALF_COST = 188981;
-  const EXECUTE_ONE_COST = 85063;
-  const EXECUTE_ALL_COST = 660062;
+  const DEFINE_FIRST_PROPOSAL_COST = 344092;
+  const DEFINE_SECOND_PROPOSAL_COST = 208777;
+  const FIRST_VOTE_COST = 321185;
+  const SECOND_VOTE_COST = 156185;
+  const VOTE_FOR_TWO_PROPOSALS_COST = 138188;
+  const VOTE_ON_BEHALF_COST = 189552;
+  const EXECUTE_ONE_COST = 83041;
+  const EXECUTE_ALL_COST = 639842;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('shoould estimate a first proposal', async function () {

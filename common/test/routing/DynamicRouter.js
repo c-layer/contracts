@@ -47,7 +47,7 @@ contract('DynamicRouter', function (accounts) {
       ['0', '0'], 'maxBalances');
     assert.deepEqual(tx.logs[1].args.weights.map((x) => x.toString()),
       ['0', '0'], 'weights');
-   });
+  });
 
   it('should prevent non owner to set route', async function () {
     await assertRevert(router.setRoute(accounts[0],

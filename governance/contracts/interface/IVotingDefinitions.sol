@@ -22,8 +22,8 @@ abstract contract IVotingDefinitions {
     CLOSED
   }
 
-  // MAX_PERIOD_LENGTH (approx 365 years) protects against period overflow
-  uint64 internal constant MAX_PERIOD_LENGTH = 3650000 days;
+  // MAX_PERIOD_LENGTH (approx 10000 years) protects against period overflow
+  uint64 internal constant MAX_PERIOD_LENGTH = 3652500 days;
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;
   uint64 internal constant VOTING_PERIOD = 2 days;
   uint64 internal constant GRACE_PERIOD = 7 days;

@@ -34,7 +34,10 @@ contract VotingStorage is IVotingDefinitions {
   }
 
   struct Session {
+    uint64 campaignAt;
     uint64 startAt;
+    uint64 graceAt;
+    uint64 closedAt;
     uint256 proposalsCount;
     uint256 participation;
   }
