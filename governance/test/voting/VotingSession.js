@@ -150,7 +150,7 @@ contract('VotingSession', function (accounts) {
       proposalUrl,
       proposalHash,
       UNDEFINED_TARGET,
-      '0x', { from: accounts[9] }), 'VS18');
+      '0x', { from: accounts[9] }), 'VS19');
   });
 
   it('should let investor add a new proposal', async function () {
@@ -231,7 +231,7 @@ contract('VotingSession', function (accounts) {
     await assertRevert(votingSession.updateResolutionRequirements(
       [UNDEFINED_TARGET, UNDEFINED_TARGET, votingSession.address],
       ['0x00000000', ANY_METHODS, '0x12345678'],
-      ['10', '0', '15'], ['10', '0', '15']), 'VS16');
+      ['10', '0', '15'], ['10', '0', '15']), 'VS17');
   });
 
   it('should let token operator to update resolution requirements', async function () {
@@ -366,7 +366,7 @@ contract('VotingSession', function (accounts) {
           proposalUrl,
           proposalHash,
           UNDEFINED_TARGET,
-          '0x'), 'VS28');
+          '0x'), 'VS29');
       });
     });
 
@@ -420,17 +420,17 @@ contract('VotingSession', function (accounts) {
 
       it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
-          [accounts[0], accounts[5]], { from: accounts[0] }), 'VS35');
+          [accounts[0], accounts[5]], { from: accounts[0] }), 'VS36');
       });
 
       it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([], [true],
-          [accounts[0], accounts[1]]), 'VS33');
+          [accounts[0], accounts[1]]), 'VS34');
       });
 
       it('should prevent operator to submit vote without voters', async function () {
         await assertRevert(votingSession.submitVoteOnBehalf([0], [true],
-          []), 'VS34');
+          []), 'VS35');
       });
 
       it('should prevent author to update a proposal', async function () {
@@ -439,11 +439,11 @@ contract('VotingSession', function (accounts) {
           proposalUrl,
           proposalHash,
           UNDEFINED_TARGET,
-          '0x'), 'VS20');
+          '0x'), 'VS21');
       });
 
       it('should prevent author to cancel a proposal', async function () {
-        await assertRevert(votingSession.cancelProposal(0), 'VS20');
+        await assertRevert(votingSession.cancelProposal(0), 'VS21');
       });
 
       describe('after submitted a vote', function () {
@@ -452,7 +452,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote([true]), 'VS31');
+          await assertRevert(votingSession.submitVote([true]), 'VS32');
         });
       });
 
@@ -462,7 +462,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote([true]), 'VS31');
+          await assertRevert(votingSession.submitVote([true]), 'VS32');
         });
       });
     });
@@ -486,7 +486,7 @@ contract('VotingSession', function (accounts) {
     });
 
     it('should prevent anyone to execute the resolution', async function () {
-      await assertRevert(votingSession.executeResolution(0, { from: accounts[9] }), 'VS21');
+      await assertRevert(votingSession.executeResolution(0, { from: accounts[9] }), 'VS22');
     });
 
     it('should be possible to execute the resolution', async function () {
@@ -803,7 +803,7 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should not be possible to execute seize proposal', async function () {
-        await assertRevert(votingSession.executeResolution(2), 'VS26');
+        await assertRevert(votingSession.executeResolution(2), 'VS27');
       });
 
       it('should be possible to add a proposal', async function () {
@@ -847,7 +847,7 @@ contract('VotingSession', function (accounts) {
           });
 
           it('should not be possible to execute approved resolution', async function () {
-            await assertRevert(votingSession.executeResolution(0), 'VS23');
+            await assertRevert(votingSession.executeResolution(0), 'VS24');
           });
         });
       });
@@ -873,7 +873,7 @@ contract('VotingSession', function (accounts) {
         });
 
         it('should not be possible to mint twice', async function () {
-          await assertRevert(votingSession.executeResolution(1), 'VS25');
+          await assertRevert(votingSession.executeResolution(1), 'VS26');
         });
       });
     });
@@ -889,7 +889,7 @@ contract('VotingSession', function (accounts) {
       });
 
       it('should not be possible to execute mint proposal anymore', async function () {
-        await assertRevert(votingSession.executeResolution(1), 'VS22');
+        await assertRevert(votingSession.executeResolution(1), 'VS23');
       });
     });
   });
