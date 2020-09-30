@@ -82,7 +82,9 @@ contract('PublicMultiSig', function (accounts) {
     it('should have by default 1 participant', async function () {
       const participantCount = await multiSig.participantCount();
       assert.equal(participantCount, 1, 'participantCount');
+    });
 
+    it('should have by default 100 for the only participant', async function () {
       const participantWeight = await multiSig.participantWeight(accounts[0]);
       assert.equal(participantWeight, 100, 'participantWeight');
     });
@@ -167,6 +169,19 @@ contract('PublicMultiSig', function (accounts) {
       assert.equal(tx.logs[0].event, 'ExecutionFailure');
       assert.equal(tx.logs[0].args.transactionId, 0);
       assert.equal(await multiSig.isExecuted(0), false, 'isExecuted');
+    });
+
+    it('should allow operator to update many participants', async function () {
+      const tx = await multiSig.updateManyParticipants([accounts[0], accounts[1], accounts[2]], ['0', '50', '50']);
+      assert.equal(tx.logs.length, 3);
+      assert.equal(tx.logs[0].event, 'ParticipantRemoved');
+      assert.equal(tx.logs[0].args.participant, accounts[0]);
+      assert.equal(tx.logs[1].event, 'ParticipantAdded');
+      assert.equal(tx.logs[1].args.participant, accounts[1]);
+      assert.equal(tx.logs[1].args.weight.toString(), '50');
+      assert.equal(tx.logs[2].event, 'ParticipantAdded');
+      assert.equal(tx.logs[2].args.participant, accounts[2]);
+      assert.equal(tx.logs[2].args.weight.toString(), '50');
     });
   });
 

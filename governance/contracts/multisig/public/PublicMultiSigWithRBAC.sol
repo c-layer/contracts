@@ -60,7 +60,7 @@ contract PublicMultiSigWithRBAC is PublicMultiSig {
     bool[] memory _executers)
     public PublicMultiSig(_threshold, _duration, _participants, _weights)
   {
-    updateManyParticipantsRolesInternal(
+    updateManyParticipantsRoles(
       _participants,
       _suggesters,
       _approvers,
@@ -128,103 +128,7 @@ contract PublicMultiSigWithRBAC is PublicMultiSig {
   }
 
   /**
-   * @dev add a participant
-   * Participant role will be defaulted to approver
-   * It is defined for compatibility reason with parent contract
-   */
-  function addParticipant(
-    address _participant,
-    uint256 _weight) public override onlyOperator returns (bool)
-  {
-    return addParticipantWithRoles(
-      _participant,
-      _weight,
-      false,
-      true,
-      false
-    );
-  }
-
-  /**
-   * @dev add many participants
-   * Participants role will be defaulted to approver
-   * It is defined for compatibility reason with parent contract
-   */
-  function addManyParticipants(
-    address[] memory _participants,
-    uint256[] memory _weights) override public onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _participants.length; i++) {
-      addParticipantWithRoles(
-        _participants[i],
-        _weights[i],
-        false,
-        true,
-        false
-      );
-    }
-    return true;
-  }
-
-  /**
-   * @dev add participants with roles
-   */
-  function addParticipantWithRoles(
-    address _participant,
-    uint256 _weight,
-    bool _suggester,
-    bool _approver,
-    bool _executer) public onlyOperator returns (bool)
-  {
-    super.addParticipant(_participant, _weight);
-    updateParticipantRolesInternal(
-      _participant,
-      _suggester,
-      _approver,
-      _executer
-    );
-    return true;
-  }
-
-  /**
    * @dev add many participants with roles
-   */
-  function addManyParticipantsWithRoles(
-    address[] memory _participants,
-    uint256[] memory _weights,
-    bool[] memory _suggesters,
-    bool[] memory _approvers,
-    bool[] memory _executers) public onlyOperator returns (bool)
-  {
-    super.addManyParticipants(_participants, _weights);
-    updateManyParticipantsRoles(
-      _participants,
-      _suggesters,
-      _approvers,
-      _executers
-    );
-    return true;
-  }
-
-  /**
-   *  @dev update participant roles
-   **/
-  function updateParticipantRoles(
-    address _participant,
-    bool _suggester,
-    bool _approver,
-    bool _executer) public onlyOperator returns (bool)
-  {
-    return updateParticipantRolesInternal(
-      _participant,
-      _suggester,
-      _approver,
-      _executer
-    );
-  }
-
-  /**
-   * @dev update many participants roles
    */
   function updateManyParticipantsRoles(
     address[] memory _participants,
@@ -232,54 +136,20 @@ contract PublicMultiSigWithRBAC is PublicMultiSig {
     bool[] memory _approvers,
     bool[] memory _executers) public onlyOperator returns (bool)
   {
-    return updateManyParticipantsRolesInternal(
-      _participants,
-      _suggesters,
-      _approvers,
-      _executers
-    );
-  }
-
-  /**
-   *  @dev update participant roles internal
-   **/
-  function updateParticipantRolesInternal(
-    address _participant, 
-    bool _suggester,
-    bool _approver,
-    bool _executer) internal returns (bool)
-  {
-    ParticipantRBAC storage participantRBAC = participantRBACs[_participant];
-    participantRBAC.suggester = _suggester;
-    participantRBAC.approver = _approver;
-    participantRBAC.executer = _executer;
-    
-    emit ParticipantRolesUpdated(
-      _participant,
-      _suggester,
-      _approver,
-      _executer
-    );
-    return true;
-  }
-
-  /**
-   * @dev update many participants role internals
-   */
-  function updateManyParticipantsRolesInternal(
-    address[] memory _participants,
-    bool[] memory _suggesters,
-    bool[] memory _approvers,
-    bool[] memory _executers) internal returns (bool)
-  {
     for (uint256 i = 0; i < _participants.length; i++) {
-      updateParticipantRolesInternal(
+      ParticipantRBAC storage participantRBAC = participantRBACs[_participants[i]];
+      participantRBAC.suggester = _suggesters[i];
+      participantRBAC.approver = _approvers[i];
+      participantRBAC.executer = _executers[i];
+    
+      emit ParticipantRolesUpdated(
         _participants[i],
         _suggesters[i],
         _approvers[i],
         _executers[i]
       );
     }
+
     return true;
   }
 

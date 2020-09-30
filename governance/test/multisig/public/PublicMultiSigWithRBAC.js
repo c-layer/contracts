@@ -127,36 +127,13 @@ contract('PublicMultiSigWithRBAC', function (accounts) {
       });
     });
 
-    it('should add participants as approver', async function () {
-      const request = {
-        params: [{
-          to: multiSig.address,
-          data: multiSig.contract.methods.addParticipant(
-            accounts[5], 100,
-          ).encodeABI(),
-        }],
-      };
-      await multiSig.suggest(
-        request.params[0].to, 0,
-        request.params[0].data, { from: accounts[0] });
-      await multiSig.approve(0, { from: accounts[1] });
-      await multiSig.execute(0, { from: accounts[2] });
-
-      const isSuggester = await multiSig.isSuggester(accounts[5]);
-      assert.ok(!isSuggester, 'is not suggester');
-      const isApprover = await multiSig.isApprover(accounts[5]);
-      assert.ok(isApprover, 'is approver');
-      const isExecuter = await multiSig.isExecuter(accounts[5]);
-      assert.ok(!isExecuter, 'is not executer');
-    });
-
     it('should add many participants as approvers', async function () {
       const request = {
         params: [{
           to: multiSig.address,
-          data: multiSig.contract.methods.addManyParticipants(
+          data: multiSig.contract.methods.updateManyParticipantsRoles(
             [accounts[5], accounts[6]],
-            [100, 50],
+            [false, false], [true, true], [false, false],
           ).encodeABI(),
         }],
       };
@@ -180,77 +157,7 @@ contract('PublicMultiSigWithRBAC', function (accounts) {
       assert.ok(!isExecuter6, 'account6 is not executer');
     });
 
-    it('should add particpant with role', async function () {
-      const request = {
-        params: [{
-          to: multiSig.address,
-          data: multiSig.contract.methods.addParticipantWithRoles(
-            accounts[5], 50, true, false, true,
-          ).encodeABI(),
-        }],
-      };
-      await multiSig.suggest(
-        request.params[0].to, 0,
-        request.params[0].data, { from: accounts[0] });
-      await multiSig.approve(0, { from: accounts[1] });
-      await multiSig.execute(0, { from: accounts[2] });
-
-      const isSuggester = await multiSig.isSuggester(accounts[5]);
-      assert.ok(isSuggester, 'account5 is suggester');
-      const isApprover = await multiSig.isApprover(accounts[5]);
-      assert.ok(!isApprover, 'account5 is not approver');
-      const isExecuter = await multiSig.isExecuter(accounts[5]);
-      assert.ok(isExecuter, 'account5 is executer');
-    });
-
-    it('should add many participants with roles', async function () {
-      const request = {
-        params: [{
-          to: multiSig.address,
-          data: multiSig.contract.methods.addManyParticipantsWithRoles(
-            [accounts[5], accounts[6]], [50, 50],
-            [true, true], [false, true], [true, true],
-          ).encodeABI(),
-        }],
-      };
-      await multiSig.suggest(
-        request.params[0].to, 0,
-        request.params[0].data, { from: accounts[0] });
-      await multiSig.approve(0, { from: accounts[1] });
-      await multiSig.execute(0, { from: accounts[2] });
-
-      const isSuggester = await multiSig.isSuggester(accounts[5]);
-      assert.ok(isSuggester, 'account5 is suggester');
-      const isApprover = await multiSig.isApprover(accounts[5]);
-      assert.ok(!isApprover, 'account5 is not approver');
-      const isExecuter = await multiSig.isExecuter(accounts[5]);
-      assert.ok(isExecuter, 'account5 is executer');
-    });
-
-    it('should update participant role', async function () {
-      const request = {
-        params: [{
-          to: multiSig.address,
-          data: multiSig.contract.methods.updateParticipantRoles(
-            accounts[2], true, true, true,
-          ).encodeABI(),
-        }],
-      };
-      await multiSig.suggest(
-        request.params[0].to, 0,
-        request.params[0].data, { from: accounts[0] });
-      await multiSig.approve(0, { from: accounts[1] });
-      await multiSig.execute(0, { from: accounts[2] });
-
-      const isSuggester = await multiSig.isSuggester(accounts[2]);
-      assert.ok(isSuggester, 'account2 is suggester');
-      const isApprover = await multiSig.isApprover(accounts[2]);
-      assert.ok(isApprover, 'account2 is not approver');
-      const isExecuter = await multiSig.isExecuter(accounts[2]);
-      assert.ok(isExecuter, 'account2 is executer');
-    });
-
-    it('should update many participants with roles', async function () {
+    it('should update many participants with all roles', async function () {
       const request = {
         params: [{
           to: multiSig.address,

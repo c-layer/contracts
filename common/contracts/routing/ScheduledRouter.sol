@@ -43,7 +43,7 @@ contract ScheduledRouter is BasicRouter {
     public onlyOwner configNotLocked returns (bool)
   {
     // solhint-disable-next-line not-rely-on-time
-    require(_startAt > now && _startAt < _endAt, "SR01");
+    require(now < _endAt && _startAt < _endAt, "SR01");
     schedules[_origin] = Schedule(_startAt, _endAt);
     emit Scheduled(_origin, _startAt, _endAt);
   }

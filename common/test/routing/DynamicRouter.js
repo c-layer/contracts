@@ -49,7 +49,9 @@ contract('DynamicRouter', function (accounts) {
 
   describe('With a route defined', function () {
     beforeEach(async function () {
-      await router.setRoute(router.address, [accounts[1], accounts[2], accounts[3]], DEFAULT_ABI);
+      await router.setRoute(router.address, [accounts[1], accounts[2], router.address], DEFAULT_ABI);
+      await router.setRoute(accounts[0], [router.address, accounts[2], accounts[3]], DEFAULT_ABI);
+      await router.setRoute(accounts[1], [accounts[1], accounts[2], accounts[3]], DEFAULT_ABI);
     });
 
     it('should let owner set distribution', async function () {
@@ -92,8 +94,18 @@ contract('DynamicRouter', function (accounts) {
           ['1', '1', '2'], 'weights');
       });
 
-      it('should have null address for self destination', async function () {
+      it('should have self address for route 1', async function () {
         const destination = await router.findDestination(router.address);
+        assert.equal(destination, router.address, 'destination');
+      });
+
+      it('should have self address for route 2', async function () {
+        const destination = await router.findDestination(accounts[1]);
+        assert.equal(destination, router.address, 'destination');
+      });
+
+      it('should have null address for route 3', async function () {
+        const destination = await router.findDestination(accounts[1]);
         assert.equal(destination, NULL_ADDRESS, 'destination');
       });
 

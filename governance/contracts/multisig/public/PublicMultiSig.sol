@@ -82,7 +82,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
 
     defineOperator("MultiSig", address(this));
     owner = address(this);
-    addManyParticipants(_participants, _weights);
+    updateManyParticipants(_participants, _weights);
   }
 
   /**
@@ -374,50 +374,31 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
   }
 
   /**
-   * @dev add participant
-   */
-  function addParticipant(address _participant, uint256 _weight)
-    public virtual onlyOperator returns (bool)
-  {
-    participants[_participant] = Participant(_weight);
-    participantCount_++;
-
-    emit ParticipantAdded(_participant, _weight);
-    return true;
-  }
-
-  /**
-   * @dev add many participants
-   */
-  function addManyParticipants(
-    address[] memory _participants, uint256[] memory _weights)
-    public virtual onlyOperator returns (bool)
-  {
-    for (uint256 i = 0; i < _participants.length; i++) {
-      addParticipant(_participants[i], _weights[i]);
-    }
-    return true;
-  }
-
-  /**
-   * @dev update participant weight
-   */
-  function updateParticipant(address _participant, uint256 _weight)
-    public onlyOperator returns (bool)
-  {
-    participants[_participant].weight = _weight;
-    emit ParticipantUpdated(_participant, _weight);
-    return true;
-  }
-
-  /**
    * @dev update many participants weight
    */
   function updateManyParticipants(address[] memory _participants, uint256[] memory _weights)
     public onlyOperator returns (bool)
   {
     for (uint256 i = 0; i < _participants.length; i++) {
-      updateParticipant(_participants[i], _weights[i]);
+      address participant = _participants[i];
+      uint256 weight = _weights[i];
+
+      uint256 previousWeight = participants[participant].weight;
+      participants[participant].weight = weight;
+
+      if (previousWeight == weight) {
+        continue;
+      }
+
+      if (previousWeight == 0) {
+        emit ParticipantAdded(participant, weight);
+        participantCount_++;
+      } else if (weight == 0) {
+        emit ParticipantRemoved(participant);
+        participantCount_--;
+      } else {
+        emit ParticipantUpdated(participant, weight);
+      }
     }
     return true;
   }
@@ -451,5 +432,6 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
   event ExecutionFailure(uint256 indexed transactionId);
   event ParticipantAdded(address indexed participant, uint256 weight);
   event ParticipantUpdated(address indexed participant, uint256 weight);
+  event ParticipantRemoved(address indexed participant);
   event ConfigurationUpdated(uint256 threshold, uint256 duration);
 }
