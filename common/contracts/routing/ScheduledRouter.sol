@@ -8,7 +8,7 @@ import "./BasicRouter.sol";
  * @title ScheduledRouter
  * @dev ScheduledRouter is a proxy which redirect all incoming transactions
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  * Error messages
@@ -23,9 +23,9 @@ contract ScheduledRouter is BasicRouter {
 
   mapping(address => Schedule) public schedules;
 
-  event Scheduled(uint256 startAt, uint256 endAt);
+  event Scheduled(address origin, uint256 startAt, uint256 endAt);
 
-  function schedule(address _origin) public view returns (uint256, uint256) {
+  function schedule(address _origin) public view returns (uint256 startAt, uint256 endAt) {
     Schedule memory schedule_ = schedules[_origin];
     return (schedule_.startAt, schedule_.endAt);
   }
@@ -45,6 +45,6 @@ contract ScheduledRouter is BasicRouter {
     // solhint-disable-next-line not-rely-on-time
     require(_startAt > now && _startAt < _endAt, "SR01");
     schedules[_origin] = Schedule(_startAt, _endAt);
-    emit Scheduled(_startAt, _endAt);
+    emit Scheduled(_origin, _startAt, _endAt);
   }
 }

@@ -10,7 +10,7 @@ import "../interface/IRouter.sol";
  *
  * @dev To avoid abuse the configuration need to be locked before the redirection is active
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  * Error messages
@@ -28,8 +28,8 @@ contract BasicRouter is IRouter, Ownable {
     bytes4 destinationAbi;
   }
 
-  mapping(address => Route) public routes;
-  bool public configLocked_;
+  mapping(address => Route) internal routes;
+  bool internal configLocked_;
 
   modifier configNotLocked() {
     require(!configLocked_, "RO01");

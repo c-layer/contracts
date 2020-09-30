@@ -9,7 +9,7 @@ import "./ScheduledRouter.sol";
  *
  * To avoid abuse the configuration need to be locked before the redirection is active
  *
- * @author Cyril Lapinte - <cyril.lapinte@gmail.com>
+ * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  * Error messages
@@ -24,7 +24,10 @@ contract DynamicRouter is ScheduledRouter {
 
   mapping(address => Distribution) private _distributions;
 
-  event DistributionDefined(uint256[] maxBalances, uint256[] weights);
+  event DistributionDefined(
+    address origin,
+    uint256[] maxBalances,
+    uint256[] weights);
 
   function maxBalances(address _origin) public view returns (uint256[] memory) {
     return _distributions[_origin].maxBalances;
@@ -72,7 +75,7 @@ contract DynamicRouter is ScheduledRouter {
       && _weights.length == routes[_origin].destinations.length, "DR01");
     
     _distributions[_origin] = Distribution(_maxBalances, _weights);
-    emit DistributionDefined(_maxBalances, _weights);
+    emit DistributionDefined(_origin, _maxBalances, _weights);
 
     return true;
   }
