@@ -345,9 +345,15 @@ contract('PublicMultiSig', function (accounts) {
       multiSig = await PublicMultiSig.new(100, 3600 * 24, [accounts[0]], [100]);
     });
 
-    it('should have itself as a owner', async function () {
-      const owner = await multiSig.owner();
-      assert.equal(owner, multiSig.address, 'Owner');
+    it('should receive ETH', async function () {
+      const tx = await web3.eth.sendTransaction({ from: accounts[0], to: multiSig.address, value: '1' });
+      assert.ok(tx.status, 'Status');
+    });
+
+    it('should receive ETH with data', async function () {
+      const tx = await web3.eth.sendTransaction(
+        { from: accounts[0], to: multiSig.address, value: '1', data: '0x123456' });
+      assert.ok(tx.status, 'Status');
     });
   });
 });

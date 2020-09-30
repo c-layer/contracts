@@ -261,6 +261,11 @@ contract('UserTokensale', function (accounts) {
       await userRegistry.updateUserExtended(6, AML_LIMIT_KEY, '600000');
     });
 
+    it('should have contribution limits', async function () {
+      const limits = await sale.contributionLimits();
+      assert.deepEqual(limits.map((x) => x.toString()), contributionLimits, 'contribution limits');
+    });
+
     it('should have investor 1 contribution limit', async function () {
       const tokens = await sale.contributionLimit(1);
       assert.equal(tokens.toString(), '111111', 'contribution');

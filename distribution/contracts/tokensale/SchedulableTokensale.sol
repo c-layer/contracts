@@ -14,8 +14,7 @@ import "./BaseTokensale.sol";
  * STS01: It must be before the sale is opened
  * STS02: Sale must be open
  * STS03: It must be before the sale is closed
- * STS04: It must be after the sale is closed
- * STS05: It must start before it ends.
+ * STS04: It must start before it ends.
  */
 contract SchedulableTokensale is BaseTokensale {
 
@@ -55,14 +54,6 @@ contract SchedulableTokensale is BaseTokensale {
   }
 
   /**
-   * @dev Throws once the sale is closed
-   */
-  modifier afterSaleIsClosed {
-    require(isClosed(), "STS04");
-    _;
-  }
-
-  /**
    * @dev constructor
    */
   constructor(
@@ -95,7 +86,7 @@ contract SchedulableTokensale is BaseTokensale {
   function updateSchedule(uint256 _startAt, uint256 _endAt)
     public onlyOperator beforeSaleIsOpened
   {
-    require(_startAt < _endAt, "STS05");
+    require(_startAt < _endAt, "STS04");
     startAt = _startAt;
     endAt = _endAt;
     emit Schedule(_startAt, _endAt);

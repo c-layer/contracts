@@ -39,6 +39,12 @@ contract('Vault', function (accounts) {
     assert.ok(tx.status, 'Status');
   });
 
+  it('should receive ETH with data', async function () {
+    const tx = await web3.eth.sendTransaction(
+      { from: accounts[0], to: vault.address, value: '1', data: '0x123456' });
+    assert.ok(tx.status, 'Status');
+  });
+
   it('should receive ERC20', async function () {
     const tx = await token.transfer(vault.address, '1000', { from: accounts[1] });
     assert.ok(tx.receipt.status, 'Status');

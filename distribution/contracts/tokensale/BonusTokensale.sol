@@ -55,17 +55,17 @@ contract BonusTokensale is SchedulableTokensale {
   function earlyBonus(uint256 _currentTime)
     public view returns (uint256 bonus, uint256 remainingAtBonus)
   {
-    if (bonusMode_ != BonusMode.EARLY
-      || _currentTime < startAt || _currentTime > endAt) {
-      return (uint256(0), uint256(-1));
-    }
+    remainingAtBonus = uint256(-1);
 
-    for(uint256 i=0; i < bonusUntils_.length; i++) {
-      if (_currentTime <= bonusUntils_[i]) {
-        return (bonuses_[i], uint256(-1));
+    if (bonusMode_ == BonusMode.EARLY
+      && _currentTime >= startAt && _currentTime <= endAt) {
+      for(uint256 i=0; i < bonusUntils_.length; i++) {
+        if (_currentTime <= bonusUntils_[i]) {
+          bonus = bonuses_[i];
+          break;
+        }
       }
     }
-    return (uint256(0), uint256(-1));
   }
 
   /**
