@@ -26,7 +26,22 @@ contract('ProcessSig', function (accounts) {
         } else {
           resolve();
         }
-      })),
-    );
+      })), 'PS01');
+  });
+
+  it('should not accept any ETH with data', async function () {
+    await assertRevert(
+      new Promise((resolve, reject) => web3.eth.sendTransaction({
+        from: accounts[0],
+        to: processSig.address,
+        value: web3.utils.toWei('1', 'milli'),
+        data: '0x123456',
+      }, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      })), 'PS01');
   });
 });

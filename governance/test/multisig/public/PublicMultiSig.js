@@ -35,7 +35,12 @@ contract('PublicMultiSig', function (accounts) {
     assert.equal(await multiSig.isExpired(txId), false, 'isExpired');
     assert.equal(await multiSig.isCancelled(txId), false, 'isCancelled');
     assert.equal(await multiSig.transactionCreator(txId), accounts[0], 'transactionCreator');
-    assert.ok((await multiSig.transactionCreatedAt(txId)) < (new Date().getTime()) / 1000, 'transactionCreatedAt');
+
+    const createdAt = await multiSig.transactionCreatedAt(txId);
+    assert.ok(createdAt < (new Date().getTime()) / 1000, 'transactionCreatedAt');
+
+    const toBeExpiredAt = await multiSig.toBeExpiredAt(txId);
+    assert.ok(toBeExpiredAt > createdAt, 'toBeExpiredAt');
     assert.equal(await multiSig.isExecuted(txId), false, 'isExecuted');
     return txId;
   };
@@ -172,16 +177,21 @@ contract('PublicMultiSig', function (accounts) {
     });
 
     it('should allow operator to update many participants', async function () {
-      const tx = await multiSig.updateManyParticipants([accounts[0], accounts[1], accounts[2]], ['0', '50', '50']);
-      assert.equal(tx.logs.length, 3);
-      assert.equal(tx.logs[0].event, 'ParticipantRemoved');
+      const tx = await multiSig.updateManyParticipants(
+        [accounts[0], accounts[0], accounts[0], accounts[1], accounts[2]],
+        ['100', '50', '0', '50', '50']);
+      assert.equal(tx.logs.length, 4);
+      assert.equal(tx.logs[0].event, 'ParticipantUpdated');
       assert.equal(tx.logs[0].args.participant, accounts[0]);
-      assert.equal(tx.logs[1].event, 'ParticipantAdded');
-      assert.equal(tx.logs[1].args.participant, accounts[1]);
-      assert.equal(tx.logs[1].args.weight.toString(), '50');
+      assert.equal(tx.logs[0].args.weight.toString(), '50');
+      assert.equal(tx.logs[1].event, 'ParticipantRemoved');
+      assert.equal(tx.logs[1].args.participant, accounts[0]);
       assert.equal(tx.logs[2].event, 'ParticipantAdded');
-      assert.equal(tx.logs[2].args.participant, accounts[2]);
+      assert.equal(tx.logs[2].args.participant, accounts[1]);
       assert.equal(tx.logs[2].args.weight.toString(), '50');
+      assert.equal(tx.logs[3].event, 'ParticipantAdded');
+      assert.equal(tx.logs[3].args.participant, accounts[2]);
+      assert.equal(tx.logs[3].args.weight.toString(), '50');
     });
   });
 

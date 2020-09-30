@@ -9,6 +9,7 @@ const DynamicRouter = artifacts.require('DynamicRouter.sol');
 
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const DEFAULT_ABI = '0x12345678';
+const MAX_BALANCE = web3.utils.toWei('10000000000', 'ether');
 
 contract('DynamicRouter', function (accounts) {
   let router;
@@ -56,8 +57,8 @@ contract('DynamicRouter', function (accounts) {
 
   describe('With a route defined', function () {
     beforeEach(async function () {
-      await router.setRoute(router.address, [accounts[1], accounts[2], router.address], DEFAULT_ABI);
-      await router.setRoute(accounts[0], [router.address, accounts[2], accounts[3]], DEFAULT_ABI);
+      await router.setRoute(router.address, [accounts[1], accounts[2], accounts[3]], DEFAULT_ABI);
+      await router.setRoute(accounts[0], [accounts[1], accounts[2], accounts[3], router.address], DEFAULT_ABI);
       await router.setRoute(accounts[1], [accounts[1], accounts[2], accounts[3]], DEFAULT_ABI);
     });
 
@@ -86,13 +87,13 @@ contract('DynamicRouter', function (accounts) {
     describe('With a distribution defined', function () {
       beforeEach(async function () {
         await router.setDistribution(
-          router.address, [0, 1000, 1000], [1, 1, 2]);
+          router.address, [0, MAX_BALANCE, 1000], [1, 1, 2]);
       });
 
       it('should have max balances for self destination', async function () {
         const maxBalances = await router.maxBalances(router.address);
         assert.deepEqual(maxBalances.map((x) => x.toString()),
-          ['0', '1000', '1000'], 'max balances');
+          ['0', MAX_BALANCE, '1000'], 'max balances');
       });
 
       it('should have weights for self destination', async function () {
@@ -101,9 +102,9 @@ contract('DynamicRouter', function (accounts) {
           ['1', '1', '2'], 'weights');
       });
 
-      it('should have self address for route 1', async function () {
+      it('should have account 2 for route 1', async function () {
         const destination = await router.findDestination(router.address);
-        assert.equal(destination, router.address, 'destination');
+        assert.equal(destination, accounts[2], 'destination');
       });
 
       it('should have self address for route 2', async function () {

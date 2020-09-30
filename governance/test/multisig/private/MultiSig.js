@@ -10,6 +10,8 @@ const signer = require('../../helpers/signer');
 const MultiSig = artifacts.require('multisig/private/MultiSig.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 
+const NULL_ADDRESS = '0x'.padEnd(42, '0');
+
 contract('MultiSig', function (accounts) {
   let multiSig, token, request;
 
@@ -122,6 +124,14 @@ contract('MultiSig', function (accounts) {
       assert.equal(review.toNumber(), 0);
     });
 
+    it('should not recover the address', async function () {
+      const rsv = await signer.sign(accounts[0], 0, web3.utils.toHex('data'), 0, accounts[1]);
+      const recover = await multiSig.recoverAddress(
+        accounts[0], 0, web3.utils.toHex('data'), 0,
+        rsv.r, rsv.s, 12);
+      assert.equal(recover, NULL_ADDRESS, 'unrecoverable address');
+    });
+
     it('should recover the address', async function () {
       const rsv = await signer.sign(accounts[0], 0, web3.utils.toHex('data'), 0, accounts[1]);
       const recover = await multiSig.recoverAddress(
@@ -155,6 +165,24 @@ contract('MultiSig', function (accounts) {
         from: accounts[0],
         to: multiSig.address,
         value: web3.utils.toWei('1', 'milli'),
+      }, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }));
+
+      const balanceETH = await web3.eth.getBalance(multiSig.address);
+      assert.equal(balanceETH, web3.utils.toWei('1', 'milli'), 'balance multiSig');
+    });
+
+    it('should receive ETH with data', async function () {
+      await new Promise((resolve, reject) => web3.eth.sendTransaction({
+        from: accounts[0],
+        to: multiSig.address,
+        value: web3.utils.toWei('1', 'milli'),
+        data: '0x123456',
       }, (err, data) => {
         if (err) {
           reject(err);
