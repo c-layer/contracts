@@ -35,12 +35,19 @@ contract('DynamicRouter', function (accounts) {
   it('should let owner to set distribution', async function () {
     const tx = await router.setRoute(accounts[0], [accounts[1], accounts[2]], DEFAULT_ABI);
     assert.ok(tx.receipt.status, 'Status');
-    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, 'RouteDefined', 'event');
     assert.equal(tx.logs[0].args.origin, accounts[0], 'origin');
     assert.deepEqual(tx.logs[0].args.destinations, [accounts[1], accounts[2]], 'destination');
     assert.equal(tx.logs[0].args.destinationAbi, DEFAULT_ABI, 'destinationAbi');
-  });
+
+    assert.equal(tx.logs[1].event, 'DistributionDefined', 'event');
+    assert.equal(tx.logs[1].args.origin, accounts[0], 'origin');
+    assert.deepEqual(tx.logs[1].args.maxBalances.map((x) => x.toString()),
+      ['0', '0'], 'maxBalances');
+    assert.deepEqual(tx.logs[1].args.weights.map((x) => x.toString()),
+      ['0', '0'], 'weights');
+   });
 
   it('should prevent non owner to set route', async function () {
     await assertRevert(router.setRoute(accounts[0],
@@ -100,7 +107,7 @@ contract('DynamicRouter', function (accounts) {
       });
 
       it('should have self address for route 2', async function () {
-        const destination = await router.findDestination(accounts[1]);
+        const destination = await router.findDestination(accounts[0]);
         assert.equal(destination, router.address, 'destination');
       });
 

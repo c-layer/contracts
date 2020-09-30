@@ -65,6 +65,18 @@ contract DynamicRouter is ScheduledRouter {
     return selectedDestination;
   }
 
+  function setRoute(
+    address _origin,
+    address[] memory _destinations,
+    bytes4 _destinationAbi)
+    override public onlyOwner configNotLocked returns (bool)
+  {
+    super.setRoute(_origin, _destinations, _destinationAbi);
+
+    uint256[] memory defaultValues = new uint256[](_destinations.length);
+    return setDistribution(_origin, defaultValues, defaultValues);
+  }
+
   function setDistribution(
     address _origin,
     uint256[] memory _maxBalances,

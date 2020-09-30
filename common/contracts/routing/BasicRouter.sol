@@ -73,7 +73,7 @@ contract BasicRouter is IRouter, Ownable {
     address _origin,
     address[] memory _destinations,
     bytes4 _destinationAbi)
-    override public onlyOwner configNotLocked returns (bool)
+    override virtual public onlyOwner configNotLocked returns (bool)
   {
     routes[_origin] = Route(_destinations, 0, _destinationAbi);
     emit RouteDefined(_origin, _destinations, _destinationAbi);
