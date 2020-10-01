@@ -257,6 +257,9 @@ contract('PublicMultiSig', function (accounts) {
       await assertRevert(multiSig.execute(0), 'PMS04');
       assert.equal(await multiSig.isExecuted(0), false, 'isExecuted');
 
+      const lockedReceipt2 = await multiSig.lockTransaction(0, true);
+      assert.equal(lockedReceipt2.logs.length, 0);
+ 
       const unlockReceipt = await multiSig.lockTransaction(0, false);
       assert.equal(unlockReceipt.logs.length, 1);
       assert.equal(unlockReceipt.logs[0].event, 'TransactionUnlocked');
