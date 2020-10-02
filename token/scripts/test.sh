@@ -51,7 +51,7 @@ fi
 if [[ "$SOLIDITY_COVERAGE" = true ]]; then
   if [[ ! -L "node_modules/solidity-coverage" ]]; then
     echo "Creating solidity-coverage symlink"
-    ln -s ../node_modules/solidity-coverage node_modules/
+    ln -sf ../node_modules/solidity-coverage node_modules/
   fi
 
   node_modules/.bin/truffle run coverage "$@"
