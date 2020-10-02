@@ -21,6 +21,7 @@ import "./VotingStorage.sol";
  *   VS07: Campaign period must be within valid range
  *   VS08: Voting period must be within valid range
  *   VS09: Grace period must be within valid range
+ *   VSXX: Period offset must be within valid range
  *   VS10: At least one proposal should be allowed
  *   VS11: New proposal threshold must be greater than 0
  *   VS12: Execute resolution threshold must be greater than 0
@@ -65,7 +66,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     token_ = _token;
     core_ = ITokenCore(token_.core());
     require(address(core_) != address(0), "VS03");
-    resolutionRequirements[UNDEFINED_TARGET][ANY_METHODS] =
+    resolutionRequirements[ANY_TARGETS][ANY_METHODS] =
       ResolutionRequirement(DEFAULT_MAJORITY, DEFAULT_QUORUM);
   }
 
@@ -76,6 +77,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 gracePeriod,
+    uint64 periodOffset,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
@@ -84,6 +86,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       sessionRule_.campaignPeriod,
       sessionRule_.votingPeriod,
       sessionRule_.gracePeriod,
+      sessionRule_.periodOffset,
       sessionRule_.maxProposals,
       sessionRule_.maxProposalsOperator,
       sessionRule_.newProposalThreshold,
@@ -224,13 +227,13 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     }
 
     if (majority == 0 && quorum == 0) {
-      requirement = resolutionRequirements[UNDEFINED_TARGET][actionSignature];
+      requirement = resolutionRequirements[ANY_TARGETS][actionSignature];
       majority = requirement.majority;
       quorum = requirement.quorum;
     }
 
     if (majority == 0 && quorum == 0) {
-      requirement = resolutionRequirements[UNDEFINED_TARGET][bytes4(ANY_METHODS)];
+      requirement = resolutionRequirements[ANY_TARGETS][bytes4(ANY_METHODS)];
       majority = requirement.majority;
       quorum = requirement.quorum;
     }
@@ -240,6 +243,20 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     return (session_.participation != 0 && totalSupply != 0)
       && proposal_.approvals.mul(100).div(session_.participation) > majority
       && session_.participation.mul(100).div(totalSupply) > quorum;
+  }
+
+  /**
+   * @dev nextSessionAt
+   */
+  function nextSessionAt(uint256 _time) public override view returns (uint256 at) {
+    uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
+      .add(sessionRule_.votingPeriod)
+      .add(sessionRule_.gracePeriod);
+
+    at =
+      (_time.div(sessionPeriod).add(1)).mul(sessionPeriod).add(sessionRule_.periodOffset);
+    at = (at-_time > sessionRule_.campaignPeriod) ?
+      at : at.add(sessionPeriod);
   }
 
   /**
@@ -277,6 +294,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
     uint64 _gracePeriod,
+    uint64 _periodOffset,
     uint8 _maxProposals,
     uint8 _maxProposalsOperator,
     uint256 _newProposalThreshold,
@@ -285,6 +303,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     require(_campaignPeriod != 0 && _campaignPeriod <= MAX_PERIOD_LENGTH, "VS07");
     require(_votingPeriod != 0 && _votingPeriod <= MAX_PERIOD_LENGTH, "VS08");
     require(_gracePeriod != 0 && _gracePeriod <= MAX_PERIOD_LENGTH, "VS09");
+    require(_periodOffset <= MAX_PERIOD_LENGTH, "VSXX");
 
     require(_maxProposals != 0 || _maxProposalsOperator != 0, "VS10");
     require(_newProposalThreshold != 0, "VS11");
@@ -294,6 +313,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       _campaignPeriod,
       _votingPeriod,
       _gracePeriod,
+      _periodOffset,
       _maxProposals,
       _maxProposalsOperator,
       _newProposalThreshold,
@@ -303,6 +323,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
       _campaignPeriod,
       _votingPeriod,
       _gracePeriod,
+      _periodOffset,
       _maxProposals,
       _maxProposalsOperator,
       _newProposalThreshold,
@@ -456,9 +477,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     address[] memory _voters
   ) public override returns (bool)
   {
-    if (isProxyOperator(msg.sender, token_)) {
-      return submitVoteForProposalsInternal(_proposalIds, _vote, _voters);
-    }
+    return submitVoteForProposalsInternal(_proposalIds, _vote, _voters);
   }
 
   /**
@@ -490,7 +509,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
     proposal_.resolutionExecuted = true;
 
-    if (proposal_.resolutionTarget != UNDEFINED_TARGET) {
+    if (proposal_.resolutionTarget != ANY_TARGETS) {
       // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
       (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
       require(success, "VS28");
@@ -536,23 +555,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     if(state != SessionState.PLANNED) {
       // Creation of a new session
       require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS29");
-      uint256 sessionPeriod = uint256(sessionRule_.campaignPeriod)
-        .add(sessionRule_.votingPeriod)
-        .add(sessionRule_.gracePeriod);
-
-      uint256 previousStartAt =
-        (sessionsCount_ != 0) ? sessions[sessionsCount_].startAt : 0;
-      uint nextAvailableSession;
-      if (state == SessionState.GRACE) {
-        nextAvailableSession =
-          ((time.sub(previousStartAt)).div(sessionPeriod)).add(1);
-      } else {
-        nextAvailableSession =
-          (((time.sub(previousStartAt)).add(sessionRule_.campaignPeriod)).div(sessionPeriod)).add(1);
-      }
-
-      uint256 nextStartAt = nextAvailableSession.mul(sessionPeriod).add(previousStartAt);
-
+      uint256 nextStartAt = nextSessionAt(time);
       session_ = sessions[++sessionsCount_];
       session_.campaignAt = uint64(nextStartAt.sub(sessionRule_.campaignPeriod));
       session_.startAt = uint64(nextStartAt);

@@ -11,7 +11,7 @@ pragma solidity ^0.6.0;
  */
 abstract contract IVotingDefinitions {
 
-  address internal constant UNDEFINED_TARGET = address(bytes20("UndefinedTarget"));
+  address internal constant ANY_TARGETS = address(bytes20("AnyTargets"));
   bytes4 internal constant ANY_METHODS = bytes4(bytes32("AnyMethods"));
 
   enum SessionState {
@@ -27,6 +27,7 @@ abstract contract IVotingDefinitions {
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;
   uint64 internal constant VOTING_PERIOD = 2 days;
   uint64 internal constant GRACE_PERIOD = 7 days;
+  uint64 internal constant OFFSET_PERIOD = 2 days;
 
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;

@@ -35,6 +35,7 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 gracePeriod,
+    uint64 periodOffset,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
@@ -60,6 +61,8 @@ abstract contract IVotingSession is IVotingDefinitions {
 
   function lastVote(address _voter) public virtual view returns (uint64 at);
 
+  function nextSessionAt(uint256 _time) public virtual view returns (uint256 at);
+
   function sessionStateAt(uint256 _sessionId, uint256 _time) public virtual view returns (SessionState);
 
   function isApproved(uint256 _proposalId) public virtual view returns (bool);
@@ -68,6 +71,7 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint64 _campaignPeriod,
     uint64 _votingPeriod,
     uint64 _gracePeriod,
+    uint64 _periodOffset,
     uint8 _maxProposals,
     uint8 _maxProposalsQuaestor,
     uint256 _newProposalThreshold,
@@ -122,6 +126,7 @@ abstract contract IVotingSession is IVotingDefinitions {
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 gracePeriod,
+    uint64 periodOffset,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
     uint256 newProposalThreshold,

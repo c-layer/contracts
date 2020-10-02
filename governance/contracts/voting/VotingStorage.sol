@@ -21,6 +21,8 @@ contract VotingStorage is IVotingDefinitions {
     uint64 campaignPeriod; // Before it starts, the vote will be locked
     uint64 votingPeriod; // Time period for voters to submit their votes
     uint64 gracePeriod; // delay between two votes
+
+    uint64 periodOffset; // Offset before the first session period
   
     uint8 maxProposals;
     uint8 maxProposalsOperator;
@@ -63,6 +65,7 @@ contract VotingStorage is IVotingDefinitions {
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
     GRACE_PERIOD,
+    OFFSET_PERIOD,
     MAX_PROPOSALS,
     MAX_PROPOSALS_OPERATOR,
     NEW_PROPOSAL_THRESHOLD,
