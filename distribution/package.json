@@ -17,7 +17,7 @@
     "lint:js": "eslint test",
     "lint:js:fix": "eslint test --fix",
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
-    "test": "npm run compile && scripts/test.sh",
+    "test": "scripts/test.sh",
     "flatten": "node_modules/.bin/truffle-flattener"
   },
   "repository": {
