@@ -21,34 +21,34 @@ import "./VotingStorage.sol";
  *   VS07: Campaign period must be within valid range
  *   VS08: Voting period must be within valid range
  *   VS09: Grace period must be within valid range
- *   VSXX: Period offset must be within valid range
- *   VS10: At least one proposal should be allowed
- *   VS11: New proposal threshold must be greater than 0
- *   VS12: Execute resolution threshold must be greater than 0
- *   VS13: Inconsistent numbers of methods signatures
- *   VS14: Inconsistent numbers of min participations
- *   VS15: Inconsistent numbers of quorums
- *   VS16: No sessions must be ongoing
- *   VS17: Default majority cannot be null
- *   VS18: Operator proposal limit is reached
- *   VS19: Not enought tokens for a new proposal
- *   VS20: Too many proposals yet for this session
- *   VS21: Session is not in PLANNED state
- *   VS22: Not enougth tokens to execute
- *   VS23: Session must be in PLANNED state
- *   VS24: Previous session is not in GRACE state
- *   VS25: Proposal must be from the most recently validated session.
- *   VS26: The resolution is already executed
- *   VS27: The resolution has not been approved
- *   VS28: The resolution must be successfull
- *   VS29: The session must be in GRACE or CLOSED state
- *   VS30: Token must be successfully locked
- *   VS31: Session must be in VOTING state
- *   VS32: The voter must not have already voted for this session
- *   VS33: Too many votes number
- *   VS34: Proposals must match votes
- *   VS35: Voters must be provided
- *   VS36: Sender must be either the voter, the voter's delegate,
+ *   VS10: Period offset must be within valid range
+ *   VS11: At least one proposal should be allowed
+ *   VS12: New proposal threshold must be greater than 0
+ *   VS13: Execute resolution threshold must be greater than 0
+ *   VS14: Inconsistent numbers of methods signatures
+ *   VS15: Inconsistent numbers of min participations
+ *   VS16: Inconsistent numbers of quorums
+ *   VS17: No sessions must be ongoing
+ *   VS18: Default majority cannot be null
+ *   VS19: Operator proposal limit is reached
+ *   VS20: Not enought tokens for a new proposal
+ *   VS21: Too many proposals yet for this session
+ *   VS22: Session is not in PLANNED state
+ *   VS23: Not enougth tokens to execute
+ *   VS24: Session must be in PLANNED state
+ *   VS25: Previous session is not in GRACE state
+ *   VS26: Proposal must be from the most recently validated session.
+ *   VS27: The resolution is already executed
+ *   VS28: The resolution has not been approved
+ *   VS29: The resolution must be successfull
+ *   VS30: The session must be in GRACE or CLOSED state
+ *   VS31: Token must be successfully locked
+ *   VS32: Session must be in VOTING state
+ *   VS33: The voter must not have already voted for this session
+ *   VS34: Too many votes number
+ *   VS35: Proposals must match votes
+ *   VS36: Voters must be provided
+ *   VS37: Sender must be either the voter, the voter's delegate,
  *         or an operator if the voter is not self managed
  */
 contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
@@ -303,11 +303,11 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     require(_campaignPeriod != 0 && _campaignPeriod <= MAX_PERIOD_LENGTH, "VS07");
     require(_votingPeriod != 0 && _votingPeriod <= MAX_PERIOD_LENGTH, "VS08");
     require(_gracePeriod != 0 && _gracePeriod <= MAX_PERIOD_LENGTH, "VS09");
-    require(_periodOffset <= MAX_PERIOD_LENGTH, "VSXX");
+    require(_periodOffset <= MAX_PERIOD_LENGTH, "VS10");
 
-    require(_maxProposals != 0 || _maxProposalsOperator != 0, "VS10");
-    require(_newProposalThreshold != 0, "VS11");
-    require(_executeResolutionThreshold != 0, "VS12");
+    require(_maxProposals != 0 || _maxProposalsOperator != 0, "VS11");
+    require(_newProposalThreshold != 0, "VS12");
+    require(_executeResolutionThreshold != 0, "VS13");
 
     sessionRule_ = SessionRule(
       _campaignPeriod,
@@ -341,19 +341,19 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint256[] memory _quorums
   ) public override onlyProxyOperator(token_) returns (bool)
   {
-    require(_targets.length == _methodSignatures.length, "VS13");
-    require(_methodSignatures.length == _majorities.length, "VS14");
-    require(_methodSignatures.length == _quorums.length, "VS15");
+    require(_targets.length == _methodSignatures.length, "VS14");
+    require(_methodSignatures.length == _majorities.length, "VS15");
+    require(_methodSignatures.length == _quorums.length, "VS16");
 
     if (sessionsCount_ != 0) {
       SessionState state = sessionStateAt(sessionsCount_, currentTime());
       require(
         state != SessionState.CAMPAIGN &&
-        state != SessionState.VOTING, "VS16");
+        state != SessionState.VOTING, "VS17");
     }
 
     for(uint256 i=0; i < _methodSignatures.length; i++) {
-      require(_majorities[i] != 0, "VS17");
+      require(_majorities[i] != 0, "VS18");
 
       resolutionRequirements[_targets[i]][_methodSignatures[i]] =
         ResolutionRequirement(_majorities[i], _quorums[i]);
@@ -386,10 +386,10 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     uint256 balance = token_.balanceOf(msg.sender);
 
     if (isProxyOperator(msg.sender, token_)) {
-      require(session_.proposalsCount < sessionRule_.maxProposalsOperator, "VS18");
+      require(session_.proposalsCount < sessionRule_.maxProposalsOperator, "VS19");
     } else {
-      require(balance >= sessionRule_.newProposalThreshold, "VS19");
-      require(session_.proposalsCount < sessionRule_.maxProposals, "VS20");
+      require(balance >= sessionRule_.newProposalThreshold, "VS20");
+      require(session_.proposalsCount < sessionRule_.maxProposals, "VS21");
     }
 
     uint256 proposalId = proposalsCount_++;
@@ -420,7 +420,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     bytes memory _resolutionAction
   ) public override onlyProposalAuthor(_proposalId) returns (bool)
   {
-    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.PLANNED, "VS21");
+    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.PLANNED, "VS22");
 
     Proposal storage proposal_ = proposals[_proposalId];
     proposal_.name = _name;
@@ -439,7 +439,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
   function cancelProposal(uint256 _proposalId)
     public override onlyProposalAuthor(_proposalId) returns (bool)
   {
-    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.PLANNED, "VS21");
+    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.PLANNED, "VS22");
     require(!proposals[_proposalId].cancelled, "VS06");
 
     proposals[_proposalId].cancelled = true;
@@ -489,30 +489,30 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
     if (!isProxyOperator(msg.sender, token_)) {
       uint256 balance = token_.balanceOf(msg.sender);
-      require(balance >= sessionRule_.executeResolutionThreshold, "VS22");
+      require(balance >= sessionRule_.executeResolutionThreshold, "VS23");
     }
 
     SessionState currentSessionState = sessionStateAt(sessionId_, currentTime());
     if(currentSessionState != SessionState.GRACE) {
-      require(currentSessionState == SessionState.PLANNED, "VS23");
+      require(currentSessionState == SessionState.PLANNED, "VS24");
       // The next session has not started yet, previous session proposals can still be executed
       sessionId_--;
-      require(sessionStateAt(sessionId_, currentTime()) == SessionState.GRACE, "VS24");
+      require(sessionStateAt(sessionId_, currentTime()) == SessionState.GRACE, "VS25");
     }
 
     require(_proposalId < proposalsCount_, "VS01");
     Proposal storage proposal_ = proposals[_proposalId];
 
-    require(proposal_.sessionId == sessionId_, "VS25");
-    require(!proposal_.resolutionExecuted, "VS26");
-    require(isApproved(_proposalId), "VS27");
+    require(proposal_.sessionId == sessionId_, "VS26");
+    require(!proposal_.resolutionExecuted, "VS27");
+    require(isApproved(_proposalId), "VS28");
 
     proposal_.resolutionExecuted = true;
 
     if (proposal_.resolutionTarget != ANY_TARGETS) {
       // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
       (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
-      require(success, "VS28");
+      require(success, "VS29");
     }
 
     emit ResolutionExecuted(_proposalId);
@@ -554,7 +554,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
     if(state != SessionState.PLANNED) {
       // Creation of a new session
-      require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS29");
+      require(state == SessionState.GRACE || state == SessionState.CLOSED, "VS30");
       uint256 nextStartAt = nextSessionAt(time);
       session_ = sessions[++sessionsCount_];
       session_.campaignAt = uint64(nextStartAt.sub(sessionRule_.campaignPeriod));
@@ -566,7 +566,7 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
         address(token_),
         nextStartAt,
         session_.graceAt,
-        new address[](0)), "VS30");
+        new address[](0)), "VS31");
 
       emit SessionScheduled(sessionsCount_, session_.startAt);
     } else {
@@ -579,10 +579,10 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
    */
   function submitVoteInternal(bool[] memory _votes) internal returns (bool)
   {
-    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.VOTING, "VS31");
+    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.VOTING, "VS32");
     Session storage session_ = sessions[sessionsCount_];
-    require(lastVotes[msg.sender] < session_.startAt, "VS32");
-    require(_votes.length <= session_.proposalsCount, "VS33");
+    require(lastVotes[msg.sender] < session_.startAt, "VS33");
+    require(_votes.length <= session_.proposalsCount, "VS34");
 
     uint256 weight = token_.balanceOf(msg.sender);
     for(uint256 i=0; i < _votes.length; i++) {
@@ -608,10 +608,10 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
     bool[] memory _votes,
     address[] memory _voters) internal returns (bool)
   {
-    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.VOTING, "VS31");
+    require(sessionStateAt(sessionsCount_, currentTime()) == SessionState.VOTING, "VS32");
     Session storage session_ = sessions[sessionsCount_];
-    require(_votes.length == _proposalIds.length, "VS34");
-    require(_voters.length > 0, "VS35");
+    require(_votes.length == _proposalIds.length, "VS35");
+    require(_voters.length > 0, "VS36");
 
     uint256 weight = 0;
     uint64 time = uint64(currentTime());
@@ -622,8 +622,8 @@ contract VotingSession is VotingStorage, IVotingSession, OperableAsCore {
 
       require(voter == msg.sender ||
         (isOperator && !core_.isSelfManaged(voter)) ||
-        delegates[voter] == msg.sender, "VS36");
-      require(lastVotes[voter] < session_.startAt, "VS32");
+        delegates[voter] == msg.sender, "VS37");
+      require(lastVotes[voter] < session_.startAt, "VS33");
       uint256 balance = token_.balanceOf(voter);
       weight += balance;
       lastVotes[voter] = time;
