@@ -18,4 +18,5 @@ abstract contract IOperableCore is IOperableStorage {
   function assignProxyOperators(
     address _proxy, bytes32 _role, address[] memory _operators) virtual public returns (bool);
   function revokeOperators(address[] memory _operators) virtual public returns (bool);
+  function revokeProxyOperators(address _proxy, address[] memory _operators) virtual public returns (bool);
 }

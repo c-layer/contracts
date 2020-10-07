@@ -13,16 +13,6 @@ import "../interface/IAccessDefinitions.sol";
  * Error messages
  */
 abstract contract IOperableStorage is IAccessDefinitions {
-
-  struct RoleData {
-    mapping(bytes4 => bool) privileges;
-  }
-
-  struct OperatorData {
-    bytes32 coreRole;
-    mapping(address => bytes32) proxyRoles;
-  }
-
   function coreRole(address _address) virtual public view returns (bytes32);
   function proxyRole(address _proxy, address _address) virtual public view returns (bytes32);
   function rolePrivilege(bytes32 _role, bytes4 _privilege) virtual public view returns (bool);
@@ -34,4 +24,5 @@ abstract contract IOperableStorage is IAccessDefinitions {
   event OperatorAssigned(bytes32 role, address operator);
   event ProxyOperatorAssigned(address proxy, bytes32 role, address operator);
   event OperatorRevoked(address operator);
+  event ProxyOperatorRevoked(address proxy, address operator);
 }

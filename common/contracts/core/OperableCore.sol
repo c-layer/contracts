@@ -109,15 +109,29 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
   }
 
   /**
-   * @dev removeOperator
+   * @dev revokeOperator
    * @param _operators addresses
    */
   function revokeOperators(address[] memory _operators)
     override public onlySysOp returns (bool)
   {
     for (uint256 i=0; i < _operators.length; i++) {
-      delete operators[_operators[i]];
+      operators[_operators[i]].coreRole = bytes32(0);
       emit OperatorRevoked(_operators[i]);
+    }
+    return true;
+  }
+
+  /**
+   * @dev revokeProxyOperator
+   * @param _operators addresses
+   */
+  function revokeProxyOperators(address _proxy, address[] memory _operators)
+    override public onlySysOp returns (bool)
+  {
+    for (uint256 i=0; i < _operators.length; i++) {
+      operators[_operators[i]].proxyRoles[_proxy] = bytes32(0);
+      emit ProxyOperatorRevoked(_proxy, _operators[i]);
     }
     return true;
   }

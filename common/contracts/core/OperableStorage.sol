@@ -16,6 +16,15 @@ import "./Storage.sol";
  */
 contract OperableStorage is IOperableStorage, Ownable, Storage {
 
+  struct RoleData {
+    mapping(bytes4 => bool) privileges;
+  }
+
+  struct OperatorData {
+    bytes32 coreRole;
+    mapping(address => bytes32) proxyRoles;
+  }
+
   // Mapping address => role
   // Mapping role => bytes4 => bool
   mapping (address => OperatorData) internal operators;

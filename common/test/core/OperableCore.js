@@ -398,5 +398,32 @@ contract('OperableCore', function (accounts) {
       const tx2 = await core.successAsProxyOp(proxy2.address, { from: accounts[5] });
       assert.ok(tx2.receipt.status, 'Status proxy2');
     });
+
+    it('should let core operator to revoke proxy1 operator', async function () {
+      const tx = await core.revokeProxyOperators(proxy1.address, [accounts[3]], { from: accounts[2] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'ProxyOperatorRevoked', 'event');
+      assert.equal(tx.logs[0].args.operator, accounts[3], 'proxy operator removed');
+    });
+
+    it('should prevent proxy operator to revoke proxy1 operator', async function () {
+      await assertRevert(core.revokeProxyOperators(proxy1.address, [accounts[3]], { from: accounts[3] }), 'OC01');
+    });
+
+    describe('With proxy1 operator revoked', function () {
+      beforeEach(async function () {
+        await core.revokeProxyOperators(proxy1.address, [accounts[3]], { from: accounts[2] });
+      });
+
+      it('should not have proxy1 operator as proxy1 operator', async function () {
+        const role = await core.proxyRole(proxy1.address, accounts[3]);
+        assert.equal(role, NO_ROLE, 'no role');
+      });
+
+      it('should prevent proxy1 operator to operate proxy1', async function () {
+        await assertRevert(core.successAsProxyOp(proxy1.address, { from: accounts[3] }), 'OC03');
+      });
+    });
   });
 });
