@@ -15,6 +15,7 @@ contract('OperableCore', function (accounts) {
   const nonOperator = accounts[2];
 
   const ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
+  const NO_PRIVILEGES = '0x'.padEnd(66, '0');
   const UNSECURE_ROLE = web3.utils.fromAscii('Unsecure').padEnd(66, '0');
   const NO_ROLE = '0x'.padEnd(66, '0');
   const RESTRICTED_ROLE = '0x'.padEnd(66, 'f');
@@ -137,8 +138,12 @@ contract('OperableCore', function (accounts) {
     await assertRevert(core.defineRole(UNSECURE_ROLE, ['0xaaaabbbb', '0x11112222'], { from: nonOperator }), 'OC01');
   });
 
+  it('should prevent redefining no privileges', async function () {
+    await assertRevert(core.defineRole(NO_PRIVILEGES, ['0xaaaabbbb', '0x11112222']), 'OC04');
+  });
+
   it('should prevent redefining AllPrivileges', async function () {
-    await assertRevert(core.defineRole(ALL_PRIVILEGES, ['0xaaaabbbb', '0x11112222']), 'OC04');
+    await assertRevert(core.defineRole(ALL_PRIVILEGES, ['0xaaaabbbb', '0x11112222']), 'OC05');
   });
 
   it('should let operator add core operators', async function () {
@@ -151,6 +156,11 @@ contract('OperableCore', function (accounts) {
     assert.equal(tx.logs[1].event, 'OperatorAssigned', 'event');
     assert.equal(tx.logs[1].args.role, ALL_PRIVILEGES, 'role');
     assert.equal(tx.logs[1].args.operator, accounts[3], 'accounts[3]');
+  });
+
+  it('should prevent operator to assign core operators to no privileges', async function () {
+    await assertRevert(
+      core.assignOperators(NO_PRIVILEGES, [accounts[1], accounts[2]]), 'OC04');
   });
 
   it('should prevent non operator to assign core operators', async function () {
@@ -171,6 +181,12 @@ contract('OperableCore', function (accounts) {
     assert.equal(tx.logs[1].args.proxy, proxy.address, 'proxy');
     assert.equal(tx.logs[1].args.role, ALL_PRIVILEGES, 'role');
     assert.equal(tx.logs[1].args.operator, accounts[3], 'accounts[1]');
+  });
+
+  it('should prevent operator to assign proxy operators to no privileges', async function () {
+    await assertRevert(
+      core.assignProxyOperators(
+        proxy.address, NO_PRIVILEGES, [accounts[2], accounts[3]]), 'OC04');
   });
 
   it('should prevent non operator to assign proxy operators', async function () {
@@ -245,6 +261,10 @@ contract('OperableCore', function (accounts) {
       await assertRevert(core.revokeOperators([roleAssignerOnly], { from: roleDesignerOnly }), 'OC01');
     });
 
+    it('should prevent operator to revoke non operators', async function () {
+      await assertRevert(core.revokeOperators([anyUser], { from: roleAssignerOnly }), 'OC07');
+    });
+
     it('should let "RoleDesigner 1" to define new role', async function () {
       const tx = await core.defineRole(ROLE_NEW, ['0xe68fdc5f'], { from: roleDesignerOnly });
       assert.ok(tx.receipt.status, 'Status');
@@ -296,7 +316,7 @@ contract('OperableCore', function (accounts) {
     });
 
     it('should prevent defining a proxy with ALL_PROXIES address', async function () {
-      await assertRevert(core.defineProxy(ALL_PROXIES, 1, { from: sysOperator }), 'OC05');
+      await assertRevert(core.defineProxy(ALL_PROXIES, 1, { from: sysOperator }), 'OC06');
     });
   });
 
@@ -409,6 +429,10 @@ contract('OperableCore', function (accounts) {
 
     it('should prevent proxy operator to revoke proxy1 operator', async function () {
       await assertRevert(core.revokeProxyOperators(proxy1.address, [accounts[3]], { from: accounts[3] }), 'OC01');
+    });
+
+    it('should prevent core operator to revoke non proxy1 operator', async function () {
+      await assertRevert(core.revokeProxyOperators(proxy1.address, [accounts[2]], { from: accounts[2] }), 'OC07');
     });
 
     describe('With proxy1 operator revoked', function () {
