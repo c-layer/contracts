@@ -265,6 +265,14 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   /************  CORE ADMIN  ************/
+  function removeProxyInternal(address _token)
+    internal override returns (bool)
+  {
+    super.removeProxyInternal(_token);
+    delete tokens[_token];
+    return true;
+  }
+
   function defineToken(
     address _token,
     uint256 _delegateId,
@@ -274,31 +282,13 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     override external onlyCoreOp returns (bool)
   {
     require(_token != ALL_PROXIES, "TC01");
-    defineProxyInternal(_token, _delegateId);
+    defineProxy(_token, _delegateId);
     TokenData storage tokenData = tokens[_token];
     tokenData.name = _name;
     tokenData.symbol = _symbol;
     tokenData.decimals = _decimals;
 
-    emit TokenDefined(_token, _delegateId, _name, _symbol, _decimals);
-    return true;
-  }
-
-  function migrateToken(address _token, address _newCore)
-    override external onlyCoreOp returns (bool)
-  {
-    migrateProxyInternal(_token, _newCore);
-    emit TokenMigrated(_token, _newCore);
-    return true;
-  }
-
-  function removeToken(address _token)
-    override external onlyCoreOp returns (bool)
-  {
-    removeProxyInternal(_token);
-    delete tokens[_token];
-
-    emit TokenRemoved(_token);
+    emit TokenDefined(_token, _name, _symbol, _decimals);
     return true;
   }
 

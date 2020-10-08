@@ -83,7 +83,7 @@ contract Core is Storage {
   }
 
   function removeProxyInternal(address _proxy)
-    internal returns (bool)
+    internal virtual returns (bool)
   {
     require(proxyDelegateIds[_proxy] != 0, "CO06");
     delete proxyDelegateIds[_proxy];

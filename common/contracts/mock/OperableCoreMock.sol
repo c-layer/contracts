@@ -24,10 +24,6 @@ contract OperableCoreMock is OperableCore {
     return defineDelegateInternal(_delegateId, _delegate);
   }
 
-  function defineProxy(address _proxy, uint256 _delegateId) public returns (bool) {
-    return defineProxyInternal(_proxy, _delegateId);
-  }
-
   function allPrivileges() public pure returns (bytes32) {
     return ALL_PRIVILEGES;
   }

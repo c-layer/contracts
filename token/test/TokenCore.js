@@ -263,13 +263,15 @@ contract('TokenCore', function (accounts) {
       const tx = await core.defineToken(
         token.address, 1, NAME, SYMBOL, DECIMALS);
       assert.ok(tx.receipt.status, 'Status');
-      assert.equal(tx.logs.length, 1, 'logs');
-      assert.equal(tx.logs[0].event, 'TokenDefined', 'event');
-      assert.equal(tx.logs[0].args.token, token.address, 'token');
+      assert.equal(tx.logs.length, 2, 'logs');
+      assert.equal(tx.logs[0].event, 'ProxyDefined', 'event');
+      assert.equal(tx.logs[0].args.proxy, token.address, 'proxy');
       assert.equal(tx.logs[0].args.delegateId, 1, 'delegateId');
-      assert.equal(tx.logs[0].args.name, NAME, 'name');
-      assert.equal(tx.logs[0].args.symbol, SYMBOL, 'symbol');
-      assert.equal(tx.logs[0].args.decimals, DECIMALS, 'decimals');
+      assert.equal(tx.logs[1].event, 'TokenDefined', 'event');
+      assert.equal(tx.logs[1].args.token, token.address, 'token');
+      assert.equal(tx.logs[1].args.name, NAME, 'name');
+      assert.equal(tx.logs[1].args.symbol, SYMBOL, 'symbol');
+      assert.equal(tx.logs[1].args.decimals, DECIMALS, 'decimals');
     });
 
     describe('With a token defined', function () {
@@ -328,13 +330,14 @@ contract('TokenCore', function (accounts) {
         const LOCK_END = Math.floor(new Date('2050-01-01').getTime() / 1000);
 
         beforeEach(async function () {
-          await core.defineLock(token.address, LOCK_START, LOCK_END,
+          await core.defineProxy(delegate.address, 1);
+          await core.defineLock(delegate.address, LOCK_START, LOCK_END,
             [accounts[1], accounts[2]]);
-          await core.defineTokenLock(token.address, [token.address]);
+          await core.defineTokenLock(token.address, [token.address, delegate.address]);
         });
 
         it('should have a lock', async function () {
-          const lockData = await core.lock(token.address);
+          const lockData = await core.lock(delegate.address);
           assert.equal(lockData.startAt, LOCK_START, 'startAt');
           assert.equal(lockData.endAt, LOCK_END, 'endAt');
           assert.deepEqual(lockData.exceptions, [accounts[1], accounts[2]], 'lock exceptions');
@@ -342,7 +345,7 @@ contract('TokenCore', function (accounts) {
 
         it('should have the lock on the token', async function () {
           const tokenData = await core.token(token.address);
-          assert.deepEqual(tokenData.locks, [token.address]);
+          assert.deepEqual(tokenData.locks, [token.address, delegate.address]);
         });
       });
 
@@ -361,28 +364,28 @@ contract('TokenCore', function (accounts) {
       });
 
       it('should let migrate token', async function () {
-        const tx = await core.migrateToken(token.address, accounts[0]);
+        const tx = await core.migrateProxy(token.address, accounts[0]);
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].args.token, token.address, 'token');
+        assert.equal(tx.logs[0].args.proxy, token.address, 'token');
         assert.equal(tx.logs[0].args.newCore, accounts[0], 'newCore');
-        assert.equal(tx.logs[0].event, 'TokenMigrated', 'event');
+        assert.equal(tx.logs[0].event, 'ProxyMigrated', 'event');
 
         const newCoreAddress = await token.core();
         assert.equal(newCoreAddress, accounts[0], 'newCoreAddress');
       });
 
       it('should let remove token', async function () {
-        const tx = await core.removeToken(token.address);
+        const tx = await core.removeProxy(token.address);
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, 'TokenRemoved', 'event');
-        assert.equal(tx.logs[0].args.token, token.address, 'token');
+        assert.equal(tx.logs[0].event, 'ProxyRemoved', 'event');
+        assert.equal(tx.logs[0].args.proxy, token.address, 'token');
       });
 
       it('should let remove and redefine it with same mapping history', async function () {
         await core.mint(token.address, [accounts[0], accounts[1]], [123, 456]);
-        await core.removeToken(token.address);
+        await core.removeProxy(token.address);
         await core.defineToken(
           token.address, 1, NAME, SYMBOL, DECIMALS);
         const balance1 = await token.balanceOf(accounts[1]);
@@ -392,7 +395,7 @@ contract('TokenCore', function (accounts) {
 
       describe('With the token removed', function () {
         beforeEach(async function () {
-          await core.removeToken(token.address);
+          await core.removeProxy(token.address);
         });
 
         it('Should have no delegates', async function () {

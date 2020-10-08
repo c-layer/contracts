@@ -69,7 +69,7 @@ abstract contract ITokenStorage {
   event Burned(address indexed token, uint256 amount);
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
-    address indexed token,
+    address indexed lock,
     uint256 startAt,
     uint256 endAt,
     address[] exceptions
@@ -85,12 +85,9 @@ abstract contract ITokenStorage {
     address[] locks);
   event TokenDefined(
     address indexed token,
-    uint256 delegateId,
     string name,
     string symbol,
     uint256 decimals);
-  event TokenMigrated(address indexed token, address newCore);
-  event TokenRemoved(address indexed token);
   event LogTransferData(
     address token, address caller, address sender, address receiver,
     uint256 senderId, uint256[] senderKeys, bool senderFetched,

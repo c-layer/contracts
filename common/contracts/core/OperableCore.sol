@@ -90,14 +90,6 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
     return true;
   }
 
-  function defineProxyInternal(address _proxy, uint256 _delegateId)
-    override internal returns (bool)
-  {
-    require(_proxy != ALL_PROXIES, "OC06");
-    return super.defineProxyInternal(_proxy, _delegateId);
-  }
-
-
   /**
    * @dev assignProxyOperators
    * @param _role operator role. May be a role not defined yet.
@@ -147,6 +139,31 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
 
       emit ProxyOperatorRevoked(_proxy, _operators[i]);
     }
+    return true;
+  }
+
+  function defineProxy(address _proxy, uint256 _delegateId)
+    override public onlyCoreOp returns (bool)
+  {
+    require(_proxy != ALL_PROXIES, "OC06");
+    defineProxyInternal(_proxy, _delegateId);
+    emit ProxyDefined(_proxy, _delegateId);
+    return true;
+  }
+
+  function migrateProxy(address _proxy, address _newCore)
+    override public onlyCoreOp returns (bool)
+  {
+    migrateProxyInternal(_proxy, _newCore);
+    emit ProxyMigrated(_proxy, _newCore);
+    return true;
+  }
+
+  function removeProxy(address _proxy)
+    override public onlyCoreOp returns (bool)
+  {
+    removeProxyInternal(_proxy);
+    emit ProxyRemoved(_proxy);
     return true;
   }
 }

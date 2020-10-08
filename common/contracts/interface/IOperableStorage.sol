@@ -25,4 +25,8 @@ abstract contract IOperableStorage is IAccessDefinitions {
   event ProxyOperatorAssigned(address proxy, bytes32 role, address operator);
   event OperatorRevoked(address operator);
   event ProxyOperatorRevoked(address proxy, address operator);
+
+  event ProxyDefined(address proxy, uint256 delegateId);
+  event ProxyMigrated(address proxy, address newCore);
+  event ProxyRemoved(address proxy);
 }

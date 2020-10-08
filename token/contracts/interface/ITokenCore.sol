@@ -110,9 +110,6 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     string memory _name,
     string memory _symbol,
     uint256 _decimals) virtual external returns (bool);
-  function migrateToken(address _token, address _newCore)
-    virtual external returns (bool);
-  function removeToken(address _token) virtual external returns (bool);
 
   function defineOracle(
     IUserRegistry _userRegistry,

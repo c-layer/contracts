@@ -37,7 +37,7 @@ contract('LockableDelegate', function (accounts) {
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'LockDefined', 'event');
-    assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+    assert.equal(tx.logs[0].args.lock, TOKEN_ADDRESS, 'lock');
     assert.equal(tx.logs[0].args.startAt, PREVIOUS_YEAR, 'startAt');
     assert.equal(tx.logs[0].args.endAt, NEXT_YEAR, 'endAt');
     assert.deepEqual(tx.logs[0].args.exceptions, [accounts[0]], 'exceptions');
@@ -60,7 +60,7 @@ contract('LockableDelegate', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, 'LockDefined', 'event');
-      assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+      assert.equal(tx.logs[0].args.lock, TOKEN_ADDRESS, 'lock');
       assert.equal(tx.logs[0].args.startAt, NEXT_YEAR, 'startAt');
       assert.equal(tx.logs[0].args.endAt, NEXT_YEAR + 1, 'endAt');
       assert.deepEqual(tx.logs[0].args.exceptions, [accounts[3]], 'exceptions');
@@ -102,7 +102,7 @@ contract('LockableDelegate', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, 'LockDefined', 'event');
-      assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+      assert.equal(tx.logs[0].args.lock, TOKEN_ADDRESS, 'lock');
       assert.equal(tx.logs[0].args.startAt, 0, 'startAt');
       assert.equal(tx.logs[0].args.endAt, 0, 'endAt');
       assert.deepEqual(tx.logs[0].args.exceptions, [], 'exceptions');
@@ -138,7 +138,37 @@ contract('LockableDelegate', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 1);
       assert.equal(tx.logs[0].event, 'LockDefined', 'event');
-      assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'token');
+      assert.equal(tx.logs[0].args.lock, TOKEN_ADDRESS, 'lock');
+      assert.equal(tx.logs[0].args.startAt, 0, 'startAt');
+      assert.equal(tx.logs[0].args.endAt, 0, 'endAt');
+      assert.deepEqual(tx.logs[0].args.exceptions, [], 'exceptions');
+    });
+  });
+
+  describe('With a non token lock defined', function () {
+    beforeEach(async function () {
+      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS, accounts[0]]);
+      await delegate.defineLock(accounts[0], 0, NEXT_YEAR, [accounts[3]]);
+    });
+
+    it('should have transfer locked', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(result, 'frozen');
+    });
+
+    it('should have transfer unlocked for accounts[3]', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[3], accounts[2], '1000');
+      assert.ok(!result, 'not frozen');
+    });
+
+    it('should let remove the lock', async function () {
+      const tx = await delegate.defineLock(accounts[0], 0, 0, []);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'LockDefined', 'event');
+      assert.equal(tx.logs[0].args.lock, accounts[0], 'lock');
       assert.equal(tx.logs[0].args.startAt, 0, 'startAt');
       assert.equal(tx.logs[0].args.endAt, 0, 'endAt');
       assert.deepEqual(tx.logs[0].args.exceptions, [], 'exceptions');
