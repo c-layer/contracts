@@ -58,7 +58,7 @@ contract('TokenCore', function (accounts) {
   });
 
   it('should have no token delegates', async function () {
-    const delegateAddress = await core.delegates(1);
+    const delegateAddress = await core.delegate(1);
     assert.equal(delegateAddress, NULL_ADDRESS, 'no delegate addresses');
   });
 
@@ -245,7 +245,7 @@ contract('TokenCore', function (accounts) {
     });
 
     it('should have a delegate', async function () {
-      const delegate0 = await core.delegates(1);
+      const delegate0 = await core.delegate(1);
       assert.equal(delegate0, delegate.address, 'delegate 0');
     });
 
@@ -399,7 +399,7 @@ contract('TokenCore', function (accounts) {
         });
 
         it('Should have no delegates', async function () {
-          const delegate = await core.proxyDelegateIds(token.address);
+          const delegate = await core.proxyDelegateId(token.address);
           assert.equal(delegate, 0, 'no delegates');
         });
 

@@ -23,7 +23,7 @@ const FETCH_SENDER_ID_ESTIMATE = 33355;
 const FETCH_SENDER_ESTIMATE = 102887;
 const FETCH_RECEIVER_ID_ESTIMATE = 33379;
 const FETCH_RECEIVER_ESTIMATE = 102913;
-const FETCH_CONVERT_RATE = 39895;
+const FETCH_CONVERT_RATE = 39907;
 
 contract('OracleEnrichedDelegate', function (accounts) {
   let delegate, userRegistry, ratesProvider;
