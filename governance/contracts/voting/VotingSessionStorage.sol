@@ -7,14 +7,14 @@ import "../interface/IVotingDefinitions.sol";
 
 
 /**
- * @title VotingStorage
- * @dev VotingStorage contract
+ * @title VotingSessionStorage
+ * @dev VotingSessionStorage contract
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  * Error messages
  */
-contract VotingStorage is IVotingDefinitions {
+contract VotingSessionStorage is IVotingDefinitions {
   using SafeMath for uint256;
 
   struct SessionRule {
@@ -37,16 +37,16 @@ contract VotingStorage is IVotingDefinitions {
 
   struct Session {
     uint64 campaignAt;
-    uint64 startAt;
+    uint64 voteAt;
     uint64 graceAt;
     uint64 closedAt;
     uint256 proposalsCount;
     uint256 participation;
+
+    mapping(uint256 => Proposal) proposals;
   }
 
   struct Proposal {
-    uint256 sessionId;
-
     string name;
     string url;
     bytes32 proposalHash;
@@ -80,9 +80,6 @@ contract VotingStorage is IVotingDefinitions {
  
   ITokenProxy internal token_;
   ITokenCore internal core_;
-
-  uint256 internal proposalsCount_;
-  mapping(uint256 => Proposal) internal proposals;
 
   /**
    * @dev currentTime

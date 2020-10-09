@@ -11,8 +11,8 @@ pragma solidity ^0.6.0;
  */
 abstract contract IVotingDefinitions {
 
-  address internal constant ANY_TARGETS = address(bytes20("AnyTargets"));
-  bytes4 internal constant ANY_METHODS = bytes4(bytes32("AnyMethods"));
+  address internal constant ANY_TARGET = address(bytes20("AnyTarget"));
+  bytes4 internal constant ANY_METHOD = bytes4(bytes32("AnyMethod"));
 
   enum SessionState {
     PLANNED,
@@ -22,6 +22,7 @@ abstract contract IVotingDefinitions {
     CLOSED
   }
 
+  uint64 internal constant MIN_PERIOD_LENGTH = 5 minutes;
   // MAX_PERIOD_LENGTH (approx 10000 years) protects against period overflow
   uint64 internal constant MAX_PERIOD_LENGTH = 3652500 days;
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;
@@ -37,4 +38,5 @@ abstract contract IVotingDefinitions {
 
   uint8 internal constant MAX_PROPOSALS = 10;
   uint8 internal constant MAX_PROPOSALS_OPERATOR = 25;
+  uint8 internal constant MAX_PROPOSALS_HARD_LIMIT = 255;
 }

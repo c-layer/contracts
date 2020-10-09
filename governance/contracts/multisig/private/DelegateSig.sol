@@ -17,7 +17,7 @@ import "./LockableSig.sol";
  * DS01: Valid signatures must reach threshold
  * DS02: A grant must be defined
  * DS03: No grants must be defined
- * DS04: Enought delegates must be defined to reach threshold
+ * DS04: Enough delegates must be defined to reach threshold
  */
 contract DelegateSig is LockableSig {
   bytes32 public constant GRANT = keccak256("GRANT");
