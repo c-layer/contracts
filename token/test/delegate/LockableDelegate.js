@@ -15,6 +15,7 @@ contract('LockableDelegate', function (accounts) {
 
   beforeEach(async function () {
     delegate = await LockableDelegateMock.new();
+    await delegate.defineLockProxies([TOKEN_ADDRESS]);
   });
 
   it('should have transfer unlocked', async function () {
@@ -147,6 +148,7 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a non token lock defined', function () {
     beforeEach(async function () {
+      await delegate.defineLockProxies([TOKEN_ADDRESS, accounts[0]]);
       await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS, accounts[0]]);
       await delegate.defineLock(accounts[0], 0, NEXT_YEAR, [accounts[3]]);
     });

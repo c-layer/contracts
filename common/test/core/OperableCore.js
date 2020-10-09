@@ -358,11 +358,11 @@ contract('OperableCore', function (accounts) {
       });
 
       it('should prevent operator to migrate a non proxy', async function () {
-        await assertRevert(core.migrateProxy(accounts[0], core.address,{ from: sysOperator }), 'CO06');
+        await assertRevert(core.migrateProxy(accounts[0], core.address, { from: sysOperator }), 'CO06');
       });
 
       it('should prevent non operator to migrate a proxy', async function () {
-        await assertRevert(core.migrateProxy(proxy.address, core.address,{ from: nonOperator }), 'OC02');
+        await assertRevert(core.migrateProxy(proxy.address, core.address, { from: nonOperator }), 'OC02');
       });
     });
   });

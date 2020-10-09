@@ -19,11 +19,11 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const EMPTY_ADDRESS = '0x'.padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const FETCH_SENDER_ID_ESTIMATE = 33400;
-const FETCH_SENDER_ESTIMATE = 102865;
-const FETCH_RECEIVER_ID_ESTIMATE = 33357;
-const FETCH_RECEIVER_ESTIMATE = 102891;
-const FETCH_CONVERT_RATE = 39952;
+const FETCH_SENDER_ID_ESTIMATE = 33355;
+const FETCH_SENDER_ESTIMATE = 102887;
+const FETCH_RECEIVER_ID_ESTIMATE = 33379;
+const FETCH_RECEIVER_ESTIMATE = 102913;
+const FETCH_CONVERT_RATE = 39895;
 
 contract('OracleEnrichedDelegate', function (accounts) {
   let delegate, userRegistry, ratesProvider;

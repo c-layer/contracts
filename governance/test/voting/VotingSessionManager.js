@@ -74,7 +74,7 @@ contract('VotingSessionManager', function (accounts) {
       token.address, 1, NAME, SYMBOL, DECIMALS);
     await core.mint(token.address, recipients, supplies);
     votingSession = await VotingSessionManager.new(token.address);
-   
+
     await core.defineProxy(votingSession.address, 1);
     await core.defineTokenLock(token.address, [token.address, votingSession.address]);
     await core.assignProxyOperators(votingSession.address, ALL_PRIVILEGES, [votingSession.address]);
@@ -203,7 +203,8 @@ contract('VotingSessionManager', function (accounts) {
 
   it('should prevent anyone to update session rules', async function () {
     await assertRevert(votingSession.updateSessionRule(
-      MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, '0', '1', '2', '3000000', '3000001', { from: accounts[9] }), 'OA02');
+      MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, '0', '1', '2', '3000000', '3000001',
+      { from: accounts[9] }), 'OA02');
   });
 
   it('should prevent token operator to update session rules above campaign period length limit', async function () {
@@ -505,7 +506,8 @@ contract('VotingSessionManager', function (accounts) {
   describe('with an approved proposal to change the session rules', function () {
     beforeEach(async function () {
       const request = votingSession.contract.methods.updateSessionRule(
-        MIN_PERIOD_LENGTH+1, MIN_PERIOD_LENGTH+2, MIN_PERIOD_LENGTH+3, '0', '1', '2', '3000000', '3000001').encodeABI();
+        MIN_PERIOD_LENGTH + 1, MIN_PERIOD_LENGTH + 2, MIN_PERIOD_LENGTH + 3,
+        '0', '1', '2', '3000000', '3000001').encodeABI();
       await votingSession.defineProposal(
         'Changing the rules',
         proposalUrl,
@@ -528,9 +530,9 @@ contract('VotingSessionManager', function (accounts) {
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.logs.length, 2);
       assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
-      assert.equal(tx.logs[0].args.campaignPeriod.toString(), MIN_PERIOD_LENGTH+1, 'campaign period');
-      assert.equal(tx.logs[0].args.votingPeriod.toString(), MIN_PERIOD_LENGTH+2, 'voting period');
-      assert.equal(tx.logs[0].args.gracePeriod.toString(), MIN_PERIOD_LENGTH+3, 'grace period');
+      assert.equal(tx.logs[0].args.campaignPeriod.toString(), MIN_PERIOD_LENGTH + 1, 'campaign period');
+      assert.equal(tx.logs[0].args.votingPeriod.toString(), MIN_PERIOD_LENGTH + 2, 'voting period');
+      assert.equal(tx.logs[0].args.gracePeriod.toString(), MIN_PERIOD_LENGTH + 3, 'grace period');
       assert.equal(tx.logs[0].args.periodOffset.toString(), '0', 'period offset');
       assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
       assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
@@ -541,9 +543,9 @@ contract('VotingSessionManager', function (accounts) {
       assert.equal(tx.logs[1].args.proposalId.toString(), '1', 'proposal id');
 
       const sessionRule = await votingSession.sessionRule();
-      assert.equal(sessionRule.campaignPeriod.toString(), MIN_PERIOD_LENGTH+1, 'campaignPeriod');
-      assert.equal(sessionRule.votingPeriod.toString(), MIN_PERIOD_LENGTH+2, 'votingPeriod');
-      assert.equal(sessionRule.gracePeriod.toString(), MIN_PERIOD_LENGTH+3, 'gracePeriod');
+      assert.equal(sessionRule.campaignPeriod.toString(), MIN_PERIOD_LENGTH + 1, 'campaignPeriod');
+      assert.equal(sessionRule.votingPeriod.toString(), MIN_PERIOD_LENGTH + 2, 'votingPeriod');
+      assert.equal(sessionRule.gracePeriod.toString(), MIN_PERIOD_LENGTH + 3, 'gracePeriod');
       assert.equal(sessionRule.periodOffset.toString(), '0', 'period offset');
       assert.equal(sessionRule.maxProposals.toString(), '1', 'maxProposals');
       assert.equal(sessionRule.maxProposalsOperator.toString(), '2', 'maxProposalsOperator');
@@ -929,7 +931,6 @@ contract('VotingSessionManager', function (accounts) {
   const DEFINE_SECOND_PROPOSAL_COST = 183306;
   const FIRST_VOTE_COST = 319482;
   const SECOND_VOTE_COST = 155437;
-  const VOTE_FOR_TWO_PROPOSALS_COST = 138210;
   const VOTE_ON_BEHALF_COST = 182841;
   const EXECUTE_ONE_COST = 84639;
   const EXECUTE_ALL_COST = 532744;
@@ -973,7 +974,7 @@ contract('VotingSessionManager', function (accounts) {
             proposalHash,
             ANY_TARGET,
             '0x');
-          votes += 2**i;
+          votes += 2 ** i;
         }
 
         await votingSession.nextSessionStepTest();
@@ -1011,7 +1012,7 @@ contract('VotingSessionManager', function (accounts) {
             proposalHash,
             ANY_TARGET,
             '0x');
-          votes += 2**(i-1);
+          votes += 2 ** (i - 1);
           proposals.push(i);
         }
 

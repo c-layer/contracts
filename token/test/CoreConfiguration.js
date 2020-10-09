@@ -159,21 +159,21 @@ contract('CoreConfiguration', function (accounts) {
         });
 
         it('should have 0+7 delegates correctly configured', async function () {
-          const d0 = await core.delegates(0);
+          const d0 = await core.delegate(0);
           assert.equal(d0, NULL_ADDRESS, 'no delegateId 0');
-          const d1 = await core.delegates(1);
+          const d1 = await core.delegate(1);
           assert.equal(d1, mintableDelegate.address, 'delegate 1');
-          const d2 = await core.delegates(2);
+          const d2 = await core.delegate(2);
           assert.equal(d2, mintableDelegate.address, 'delegate 2');
-          const d3 = await core.delegates(3);
+          const d3 = await core.delegate(3);
           assert.equal(d3, compliantDelegate.address, 'delegate 3');
-          const d4 = await core.delegates(4);
+          const d4 = await core.delegate(4);
           assert.equal(d4, compliantDelegate.address, 'delegate 4');
-          const d5 = await core.delegates(5);
+          const d5 = await core.delegate(5);
           assert.equal(d5, compliantDelegate.address, 'delegate 5');
-          const d6 = await core.delegates(6);
+          const d6 = await core.delegate(6);
           assert.equal(d6, compliantDelegate.address, 'delegate 6');
-          const d7 = await core.delegates(7);
+          const d7 = await core.delegate(7);
           assert.equal(d7, compliantDelegate.address, 'delegate 7');
         });
 
