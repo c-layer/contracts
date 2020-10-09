@@ -31,6 +31,20 @@ contract OperableStorage is IOperableStorage, Ownable, Storage {
   mapping (bytes32 => RoleData) internal roles;
 
   /**
+   * @dev proxyDelegateId
+   */
+  function proxyDelegateId(address _proxy) override public view returns (uint256) {
+    return proxyDelegateIds[_proxy];
+  }
+
+  /**
+   * @dev delegate
+   */
+  function delegate(uint256 _delegateId) override public view returns (address) {
+    return delegates[_delegateId];
+  }
+
+  /**
    * @dev core role
    * @param _address operator address
    */

@@ -13,8 +13,8 @@ import "../TokenStorage.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * LTD01: token is currently locked
- * LTD02: startAt must be before or equal to endAt
+ * LD01: locks must be valid proxies
+ * LD02: startAt must be before or equal to endAt
  */
 abstract contract LockableDelegate is TokenStorage {
 
@@ -24,6 +24,10 @@ abstract contract LockableDelegate is TokenStorage {
   function defineTokenLock(address _token, address[] memory _locks)
     public returns (bool)
   {
+    for(uint256 i=0; i < _locks.length; i++) {
+      require(delegates[proxyDelegateIds[_locks[i]]] != address(0), "LD01");
+    }
+
     tokens[_token].locks = _locks;
     emit TokenLocksDefined(_token, _locks);
   }
@@ -37,7 +41,7 @@ abstract contract LockableDelegate is TokenStorage {
     uint256 _endAt,
     address[] memory _exceptions) public returns (bool)
   {
-    require(_startAt <= _endAt, "LTD01");
+    require(_startAt <= _endAt, "LD02");
     locks[_lock] = Lock(_startAt, _endAt, _exceptions);
     Lock storage lock = locks[_lock];
     for (uint256 i=0; i < _exceptions.length; i++) {

@@ -13,6 +13,9 @@ import "../interface/IAccessDefinitions.sol";
  * Error messages
  */
 abstract contract IOperableStorage is IAccessDefinitions {
+  function proxyDelegateId(address _proxy) virtual public view returns (uint256);
+  function delegate(uint256 _delegateId) virtual public view returns (address);
+
   function coreRole(address _address) virtual public view returns (bytes32);
   function proxyRole(address _proxy, address _address) virtual public view returns (bytes32);
   function rolePrivilege(bytes32 _role, bytes4 _privilege) virtual public view returns (bool);

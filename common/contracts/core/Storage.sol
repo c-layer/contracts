@@ -10,7 +10,6 @@ pragma solidity ^0.6.0;
  * Error messages
  **/
 contract Storage {
-
-  mapping(address => uint256) public proxyDelegateIds;
-  mapping(uint256 => address) public delegates;
+  mapping(address => uint256) internal proxyDelegateIds;
+  mapping(uint256 => address) internal delegates;
 }

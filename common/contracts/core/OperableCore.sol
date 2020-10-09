@@ -19,7 +19,8 @@ import "./Core.sol";
  *   OC04: Role must not be null
  *   OC05: AllPrivileges is a reserved role
  *   OC06: AllProxies is not a valid proxy address
- *   OC07: Operator has no role
+ *   OC07: Proxy must be valid
+ *   OC08: Operator has no role
  */
 contract OperableCore is IOperableCore, Core, OperableStorage {
 
@@ -99,6 +100,8 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
     address _proxy, bytes32 _role, address[] memory _operators)
     override public onlySysOp returns (bool)
   {
+    require(_proxy == ALL_PROXIES ||
+      delegates[proxyDelegateIds[_proxy]] != address(0), "OC07");
     require(_role != bytes32(0), "OC04");
 
     for (uint256 i=0; i < _operators.length; i++) {
@@ -117,7 +120,7 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
   {
     for (uint256 i=0; i < _operators.length; i++) {
       OperatorData storage operator = operators[_operators[i]];
-      require(operator.coreRole != bytes32(0), "OC07");
+      require(operator.coreRole != bytes32(0), "OC08");
       operator.coreRole = bytes32(0);
 
       emit OperatorRevoked(_operators[i]);
@@ -134,7 +137,7 @@ contract OperableCore is IOperableCore, Core, OperableStorage {
   {
     for (uint256 i=0; i < _operators.length; i++) {
       OperatorData storage operator = operators[_operators[i]];
-      require(operator.proxyRoles[_proxy] != bytes32(0), "OC07");
+      require(operator.proxyRoles[_proxy] != bytes32(0), "OC08");
       operator.proxyRoles[_proxy] = bytes32(0);
 
       emit ProxyOperatorRevoked(_proxy, _operators[i]);
