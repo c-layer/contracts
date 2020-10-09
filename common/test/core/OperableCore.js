@@ -288,6 +288,11 @@ contract('OperableCore', function (accounts) {
       await core.defineDelegate(1, core.address);
     });
 
+    it('should have a delegate', async function () {
+      const delegateAddress = await core.delegate(1);
+      assert.equal(delegateAddress, core.address, 'delegate');
+    });
+
     it('should let sys operator define a proxy', async function () {
       const tx = await core.defineProxy(proxy.address, 1, { from: sysOperator });
       assert.ok(tx.receipt.status, 'Status');
@@ -304,6 +309,11 @@ contract('OperableCore', function (accounts) {
     describe('with a proxy configured', function () {
       beforeEach(async function () {
         await core.defineProxy(proxy.address, 1, { from: sysOperator });
+      });
+
+      it('should have a delegateId for the proxy', async function () {
+        const delegateId = await core.proxyDelegateId(proxy.address);
+        assert.equal(delegateId, 1, 'delegate id');
       });
 
       it('should let operator add proxy operators', async function () {
