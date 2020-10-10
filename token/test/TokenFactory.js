@@ -11,7 +11,7 @@ const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1349223;
+const TOKEN_DEPLOYMENT_COST = 1349358;
 const TRANSFER_LOCKED = 5;
 const TRANSFER_RULED = 7;
 
@@ -34,7 +34,7 @@ const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
   web3.utils.sha3('finishMinting(address)'),
   web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
-  web3.utils.sha3('defineTokenLock(address,address[])'),
+  web3.utils.sha3('defineTokenLocks(address,address[])'),
   web3.utils.sha3('defineRules(address,address[])'),
 ].map((x) => x.substr(0, 10));
 const APPROVE_PRIVILEGES = [

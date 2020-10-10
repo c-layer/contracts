@@ -111,7 +111,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     if (_lockEnd > now) {
       address[] memory locks = new address[](1);
       locks[0] = address(token);
-      require(_core.defineTokenLock(address(token), locks), "TF09");
+      require(_core.defineTokenLocks(address(token), locks), "TF09");
       require(_core.defineLock(address(token), 0, _lockEnd, new address[](0)), "TF10");
     }
 

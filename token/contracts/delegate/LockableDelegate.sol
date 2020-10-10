@@ -21,7 +21,7 @@ abstract contract LockableDelegate is TokenStorage {
   /**
    * @dev define token lock
    */
-  function defineTokenLock(address _token, address[] memory _locks)
+  function defineTokenLocks(address _token, address[] memory _locks)
     public returns (bool)
   {
     for(uint256 i=0; i < _locks.length; i++) {

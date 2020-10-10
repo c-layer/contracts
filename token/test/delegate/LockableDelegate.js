@@ -25,7 +25,7 @@ contract('LockableDelegate', function (accounts) {
   });
 
   it('should let define the token lock', async function () {
-    const tx = await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+    const tx = await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'TokenLocksDefined', 'event');
@@ -46,7 +46,7 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a lock defined in the past', function () {
     beforeEach(async function () {
-      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
       await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR - 1, PREVIOUS_YEAR, []);
     });
 
@@ -70,7 +70,7 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a lock defined and active now, excepts for accounts 2', function () {
     beforeEach(async function () {
-      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
       await delegate.defineLock(TOKEN_ADDRESS, PREVIOUS_YEAR, NEXT_YEAR, [accounts[3]]);
     });
 
@@ -124,7 +124,7 @@ contract('LockableDelegate', function (accounts) {
 
   describe('With a lock defined in the future', function () {
     beforeEach(async function () {
-      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
       await delegate.defineLock(TOKEN_ADDRESS, NEXT_YEAR, NEXT_YEAR + 1, [accounts[3]]);
     });
 
@@ -149,7 +149,7 @@ contract('LockableDelegate', function (accounts) {
   describe('With a non token lock defined', function () {
     beforeEach(async function () {
       await delegate.defineLockProxies([TOKEN_ADDRESS, accounts[0]]);
-      await delegate.defineTokenLock(TOKEN_ADDRESS, [TOKEN_ADDRESS, accounts[0]]);
+      await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS, accounts[0]]);
       await delegate.defineLock(accounts[0], 0, NEXT_YEAR, [accounts[3]]);
     });
 

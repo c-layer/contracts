@@ -252,7 +252,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_lock);
   }
 
-  function defineTokenLock(address _token, address[] calldata)
+  function defineTokenLocks(address _token, address[] calldata)
     override external onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);

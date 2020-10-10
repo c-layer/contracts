@@ -333,7 +333,7 @@ contract('TokenCore', function (accounts) {
           await core.defineProxy(delegate.address, 1);
           await core.defineLock(delegate.address, LOCK_START, LOCK_END,
             [accounts[1], accounts[2]]);
-          await core.defineTokenLock(token.address, [token.address, delegate.address]);
+          await core.defineTokenLocks(token.address, [token.address, delegate.address]);
         });
 
         it('should have a lock', async function () {

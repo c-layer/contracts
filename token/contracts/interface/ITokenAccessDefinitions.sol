@@ -41,7 +41,7 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
   bytes4 internal constant DEFINE_LOCK_PRIV =
     bytes4(keccak256("defineLock(address,uint256,uint256,address[])"));
   bytes4 internal constant DEFINE_TOKEN_LOCK_PRIV =
-    bytes4(keccak256("defineTokenLock(address,address[])"));
+    bytes4(keccak256("defineTokenLocks(address,address[])"));
   bytes4 internal constant FREEZE_MANY_ADDRESSES_PRIV =
     bytes4(keccak256("freezeManyAddresses(address,address[],uint256)"));
   bytes4 internal constant DEFINE_RULES_PRIV =

@@ -76,7 +76,7 @@ contract('VotingSessionManager', function (accounts) {
     votingSession = await VotingSessionManager.new(token.address);
 
     await core.defineProxy(votingSession.address, 1);
-    await core.defineTokenLock(token.address, [token.address, votingSession.address]);
+    await core.defineTokenLocks(token.address, [token.address, votingSession.address]);
     await core.assignProxyOperators(votingSession.address, ALL_PRIVILEGES, [votingSession.address]);
     await core.assignProxyOperators(token.address, ALL_PRIVILEGES, [votingSession.address]);
 
@@ -977,13 +977,13 @@ contract('VotingSessionManager', function (accounts) {
     });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 343481;
-  const DEFINE_SECOND_PROPOSAL_COST = 192937;
-  const FIRST_VOTE_COST = 319548;
-  const SECOND_VOTE_COST = 155503;
-  const VOTE_ON_BEHALF_COST = 182881;
-  const EXECUTE_ONE_COST = 70072;
-  const EXECUTE_ALL_COST = 386854;
+  const DEFINE_FIRST_PROPOSAL_COST = 343547;
+  const DEFINE_SECOND_PROPOSAL_COST = 193003;
+  const FIRST_VOTE_COST = 319614;
+  const SECOND_VOTE_COST = 155569;
+  const VOTE_ON_BEHALF_COST = 183035;
+  const EXECUTE_ONE_COST = 70094;
+  const EXECUTE_ALL_COST = 386876;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('shoould estimate a first proposal', async function () {

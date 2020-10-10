@@ -95,7 +95,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     virtual external returns (bool);
   function defineLock(address, uint256, uint256, address[] calldata)
     virtual external returns (bool);
-  function defineTokenLock(address _token, address[] memory locks)
+  function defineTokenLocks(address _token, address[] memory locks)
     virtual external returns (bool);
   function freezeManyAddresses(
     address _token,
