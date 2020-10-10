@@ -23,7 +23,8 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint64 gracePeriod; // delay between two votes
 
     uint64 periodOffset; // Offset before the first session period
-  
+ 
+    uint8 openProposals;
     uint8 maxProposals;
     uint8 maxProposalsOperator;
     uint256 newProposalThreshold;
@@ -67,6 +68,7 @@ contract VotingSessionStorage is IVotingDefinitions {
     VOTING_PERIOD,
     GRACE_PERIOD,
     OFFSET_PERIOD,
+    OPEN_PROPOSALS,
     MAX_PROPOSALS,
     MAX_PROPOSALS_OPERATOR,
     NEW_PROPOSAL_THRESHOLD,

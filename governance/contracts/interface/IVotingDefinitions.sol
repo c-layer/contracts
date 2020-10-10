@@ -36,6 +36,7 @@ abstract contract IVotingDefinitions {
   uint128 internal constant DEFAULT_MAJORITY = 50;
   uint128 internal constant DEFAULT_QUORUM = 60;
 
-  uint8 internal constant MAX_PROPOSALS = 10;
+  uint8 internal constant OPEN_PROPOSALS = 5;
+  uint8 internal constant MAX_PROPOSALS = 20;
   uint8 internal constant MAX_PROPOSALS_OPERATOR = 25;
 }

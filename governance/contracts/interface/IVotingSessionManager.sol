@@ -34,10 +34,14 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint64 votingPeriod,
     uint64 gracePeriod,
     uint64 periodOffset,
+    uint8 openProposals,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
     uint256 executeProposalThreshold);
+
+  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount)
+    virtual public view returns (uint256);
 
   function resolutionRequirement(address _target, bytes4 _method) virtual public view returns (
     uint128 majority,
@@ -71,6 +75,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint64 _votingPeriod,
     uint64 _gracePeriod,
     uint64 _periodOffset,
+    uint8 _openProposals,
     uint8 _maxProposals,
     uint8 _maxProposalsQuaestor,
     uint256 _newProposalThreshold,
@@ -117,6 +122,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint64 votingPeriod,
     uint64 gracePeriod,
     uint64 periodOffset,
+    uint8 openProposals,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
     uint256 newProposalThreshold,
