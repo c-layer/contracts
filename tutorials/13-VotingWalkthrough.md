@@ -61,7 +61,18 @@ A new voting session can be created using the `VotingSession` contract. A voting
 session = await VotingSession.new(token.address) 
 ```
 
-The voting contract needs to be granted sufficient permissions to operate the token, so it can lock the tokens during the voting period. We will grant the 'AllPriviledges' role to the voting contract for the token (the privileges topic is covered in more details in another tutorial):
+The voting contract needs it's own lock to prevent tokens tranfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
+
+```
+session.defineProxy(session.address, 1);
+```
+
+We can the assign the newly created lock to the token
+```
+session.defineTokenLocks(token.address, [token.address, session.address]);
+```
+
+Then the voting contract needs to be granted sufficient permissions to operate the token lock. We will grant the 'AllPriviledges' role to the voting contract for the token (the privileges topic is covered in more details in another tutorial):
 ```
 ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
 core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ session.address ]);
@@ -85,7 +96,7 @@ By default, a voting session will last 2 weeks. As we do not want the tutorial t
 - requirement to have a minimum of 10 tokens to be able to submit proposals
 - requirement to have a minimum of 10 tokens to be able to execute proposals
 ```
-session.updateSessionRule(5*60, 5*60, 0, 10*60, 100, 255, 10, 10)
+session.updateSessionRule(5*60, 5*60, 0, 10*60, 0, 100, 100, 255, 1, 1)
 ```
 So now it is possible to schedule a new voting session every 15 minutes. 
 
@@ -124,38 +135,38 @@ The length of the voting sessions being 15 minutes, the next voting session will
 
 We can double check by querying the session:
 ```
-await session.session(1).then(x => new Date(x.startAt*1000))
+await session.session(1).then(x => new Date(x.voteAt*1000))
 ```
 
 
 ### Modify the proposal
 Until the CAMPAIGN period starts, it is still possible to update the proposal:
 ```
-session.updateProposal(0, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
+session.updateProposal(1, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
 ```
 We can check that the proposal has been properly updated:
 ```
-session.proposal(0)
+session.proposal(1)
 ```
 
 
 ### Voting 
-When the VOTING period begins, we can simulate a vote from account[1] for the proposal:
+When the VOTING period begins, we can simulate a vote from account[1] for the proposal. The given value is a 256 bits number where each bit code for a vote
 ```
-session.submitVote([true], {from: accounts[1]})
+session.submitVote(1, {from: accounts[1]})
 ```
-Note here that we used an Array of booleans to submit our vote, indicating our voting decision for every proposal. 
+Note here that we could have used instead the hexadecimal representation of this bit map: `0x0000000000000000000000000000000000000000000000000000000000000001`
 
 We can check if the proposal has been approved:
 ```
-session.isApproved(0)
+session.isApproved(1)
 ```
 The proposal is not approved, as accounts[1] only holds 1/3 of the tokens.
 
 Let's simulate a new vote supporting the proposal from accounts[0] and check that the proposal is then approved:
 ```
-session.submitVote([true])
-session.isApproved(0)
+session.submitVote(1)
+session.isApproved(1)
 ```
 
 
@@ -165,9 +176,9 @@ When the VOTING period is closed (in our case 5 minutes after it began), the ses
 session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
-Anyone who owns enought tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:
+Anyone who owns enough tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:
 ```
-session.executeResolution(0, {from: accounts[1]})
+session.executeResolutions([1], {from: accounts[1]})
 ```
 
 Let's verify that the new tokens have been minted:
