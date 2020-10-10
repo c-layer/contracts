@@ -23,7 +23,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     bytes memory resolutionAction);
   function proposalData(uint256 _sessionId, uint256 _proposalId) virtual public view returns (
     address proposedBy,
-    uint256 weight,
+    uint128 requirementMajority,
+    uint128 requirementQuorum,
     uint256 approvals,
     bool resolutionExecuted,
     bool cancelled);
@@ -39,8 +40,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint256 executeProposalThreshold);
 
   function resolutionRequirement(address _target, bytes4 _method) virtual public view returns (
-    uint256 majority,
-    uint256 quorum);
+    uint128 majority,
+    uint128 quorum);
 
   function sessionsCount() virtual public view returns (uint256);
 
@@ -52,7 +53,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint64 graceAt,
     uint64 closedAt,
     uint256 sessionProposalsCount,
-    uint256 participation);
+    uint256 participation,
+    uint256 totalSupply);
 
   function delegate(address _voter) virtual public view returns (address);
 
@@ -78,8 +80,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   function updateResolutionRequirements(
     address[] memory _targets,
     bytes4[] memory _methodSignatures,
-    uint256[] memory _majority,
-    uint256[] memory _quorum
+    uint128[] memory _majority,
+    uint128[] memory _quorum
   ) virtual public returns (bool);
 
   function defineDelegate(address _delegate) virtual public returns (bool);
@@ -123,8 +125,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   event ResolutionRequirementUpdated(
     address target,
     bytes4 methodSignature,
-    uint256 majority,
-    uint256 quorum
+    uint128 majority,
+    uint128 quorum
   );
 
   event DelegateDefined(address indexed voter, address delegate);

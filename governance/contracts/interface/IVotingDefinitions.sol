@@ -33,10 +33,9 @@ abstract contract IVotingDefinitions {
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;
   uint256 internal constant EXECUTE_RESOLUTION_THRESHOLD = 1;
-  uint256 internal constant DEFAULT_MAJORITY = 50;
-  uint256 internal constant DEFAULT_QUORUM = 60;
+  uint128 internal constant DEFAULT_MAJORITY = 50;
+  uint128 internal constant DEFAULT_QUORUM = 60;
 
   uint8 internal constant MAX_PROPOSALS = 10;
   uint8 internal constant MAX_PROPOSALS_OPERATOR = 25;
-  uint8 internal constant MAX_PROPOSALS_HARD_LIMIT = 255;
 }

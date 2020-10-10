@@ -31,8 +31,8 @@ contract VotingSessionStorage is IVotingDefinitions {
   }
 
   struct ResolutionRequirement {
-    uint256 majority;
-    uint256 quorum;
+    uint128 majority;
+    uint128 quorum;
   }
 
   struct Session {
@@ -40,8 +40,9 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint64 voteAt;
     uint64 graceAt;
     uint64 closedAt;
-    uint256 proposalsCount;
+    uint8 proposalsCount;
     uint256 participation;
+    uint256 totalSupply;
 
     mapping(uint256 => Proposal) proposals;
   }
@@ -54,9 +55,9 @@ contract VotingSessionStorage is IVotingDefinitions {
     address resolutionTarget;
     bytes resolutionAction;
 
-    uint256 weight;
     uint256 approvals;
 
+    ResolutionRequirement requirement;
     bool resolutionExecuted;
     bool cancelled;
  }
