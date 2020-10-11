@@ -56,47 +56,52 @@ token.balanceOf(accounts[1]).then(x => x.toString())
 ```
 
 ### Setup of a new voting contract 
-A new voting session can be created using the `VotingSession` contract. A voting session will be made of several session instances, so do not get confused by the name of the contract. In the rest of this tutorial, the VotingSession contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
+A new voting session manager can be created using the `VotingSessionManager` contract. A voting session will be made of several session instances, so do not get confused by the name of the contract. In the rest of this tutorial, the VotingSession contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
 ```
-session = await VotingSession.new(token.address) 
+voting = await VotingSessionManager.new(token.address) 
 ```
 
 The voting contract needs it's own lock to prevent tokens tranfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
 
 ```
-session.defineProxy(session.address, 1);
+core.defineProxy(voting.address, 1);
 ```
 
 We can the assign the newly created lock to the token
 ```
-session.defineTokenLocks(token.address, [token.address, session.address]);
+core.defineTokenLocks(token.address, [token.address, voting.address]);
 ```
 
-Then the voting contract needs to be granted sufficient permissions to operate the token lock. We will grant the 'AllPriviledges' role to the voting contract for the token (the privileges topic is covered in more details in another tutorial):
+Then the voting contract needs to be granted sufficient permissions to operate its lock. We will grant the 'AllPriviledges' role to the voting contract for itself (the privileges topic is covered in more details in another tutorial):
 ```
 ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
-core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ session.address ]);
+core.assignProxyOperators(voting.address, ALL_PRIVILEGES, [ voting.address ]);
+```
+
+As we will try to mint more tokens through the voting contract, we need to provide the voting contract with some privileges on the token. Let's reuse the same command:
+```
+core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ voting.address ]);
 ```
 
 Each voting session will go through the following states:
 - 0: PLANNED, a new session is planned and proposals can be submitted
 - 1: CAMPAIGN, proposals can not be submitted anymore, poeple can promote their proposals
 - 2: VOTING, votes can be submitted
-- 3: REVEAL, votes can be revealed if they were submitted secretely 
-- 4: GRACE, proposals can be executed
-- 5: CLOSED
+- 3: GRACE, proposals can be executed
+- 4: CLOSED
 
 By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
 - campaign period of 5 minutes
 - voting period of 5 minutes
-- reveal period of 0 minutes (no secret votes)
 - grace period of 10 minutes
-- maximum of 100 proposals for each voting session
-- maximum of 255 proposals that can be submitted by the quaestor
-- requirement to have a minimum of 10 tokens to be able to submit proposals
-- requirement to have a minimum of 10 tokens to be able to execute proposals
+- offset for the first period of 0 minutes
+- The 10 first proposals are open to anyone with the minimum requirement
+- maximum of 20 proposals for each voting session
+- maximum of 25 proposals that can be submitted by the quaestor
+- requirement to have a minimum of 1 tokens to be able to submit proposals
+- requirement to have a minimum of 1 tokens to be able to execute proposals
 ```
-session.updateSessionRule(5*60, 5*60, 0, 10*60, 0, 100, 100, 255, 1, 1)
+voting.updateSessionRule(5*60, 5*60, 10*60, 0, 10, 20, 25, 1, 1)
 ```
 So now it is possible to schedule a new voting session every 15 minutes. 
 
@@ -114,19 +119,19 @@ We can now submit this proposal. We will use the defineProposal function that ta
 - the SmartContract to call 
 - the encoded request to submit to the Smart Contract
 ```
-session.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request)  
+voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request)  
 ```
 
 ### Inspect the current voting session 
 We can get the id of the current voting session using the sessions count function:
 ```
-session.sessionsCount().then(x => x.toString())
+voting.sessionsCount().then(x => x.toString())
  ```
 This returns "1" as a new voting session has been dynamically created when we submitted our proposal. 
 
 Let's check where we are with session 1:
 ```
-session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+voting.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 This returns "0", indicating that the session is in the PLANNED stage.
 After a few minutes, "1" will be returned instead, indicating that the voting session is in the CAMPAIGN state.
@@ -135,50 +140,50 @@ The length of the voting sessions being 15 minutes, the next voting session will
 
 We can double check by querying the session:
 ```
-await session.session(1).then(x => new Date(x.voteAt*1000))
+await voting.session(1).then(x => new Date(x.voteAt*1000))
 ```
 
 
 ### Modify the proposal
 Until the CAMPAIGN period starts, it is still possible to update the proposal:
 ```
-session.updateProposal(1, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
+voting.updateProposal(1, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
 ```
 We can check that the proposal has been properly updated:
 ```
-session.proposal(1)
+voting.proposal(1)
 ```
 
 
 ### Voting 
 When the VOTING period begins, we can simulate a vote from account[1] for the proposal. The given value is a 256 bits number where each bit code for a vote
 ```
-session.submitVote(1, {from: accounts[1]})
+voting.submitVote(1, {from: accounts[1]})
 ```
 Note here that we could have used instead the hexadecimal representation of this bit map: `0x0000000000000000000000000000000000000000000000000000000000000001`
 
 We can check if the proposal has been approved:
 ```
-session.isApproved(1)
+voting.isApproved(1)
 ```
 The proposal is not approved, as accounts[1] only holds 1/3 of the tokens.
 
 Let's simulate a new vote supporting the proposal from accounts[0] and check that the proposal is then approved:
 ```
-session.submitVote(1)
-session.isApproved(1)
+voting.submitVote(1)
+voting.isApproved(1)
 ```
 
 
 ### Execution of the proposal
 When the VOTING period is closed (in our case 5 minutes after it began), the session state will enter the GRACE period:
 ```
-session.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+voting.sessionStateAt(1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
 Anyone who owns enough tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:
 ```
-session.executeResolutions([1], {from: accounts[1]})
+voting.executeResolutions([1], {from: accounts[1]})
 ```
 
 Let's verify that the new tokens have been minted:
