@@ -49,8 +49,6 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function sessionsCount() virtual public view returns (uint256);
 
-  function currentSessionId() virtual public view returns (uint256);
-
   function session(uint256 _sessionId) virtual public view returns (
     uint64 campaignAt,
     uint64 voteAt,
@@ -60,7 +58,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint256 participation,
     uint256 totalSupply);
 
-  function delegate(address _voter) virtual public view returns (address);
+  function sponsor(address _voter) virtual public view returns (address address_, uint64 until);
 
   function lastVote(address _voter) virtual public view returns (uint64 at);
 
@@ -89,7 +87,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint128[] memory _quorum
   ) virtual public returns (bool);
 
-  function defineDelegate(address _delegate) virtual public returns (bool);
+  function defineSponsor(address _address, uint64 _until) virtual public returns (bool);
 
   function defineProposal(
     string memory _name,
@@ -135,7 +133,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint128 quorum
   );
 
-  event DelegateDefined(address indexed voter, address delegate);
+  event SponsorDefined(address indexed voter, address address_, uint64 until);
 
   event SessionScheduled(uint256 indexed sessionId, uint64 voteAt);
   event ProposalDefined(uint256 indexed sessionId, uint256 proposalId);

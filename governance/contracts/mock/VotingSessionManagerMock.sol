@@ -25,7 +25,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
    * @dev nextSessionStepTest
    */
   function nextSessionStepTest() public returns (bool) {
-    return nextStepTest(currentSessionId());
+    return nextStepTest(currentSessionId_);
   }
 
   /**

@@ -63,6 +63,11 @@ contract VotingSessionStorage is IVotingDefinitions {
     bool cancelled;
  }
 
+ struct Sponsor {
+   address address_;
+   uint64 until;
+ }
+
   SessionRule internal sessionRule_ = SessionRule(
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
@@ -73,13 +78,14 @@ contract VotingSessionStorage is IVotingDefinitions {
     MAX_PROPOSALS_OPERATOR,
     NEW_PROPOSAL_THRESHOLD,
     EXECUTE_RESOLUTION_THRESHOLD);
+  SessionRule internal lockedSessionRule_;
 
   mapping(address => mapping(bytes4 => ResolutionRequirement)) internal resolutionRequirements;
 
-  uint256 internal sessionsCount_;
+  uint256 internal currentSessionId_;
   mapping(uint256 => Session) internal sessions;
   mapping(address => uint64) internal lastVotes;
-  mapping(address => address) internal delegates;
+  mapping(address => Sponsor) internal sponsors;
  
   ITokenProxy internal token_;
   ITokenCore internal core_;
