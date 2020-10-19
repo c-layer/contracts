@@ -10,7 +10,8 @@ import "../voting/VotingSessionManager.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   VSM01: Session is already closed
+ *   VSMM01: Session has not started yet
+ *   VSMM02: Session is already closed
  **/
 contract VotingSessionManagerMock is VotingSessionManager {
 
@@ -36,7 +37,8 @@ contract VotingSessionManagerMock is VotingSessionManager {
     SessionState state = sessionStateAt(_sessionId, time);
     Session storage session_ = sessions[_sessionId];
 
-    require(state != SessionState.CLOSED, "VSM01");
+    require(state != SessionState.UNDEFINED, "VSMM01");
+    require(state != SessionState.CLOSED, "VSMM02");
     uint256 voteAt = time;
 
     if (state == SessionState.PLANNED) {
@@ -47,6 +49,10 @@ contract VotingSessionManagerMock is VotingSessionManager {
     }
 
     if (state == SessionState.VOTING) {
+      voteAt -= (session_.executionAt - session_.voteAt);
+    }
+
+    if (state == SessionState.EXECUTION) {
       voteAt -= (session_.graceAt - session_.voteAt);
     }
 
@@ -56,9 +62,11 @@ contract VotingSessionManagerMock is VotingSessionManager {
 
     session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
     session_.voteAt = uint64(voteAt);
-    session_.graceAt = uint64(voteAt.add(sessionRule_.votingPeriod));
-    session_.closedAt = uint64(voteAt
-      .add(sessionRule_.votingPeriod).add(sessionRule_.gracePeriod));
+    session_.executionAt = uint64(voteAt.add(sessionRule_.votingPeriod));
+    session_.graceAt = uint64(voteAt.add(sessionRule_.votingPeriod)
+      .add(sessionRule_.executionPeriod));
+    session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
+      .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
     return true;
   }
 }

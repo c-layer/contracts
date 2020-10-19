@@ -15,11 +15,24 @@ abstract contract IVotingDefinitions {
   bytes4 internal constant ANY_METHOD = bytes4(bytes32("AnyMethod"));
 
   enum SessionState {
+    UNDEFINED,
     PLANNED,
     CAMPAIGN,
     VOTING,
+    EXECUTION,
     GRACE,
     CLOSED
+  }
+
+  enum ProposalState {
+    UNDEFINED,
+    DEFINED,
+    CANCELLED,
+    LOCKED,
+    APPROVED,
+    REJECTED,
+    RESOLVED,
+    ARCHIVED
   }
 
   uint64 internal constant MIN_PERIOD_LENGTH = 5 minutes;
@@ -27,12 +40,13 @@ abstract contract IVotingDefinitions {
   uint64 internal constant MAX_PERIOD_LENGTH = 3652500 days;
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;
   uint64 internal constant VOTING_PERIOD = 2 days;
-  uint64 internal constant GRACE_PERIOD = 7 days;
+  uint64 internal constant EXECUTION_PERIOD = 1 days;
+  uint64 internal constant GRACE_PERIOD = 6 days;
   uint64 internal constant OFFSET_PERIOD = 2 days;
 
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;
-  uint256 internal constant EXECUTE_RESOLUTION_THRESHOLD = 1;
+  uint256 internal constant DEFAULT_EXECUTION_THRESHOLD = 1;
   uint128 internal constant DEFAULT_MAJORITY = 50;
   uint128 internal constant DEFAULT_QUORUM = 60;
 

@@ -20,6 +20,7 @@ contract VotingSessionStorage is IVotingDefinitions {
   struct SessionRule {
     uint64 campaignPeriod; // Before it starts, the vote will be locked
     uint64 votingPeriod; // Time period for voters to submit their votes
+    uint64 executionPeriod; // Time period for executing resolutions
     uint64 gracePeriod; // delay between two votes
 
     uint64 periodOffset; // Offset before the first session period
@@ -28,17 +29,18 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint8 maxProposals;
     uint8 maxProposalsOperator;
     uint256 newProposalThreshold;
-    uint256 executeResolutionThreshold;
   }
 
   struct ResolutionRequirement {
     uint128 majority;
     uint128 quorum;
+    uint256 executionThreshold;
   }
 
   struct Session {
     uint64 campaignAt;
     uint64 voteAt;
+    uint64 executionAt;
     uint64 graceAt;
     uint64 closedAt;
     uint8 proposalsCount;
@@ -48,6 +50,8 @@ contract VotingSessionStorage is IVotingDefinitions {
     mapping(uint256 => Proposal) proposals;
   }
 
+  // A proposal may be semanticaly in one of the following state:
+  // DEFINED, VOTED, RESOLVED(?), PROCESSED
   struct Proposal {
     string name;
     string url;
@@ -56,29 +60,31 @@ contract VotingSessionStorage is IVotingDefinitions {
     address resolutionTarget;
     bytes resolutionAction;
 
-    uint256 approvals;
-
     ResolutionRequirement requirement;
+    uint8 dependsOn; // The previous proposal must be either non approved or executed
     bool resolutionExecuted;
     bool cancelled;
- }
+ 
+    uint8 alternativeOf;
+    uint256 approvals;
+    uint256 alternativesMask; // only used for the parent alternative proposal
+  }
 
- struct Sponsor {
-   address address_;
-   uint64 until;
- }
+  struct Sponsor {
+    address address_;
+    uint64 until;
+  }
 
   SessionRule internal sessionRule_ = SessionRule(
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
+    EXECUTION_PERIOD,
     GRACE_PERIOD,
     OFFSET_PERIOD,
     OPEN_PROPOSALS,
     MAX_PROPOSALS,
     MAX_PROPOSALS_OPERATOR,
-    NEW_PROPOSAL_THRESHOLD,
-    EXECUTE_RESOLUTION_THRESHOLD);
-  SessionRule internal lockedSessionRule_;
+    NEW_PROPOSAL_THRESHOLD);
 
   mapping(address => mapping(bytes4 => ResolutionRequirement)) internal resolutionRequirements;
 
@@ -88,7 +94,6 @@ contract VotingSessionStorage is IVotingDefinitions {
   mapping(address => Sponsor) internal sponsors;
  
   ITokenProxy internal token_;
-  ITokenCore internal core_;
 
   /**
    * @dev currentTime
