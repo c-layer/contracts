@@ -120,8 +120,8 @@ contract('VotingSessionManager', function (accounts) {
 
   it('should have default resolution requirements', async function () {
     const requirement = await votingSession.resolutionRequirement(ANY_TARGET, ANY_METHOD);
-    assert.equal(requirement.majority.toString(), '50', 'majority');
-    assert.equal(requirement.quorum.toString(), '60', 'quorum');
+    assert.equal(requirement.majority.toString(), '500000', 'majority');
+    assert.equal(requirement.quorum.toString(), '200000', 'quorum');
     assert.equal(requirement.executionThreshold.toString(), '1', 'executionThreshold');
   });
 
@@ -238,6 +238,28 @@ contract('VotingSessionManager', function (accounts) {
     assert.equal(tx.logs[1].args.proposalId.toString(), '1', 'proposalId');
   });
 
+  it('should prevent adding a new proposal with invalid dependency', async function () {
+    await assertRevert(votingSession.defineProposal(
+      proposalName,
+      proposalUrl,
+      proposalHash,
+      ANY_TARGET,
+      '0x',
+      '5',
+      '0'), 'VSM35');
+  });
+
+  it('should prevent adding a new proposal with invalid alternative reference', async function () {
+    await assertRevert(votingSession.defineProposal(
+      proposalName,
+      proposalUrl,
+      proposalHash,
+      ANY_TARGET,
+      '0x',
+      '0',
+      '5'), 'VSM36');
+  });
+
   it('should prevent anyone to update session rules', async function () {
     await assertRevert(votingSession.updateSessionRule(
       MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH + 1,
@@ -309,20 +331,21 @@ contract('VotingSessionManager', function (accounts) {
 
   it('shnould let operator to update resolution requirements', async function () {
     const tx = await votingSession.updateResolutionRequirements(
-      [ANY_TARGET, votingSession.address], signatures, ['10', '15'], ['10', '15'], ['1000000', '2000000']);
+      [ANY_TARGET, votingSession.address], signatures,
+      ['100000', '150000'], ['100000', '150000'], ['1000000', '2000000']);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, 'ResolutionRequirementUpdated', 'event');
     assert.equal(tx.logs[0].args.target.toString().toLowerCase(), ANY_TARGET, 'undefined target');
     assert.equal(tx.logs[0].args.methodSignature.toString(), signatures[0], 'method signature');
-    assert.equal(tx.logs[0].args.majority.toString(), '10', 'majority');
-    assert.equal(tx.logs[0].args.quorum.toString(), '10', 'quorum');
+    assert.equal(tx.logs[0].args.majority.toString(), '100000', 'majority');
+    assert.equal(tx.logs[0].args.quorum.toString(), '100000', 'quorum');
     assert.equal(tx.logs[0].args.executionThreshold.toString(), '1000000', 'executionThreshold');
     assert.equal(tx.logs[1].event, 'ResolutionRequirementUpdated', 'event');
     assert.equal(tx.logs[1].args.target.toString(), votingSession.address, 'core address');
     assert.equal(tx.logs[1].args.methodSignature.toString(), signatures[1], 'method signature');
-    assert.equal(tx.logs[1].args.majority.toString(), '15', 'majority');
-    assert.equal(tx.logs[1].args.quorum.toString(), '15', 'quorum');
+    assert.equal(tx.logs[1].args.majority.toString(), '150000', 'majority');
+    assert.equal(tx.logs[1].args.quorum.toString(), '150000', 'quorum');
     assert.equal(tx.logs[1].args.executionThreshold.toString(), '2000000', 'executionThreshold');
   });
 
@@ -373,8 +396,8 @@ contract('VotingSessionManager', function (accounts) {
     it('should have a proposal data', async function () {
       const proposal = await votingSession.proposalData(1, 1);
       assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
-      assert.equal(proposal.requirementMajority.toString(), '50', 'majority');
-      assert.equal(proposal.requirementQuorum.toString(), '60', 'quorum');
+      assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+      assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
       assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
       assert.equal(proposal.alternativeOf.toString(), '0', 'alternativeOf');
       assert.equal(proposal.alternativesMask.toString(), '0', 'alternativesMask');
@@ -492,6 +515,101 @@ contract('VotingSessionManager', function (accounts) {
       await assertRevert(votingSession.cancelProposal(2), 'VSM02');
     });
 
+    describe('when cancelled', function () {
+      beforeEach(async function () {
+        await votingSession.cancelProposal(1);
+      });
+
+      it('should have a proposal state at APPROVED', async function () {
+        const now = Math.floor(new Date().getTime() / 1000);
+        const proposalState = await votingSession.proposalStateAt(1, 1, now);
+        assert.equal(proposalState.toString(), ProposalState.CANCELLED, 'proposal state');
+      });
+    });
+
+    describe('with a different and two alternative proposals', function () {
+      beforeEach(async function () {
+        await votingSession.defineProposal(
+          proposalName,
+          proposalUrl,
+          proposalHash,
+          ANY_TARGET,
+          '0x',
+          '0',
+          '0');
+        await votingSession.defineProposal(
+          proposalName,
+          proposalUrl,
+          proposalHash,
+          ANY_TARGET,
+          '0x',
+          '0',
+          '0');
+        await votingSession.defineProposal(
+          proposalName,
+          proposalUrl,
+          proposalHash,
+          ANY_TARGET,
+          '0x',
+          '0',
+          '2');
+      });
+
+      it('should have proposalData for the reference proposal', async function () {
+        const proposal = await votingSession.proposalData(1, 2);
+        assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
+        assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+        assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
+        assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
+        assert.equal(proposal.alternativeOf.toString(), '0', 'alternativeOf');
+        assert.equal(proposal.alternativesMask.toString(), '10', 'alternativesMask');
+      });
+
+      it('should have proposalData for the alternative proposal', async function () {
+        const proposal = await votingSession.proposalData(1, 4);
+        assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
+        assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+        assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
+        assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
+        assert.equal(proposal.alternativeOf.toString(), '2', 'alternativeOf');
+        assert.equal(proposal.alternativesMask.toString(), '0', 'alternativesMask');
+      });
+
+      describe('with the alternative updated', function () {
+        beforeEach(async function () {
+          await votingSession.updateProposal(
+            4,
+            proposalName,
+            proposalUrl,
+            proposalHash,
+            ANY_TARGET,
+            '0x',
+            '0',
+            '0');
+        });
+
+        it('should have proposalData for the reference proposal', async function () {
+          const proposal = await votingSession.proposalData(1, 2);
+          assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
+          assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+          assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
+          assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
+          assert.equal(proposal.alternativeOf.toString(), '0', 'alternativeOf');
+          assert.equal(proposal.alternativesMask.toString(), '2', 'alternativesMask');
+        });
+
+        it('should have proposalData for the first alternative proposal', async function () {
+          const proposal = await votingSession.proposalData(1, 4);
+          assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
+          assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+          assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
+          assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
+          assert.equal(proposal.alternativeOf.toString(), '0', 'alternativeOf');
+          assert.equal(proposal.alternativesMask.toString(), '0', 'alternativesMask');
+        });
+      });
+    });
+
     describe('during campaign', function () {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest();
@@ -511,7 +629,7 @@ contract('VotingSessionManager', function (accounts) {
           ANY_TARGET,
           '0x',
           '0',
-          '0'), 'VSM32');
+          '0'), 'VSM33');
       });
     });
 
@@ -559,7 +677,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[5]], 1), 'VSM36');
+        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[5]], 1), 'VSM39');
       });
 
       describe('With sponsoring from account 3 to 2', function () {
@@ -595,11 +713,11 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 2), 'VSM39');
+        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 2), 'VSM42');
       });
 
       it('should prevent operator to submit vote without voters', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([], 1), 'VSM35');
+        await assertRevert(votingSession.submitVoteOnBehalf([], 1), 'VSM38');
       });
 
       it('should prevent author to update a proposal', async function () {
@@ -621,7 +739,7 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote(1), 'VSM37');
+          await assertRevert(votingSession.submitVote(1), 'VSM40');
         });
       });
 
@@ -631,7 +749,7 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote(1), 'VSM37');
+          await assertRevert(votingSession.submitVote(1), 'VSM40');
         });
       });
     });
@@ -711,7 +829,7 @@ contract('VotingSessionManager', function (accounts) {
     beforeEach(async function () {
       request = votingSession.contract.methods.updateResolutionRequirements(
         [ANY_TARGET, votingSession.address],
-        signatures, ['10', '15'], ['10', '15'], ['1000000', '2000000']).encodeABI();
+        signatures, ['100000', '150000'], ['100000', '150000'], ['1000000', '2000000']).encodeABI();
       await votingSession.defineProposal(
         'Changing the requirements',
         proposalUrl,
@@ -746,26 +864,26 @@ contract('VotingSessionManager', function (accounts) {
       assert.equal(tx.logs.length, 3);
       assert.equal(tx.logs[0].event, 'ResolutionRequirementUpdated', 'event');
       assert.equal(tx.logs[0].args.methodSignature.toString(), signatures[0], 'method signature');
-      assert.equal(tx.logs[0].args.majority.toString(), '10', 'majority');
-      assert.equal(tx.logs[0].args.quorum.toString(), '10', 'quorum');
+      assert.equal(tx.logs[0].args.majority.toString(), '100000', 'majority');
+      assert.equal(tx.logs[0].args.quorum.toString(), '100000', 'quorum');
       assert.equal(tx.logs[0].args.executionThreshold.toString(), '1000000', 'quorum');
       assert.equal(tx.logs[1].event, 'ResolutionRequirementUpdated', 'event');
       assert.equal(tx.logs[1].args.methodSignature.toString(), signatures[1], 'method signature');
-      assert.equal(tx.logs[1].args.majority.toString(), '15', 'majority');
-      assert.equal(tx.logs[1].args.quorum.toString(), '15', 'quorum');
+      assert.equal(tx.logs[1].args.majority.toString(), '150000', 'majority');
+      assert.equal(tx.logs[1].args.quorum.toString(), '150000', 'quorum');
       assert.equal(tx.logs[1].args.executionThreshold.toString(), '2000000', 'quorum');
       assert.equal(tx.logs[2].event, 'ResolutionExecuted', 'event');
       assert.equal(tx.logs[2].args.sessionId.toString(), '1', 'session id');
       assert.equal(tx.logs[2].args.proposalId.toString(), '1', 'proposal id');
 
       const requirement1 = await votingSession.resolutionRequirement(ANY_TARGET, signatures[0]);
-      assert.equal(requirement1.majority.toString(), '10', 'majority');
-      assert.equal(requirement1.quorum.toString(), '10', 'quorum');
+      assert.equal(requirement1.majority.toString(), '100000', 'majority');
+      assert.equal(requirement1.quorum.toString(), '100000', 'quorum');
       assert.equal(requirement1.executionThreshold.toString(), '1000000', 'executionThreshold');
 
       const requirement2 = await votingSession.resolutionRequirement(votingSession.address, signatures[1]);
-      assert.equal(requirement2.majority.toString(), '15', 'majority');
-      assert.equal(requirement2.quorum.toString(), '15', 'quorum');
+      assert.equal(requirement2.majority.toString(), '150000', 'majority');
+      assert.equal(requirement2.quorum.toString(), '150000', 'quorum');
       assert.equal(requirement2.executionThreshold.toString(), '2000000', 'executionThreshold');
     });
   });
@@ -850,10 +968,11 @@ contract('VotingSessionManager', function (accounts) {
     });
   });
 
-  describe('with 3 proposals: blank, mint and burn', function () {
-    let request1, request2;
+  describe('with 4 proposals: blank and (mint or burn) and seize', function () {
+    let request1, request2, request3;
 
     const MINT_MORE_TOKENS = 'Mint more tokens!';
+    const BURN_THEM_ALL = 'Burn \'em all!';
 
     beforeEach(async function () {
       await votingSession.defineProposal(
@@ -872,16 +991,26 @@ contract('VotingSessionManager', function (accounts) {
         proposalHash,
         core.address,
         request1,
-        '0',
+        '1',
         '0');
 
-      request2 = core.contract.methods.seize(token.address, accounts[1], '1000000').encodeABI();
+      request2 = core.contract.methods.burn(token.address, '1000000').encodeABI();
+      await votingSession.defineProposal(
+        BURN_THEM_ALL,
+        proposalUrl,
+        proposalHash,
+        core.address,
+        request2,
+        '1',
+        '2');
+
+      request3 = core.contract.methods.seize(token.address, accounts[1], '3000001').encodeABI();
       await votingSession.defineProposal(
         'seize dat guy',
         proposalUrl,
         proposalHash,
         core.address,
-        request2,
+        request3,
         '0',
         '0');
     });
@@ -898,8 +1027,12 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(sessionState.toString(), SessionState.VOTING, 'session state');
       });
 
-      it('should be possible to vote', async function () {
+      it('should be possible to vote for a proposal', async function () {
         await votingSession.submitVote(4);
+      });
+
+      it('should not be possible to vote for more than one alternative proposal', async function () {
+        await assertRevert(votingSession.submitVote(6), 'VSM41');
       });
 
       it('should be possible to vote on behalf', async function () {
@@ -918,8 +1051,8 @@ contract('VotingSessionManager', function (accounts) {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest();
         await votingSession.nextSessionStepTest();
-        await votingSession.submitVote(7);
-        await votingSession.submitVote(3, { from: accounts[3] });
+        await votingSession.submitVote(11);
+        await votingSession.submitVote(13, { from: accounts[5] });
         await votingSession.nextSessionStepTest();
       });
 
@@ -931,24 +1064,29 @@ contract('VotingSessionManager', function (accounts) {
 
       it('should have a session', async function () {
         const session = await votingSession.session(1);
-        assert.equal(session.proposalsCount.toString(), '3', 'proposalsCount');
-        assert.equal(session.participation.toString(), '2000100', 'participation');
+        assert.equal(session.proposalsCount.toString(), '4', 'proposalsCount');
+        assert.equal(session.participation.toString(), '101', 'participation');
         assert.equal(session.totalSupply.toString(), '7000101', 'totalSupply');
       });
 
       it('should have approvals for blank proposal', async function () {
         const proposal = await votingSession.proposalData(1, 1);
-        assert.equal(proposal.approvals.toString(), '2000100', 'approvals');
+        assert.equal(proposal.approvals.toString(), '101', 'approvals');
       });
 
       it('should have approvals for mint proposal', async function () {
         const proposal = await votingSession.proposalData(1, 2);
-        assert.equal(proposal.approvals.toString(), '2000100', 'approvals');
+        assert.equal(proposal.approvals.toString(), '100', 'approvals');
+      });
+
+      it('should have approvals for burn proposal', async function () {
+        const proposal = await votingSession.proposalData(1, 3);
+        assert.equal(proposal.approvals.toString(), '1', 'approvals');
       });
 
       it('should have approvals for seize proposal', async function () {
-        const proposal = await votingSession.proposalData(1, 3);
-        assert.equal(proposal.approvals.toString(), '100', 'approvals');
+        const proposal = await votingSession.proposalData(1, 4);
+        assert.equal(proposal.approvals.toString(), '101', 'approvals');
       });
 
       it('should have blank proposal rejected', async function () {
@@ -961,8 +1099,13 @@ contract('VotingSessionManager', function (accounts) {
         assert.ok(!approved, 'rejected');
       });
 
-      it('should have seize proposal rejected', async function () {
+      it('should have burn proposal rejected', async function () {
         const approved = await votingSession.proposalApproval(1, 3);
+        assert.ok(!approved, 'rejected');
+      });
+
+      it('should have seize proposal rejected', async function () {
+        const approved = await votingSession.proposalApproval(1, 4);
         assert.ok(!approved, 'rejected');
       });
     });
@@ -984,7 +1127,7 @@ contract('VotingSessionManager', function (accounts) {
 
       it('should have a session', async function () {
         const session = await votingSession.session(1);
-        assert.equal(session.proposalsCount.toString(), '3', 'proposalsCount');
+        assert.equal(session.proposalsCount.toString(), '4', 'proposalsCount');
         assert.equal(session.participation.toString(), '7000100', 'participation');
         assert.equal(session.totalSupply.toString(), '7000101', 'totalSupply');
       });
@@ -999,8 +1142,13 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(proposal.approvals.toString(), '7000100', 'approvals');
       });
 
-      it('should have approvals for seize proposal', async function () {
+      it('should have approvals for burn proposal', async function () {
         const proposal = await votingSession.proposalData(1, 3);
+        assert.equal(proposal.approvals.toString(), '0', 'approvals');
+      });
+
+      it('should have approvals for seize proposal', async function () {
+        const proposal = await votingSession.proposalData(1, 4);
         assert.equal(proposal.approvals.toString(), '0', 'approvals');
       });
 
@@ -1014,8 +1162,13 @@ contract('VotingSessionManager', function (accounts) {
         assert.ok(approved, 'approved');
       });
 
-      it('should have seize proposal rejected', async function () {
+      it('should have burn proposal rejected', async function () {
         const approved = await votingSession.proposalApproval(1, 3);
+        assert.ok(!approved, 'rejected');
+      });
+
+      it('should have seize proposal rejected', async function () {
+        const approved = await votingSession.proposalApproval(1, 4);
         assert.ok(!approved, 'rejected');
       });
 
@@ -1028,18 +1181,8 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(tx.logs[0].args.proposalId.toString(), '1', 'proposal id');
       });
 
-      it('should be possible to execute mint proposal', async function () {
-        const tx = await votingSession.executeResolutions([2]);
-        assert.ok(tx.receipt.status, 'Status');
-        assert.equal(tx.logs.length, 1);
-        assert.equal(tx.logs[0].event, 'ResolutionExecuted', 'event');
-        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
-        assert.equal(tx.logs[0].args.proposalId.toString(), '2', 'proposal id');
-
-        const totalSupply = await token.totalSupply();
-        assert.equal(totalSupply.toString(), '21000001', 'totalSupply');
-        const balance4 = await token.balanceOf(accounts[4]);
-        assert.equal(balance4.toString(), '13999900', 'balance4');
+      it('should not be possible to execute mint before the blank proposal', async function () {
+        await assertRevert(votingSession.executeResolutions([2]), 'VSM31');
       });
 
       it('should execute many resolution', async function () {
@@ -1052,10 +1195,15 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(tx.logs[1].event, 'ResolutionExecuted', 'event');
         assert.equal(tx.logs[1].args.sessionId.toString(), '1', 'session id');
         assert.equal(tx.logs[1].args.proposalId.toString(), '2', 'proposal id');
+
+        const totalSupply = await token.totalSupply();
+        assert.equal(totalSupply.toString(), '21000001', 'totalSupply');
+        const balance4 = await token.balanceOf(accounts[4]);
+        assert.equal(balance4.toString(), '13999900', 'balance4');
       });
 
       it('should not be possible to execute seize proposal', async function () {
-        await assertRevert(votingSession.executeResolutions([3]), 'VSM30');
+        await assertRevert(votingSession.executeResolutions([4]), 'VSM30');
       });
 
       it('should not be possible to add a proposal', async function () {
@@ -1066,7 +1214,7 @@ contract('VotingSessionManager', function (accounts) {
           ANY_TARGET,
           '0x',
           '0',
-          '0'), 'VSM32');
+          '0'), 'VSM33');
       });
 
       describe('during the grace period', function () {
@@ -1141,7 +1289,7 @@ contract('VotingSessionManager', function (accounts) {
 
       describe('after minting', function () {
         beforeEach(async function () {
-          await votingSession.executeResolutions([2]);
+          await votingSession.executeResolutions([1, 2]);
         });
 
         it('should have a first session state at EXECUTION', async function () {
@@ -1159,11 +1307,11 @@ contract('VotingSessionManager', function (accounts) {
         it('should have proposal executed', async function () {
           const proposal = await votingSession.proposalData(1, 2);
           assert.equal(proposal.proposedBy, accounts[0], 'proposedBy');
-          assert.equal(proposal.requirementMajority.toString(), '50', 'majority');
-          assert.equal(proposal.requirementQuorum.toString(), '60', 'quorum');
-          assert.equal(proposal.dependsOn.toString(), '0', 'dependsOn');
+          assert.equal(proposal.requirementMajority.toString(), '500000', 'majority');
+          assert.equal(proposal.requirementQuorum.toString(), '200000', 'quorum');
+          assert.equal(proposal.dependsOn.toString(), '1', 'dependsOn');
           assert.equal(proposal.alternativeOf.toString(), '0', 'alternativeOf');
-          assert.equal(proposal.alternativesMask.toString(), '0', 'alternativesMask');
+          assert.equal(proposal.alternativesMask.toString(), '6', 'alternativesMask');
           assert.equal(proposal.approvals.toString(), '7000100', 'approvals');
         });
 
@@ -1203,7 +1351,7 @@ contract('VotingSessionManager', function (accounts) {
   const SECOND_VOTE_COST = 164075;
   const VOTE_ON_BEHALF_COST = 184728;
   const EXECUTE_ONE_COST = 75788;
-  const EXECUTE_ALL_COST = 442745;
+  const EXECUTE_ALL_COST = 451065;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('should estimate a first proposal', async function () {

@@ -15,13 +15,13 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function token() virtual public view returns (ITokenProxy);
   
-  function proposal(uint256 _sessionId, uint256 _proposalId) virtual public view returns (
+  function proposal(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
     string memory name,
     string memory url,
     bytes32 proposalHash,
     address resolutionTarget,
     bytes memory resolutionAction);
-  function proposalData(uint256 _sessionId, uint256 _proposalId) virtual public view returns (
+  function proposalData(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
     address proposedBy,
     uint128 requirementMajority,
     uint128 requirementQuorum,
@@ -69,10 +69,10 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function sessionStateAt(uint256 _sessionId, uint256 _time) virtual public view returns (SessionState);
 
-  function proposalApproval(uint256 _sessionId, uint256 _proposalId)
+  function proposalApproval(uint256 _sessionId, uint8 _proposalId)
     virtual public view returns (bool);
 
-  function proposalStateAt(uint256 _sessionId, uint256 _proposalId, uint256 _time)
+  function proposalStateAt(uint256 _sessionId, uint8 _proposalId, uint256 _time)
     virtual public view returns (ProposalState);
 
   function updateSessionRule(
@@ -108,7 +108,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   ) virtual public returns (bool);
 
   function updateProposal(
-    uint256 _proposalId,
+    uint8 _proposalId,
     string memory _name,
     string memory _url,
     bytes32 _proposalHash,
@@ -117,7 +117,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint8 _dependsOn,
     uint8 _alternativeOf
   ) virtual public returns (bool);
-  function cancelProposal(uint256 _proposalId) virtual public returns (bool);
+  function cancelProposal(uint8 _proposalId) virtual public returns (bool);
 
   function submitVote(uint256 _votes) virtual public returns (bool);
   function submitVoteOnBehalf(
@@ -125,7 +125,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint256 _votes
   ) virtual public returns (bool);
 
-  function executeResolutions(uint256[] memory _proposalIds) virtual public returns (bool);
+  function executeResolutions(uint8[] memory _proposalIds) virtual public returns (bool);
 
   event SessionRuleUpdated(
     uint64 campaignPeriod,
@@ -148,10 +148,10 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   event SponsorDefined(address indexed voter, address address_, uint64 until);
 
   event SessionScheduled(uint256 indexed sessionId, uint64 voteAt);
-  event ProposalDefined(uint256 indexed sessionId, uint256 proposalId);
-  event ProposalUpdated(uint256 indexed sessionId, uint256 proposalId);
-  event ProposalCancelled(uint256 indexed sessionId, uint256 proposalId);
-  event ResolutionExecuted(uint256 indexed sessionId, uint256 proposalId);
+  event ProposalDefined(uint256 indexed sessionId, uint8 proposalId);
+  event ProposalUpdated(uint256 indexed sessionId, uint8 proposalId);
+  event ProposalCancelled(uint256 indexed sessionId, uint8 proposalId);
+  event ResolutionExecuted(uint256 indexed sessionId, uint8 proposalId);
 
   event Vote(uint256 indexed sessionId, address voter, uint256 weight);
 }

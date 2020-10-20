@@ -35,6 +35,9 @@ abstract contract IVotingDefinitions {
     ARCHIVED
   }
 
+  // 4 digits precisions on percentage values
+  uint256 internal constant PERCENT = 1000000;
+
   uint64 internal constant MIN_PERIOD_LENGTH = 5 minutes;
   // MAX_PERIOD_LENGTH (approx 10000 years) protects against period overflow
   uint64 internal constant MAX_PERIOD_LENGTH = 3652500 days;
@@ -47,8 +50,8 @@ abstract contract IVotingDefinitions {
   // Proposal requirements in percent
   uint256 internal constant NEW_PROPOSAL_THRESHOLD = 1;
   uint256 internal constant DEFAULT_EXECUTION_THRESHOLD = 1;
-  uint128 internal constant DEFAULT_MAJORITY = 50;
-  uint128 internal constant DEFAULT_QUORUM = 60;
+  uint128 internal constant DEFAULT_MAJORITY = 500000; // 50%
+  uint128 internal constant DEFAULT_QUORUM = 200000; // 20%
 
   uint8 internal constant OPEN_PROPOSALS = 5;
   uint8 internal constant MAX_PROPOSALS = 20;
