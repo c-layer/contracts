@@ -13,7 +13,7 @@ import "../math/SafeMath.sol";
  *
  * Error messages
  *   TE01: Address is invalid
- *   TE02: Not enougth tokens available
+ *   TE02: Not enougth tokens
  *   TE03: Approval too low
  */
 contract TokenERC20 is IERC20 {
