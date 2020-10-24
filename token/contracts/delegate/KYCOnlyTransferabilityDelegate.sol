@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "./OracleEnrichedDelegate.sol";
+import "./AuditableDelegate.sol";
 
 
 /**
@@ -14,23 +14,27 @@ import "./OracleEnrichedDelegate.sol";
  * Error messages
  * LR01: The transfer constraints must remain valid
 */
-contract KYCOnlyTransferabilityDelegate is OracleEnrichedDelegate {
+contract KYCOnlyTransferabilityDelegate is AuditableDelegate {
 
   /**
    * @dev hasTransferValidUsers
    */
-  function hasTransferValidUsers(STransferData memory _transferData) internal view returns (TransferCode code)
+  function hasTransferValidUsers(STransferData memory _transferData,
+    STransferAuditData memory _transferAuditData) internal view returns (TransferCode code)
   {
-    fetchSenderUserId(_transferData);
-    if (_transferData.senderId == 0) {
-      return TransferCode.NON_REGISTRED_SENDER;
+    if (_transferAuditData.senderAuditRequired) {
+      fetchSenderUserId(_transferData);
+      if (_transferData.senderId == 0) {
+        return TransferCode.NON_REGISTRED_SENDER;
+      }
     }
 
-    fetchReceiverUserId(_transferData);
-    if (_transferData.receiverId == 0) {
-      return TransferCode.NON_REGISTRED_RECEIVER;
+    if (_transferAuditData.receiverAuditRequired) {
+      fetchReceiverUserId(_transferData);
+      if (_transferData.receiverId == 0) {
+        return TransferCode.NON_REGISTRED_RECEIVER;
+      }
     }
-
     return TransferCode.OK;
   }
 }

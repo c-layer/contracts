@@ -45,7 +45,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function auditConfiguration(uint256 _configurationId)
     override public view returns (
       uint256 scopeId,
-      AuditMode mode,
+      AuditTriggerMode mode,
       uint256[] memory senderKeys,
       uint256[] memory receiverKeys,
       IRatesProvider ratesProvider,
@@ -54,7 +54,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
     return (
       auditConfiguration_.scopeId,
-      auditConfiguration_.mode,
+      auditConfiguration_.triggers[ANY_ADDRESSES][ANY_ADDRESSES],
       auditConfiguration_.senderKeys,
       auditConfiguration_.receiverKeys,
       auditConfiguration_.ratesProvider,
@@ -62,24 +62,10 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     );
   }
 
-  function auditTriggers(
-    uint256 _configurationId, address[] memory _triggers)
-    override public view returns (
-      bool[] memory senders,
-      bool[] memory receivers,
-      bool[] memory tokens
-    )
+  function auditTrigger(uint256 _configurationId, address _sender, address _receiver)
+    override public view returns (AuditTriggerMode)
   {
-    AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
-    senders = new bool[](_triggers.length);
-    receivers = new bool[](_triggers.length);
-    tokens = new bool[](_triggers.length);
-
-    for(uint256 i=0; i < _triggers.length; i++) {
-      senders[i] = auditConfiguration_.triggerSenders[_triggers[i]];
-      receivers[i] = auditConfiguration_.triggerReceivers[_triggers[i]];
-      tokens[i] = auditConfiguration_.triggerTokens[_triggers[i]];
-    }
+    return auditConfigurations[_configurationId].triggers[_sender][_receiver];
   }
 
   function delegatesConfigurations(uint256 _delegateId)
@@ -328,7 +314,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   function defineAuditConfiguration(
     uint256 _configurationId,
     uint256 _scopeId,
-    AuditMode _mode,
+    AuditTriggerMode _mode,
     uint256[] calldata _senderKeys,
     uint256[] calldata _receiverKeys,
     IRatesProvider _ratesProvider,
@@ -343,11 +329,11 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     }
    
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
-    auditConfiguration_.mode = _mode;
     auditConfiguration_.scopeId = _scopeId;
     auditConfiguration_.senderKeys = _senderKeys;
     auditConfiguration_.receiverKeys = _receiverKeys;
     auditConfiguration_.ratesProvider = _ratesProvider;
+    auditConfiguration_.triggers[ANY_ADDRESSES][ANY_ADDRESSES] = _mode;
 
     emit AuditConfigurationDefined(
       _configurationId,
@@ -370,23 +356,18 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
 
   function defineAuditTriggers(
     uint256 _configurationId,
-    address[] calldata _triggerAddresses,
-    bool[] calldata _triggerTokens,
-    bool[] calldata _triggerSenders,
-    bool[] calldata _triggerReceivers) override external onlyCoreOp returns (bool)
+    address[] calldata _senders,
+    address[] calldata _receivers,
+    AuditTriggerMode[] calldata _modes) override external onlyCoreOp returns (bool)
   {
-    require(_triggerAddresses.length == _triggerSenders.length
-      && _triggerAddresses.length == _triggerReceivers.length
-      && _triggerAddresses.length == _triggerTokens.length, "TC05");
+    require(_senders.length == _receivers.length && _senders.length == _modes.length, "TC05");
 
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
-    for(uint256 i=0; i < _triggerAddresses.length; i++) {
-      auditConfiguration_.triggerSenders[_triggerAddresses[i]] = _triggerSenders[i];
-      auditConfiguration_.triggerReceivers[_triggerAddresses[i]] = _triggerReceivers[i];
-      auditConfiguration_.triggerTokens[_triggerAddresses[i]] = _triggerTokens[i];
+    for(uint256 i=0; i < _senders.length; i++) {
+      auditConfiguration_.triggers[_senders[i]][_receivers[i]] = _modes[i];
     }
 
-    emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerTokens, _triggerSenders, _triggerReceivers);
+    emit AuditTriggersDefined(_configurationId, _senders, _receivers, _modes);
     return true;
   }
 

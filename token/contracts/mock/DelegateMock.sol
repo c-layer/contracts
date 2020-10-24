@@ -235,7 +235,7 @@ contract DelegateMock is TokenStorage {
   function defineAuditConfiguration(
     uint256 _configurationId,
     uint256 _scopeId,
-    AuditMode _mode,
+    AuditTriggerMode _mode,
     uint256[] memory _senderKeys,
     uint256[] memory _receiverKeys,
     IRatesProvider _ratesProvider,
@@ -245,36 +245,37 @@ contract DelegateMock is TokenStorage {
     audits[address(this)][_scopeId].currency = _currency;
 
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
-    auditConfiguration_.mode = _mode;
     auditConfiguration_.scopeId = _scopeId;
     auditConfiguration_.senderKeys = _senderKeys;
     auditConfiguration_.receiverKeys = _receiverKeys;
     auditConfiguration_.ratesProvider = _ratesProvider;
+    auditConfiguration_.triggers[ANY_ADDRESSES][ANY_ADDRESSES] = _mode;
+
+    emit LogAuditMode(ANY_ADDRESSES, ANY_ADDRESSES, _mode);
     return true;
   }
+
+  event LogAuditMode(address sender, address receiver, AuditTriggerMode mode);
 
   /**
    * @dev defineAuditTriggers
    */
   function defineAuditTriggers(
     uint256 _configurationId,
-    address[] memory _triggerAddresses,
-    bool[] memory _triggerTokens,
-    bool[] memory _triggerSenders,
-    bool[] memory _triggerReceivers) public returns (bool)
+    address[] memory _senders,
+    address[] memory _receivers,
+    AuditTriggerMode[] memory _modes) public returns (bool)
   {
-    require(_triggerAddresses.length == _triggerSenders.length
-      && _triggerAddresses.length == _triggerReceivers.length
-      && _triggerAddresses.length == _triggerTokens.length, "TC06");
+    require(_senders.length == _receivers.length
+      && _senders.length == _modes.length, "TC06");
 
     AuditConfiguration storage auditConfiguration_ = auditConfigurations[_configurationId];
-    for(uint256 i=0; i < _triggerAddresses.length; i++) {
-      auditConfiguration_.triggerSenders[_triggerAddresses[i]] = _triggerSenders[i];
-      auditConfiguration_.triggerReceivers[_triggerAddresses[i]] = _triggerReceivers[i];
-      auditConfiguration_.triggerTokens[_triggerAddresses[i]] = _triggerTokens[i];
+    for(uint256 i=0; i < _senders.length; i++) {
+      auditConfiguration_.triggers[_senders[i]][_receivers[i]] = _modes[i];
+      emit LogAuditMode(_senders[i], _receivers[i], _modes[i]);
     }
 
-    emit AuditTriggersDefined(_configurationId, _triggerAddresses, _triggerTokens, _triggerSenders, _triggerReceivers);
+    emit AuditTriggersDefined(_configurationId, _senders, _receivers, _modes);
     return true;
   }
 

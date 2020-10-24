@@ -73,7 +73,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineAuditConfiguration(
       uint256(Configuration.AML_PRIMARY),
       uint256(ITokenStorage.Scope.DEFAULT),
-      ITokenStorage.AuditMode.WHEN_TRIGGERS_MATCHED,
+      ITokenStorage.AuditTriggerMode.BOTH,
       emptyArray, receiverKeys, _ratesProvider, _currency
     ), "CC02");
 
@@ -81,7 +81,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineAuditConfiguration(
       uint256(Configuration.AML_FULL),
       uint256(ITokenStorage.Scope.DEFAULT),
-      ITokenStorage.AuditMode.ALWAYS_TRIGGERS_EXCLUDED,
+      ITokenStorage.AuditTriggerMode.NONE,
       senderKeys, receiverKeys, _ratesProvider, _currency
     ), "CC03");
 

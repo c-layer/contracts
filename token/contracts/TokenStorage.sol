@@ -60,15 +60,12 @@ contract TokenStorage is ITokenStorage, OperableStorage {
 
   struct AuditConfiguration {
     uint256 scopeId;
-    AuditMode mode;
 
     uint256[] senderKeys;
     uint256[] receiverKeys;
     IRatesProvider ratesProvider;
 
-    mapping (address => bool) triggerSenders;
-    mapping (address => bool) triggerReceivers;
-    mapping (address => bool) triggerTokens;
+    mapping (address => mapping(address => AuditTriggerMode)) triggers;
   }
 
   // AuditConfigurationId => AuditConfiguration

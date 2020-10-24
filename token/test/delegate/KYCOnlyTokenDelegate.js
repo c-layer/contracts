@@ -19,6 +19,8 @@ const CHF_BYTES = web3.utils.toHex(CHF).padEnd(42, '0');
 const AFTER = 5000000000;
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
+const AUDIT_TRIGGER_MODE_BOTH = 4;
+
 const TRANSFER_CODE_OK = 1;
 const TRANSFER_CODE_LOCK = 5;
 const TRANSFER_CODE_FROZEN = 6;
@@ -40,6 +42,8 @@ contract('KYCOnlyTokenDelegate', function (accounts) {
     core = await TokenCore.new('Test', [accounts[0]]);
     await core.defineOracle(userRegistry.address, NULL_ADDRESS, CHF_BYTES);
     await core.defineTokenDelegate(1, delegate.address, [1]);
+    await core.defineAuditConfiguration(
+      1, 0, AUDIT_TRIGGER_MODE_BOTH, [], [], NULL_ADDRESS, NULL_ADDRESS);
     token = await TokenProxy.new(core.address);
     await core.defineToken(
       token.address, 1, NAME, SYMBOL, DECIMALS);

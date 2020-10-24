@@ -23,17 +23,13 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function auditConfiguration(uint256 _configurationId)
     virtual public view returns (
       uint256 scopeId,
-      AuditMode mode,
+      AuditTriggerMode _mode,
       uint256[] memory senderKeys,
       uint256[] memory receiverKeys,
       IRatesProvider ratesProvider,
       address currency);
-  function auditTriggers(
-    uint256 _configurationId,
-    address[] memory _triggers) virtual public view returns (
-    bool[] memory senders,
-    bool[] memory receivers,
-    bool[] memory tokens);
+  function auditTrigger(uint256 _configurationId, address _sender, address _receiver)
+    virtual public view returns (AuditTriggerMode);
   function delegatesConfigurations(uint256 _delegateId)
     virtual public view returns (uint256[] memory);
 
@@ -122,7 +118,7 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
   function defineAuditConfiguration(
     uint256 _configurationId,
     uint256 _scopeId,
-    AuditMode _mode,
+    AuditTriggerMode _mode,
     uint256[] calldata _senderKeys,
     uint256[] calldata _receiverKeys,
     IRatesProvider _ratesProvider,
@@ -131,10 +127,9 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     virtual external returns (bool);
   function defineAuditTriggers(
     uint256 _configurationId,
-    address[] calldata _triggerAddresses,
-    bool[] calldata _triggerSenders,
-    bool[] calldata _triggerReceivers,
-    bool[] calldata _triggerTokens) virtual external returns (bool);
+    address[] calldata _senders,
+    address[] calldata _receivers,
+    AuditTriggerMode[] calldata _modes) virtual external returns (bool);
 
   function isSelfManaged(address _owner)
     virtual external view returns (bool);

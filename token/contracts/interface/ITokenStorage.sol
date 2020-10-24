@@ -39,12 +39,15 @@ abstract contract ITokenStorage {
     SHARED
   }
 
-  enum AuditMode {
-    NEVER,
-    ALWAYS,
-    ALWAYS_TRIGGERS_EXCLUDED,
-    WHEN_TRIGGERS_MATCHED
+  enum AuditTriggerMode {
+    UNDEFINED,
+    NONE,
+    SENDER_ONLY,
+    RECEIVER_ONLY,
+    BOTH
   }
+
+  address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
 
   event OracleDefined(
     IUserRegistry userRegistry,
@@ -55,12 +58,16 @@ abstract contract ITokenStorage {
   event AuditConfigurationDefined(
     uint256 indexed configurationId,
     uint256 scopeId,
-    AuditMode mode,
+    AuditTriggerMode mode,
     uint256[] senderKeys,
     uint256[] receiverKeys,
     IRatesProvider ratesProvider,
     address currency);
-  event AuditTriggersDefined(uint256 indexed configurationId, address[] triggers, bool[] tokens, bool[] senders, bool[] receivers);
+  event AuditTriggersDefined(
+    uint256 indexed configurationId,
+    address[] senders,
+    address[] receivers,
+    AuditTriggerMode[] modes);
   event AuditsRemoved(address scope, uint256 scopeId);
   event SelfManaged(address indexed holder, bool active);
 

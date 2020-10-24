@@ -39,7 +39,10 @@ contract KYCOnlyTokenDelegate is
     require(!isLocked(_transferData), "KOT01");
     require(!isFrozen(_transferData), "KOT02");
     require(areTransferRulesValid(_transferData), "KOT03");
-    require(hasTransferValidUsers(_transferData) == TransferCode.OK, "KOT04");
+
+    STransferAuditData memory _transferAuditData =
+      prepareAuditInternal(_transferData);
+    require(hasTransferValidUsers(_transferData, _transferAuditData) == TransferCode.OK, "KOT04");
 
     return super.transferInternal(_transferData);
   }
@@ -60,7 +63,10 @@ contract KYCOnlyTokenDelegate is
       return TransferCode.RULE;
     }
 
-    code = hasTransferValidUsers(_transferData);
+    STransferAuditData memory _transferAuditData =
+      prepareAuditInternal(_transferData);
+    code = hasTransferValidUsers(_transferData, _transferAuditData);
+
     return (code == TransferCode.OK) ? 
       super.canTransferInternal(_transferData) : code;
   }

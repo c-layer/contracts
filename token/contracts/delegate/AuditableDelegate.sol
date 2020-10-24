@@ -29,19 +29,24 @@ contract AuditableDelegate is OracleEnrichedDelegate {
       ][AUDIT_CONFIGURATION_LIMITABLE_TRANSFERABILITY];
     AuditConfiguration storage configuration = auditConfigurations[configurationId];
 
-    bool senderIsTrigger = configuration.triggerSenders[_transferData.sender];
-    bool receiverIsTrigger = configuration.triggerReceivers[_transferData.receiver];
-
-    bool auditRequired = (configuration.mode == AuditMode.WHEN_TRIGGERS_MATCHED) ?
-        (senderIsTrigger || receiverIsTrigger) : (configuration.mode != AuditMode.NEVER); 
+    AuditTriggerMode mode = configuration.triggers[_transferData.sender][_transferData.receiver];
+    if (mode == AuditTriggerMode.UNDEFINED) {
+      mode = configuration.triggers[_transferData.sender][ANY_ADDRESSES];
+    }
+    if (mode == AuditTriggerMode.UNDEFINED) {
+      mode = configuration.triggers[ANY_ADDRESSES][_transferData.receiver];
+    }
+    if (mode == AuditTriggerMode.UNDEFINED) {
+      mode = configuration.triggers[ANY_ADDRESSES][ANY_ADDRESSES];
+    }
 
     return STransferAuditData(
       configurationId,
       configuration.scopeId,
       audits[address(this)][configuration.scopeId].currency,
       configuration.ratesProvider,
-      auditRequired && !senderIsTrigger,
-      auditRequired && !receiverIsTrigger
+      (mode == AuditTriggerMode.BOTH || mode == AuditTriggerMode.SENDER_ONLY),
+      (mode == AuditTriggerMode.BOTH || mode == AuditTriggerMode.RECEIVER_ONLY)
     );
   }
 
