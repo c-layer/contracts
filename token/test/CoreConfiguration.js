@@ -45,8 +45,8 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));
 
-const ALWAYS_TRIGGERS_EXCLUDED = 2;
-const WHEN_TRIGGERS_MATCHED = 3;
+const AUDIT_BOTH = 4;
+const AUDIT_NONE = 1;
 
 contract('CoreConfiguration', function (accounts) {
   let mintableDelegate, compliantDelegate;
@@ -141,7 +141,7 @@ contract('CoreConfiguration', function (accounts) {
         it('should have audit configuration 1', async function () {
           const a = await core.auditConfiguration(1);
           assert.equal(a.scopeId.toString(), 0, 'scopeId');
-          assert.equal(a.mode.toString(), WHEN_TRIGGERS_MATCHED, 'auditMode');
+          assert.equal(a.mode.toString(), AUDIT_BOTH, 'auditMode');
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), [], 'sender keys');
           assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ['1'], 'receiver keys');
           assert.equal(a.ratesProvider, ratesProvider.address, 'ratesProvider');
@@ -151,7 +151,7 @@ contract('CoreConfiguration', function (accounts) {
         it('should have audit configuration 2', async function () {
           const a = await core.auditConfiguration(2);
           assert.equal(a.scopeId.toString(), 0, 'scopeId');
-          assert.equal(a.mode.toString(), ALWAYS_TRIGGERS_EXCLUDED, 'auditMode');
+          assert.equal(a.mode.toString(), AUDIT_NONE, 'auditMode');
           assert.deepEqual(a.senderKeys.map((x) => x.toString()), ['2'], 'sender keys');
           assert.deepEqual(a.receiverKeys.map((x) => x.toString()), ['1'], 'receiver keys');
           assert.equal(a.ratesProvider, ratesProvider.address, 'ratesProvider');

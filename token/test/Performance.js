@@ -22,34 +22,37 @@ const CHF_BYTES = web3.utils.toHex('CHF').padEnd(66, '0');
 const CHF_ADDRESS = web3.utils.toHex('CHF').padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const CORE_GAS_COST = 4428770;
+const CORE_GAS_COST = 4208766;
 const MINTABLE_DELEGATE_GAS_COST = 1769211;
-const KYCONLY_DELEGATE_GAS_COST = 2616308;
-const DELEGATE_GAS_COST = 3092608;
+const KYCONLY_DELEGATE_GAS_COST = 2754590;
+const DELEGATE_GAS_COST = 3133650;
 const PROXY_GAS_COST = 824865;
 
 const MINTABLE_FIRST_TRANSFER_COST = 64333;
 const MINTABLE_FIRST_TRANSFER_FROM_COST = 76237;
 const MINTABLE_TRANSFER_COST = 48854;
-const KYCONLY_FIRST_TRANSFER_COST = 81090;
-const KYCONLY_FIRST_TRANSFER_FROM_COST = 92971;
-const KYCONLY_TRANSFER_COST = 65609;
-const FIRST_TRANSFER_COST = 104757;
-const FIRST_TRANSFER_FROM_COST = 116636;
-const TRANSFER_COST = 69463;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 169947;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 181829;
-const ISSUANCE_AUDITED_TRANSFER_COST = 97683;
-const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 103894;
-const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 68599;
-const AUDITED_FIRST_TRANSFER_COST = 104757;
-const AUDITED_FIRST_TRANSFER_FROM_COST = 116636;
-const AUDITED_TRANSFER_COST = 69463;
-const AUDITED_FIRST_TRANSFER_AFTER_COST = 104757;
-const AUDITED_TRANSFER_AFTER_COST = 69463;
+const KYCONLY_FIRST_TRANSFER_COST = 80172;
+const KYCONLY_FIRST_TRANSFER_FROM_COST = 92054;
+const KYCONLY_TRANSFER_COST = 64692;
+const FIRST_TRANSFER_COST = 105414;
+const FIRST_TRANSFER_FROM_COST = 117293;
+const TRANSFER_COST = 70120;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_COST = 169460;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_FROM_COST = 181341;
+const ISSUANCE_AUDITED_TRANSFER_COST = 97195;
+const ISSUANCE_AUDITED_FIRST_TRANSFER_AFTER_COST = 105414;
+const ISSUANCE_AUDITED_TRANSFER_AFTER_COST = 70120;
+const AUDITED_FIRST_TRANSFER_COST = 103418;
+const AUDITED_FIRST_TRANSFER_FROM_COST = 115297;
+const AUDITED_TRANSFER_COST = 68124;
+const AUDITED_FIRST_TRANSFER_AFTER_COST = 226816;
+const AUDITED_TRANSFER_AFTER_COST = 121916;
 
-const AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED = 2;
-const AUDIT_MODE_WHEN_TRIGGERS_MATCHED = 3;
+const AUDIT_NONE = 1;
+const AUDIT_RECEIVER_ONLY = 3;
+const AUDIT_BOTH = 4;
+const ANY_ADDRESSES = web3.utils.toChecksumAddress(
+  '0x' + web3.utils.fromAscii('AnyAddresses').substr(2).padStart(40, '0'));
 
 contract('Performance [ @skip-on-coverage ]', function (accounts) {
   let userRegistry, ratesProvider;
@@ -100,7 +103,7 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
 
       await core.defineTokenDelegate(1, delegates[0].address, []);
       await core.defineTokenDelegate(2, delegates[1].address, [2]);
-      await core.defineTokenDelegate(3, delegates[2].address, []);
+      await core.defineTokenDelegate(3, delegates[2].address, [0]);
       await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_ADDRESS);
     });
 
@@ -198,10 +201,9 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
         beforeEach(async function () {
           await core.defineTokenDelegate(2, delegates[1].address, [1]);
           await core.defineAuditConfiguration(1, 0,
-            AUDIT_MODE_WHEN_TRIGGERS_MATCHED,
+            AUDIT_NONE,
             [1], [2], ratesProvider.address, CHF_ADDRESS);
-          await core.defineAuditTriggers(
-            1, [accounts[0]], [false], [true], [false]);
+          await core.defineAuditTriggers(1, [accounts[0]], [ANY_ADDRESSES], [AUDIT_RECEIVER_ONLY]);
         });
 
         it('should assert canTransfer', async function () {
@@ -252,11 +254,10 @@ contract('Performance [ @skip-on-coverage ]', function (accounts) {
       describe('With secondary aml audit configuration', function () {
         beforeEach(async function () {
           await core.defineTokenDelegate(2, delegates[1].address, [2]);
-          await core.defineAuditConfiguration(1, 0,
-            AUDIT_MODE_ALWAYS_TRIGGERS_EXCLUDED,
+          await core.defineAuditConfiguration(2, 0,
+            AUDIT_BOTH,
             [1], [2], ratesProvider.address, CHF_ADDRESS);
-          await core.defineAuditTriggers(
-            1, [accounts[0]], [false], [true], [false]);
+          await core.defineAuditTriggers(2, [accounts[0]], [ANY_ADDRESSES], [AUDIT_NONE]);
         });
 
         it('should assert canTransfer', async function () {

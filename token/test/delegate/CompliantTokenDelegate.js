@@ -20,7 +20,7 @@ const CHF_DECIMALS = 2;
 const CHF_BYTES = web3.utils.toHex(CHF).padEnd(42, '0');
 const AFTER = 5000000000;
 
-const AUDIT_ALWAYS = 1;
+const AUDIT_BOTH = 4;
 
 const TRANSFER_CODE_OK = 1;
 const TRANSFER_CODE_LOCK = 5;
@@ -47,7 +47,7 @@ contract('CompliantTokenDelegate', function (accounts) {
     core = await TokenCore.new('Test', [accounts[0]]);
     await core.defineOracle(userRegistry.address, ratesProvider.address, CHF_BYTES);
     await core.defineTokenDelegate(1, delegate.address, [1]);
-    await core.defineAuditConfiguration(1, 0, AUDIT_ALWAYS, [1], [2], ratesProvider.address, CHF_BYTES);
+    await core.defineAuditConfiguration(1, 0, AUDIT_BOTH, [1], [2], ratesProvider.address, CHF_BYTES);
     token = await TokenProxy.new(core.address);
     await core.defineToken(
       token.address, 1, NAME, SYMBOL, DECIMALS);
