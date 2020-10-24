@@ -22,9 +22,8 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const EMPTY_BYTES = '0x'.padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
-const AUDIT_MODE_TRIGGERS_ONLY = 1;
-// const AUDIT_MODE_ALWAYS = 3;
-// const AUDIT_STORAGE_MODE_SHARED = 2;
+const AUDIT_NONE = 1;
+const AUDIT_BOTH = 4;
 
 const AUDIT_STORAGE_ADDRESS = 0;
 const AUDIT_STORAGE_USER_ID = 1;
@@ -121,7 +120,7 @@ contract('TokenCore', function (accounts) {
 
   it('should define audit configuration', async function () {
     const tx = await core.defineAuditConfiguration(2, 3,
-      AUDIT_MODE_TRIGGERS_ONLY,
+      AUDIT_BOTH,
       [1], [2], ratesProvider.address, CHF_ADDRESS);
 
     assert.ok(tx.receipt.status, 'Status');
@@ -129,7 +128,7 @@ contract('TokenCore', function (accounts) {
     assert.equal(tx.logs[0].event, 'AuditConfigurationDefined', 'event');
     assert.equal(tx.logs[0].args.configurationId, 2, 'configurationId');
     assert.equal(tx.logs[0].args.scopeId, 3, 'scopeId');
-    assert.equal(tx.logs[0].args.mode, AUDIT_MODE_TRIGGERS_ONLY, 'mode');
+    assert.equal(tx.logs[0].args.mode, AUDIT_BOTH, 'mode');
     assert.deepEqual(tx.logs[0].args.senderKeys.map((x) => x.toString()), ['1'], 'senderKeys');
     assert.deepEqual(tx.logs[0].args.receiverKeys.map((x) => x.toString()), ['2'], 'receiverKeys');
     assert.equal(tx.logs[0].args.ratesProvider, ratesProvider.address, 'ratesProvider');
@@ -138,19 +137,15 @@ contract('TokenCore', function (accounts) {
 
   it('should define audit triggers', async function () {
     const tx = await core.defineAuditTriggers(
-      2, [accounts[1], accounts[2], accounts[3]],
-      [false, false, true],
-      [true, false, false],
-      [false, true, false]);
+      2, [accounts[1], accounts[2]], [accounts[2], accounts[3]], [AUDIT_NONE, AUDIT_BOTH]);
 
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'AuditTriggersDefined', 'event');
     assert.equal(tx.logs[0].args.configurationId, 2, 'configurationId');
-    assert.deepEqual(tx.logs[0].args.triggers, [accounts[1], accounts[2], accounts[3]], 'triggers');
-    assert.deepEqual(tx.logs[0].args.tokens, [false, false, true], 'tokens');
-    assert.deepEqual(tx.logs[0].args.senders, [true, false, false], 'senders');
-    assert.deepEqual(tx.logs[0].args.receivers, [false, true, false], 'receivers');
+    assert.deepEqual(tx.logs[0].args.senders, [accounts[1], accounts[2]], 'senders');
+    assert.deepEqual(tx.logs[0].args.receivers, [accounts[2], accounts[3]], 'receivers');
+    assert.deepEqual(tx.logs[0].args.modes.map((x) => Number(x.toString())), [AUDIT_NONE, AUDIT_BOTH]);
   });
 
   it('should be self managed for a user', async function () {
@@ -174,13 +169,10 @@ contract('TokenCore', function (accounts) {
   describe('with a delegate defined', async function () {
     beforeEach(async function () {
       await core.defineAuditConfiguration(2, 3,
-        AUDIT_MODE_TRIGGERS_ONLY,
+        AUDIT_NONE,
         [1], [2], ratesProvider.address, CHF_ADDRESS);
       await core.defineAuditTriggers(
-        2, [accounts[1], accounts[2], accounts[3]],
-        [false, false, true],
-        [true, false, false],
-        [false, true, false]);
+        2, [accounts[1], accounts[2]], [accounts[2], accounts[3]], [AUDIT_BOTH, AUDIT_NONE]);
       await core.defineTokenDelegate(1, delegate.address, [2, 4]);
     });
 
@@ -191,7 +183,7 @@ contract('TokenCore', function (accounts) {
 
     it('should have an audit configuration', async function () {
       const configuration = await core.auditConfiguration(2);
-      assert.equal(configuration.mode, AUDIT_MODE_TRIGGERS_ONLY, 'audit mode');
+      assert.equal(configuration.mode, AUDIT_NONE, 'audit mode');
       assert.equal(configuration.scopeId, 3, 'scope id');
       assert.deepEqual(configuration.senderKeys.map((x) => x.toString()), ['1'], 'senderKeys');
       assert.deepEqual(configuration.receiverKeys.map((x) => x.toString()), ['2'], 'receiverKeys');
@@ -199,11 +191,9 @@ contract('TokenCore', function (accounts) {
       assert.equal(configuration.currency, CHF_ADDRESS, 'currency');
     });
 
-    it('should have audit triggers', async function () {
-      const triggers = await core.auditTriggers(2, [accounts[1], accounts[2], accounts[3]]);
-      assert.deepEqual(triggers.tokens, [false, false, true], 'tokens');
-      assert.deepEqual(triggers.senders, [true, false, false], 'senders');
-      assert.deepEqual(triggers.receivers, [false, true, false], 'receivers');
+    it('should have audit trigger', async function () {
+      const trigger = await core.auditTrigger(2, accounts[1], accounts[2]);
+      assert.equal(Number(trigger), AUDIT_BOTH, 'mode');
     });
 
     it('should have an audit currency', async function () {

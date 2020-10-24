@@ -88,6 +88,7 @@ contract VotingSessionStorage is IVotingDefinitions {
 
   mapping(address => mapping(bytes4 => ResolutionRequirement)) internal resolutionRequirements;
 
+  uint256 internal oldestSessionId_;
   uint256 internal currentSessionId_;
   mapping(uint256 => Session) internal sessions;
   mapping(address => uint64) internal lastVotes;

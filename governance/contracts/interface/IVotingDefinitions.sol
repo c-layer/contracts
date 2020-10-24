@@ -21,7 +21,8 @@ abstract contract IVotingDefinitions {
     VOTING,
     EXECUTION,
     GRACE,
-    CLOSED
+    CLOSED,
+    ARCHIVED
   }
 
   enum ProposalState {
@@ -32,6 +33,7 @@ abstract contract IVotingDefinitions {
     APPROVED,
     REJECTED,
     RESOLVED,
+    CLOSED,
     ARCHIVED
   }
 
@@ -56,4 +58,6 @@ abstract contract IVotingDefinitions {
   uint8 internal constant OPEN_PROPOSALS = 5;
   uint8 internal constant MAX_PROPOSALS = 20;
   uint8 internal constant MAX_PROPOSALS_OPERATOR = 25;
+
+  uint256 internal constant SESSIONS_IN_STATE = 10;
 }

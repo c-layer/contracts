@@ -49,7 +49,9 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint128 quorum,
     uint256 executionThreshold);
 
-  function sessionsCount() virtual public view returns (uint256);
+  function oldestSessionId() virtual public view returns (uint256);
+
+  function currentSessionId() virtual public view returns (uint256);
 
   function session(uint256 _sessionId) virtual public view returns (
     uint64 campaignAt,
@@ -127,6 +129,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function executeResolutions(uint8[] memory _proposalIds) virtual public returns (bool);
 
+  function archiveSession() virtual public returns (bool);
+
   event SessionRuleUpdated(
     uint64 campaignPeriod,
     uint64 votingPeriod,
@@ -148,6 +152,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   event SponsorDefined(address indexed voter, address address_, uint64 until);
 
   event SessionScheduled(uint256 indexed sessionId, uint64 voteAt);
+  event SessionArchived(uint256 indexed sessionId);
   event ProposalDefined(uint256 indexed sessionId, uint8 proposalId);
   event ProposalUpdated(uint256 indexed sessionId, uint8 proposalId);
   event ProposalCancelled(uint256 indexed sessionId, uint8 proposalId);
