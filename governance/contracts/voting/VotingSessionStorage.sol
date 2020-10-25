@@ -29,6 +29,8 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint8 maxProposals;
     uint8 maxProposalsOperator;
     uint256 newProposalThreshold;
+
+    address[] nonVotingAddresses;
   }
 
   struct ResolutionRequirement {
@@ -84,12 +86,14 @@ contract VotingSessionStorage is IVotingDefinitions {
     OPEN_PROPOSALS,
     MAX_PROPOSALS,
     MAX_PROPOSALS_OPERATOR,
-    NEW_PROPOSAL_THRESHOLD);
+    NEW_PROPOSAL_THRESHOLD,
+    new address[](0)
+  );
 
   mapping(address => mapping(bytes4 => ResolutionRequirement)) internal resolutionRequirements;
 
-  uint256 internal oldestSessionId_;
-  uint256 internal currentSessionId_;
+  uint256 internal oldestSessionId_ = 1; // '1' simplifies checks when no sessions exists
+  uint256 internal currentSessionId_ = 0;
   mapping(uint256 => Session) internal sessions;
   mapping(address => uint64) internal lastVotes;
   mapping(address => Sponsor) internal sponsors;

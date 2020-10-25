@@ -14,21 +14,6 @@ import "./IVotingDefinitions.sol";
 abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function token() virtual public view returns (ITokenProxy);
-  
-  function proposal(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
-    string memory name,
-    string memory url,
-    bytes32 proposalHash,
-    address resolutionTarget,
-    bytes memory resolutionAction);
-  function proposalData(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
-    address proposedBy,
-    uint128 requirementMajority,
-    uint128 requirementQuorum,
-    uint8 dependsOn,
-    uint8 alternativeOf,
-    uint256 alternativesMask,
-    uint256 approvals);
 
   function sessionRule() virtual public view returns (
     uint64 campaignPeriod,
@@ -39,10 +24,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint8 openProposals,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
-    uint256 newProposalThreshold);
-
-  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount)
-    virtual public view returns (uint256);
+    uint256 newProposalThreshold,
+    address[] memory nonVotingAddresses);
 
   function resolutionRequirement(address _target, bytes4 _method) virtual public view returns (
     uint128 majority,
@@ -63,6 +46,21 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint256 participation,
     uint256 totalSupply);
 
+  function proposal(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
+    string memory name,
+    string memory url,
+    bytes32 proposalHash,
+    address resolutionTarget,
+    bytes memory resolutionAction);
+  function proposalData(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
+    address proposedBy,
+    uint128 requirementMajority,
+    uint128 requirementQuorum,
+    uint8 dependsOn,
+    uint8 alternativeOf,
+    uint256 alternativesMask,
+    uint256 approvals);
+
   function sponsorOf(address _voter) virtual public view returns (address sponsor, uint64 until);
 
   function lastVoteOf(address _voter) virtual public view returns (uint64 at);
@@ -70,6 +68,9 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   function nextSessionAt(uint256 _time) virtual public view returns (uint256 at);
 
   function sessionStateAt(uint256 _sessionId, uint256 _time) virtual public view returns (SessionState);
+
+  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount)
+    virtual public view returns (uint256);
 
   function proposalApproval(uint256 _sessionId, uint8 _proposalId)
     virtual public view returns (bool);
@@ -86,7 +87,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint8 _openProposals,
     uint8 _maxProposals,
     uint8 _maxProposalsQuaestor,
-    uint256 _newProposalThreshold
+    uint256 _newProposalThreshold,
+    address[] memory _nonVotingAddresses
   ) virtual public returns (bool);
   
   function updateResolutionRequirements(
@@ -140,7 +142,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint8 openProposals,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
-    uint256 newProposalThreshold);
+    uint256 newProposalThreshold,
+    address[] nonVotingAddresses);
   event ResolutionRequirementUpdated(
     address target,
     bytes4 methodSignature,

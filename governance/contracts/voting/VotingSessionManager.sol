@@ -59,12 +59,12 @@ import "./VotingSessionStorage.sol";
 contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, OperableAsCore, Proxy {
 
   modifier onlyExistingSession(uint256 _sessionId) {
-    require(_sessionId > oldestSessionId_ && _sessionId <= currentSessionId_, "VSM01");
+    require(_sessionId >= oldestSessionId_ && _sessionId <= currentSessionId_, "VSM01");
     _;
   }
 
   modifier onlyExistingProposal(uint256 _sessionId, uint8 _proposalId) {
-    require(_sessionId > oldestSessionId_ && _sessionId <= currentSessionId_, "VSM01");
+    require(_sessionId >= oldestSessionId_ && _sessionId <= currentSessionId_, "VSM01");
     require(_proposalId > 0 && _proposalId <= sessions[_sessionId].proposalsCount, "VSM02");
     _;
   }
@@ -81,6 +81,13 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   }
 
   /**
+   * @dev token
+   */
+  function token() override public view returns (ITokenProxy) {
+    return token_;
+  }
+
+  /**
    * @dev sessionRule
    */
   function sessionRule() override public view returns (
@@ -92,7 +99,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     uint8 openProposals,
     uint8 maxProposals,
     uint8 maxProposalsOperator,
-    uint256 newProposalThreshold) {
+    uint256 newProposalThreshold,
+    address[] memory nonVotingAddresses) {
     return (
       sessionRule_.campaignPeriod,
       sessionRule_.votingPeriod,
@@ -102,24 +110,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       sessionRule_.openProposals,
       sessionRule_.maxProposals,
       sessionRule_.maxProposalsOperator,
-      sessionRule_.newProposalThreshold);
-  }
-
-  /**
-   * @dev newProposalThresholdAt
-   */
-  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount) override public
-    onlyExistingSession(_sessionId) view returns (uint256)
-  {
-    Session storage session_ = sessions[_sessionId];
-    bool baseThreshold = (
-      sessionRule_.maxProposals <= sessionRule_.openProposals
-      || _proposalsCount <= sessionRule_.openProposals
-      || session_.totalSupply <= sessionRule_.newProposalThreshold);
-
-    return (baseThreshold) ? sessionRule_.newProposalThreshold : sessionRule_.newProposalThreshold.add(
-      (session_.totalSupply.div(2)).sub(sessionRule_.newProposalThreshold).mul(
-        (_proposalsCount - sessionRule_.openProposals) ** 2).div((sessionRule_.maxProposals - sessionRule_.openProposals) ** 2));
+      sessionRule_.newProposalThreshold,
+      sessionRule_.nonVotingAddresses);
   }
 
   /**
@@ -192,13 +184,6 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
    */
   function lastVoteOf(address _voter) override public view returns (uint64 at) {
     return lastVotes[_voter];
-  }
-
-  /**
-   * @dev token
-   */
-  function token() override public view returns (ITokenProxy) {
-    return token_;
   }
 
   /**
@@ -308,6 +293,23 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   }
 
   /**
+   * @dev newProposalThresholdAt
+   */
+  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount) override public
+    onlyExistingSession(_sessionId) view returns (uint256)
+  {
+    Session storage session_ = sessions[_sessionId];
+    bool baseThreshold = (
+      sessionRule_.maxProposals <= sessionRule_.openProposals
+      || _proposalsCount <= sessionRule_.openProposals
+      || session_.totalSupply <= sessionRule_.newProposalThreshold);
+
+    return (baseThreshold) ? sessionRule_.newProposalThreshold : sessionRule_.newProposalThreshold.add(
+      (session_.totalSupply.div(2)).sub(sessionRule_.newProposalThreshold).mul(
+        (_proposalsCount - sessionRule_.openProposals) ** 2).div((sessionRule_.maxProposals - sessionRule_.openProposals) ** 2));
+  }
+
+  /**
    * @dev proposalApproval
    */
   function proposalApproval(uint256 _sessionId, uint8 _proposalId) override public
@@ -375,7 +377,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     uint8 _openProposals,
     uint8 _maxProposals,
     uint8 _maxProposalsOperator,
-    uint256 _newProposalThreshold
+    uint256 _newProposalThreshold,
+    address[] memory _nonVotingAddresses
   )  override public onlyProxyOperator(Proxy(this)) returns (bool) {
     require(_campaignPeriod >= MIN_PERIOD_LENGTH && _campaignPeriod <= MAX_PERIOD_LENGTH, "VSM05");
     require(_votingPeriod >= MIN_PERIOD_LENGTH && _votingPeriod <= MAX_PERIOD_LENGTH, "VSM06");
@@ -401,7 +404,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       _openProposals,
       _maxProposals,
       _maxProposalsOperator,
-      _newProposalThreshold);
+      _newProposalThreshold,
+      _nonVotingAddresses);
 
     emit SessionRuleUpdated(
       _campaignPeriod,
@@ -412,7 +416,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       _openProposals,
       _maxProposals,
       _maxProposalsOperator,
-      _newProposalThreshold);
+      _newProposalThreshold,
+      _nonVotingAddresses);
     return true;
   }
 
@@ -469,7 +474,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     address _resolutionTarget,
     bytes memory _resolutionAction,
     uint8 _dependsOn,
-    uint8 _alternativeOf) override virtual public returns (bool)
+    uint8 _alternativeOf) override public returns (bool)
   {
     Session storage session_ = loadSessionInternal();
     uint256 balance = token_.balanceOf(msg.sender);
@@ -502,7 +507,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     bytes memory _resolutionAction,
     uint8 _dependsOn,
     uint8 _alternativeOf
-  ) override virtual public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
+  ) override public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
   {
     uint256 sessionId = currentSessionId_;
     require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM23");
@@ -519,7 +524,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
    * @dev cancelProposal
    */
   function cancelProposal(uint8 _proposalId)
-    override virtual public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
+    override public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
   {
     uint256 sessionId = currentSessionId_;
     require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM23");
@@ -536,7 +541,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev submitVote
    */
-  function submitVote(uint256 _votes) override virtual public returns (bool)
+  function submitVote(uint256 _votes) override public returns (bool)
   {
     address[] memory voters = new address[](1);
     voters[0] = msg.sender;
@@ -550,7 +555,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   function submitVoteOnBehalf(
     address[] memory _voters,
     uint256 _votes
-  ) override virtual public returns (bool)
+  ) override public returns (bool)
   {
     submitVoteInternal(_voters, _votes);
     return true;
@@ -559,7 +564,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev execute resolutions
    */
-  function executeResolutions(uint8[] memory _proposalIds) override virtual public returns (bool)
+  function executeResolutions(uint8[] memory _proposalIds) override public returns (bool)
   {
     uint256 balance = ~uint256(0);
     if (!isProxyOperator(msg.sender, token_)) {
@@ -609,13 +614,13 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
    * @dev archiveSession
    **/
   function archiveSession() override public returns (bool) {
-    require(oldestSessionId_ < SESSIONS_IN_STATE + currentSessionId_, "VMS33");
+    require((oldestSessionId_ + SESSIONS_IN_STATE) < currentSessionId_, "VMS33");
     Session storage session_ = sessions[oldestSessionId_];
     for(uint256 i=0; i < session_.proposalsCount; i++) {
       delete session_.proposals[i];
     }
     delete sessions[oldestSessionId_];
-    emit SessionArchived(oldestSessionId_);
+    emit SessionArchived(oldestSessionId_++);
   }
 
   /**
@@ -656,6 +661,9 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       session_.closedAt = uint64(at);
 
       session_.totalSupply = token_.totalSupply();
+      for(uint256 i=0; i < sessionRule_.nonVotingAddresses.length; i++) {
+        session_.totalSupply.sub(token_.balanceOf(sessionRule_.nonVotingAddresses[i]));
+      }
 
       require(ITokenCore(core).defineLock(
         address(this),
@@ -665,7 +673,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
 
       emit SessionScheduled(currentSessionId_, session_.voteAt);
 
-      if (oldestSessionId_ < SESSIONS_IN_STATE + currentSessionId_) {
+      if ((oldestSessionId_ + SESSIONS_IN_STATE) < currentSessionId_) {
         // Archiving of the oldest session
         archiveSession();
       }
