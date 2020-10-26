@@ -74,15 +74,15 @@ contract TimeLockVault is Vault, ITimeLockVault {
   }
 
   function distributeInternal(address _recipient) internal returns (bool) {
-    uint256 value = availableInternal(msg.sender);
+    uint256 value = availableInternal(_recipient);
     require(value > 0, "TLV01");
 
-    timeLock_.lastDistributions[msg.sender] = uint64(currentTime());
-    timeLock_.values[msg.sender] = timeLock_.values[msg.sender].sub(value);
+    timeLock_.lastDistributions[_recipient] = uint64(currentTime());
+    timeLock_.values[_recipient] = timeLock_.values[_recipient].sub(value);
 
-    require(timeLock_.token.transfer(msg.sender, value), "TLV02");
+    require(timeLock_.token.transfer(_recipient, value), "TLV02");
 
-    emit Distribution(msg.sender, value);
+    emit Distribution(_recipient, value);
     return true;
   }
 
