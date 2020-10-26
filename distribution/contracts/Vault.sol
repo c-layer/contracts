@@ -11,7 +11,6 @@ import "./interface/IVault.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * VLT01: Invalid number of parameters
  */
 contract Vault is IVault, Operable {
 
