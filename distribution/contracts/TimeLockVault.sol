@@ -43,15 +43,15 @@ contract TimeLockVault is Vault, ITimeLockVault {
   }
 
   function distribute() public override returns (bool) {
-    uint256 value = availableInternal(msg.sender);
-    require(value > 0, "TLV01");
+    return distributeInternal(msg.sender);
+  }
 
-    timeLock_.lastDistributions[msg.sender] = uint64(currentTime());
-    timeLock_.values[msg.sender] = timeLock_.values[msg.sender].sub(value);
-
-    require(timeLock_.token.transfer(msg.sender, value), "TLV02");
-
-    emit Distribution(msg.sender, value);
+  function distributeMany(address[] memory _recipients)
+    public override onlyOperator returns (bool)
+  {
+    for (uint256 i=0; i < _recipients.length; i++) {
+      distributeInternal(_recipients[i]);
+    }
     return true;
   }
 
@@ -61,7 +61,7 @@ contract TimeLockVault is Vault, ITimeLockVault {
     uint64 _end,
     UnlockMode _mode,
     address[] memory _recipients,
-    uint256[] memory _values) public override returns (bool)
+    uint256[] memory _values) public override onlyOperator returns (bool)
   {
     timeLock_ = TimeLock(_token, _start, _end, _mode);
 
@@ -70,6 +70,19 @@ contract TimeLockVault is Vault, ITimeLockVault {
     }
 
     emit TimeLockDefined(_token, _start, _end, _mode, _recipients, _values);
+    return true;
+  }
+
+  function distributeInternal(address _recipient) internal returns (bool) {
+    uint256 value = availableInternal(msg.sender);
+    require(value > 0, "TLV01");
+
+    timeLock_.lastDistributions[msg.sender] = uint64(currentTime());
+    timeLock_.values[msg.sender] = timeLock_.values[msg.sender].sub(value);
+
+    require(timeLock_.token.transfer(msg.sender, value), "TLV02");
+
+    emit Distribution(msg.sender, value);
     return true;
   }
 

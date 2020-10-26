@@ -26,6 +26,8 @@ abstract contract ITimeLockVault is IVault {
 
   function distribute() public virtual returns (bool);
 
+  function distributeMany(address[] memory _recipients) public virtual returns (bool);
+
   function defineTimeLock(
     IERC20 _token,
     uint64 _start,
