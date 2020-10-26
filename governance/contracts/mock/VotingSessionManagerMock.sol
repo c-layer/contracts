@@ -11,7 +11,7 @@ import "../voting/VotingSessionManager.sol";
  *
  * Error messages
  *   VSMM01: Session has not started yet
- *   VSMM02: Session is already closed
+ *   VSMM02: Session is already archived
  **/
 contract VotingSessionManagerMock is VotingSessionManager {
 
@@ -38,7 +38,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
     Session storage session_ = sessions[_sessionId];
 
     require(state != SessionState.UNDEFINED, "VSMM01");
-    require(state != SessionState.CLOSED, "VSMM02");
+    require(state != SessionState.ARCHIVED, "VSMM02");
     uint256 voteAt = time;
 
     if (state == SessionState.PLANNED) {
@@ -59,6 +59,33 @@ contract VotingSessionManagerMock is VotingSessionManager {
     if (state == SessionState.GRACE) {
       voteAt -= (session_.closedAt - session_.voteAt);
     }
+
+    if (state == SessionState.CLOSED) {
+      voteAt -= SESSION_RETENTION_PERIOD;
+    }
+
+    session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
+    session_.voteAt = uint64(voteAt);
+    session_.executionAt = uint64(voteAt.add(sessionRule_.votingPeriod));
+    session_.graceAt = uint64(voteAt.add(sessionRule_.votingPeriod)
+      .add(sessionRule_.executionPeriod));
+    session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
+      .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
+    return true;
+  }
+
+  /**
+   * @dev historizeSessionTest
+   */
+  function historizeSessionTest() public returns (bool) {
+    uint256 time = currentTime();
+    SessionState state = sessionStateAt(currentSessionId_, time);
+    Session storage session_ = sessions[currentSessionId_];
+
+    require(state != SessionState.UNDEFINED, "VSMM01");
+
+    uint256 voteAt = time;
+    voteAt -= SESSION_RETENTION_PERIOD;
 
     session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
     session_.voteAt = uint64(voteAt);

@@ -59,5 +59,6 @@ abstract contract IVotingDefinitions {
   uint8 internal constant MAX_PROPOSALS = 20;
   uint8 internal constant MAX_PROPOSALS_OPERATOR = 25;
 
-  uint256 internal constant SESSIONS_IN_STATE = 10;
+  uint256 internal constant SESSION_RETENTION_PERIOD = 365 days;
+  uint256 internal constant SESSION_RETENTION_COUNT = 5;
 }

@@ -53,6 +53,7 @@ const SessionState = {
   EXECUTION: '4',
   GRACE: '5',
   CLOSED: '6',
+  ARCHIVED: '7',
 };
 
 const ProposalState = {
@@ -69,9 +70,9 @@ const ProposalState = {
 contract('VotingSessionManager', function (accounts) {
   let core, delegate, token, votingSession, signatures;
 
-  const recipients = [accounts[0], accounts[1], accounts[2], accounts[3], accounts[5]];
-  const supplies = ['100', '3000000', '2000000', '2000000', '1'];
-  const nonVotingAccounts = [];
+  const recipients = [accounts[0], accounts[1], accounts[2], accounts[3], accounts[5], accounts[6]];
+  const supplies = ['100', '3000000', '2000000', '2000000', '1', '1000000'];
+  const nonVotingAccounts = [accounts[6]];
 
   const proposalName = 'Would you like to vote ?';
   const proposalHash = web3.utils.sha3('alphabet', { encoding: 'hex' });
@@ -117,6 +118,7 @@ contract('VotingSessionManager', function (accounts) {
     assert.equal(sessionRule.maxProposals.toString(), '20', 'maxProposals');
     assert.equal(sessionRule.maxProposalsOperator.toString(), '25', 'maxProposalsOperator');
     assert.equal(sessionRule.newProposalThreshold.toString(), '1', 'newProposalThreshold');
+    assert.deepEqual(sessionRule.nonVotingAddresses, [], 'nonVotingAddresses');
   });
 
   it('should have default resolution requirements', async function () {
@@ -252,7 +254,7 @@ contract('VotingSessionManager', function (accounts) {
       ANY_TARGET,
       '0x',
       '5',
-      '0'), 'VSM35');
+      '0'), 'VSM36');
   });
 
   it('should prevent adding a new proposal with invalid alternative reference', async function () {
@@ -263,7 +265,7 @@ contract('VotingSessionManager', function (accounts) {
       ANY_TARGET,
       '0x',
       '0',
-      '5'), 'VSM36');
+      '5'), 'VSM37');
   });
 
   it('should prevent anyone to update session rules', async function () {
@@ -287,7 +289,6 @@ contract('VotingSessionManager', function (accounts) {
 
   it('should prevent operator to update session rules above execution period length limit', async function () {
     await assertRevert(votingSession.updateSessionRule(
-      MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MAX_PERIOD_LENGTH + 1, MIN_PERIOD_LENGTH + 1,
       '0', '1', '1', '2', '3000000', '3000001', nonVotingAccounts), 'VSM07');
   });
 
@@ -397,7 +398,7 @@ contract('VotingSessionManager', function (accounts) {
       assert.equal(session.closedAt.toString(), Times.closed, 'closedAt');
       assert.equal(session.proposalsCount.toString(), '1', 'proposalsCount');
       assert.equal(session.participation.toString(), '0', 'participation');
-      assert.equal(session.totalSupply.toString(), '7000101', 'totalSupply');
+      assert.equal(session.totalSupply.toString(), '8000101', 'totalSupply');
     });
 
     it('should have a proposal', async function () {
@@ -463,17 +464,17 @@ contract('VotingSessionManager', function (accounts) {
 
     it('should have a new proposal threshold above open limit', async function () {
       const threshold = await votingSession.newProposalThresholdAt(1, 12);
-      assert.equal(threshold.toString(), 762233, 'threshold');
+      assert.equal(threshold.toString(), 871122, 'threshold');
     });
 
     it('should have a new proposal threshold at max limit', async function () {
       const threshold = await votingSession.newProposalThresholdAt(1, 20);
-      assert.equal(threshold.toString(), 3500050, 'threshold');
+      assert.equal(threshold.toString(), 4000050, 'threshold');
     });
 
     it('should have a new proposal threshold above max limit', async function () {
       const threshold = await votingSession.newProposalThresholdAt(1, 100);
-      assert.equal(threshold.toString(), 140390855, 'threshold');
+      assert.equal(threshold.toString(), 160446410, 'threshold');
     });
 
     it('should let its author to update the proposal', async function () {
@@ -645,7 +646,7 @@ contract('VotingSessionManager', function (accounts) {
           ANY_TARGET,
           '0x',
           '0',
-          '0'), 'VSM33');
+          '0'), 'VSM34');
       });
     });
 
@@ -693,7 +694,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[5]], 1), 'VSM39');
+        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[5]], 1), 'VSM40');
       });
 
       describe('With sponsoring from account 3 to 2', function () {
@@ -729,11 +730,11 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 2), 'VSM42');
+        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 2), 'VSM43');
       });
 
       it('should prevent operator to submit vote without voters', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([], 1), 'VSM38');
+        await assertRevert(votingSession.submitVoteOnBehalf([], 1), 'VSM39');
       });
 
       it('should prevent author to update a proposal', async function () {
@@ -755,7 +756,7 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote(1), 'VSM40');
+          await assertRevert(votingSession.submitVote(1), 'VSM41');
         });
       });
 
@@ -765,7 +766,7 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should not be possible to vote twice', async function () {
-          await assertRevert(votingSession.submitVote(1), 'VSM40');
+          await assertRevert(votingSession.submitVote(1), 'VSM41');
         });
       });
     });
@@ -992,6 +993,9 @@ contract('VotingSessionManager', function (accounts) {
     const BURN_THEM_ALL = 'Burn \'em all!';
 
     beforeEach(async function () {
+      await votingSession.updateSessionRule(
+        '432000', '172800', '86400', '518400', '172800', '5', '20', '25', '1', [accounts[6]]);
+ 
       await votingSession.defineProposal(
         proposalName,
         proposalUrl,
@@ -1049,7 +1053,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should not be possible to vote for more than one alternative proposal', async function () {
-        await assertRevert(votingSession.submitVote(6), 'VSM41');
+        await assertRevert(votingSession.submitVote(6), 'VSM42');
       });
 
       it('should be possible to vote on behalf', async function () {
@@ -1214,7 +1218,7 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(tx.logs[1].args.proposalId.toString(), '2', 'proposal id');
 
         const totalSupply = await token.totalSupply();
-        assert.equal(totalSupply.toString(), '21000001', 'totalSupply');
+        assert.equal(totalSupply.toString(), '22000001', 'totalSupply');
         const balance4 = await token.balanceOf(accounts[4]);
         assert.equal(balance4.toString(), '13999900', 'balance4');
       });
@@ -1231,7 +1235,7 @@ contract('VotingSessionManager', function (accounts) {
           ANY_TARGET,
           '0x',
           '0',
-          '0'), 'VSM33');
+          '0'), 'VSM34');
       });
 
       describe('during the grace period', function () {
@@ -1359,16 +1363,92 @@ contract('VotingSessionManager', function (accounts) {
         await assertRevert(votingSession.executeResolutions([1]), 'VSM26');
       });
     });
+
+    describe('A year after the vote is closed', function () {
+      beforeEach(async function () {
+        await votingSession.historizeSessionTest();
+      });
+
+      it('should have a session state at CLOSED', async function () {
+        const now = Math.floor(new Date().getTime() / 1000);
+        const sessionState = await votingSession.sessionStateAt(1, now);
+        assert.equal(sessionState.toString(), SessionState.CLOSED, 'session state');
+      });
+
+      it('should be possible to archive it', async function () {
+        const tx = await votingSession.archiveSession();
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, 'SessionArchived', 'event');
+        assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
+      });
+
+      describe('With the oldest session archived', function () {
+        beforeEach(async function () {
+          await votingSession.archiveSession();
+        });
+
+        it('should have a session state at ARCHIVED', async function () {
+          const now = Math.floor(new Date().getTime() / 1000);
+          const sessionState = await votingSession.sessionStateAt(1, now);
+          assert.equal(sessionState.toString(), SessionState.ARCHIVED, 'session state');
+        });
+
+        it('should have prooposal state at ARCHIVED', async function () {
+          const proposalState = await votingSession.proposalStateAt(1, 1, now);
+          assert.equal(proposalState.toString(), ProposalState.ARCHIVED, 'proposal state');
+        });
+      });
+
+      describe('After 5 sessions', function () {
+        beforeEach(async function () {
+          for(let i=0; i < 5; i++) {
+            await votingSession.defineProposal(
+              proposalName,
+              proposalUrl,
+              proposalHash,
+              ANY_TARGET,
+              '0x',
+              '0',
+              '0');
+            await votingSession.historizeSessionTest();
+          }
+        });
+
+        it('Creating a new session should archive the oldest one', async function () {
+          const tx = await votingSession.defineProposal(
+            proposalName,
+            proposalUrl,
+            proposalHash,
+            ANY_TARGET,
+            '0x',
+            '0',
+            '0');
+          assert.ok(tx.receipt.status, 'Status');
+          assert.equal(tx.logs.length, 3);
+          assert.equal(tx.logs[0].event, 'SessionScheduled', 'event');
+          assert.equal(tx.logs[0].args.sessionId.toString(), '7', 'session id');
+          assert.equal(tx.logs[0].args.voteAt.toString(), NEXT_VOTE_AT, 'voteAt');
+          assert.equal(tx.logs[1].event, 'SessionArchived', 'event');
+          assert.equal(tx.logs[1].args.sessionId.toString(), '1', 'session id');
+          assert.equal(tx.logs[2].event, 'ProposalDefined', 'event');
+          assert.equal(tx.logs[2].args.sessionId.toString(), '7', 'session id');
+          assert.equal(tx.logs[2].args.proposalId.toString(), '1', 'proposalId');
+        });
+      });
+    });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 371724;
-  const DEFINE_SECOND_PROPOSAL_COST = 214456;
-  const DEFINE_MIN_PROPOSAL_COST = 155712;
-  const FIRST_VOTE_COST = 328120;
-  const SECOND_VOTE_COST = 164075;
-  const VOTE_ON_BEHALF_COST = 184728;
-  const EXECUTE_ONE_COST = 75788;
-  const EXECUTE_ALL_COST = 469349;
+  const DEFINE_FIRST_PROPOSAL_COST = 372651;
+  const DEFINE_SECOND_PROPOSAL_COST = 216257;
+  const DEFINE_MIN_PROPOSAL_COST = 157513;
+  const FIRST_VOTE_COST = 328924;
+  const SECOND_VOTE_COST = 164879;
+  const VOTE_ON_BEHALF_COST = 185554;
+  const EXECUTE_ONE_COST = 79157;
+  const EXECUTE_ALL_COST = 469379;
+  const ARCHIVE_SESSION_COST = 10000;
+  const DEFINE_PROPOSAL_WITH_ARCHIVING_COST = 377321;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('should estimate a first proposal', async function () {
@@ -1455,7 +1535,7 @@ contract('VotingSessionManager', function (accounts) {
       });
     });
 
-    describe('during grace period', function () {
+    describe('during execution period', function () {
       let votes, proposals;
 
       beforeEach(async function () {
@@ -1490,6 +1570,46 @@ contract('VotingSessionManager', function (accounts) {
       it('should estimate resolution of all proposal', async function () {
         const gas = await votingSession.executeResolutions.estimateGas(proposals);
         await assertGasEstimate(gas, EXECUTE_ALL_COST, 'estimate');
+      });
+
+      describe('and a year after closed', function () {
+        beforeEach(async function () {
+          await votingSession.historizeSessionTest();
+        });
+
+        it('should estimate archiving a session', async function () {
+          const gas = await votingSession.archiveSession.estimateGas();
+          await assertGasEstimate(gas, ARCHIVE_SESSION_COST, 'estimate');
+        });
+      });
+
+      describe('After 5 sessions', function () {
+        beforeEach(async function () {
+          await votingSession.historizeSessionTest();
+
+          for(let i=0; i < 5; i++) {
+            await votingSession.defineProposal(
+              proposalName,
+              proposalUrl,
+              proposalHash,
+              ANY_TARGET,
+              '0x',
+              '0',
+              '0');
+            await votingSession.historizeSessionTest();
+          }
+        });
+
+        it('should estimate defining a new proposal', async function () {
+          const tx = await votingSession.defineProposal('', '', '0x', ANY_TARGET, '0x', '0', '0');
+          console.log(tx);
+          assert.equal(false, true);
+        });
+
+        it('should estimate defining a new proposal', async function () {
+          const gas = await votingSession.defineProposal.estimateGas('', '', '0x', ANY_TARGET, '0x', '0', '0');
+          await assertGasEstimate(gas, DEFINE_PROPOSAL_WITH_ARCHIVING_COST, 'estimate');
+        });
       });
     });
   });
