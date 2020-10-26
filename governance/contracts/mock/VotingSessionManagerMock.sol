@@ -71,6 +71,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
       .add(sessionRule_.executionPeriod));
     session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
       .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
+    emit TestVoteAt(sessionStateAt(_sessionId, time), uint64(voteAt));
     return true;
   }
 
@@ -85,7 +86,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
     require(state != SessionState.UNDEFINED, "VSMM01");
 
     uint256 voteAt = time;
-    voteAt -= SESSION_RETENTION_PERIOD;
+    voteAt -= (SESSION_RETENTION_PERIOD + 1);
 
     session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
     session_.voteAt = uint64(voteAt);
@@ -94,6 +95,9 @@ contract VotingSessionManagerMock is VotingSessionManager {
       .add(sessionRule_.executionPeriod));
     session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
       .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
+    emit TestVoteAt(sessionStateAt(currentSessionId_, time), uint64(voteAt));
     return true;
   }
+
+  event TestVoteAt(SessionState state, uint64 voteAt);
 }
