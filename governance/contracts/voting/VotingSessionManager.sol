@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@c-layer/common/contracts/core/Proxy.sol";
+import "@c-layer/common/contracts/operable/Ownable.sol";
 import "@c-layer/common/contracts/operable/OperableAsCore.sol";
 import "../interface/IVotingSessionManager.sol";
 import "./VotingSessionStorage.sol";
@@ -32,29 +33,30 @@ import "./VotingSessionStorage.sol";
  *   VSM17: Inconsistent numbers of execution thresholds
  *   VSM18: Default majority cannot be null
  *   VSM19: Execute resolution threshold must be greater than 0
- *   VSM20: Operator proposal limit is reached
- *   VSM21: Too many proposals yet for this session
- *   VSM22: Not enough tokens for a new proposal
- *   VSM23: Current session is not in PLANNED state
+ *   VSM20: Only contract owner may define its sponsor
+ *   VSM21: Operator proposal limit is reached
+ *   VSM22: Too many proposals yet for this session
+ *   VSM23: Not enough tokens for a new proposal
+ *   VSM24: Current session is not in PLANNED state
  *   VSM24: Only the author can update a proposal
  *   VSM25: Proposal must not be already cancelled
  *   VSM26: The previous session can only be in GRACE state to allow rules change
  *   VSM27: Not enough tokens to execute
  *   VSM28: Voting Session resolutions are not allowed in EXECUTION
  *   VSM29: Only Voting Session operations are allowed in GRACE
- *   VSM30: The proposal is not in APPROVED state
- *   VSM31: Invalid resolution order
- *   VSM32: The resolution must be successfull
- *   VSM33: The session is too recent to be archived
- *   VSM34: Unable to set the lock
- *   VSM35: Cannot depends on itself or inexisting porposal
- *   VSM36: Reference proposal for alternates must have the lowest proposalId
- *   VSM37: Session is not in VOTING state
- *   VSM38: Voters must be provided
- *   VSM39: Sender must be either the voter, the voter's sponsor or an operator
- *   VSM40: The voter must not have already voted for this session
- *   VSM41: Cannot submit multiple votes for a proposal and its alternatives
- *   VSM42: The vote contains too many proposals
+ *   VSM31: The proposal is not in APPROVED state
+ *   VSM32: Invalid resolution order
+ *   VSM33: The resolution must be successfull
+ *   VSM34: The session is too recent to be archived
+ *   VSM35: Unable to set the lock
+ *   VSM36: Cannot depends on itself or inexisting porposal
+ *   VSM37: Reference proposal for alternates must have the lowest proposalId
+ *   VSM38: Session is not in VOTING state
+ *   VSM39: Voters must be provided
+ *   VSM40: Sender must be either the voter, the voter's sponsor or an operator
+ *   VSM41: The voter must not have already voted for this session
+ *   VSM42: Cannot submit multiple votes for a proposal and its alternatives
+ *   VSM43: The vote contains too many proposals
  */
 contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, OperableAsCore, Proxy {
 
@@ -83,14 +85,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev token
    */
-  function token() override public view returns (ITokenProxy) {
+  function token() public override view returns (ITokenProxy) {
     return token_;
   }
 
   /**
    * @dev sessionRule
    */
-  function sessionRule() override public view returns (
+  function sessionRule() public override view returns (
     uint64 campaignPeriod,
     uint64 votingPeriod,
     uint64 executionPeriod,
@@ -117,7 +119,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev resolutionRequirement
    */
-  function resolutionRequirement(address _target, bytes4 _method) override public view returns (
+  function resolutionRequirement(address _target, bytes4 _method) public override view returns (
     uint128 majority,
     uint128 quorum,
     uint256 executionThreshold) {
@@ -133,21 +135,21 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev oldestSessionId
    */
-  function oldestSessionId() override public view returns (uint256) {
+  function oldestSessionId() public override view returns (uint256) {
     return oldestSessionId_;
   }
 
   /**
    * @dev currentSessionId
    */
-  function currentSessionId() override public view returns (uint256) {
+  function currentSessionId() public override view returns (uint256) {
     return currentSessionId_;
   }
 
   /**
    * @dev session
    */
-  function session(uint256 _sessionId) override public
+  function session(uint256 _sessionId) public override
     onlyExistingSession(_sessionId) view returns (
     uint64 campaignAt,
     uint64 voteAt,
@@ -156,7 +158,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     uint64 closedAt,
     uint256 proposalsCount,
     uint256 participation,
-    uint256 totalSupply)
+    uint256 totalSupply,
+    uint256 circulatingSupply)
   {
     Session storage session_ = sessions[_sessionId];
     return (
@@ -167,13 +170,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       session_.closedAt,
       session_.proposalsCount,
       session_.participation,
-      session_.totalSupply);
+      session_.totalSupply,
+      session_.circulatingSupply);
   }
 
   /**
    * @dev sponsorOf
    */
-  function sponsorOf(address _voter) override public view returns (address address_, uint64 until) {
+  function sponsorOf(address _voter) public override view returns (address address_, uint64 until) {
     Sponsor storage sponsor_ = sponsors[_voter];
     address_ = sponsor_.address_;
     until = sponsor_.until;
@@ -182,14 +186,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev lastVoteOf
    */
-  function lastVoteOf(address _voter) override public view returns (uint64 at) {
+  function lastVoteOf(address _voter) public override view returns (uint64 at) {
     return lastVotes[_voter];
   }
 
   /**
    * @dev proposal
    */
-  function proposal(uint256 _sessionId, uint8 _proposalId) override public
+  function proposal(uint256 _sessionId, uint8 _proposalId) public override
     onlyExistingProposal(_sessionId, _proposalId) view returns (
     string memory name,
     string memory url,
@@ -209,7 +213,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev proposalData
    */
-  function proposalData(uint256 _sessionId, uint8 _proposalId) override public
+  function proposalData(uint256 _sessionId, uint8 _proposalId) public override
     onlyExistingProposal(_sessionId, _proposalId) view returns (
     address proposedBy,
     uint128 requirementMajority,
@@ -233,7 +237,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev nextSessionAt
    */
-  function nextSessionAt(uint256 _time) override public view returns (uint256 at) {
+  function nextSessionAt(uint256 _time) public override view returns (uint256 at) {
     uint256 sessionPeriod =
       sessionRule_.campaignPeriod
       + sessionRule_.votingPeriod
@@ -253,7 +257,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev sessionStateAt
    */
-  function sessionStateAt(uint256 _sessionId, uint256 _time) override public
+  function sessionStateAt(uint256 _sessionId, uint256 _time) public override
     view returns (SessionState)
   {
     if (_sessionId == 0 || _sessionId > currentSessionId_) {
@@ -295,7 +299,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev newProposalThresholdAt
    */
-  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount) override public
+  function newProposalThresholdAt(uint256 _sessionId, uint256 _proposalsCount) public override
     onlyExistingSession(_sessionId) view returns (uint256)
   {
     Session storage session_ = sessions[_sessionId];
@@ -312,7 +316,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev proposalApproval
    */
-  function proposalApproval(uint256 _sessionId, uint8 _proposalId) override public
+  function proposalApproval(uint256 _sessionId, uint8 _proposalId) public override
     onlyExistingProposal(_sessionId, _proposalId) view returns (bool)
   {
     Session storage session_ = sessions[_sessionId];
@@ -326,7 +330,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
    * @dev proposalStateAt
    */
   function proposalStateAt(uint256 _sessionId, uint8 _proposalId, uint256 _time)
-    override public view returns (ProposalState)
+    public override view returns (ProposalState)
   {
     Session storage session_ = sessions[_sessionId];
     SessionState sessionState = sessionStateAt(_sessionId, _time);
@@ -379,7 +383,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     uint8 _maxProposalsOperator,
     uint256 _newProposalThreshold,
     address[] memory _nonVotingAddresses
-  )  override public onlyProxyOperator(Proxy(this)) returns (bool) {
+  )  public override onlyProxyOperator(Proxy(this)) returns (bool) {
     require(_campaignPeriod >= MIN_PERIOD_LENGTH && _campaignPeriod <= MAX_PERIOD_LENGTH, "VSM05");
     require(_votingPeriod >= MIN_PERIOD_LENGTH && _votingPeriod <= MAX_PERIOD_LENGTH, "VSM06");
     require(_executionPeriod >= MIN_PERIOD_LENGTH && _executionPeriod <= MAX_PERIOD_LENGTH, "VSM07");
@@ -440,7 +444,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     uint128[] memory _majorities,
     uint128[] memory _quorums,
     uint256[] memory _executionThresholds
-  ) override public onlyProxyOperator(Proxy(this)) returns (bool)
+  ) public override onlyProxyOperator(Proxy(this)) returns (bool)
   {
     require(_targets.length == _methodSignatures.length, "VSM14");
     require(_methodSignatures.length == _majorities.length, "VSM15");
@@ -469,9 +473,21 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev defineSponsor
    */
-  function defineSponsor(address _sponsor, uint64 _until) override public returns (bool) {
+  function defineSponsor(address _sponsor, uint64 _until) public override returns (bool) {
     sponsors[msg.sender] = Sponsor(_sponsor, _until);
     emit SponsorDefined(msg.sender, _sponsor, _until);
+    return true;
+  }
+
+  /**
+   * @dev defineContractSponsor
+   */
+  function defineContractSponsor(address _contract, address _sponsor, uint64 _until)
+    public override returns (bool)
+  {
+    require(Ownable(_contract).owner() == msg.sender, "VSM20");
+    sponsors[_contract] = Sponsor(_sponsor, _until);
+    emit SponsorDefined(_contract, _sponsor, _until);
     return true;
   }
 
@@ -485,16 +501,16 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     address _resolutionTarget,
     bytes memory _resolutionAction,
     uint8 _dependsOn,
-    uint8 _alternativeOf) override public returns (bool)
+    uint8 _alternativeOf) public override returns (bool)
   {
     Session storage session_ = loadSessionInternal();
     uint256 balance = token_.balanceOf(msg.sender);
 
     if (isProxyOperator(msg.sender, token_)) {
-      require(session_.proposalsCount < sessionRule_.maxProposalsOperator, "VSM20");
+      require(session_.proposalsCount < sessionRule_.maxProposalsOperator, "VSM21");
     } else {
-      require(session_.proposalsCount < sessionRule_.maxProposals, "VSM21");
-      require(balance >= newProposalThresholdAt(currentSessionId_, session_.proposalsCount), "VSM22");
+      require(session_.proposalsCount < sessionRule_.maxProposals, "VSM22");
+      require(balance >= newProposalThresholdAt(currentSessionId_, session_.proposalsCount), "VSM23");
     }
 
     uint8 proposalId = ++session_.proposalsCount;
@@ -518,11 +534,11 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     bytes memory _resolutionAction,
     uint8 _dependsOn,
     uint8 _alternativeOf
-  ) override public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
+  ) public override onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
   {
     uint256 sessionId = currentSessionId_;
-    require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM23");
-    require(msg.sender == sessions[sessionId].proposals[_proposalId].proposedBy, "VSM24");
+    require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM24");
+    require(msg.sender == sessions[sessionId].proposals[_proposalId].proposedBy, "VSM25");
 
     updateProposalInternal(_proposalId,
       _name, _url, _proposalHash, _resolutionTarget, _resolutionAction, _dependsOn, _alternativeOf);
@@ -535,14 +551,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
    * @dev cancelProposal
    */
   function cancelProposal(uint8 _proposalId)
-    override public onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
+    public override onlyExistingProposal(currentSessionId_, _proposalId) returns (bool)
   {
     uint256 sessionId = currentSessionId_;
-    require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM23");
+    require(sessionStateAt(sessionId, currentTime()) == SessionState.PLANNED, "VSM24");
     Proposal storage proposal_ = sessions[sessionId].proposals[_proposalId];
     
-    require(msg.sender == proposal_.proposedBy, "VSM24");
-    require(!proposal_.cancelled, "VSM25");
+    require(msg.sender == proposal_.proposedBy, "VSM25");
+    require(!proposal_.cancelled, "VSM26");
 
     proposal_.cancelled = true;
     emit ProposalCancelled(sessionId, _proposalId);
@@ -552,7 +568,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev submitVote
    */
-  function submitVote(uint256 _votes) override public returns (bool)
+  function submitVote(uint256 _votes) public override returns (bool)
   {
     address[] memory voters = new address[](1);
     voters[0] = msg.sender;
@@ -566,7 +582,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   function submitVoteOnBehalf(
     address[] memory _voters,
     uint256 _votes
-  ) override public returns (bool)
+  ) public override returns (bool)
   {
     submitVoteInternal(_voters, _votes);
     return true;
@@ -575,7 +591,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev execute resolutions
    */
-  function executeResolutions(uint8[] memory _proposalIds) override public returns (bool)
+  function executeResolutions(uint8[] memory _proposalIds) public override returns (bool)
   {
     uint256 balance = ~uint256(0);
     if (!isProxyOperator(msg.sender, token_)) {
@@ -588,7 +604,7 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
 
     if (sessionState != SessionState.EXECUTION && sessionState != SessionState.GRACE) {
       sessionState = sessionStateAt(--sessionId, currentTime_);
-      require(sessionState == SessionState.GRACE, "VSM26");
+      require(sessionState == SessionState.GRACE, "VSM27");
     }
 
     Session storage session_ = sessions[sessionId];
@@ -596,24 +612,24 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       uint8 proposalId = _proposalIds[i];
       Proposal storage proposal_ = session_.proposals[proposalId];
 
-      require(balance >= proposal_.requirement.executionThreshold, "VSM27");
+      require(balance >= proposal_.requirement.executionThreshold, "VSM28");
       if (sessionState == SessionState.EXECUTION) {
-        require(proposal_.resolutionTarget != address(this), "VSM28");
+        require(proposal_.resolutionTarget != address(this), "VSM29");
       } else {
-        require(proposal_.resolutionTarget == address(this), "VSM29");
+        require(proposal_.resolutionTarget == address(this), "VSM30");
       }
 
-      require(proposalStateAt(sessionId, proposalId, currentTime_) == ProposalState.APPROVED, "VSM30");
+      require(proposalStateAt(sessionId, proposalId, currentTime_) == ProposalState.APPROVED, "VSM31");
       if (proposal_.dependsOn != 0) {
         ProposalState dependsOnState = proposalStateAt(sessionId, proposal_.dependsOn, currentTime_);
-        require(dependsOnState != ProposalState.APPROVED, "VSM31");
+        require(dependsOnState != ProposalState.APPROVED, "VSM32");
       }
 
       proposal_.resolutionExecuted = true;
       if (proposal_.resolutionTarget != ANY_TARGET) {
         // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
         (bool success, ) = proposal_.resolutionTarget.call(proposal_.resolutionAction);
-        require(success, "VSM32");
+        require(success, "VSM33");
       }
 
       emit ResolutionExecuted(sessionId, proposalId);
@@ -624,10 +640,10 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   /**
    * @dev archiveSession
    **/
-  function archiveSession() override public onlyExistingSession(oldestSessionId_) returns (bool) {
+  function archiveSession() public override onlyExistingSession(oldestSessionId_) returns (bool) {
     Session storage session_ = sessions[oldestSessionId_];
     require((currentSessionId_ >= (oldestSessionId_ + SESSION_RETENTION_COUNT)) ||
-      (currentTime() > (SESSION_RETENTION_PERIOD + session_.voteAt)), "VSM33");
+      (currentTime() > (SESSION_RETENTION_PERIOD + session_.voteAt)), "VSM34");
     for (uint256 i=0; i < session_.proposalsCount; i++) {
       delete session_.proposals[i];
     }
@@ -672,18 +688,13 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       session_.graceAt = uint64(at);
       at = at.add(sessionRule_.gracePeriod);
       session_.closedAt = uint64(at);
-
       session_.totalSupply = token_.totalSupply();
-      for (uint256 i=0; i < sessionRule_.nonVotingAddresses.length; i++) {
-        session_.totalSupply =
-          session_.totalSupply.sub(token_.balanceOf(sessionRule_.nonVotingAddresses[i]));
-      }
 
       require(ITokenCore(core).defineLock(
         address(this),
         nextStartAt,
         session_.graceAt,
-        new address[](0)), "VSM34");
+        new address[](0)), "VSM35");
 
       emit SessionScheduled(currentSessionId_, session_.voteAt);
 
@@ -711,8 +722,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
   {
     Session storage session_ = sessions[currentSessionId_];
 
-    require(_dependsOn <= session_.proposalsCount && _dependsOn != _proposalId, "VSM35");
-    require(_alternativeOf < _proposalId, "VSM36");
+    require(_dependsOn <= session_.proposalsCount && _dependsOn != _proposalId, "VSM36");
+    require(_alternativeOf < _proposalId, "VSM37");
 
     Proposal storage proposal_ = session_.proposals[_proposalId];
     proposal_.name = _name;
@@ -759,6 +770,16 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
         requirement.executionThreshold);
   }
 
+  function updateCirculatingSupply() internal {
+    Session storage session_ = sessions[currentSessionId_];
+    session_.circulatingSupply = session_.totalSupply;
+    for (uint256 i=0; i < sessionRule_.nonVotingAddresses.length; i++) {
+      session_.circulatingSupply =
+        session_.circulatingSupply.sub(token_.balanceOf(sessionRule_.nonVotingAddresses[i]));
+    }
+  }
+
+
   /**
    * @dev submit vote for proposals internal
    */
@@ -766,9 +787,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
     address[] memory _voters,
     uint256 _votes) internal
   {
-    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VSM37");
+    require(sessionStateAt(currentSessionId_, currentTime()) == SessionState.VOTING, "VSM38");
     Session storage session_ = sessions[currentSessionId_];
-    require(_voters.length > 0, "VSM38");
+    require(_voters.length > 0, "VSM39");
+
+    if(session_.participation == 0) {
+      // The token is now locked and supply should not change anymore
+      updateCirculatingSupply();
+    }
 
     uint256 weight = 0;
     uint64 currentTime_ = uint64(currentTime());
@@ -779,8 +805,8 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
 
       require(voter == msg.sender ||
         (isOperator && !ITokenCore(core).isSelfManaged(voter)) ||
-        (sponsors[voter].address_ == msg.sender && sponsors[voter].until  >= currentTime_), "VSM39");
-      require(lastVotes[voter] < session_.voteAt, "VSM40");
+        (sponsors[voter].address_ == msg.sender && sponsors[voter].until  >= currentTime_), "VSM40");
+      require(lastVotes[voter] < session_.voteAt, "VSM41");
       uint256 balance = token_.balanceOf(voter);
       weight += balance;
       lastVotes[voter] = currentTime_;
@@ -794,14 +820,14 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
       if (!proposal_.cancelled && (remainingVotes & 1) == 1) {
         if (proposal_.alternativeOf != 0) {
           Proposal storage baseProposal = session_.proposals[proposal_.alternativeOf];
-          require (baseProposal.alternativesMask & _votes == (1 << (i-1)), "VSM41");
+          require (baseProposal.alternativesMask & _votes == (1 << (i-1)), "VSM42");
         }
 
         proposal_.approvals += weight;
       }
       remainingVotes = remainingVotes >> 1;
     }
-    require(remainingVotes == 0, "VSM42");
+    require(remainingVotes == 0, "VSM43");
 
     session_.participation += weight;
   }

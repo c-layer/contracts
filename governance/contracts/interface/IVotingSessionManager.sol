@@ -44,7 +44,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     uint64 closedAt,
     uint256 sessionProposalsCount,
     uint256 participation,
-    uint256 totalSupply);
+    uint256 totalSupply,
+    uint256 circulatingSupply);
 
   function proposal(uint256 _sessionId, uint8 _proposalId) virtual public view returns (
     string memory name,
@@ -100,6 +101,8 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   ) virtual public returns (bool);
 
   function defineSponsor(address _sponsor, uint64 _until) virtual public returns (bool);
+  function defineContractSponsor(address _contract, address _sponsor, uint64 _until)
+    virtual public returns (bool);
 
   function defineProposal(
     string memory _name,

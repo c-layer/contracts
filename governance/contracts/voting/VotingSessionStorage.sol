@@ -48,6 +48,7 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint8 proposalsCount;
     uint256 participation;
     uint256 totalSupply;
+    uint256 circulatingSupply;
 
     mapping(uint256 => Proposal) proposals;
   }
