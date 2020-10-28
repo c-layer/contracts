@@ -58,22 +58,31 @@ abstract contract LockableDelegate is TokenStorage {
     // solhint-disable-next-line not-rely-on-time
     uint256 currentTime = now;
 
-    for (uint256 i=0; i < lockAddresses.length; i++) {
+    for (uint256 i=0; i < lockAddresses.length && !isLocked_; i++) {
       LockData storage lockData = locks[lockAddresses[i]][_transferData.sender][_transferData.receiver];
 
-      if(lockData.endAt < currentTime) {
-        lockData = locks[lockAddresses[i]][_transferData.sender][ANY_ADDRESSES];
+      if (lockData.endAt < currentTime) {
+        LockData storage senderLockData = locks[lockAddresses[i]][_transferData.sender][ANY_ADDRESSES];
+        LockData storage receiverLockData = locks[lockAddresses[i]][ANY_ADDRESSES][_transferData.receiver];
+
+        if (senderLockData.endAt >= currentTime && receiverLockData.endAt >= currentTime) {
+          isLocked_ =
+              (currentTime < senderLockData.endAt && currentTime >= senderLockData.startAt) &&
+              (currentTime < receiverLockData.endAt && currentTime >= receiverLockData.startAt);
+          continue;
+        }
+
+        lockData = senderLockData;
+        if (lockData.endAt < currentTime) {
+          lockData = receiverLockData;
+        }
       }
 
-      if(lockData.endAt < currentTime) {
-        lockData = locks[lockAddresses[i]][ANY_ADDRESSES][_transferData.receiver];
-      }
-
-      if(lockData.endAt < currentTime) {
+      if (lockData.endAt < currentTime) {
         lockData = locks[lockAddresses[i]][ANY_ADDRESSES][ANY_ADDRESSES];
       }
 
-      isLocked_ = isLocked_ ||
+      isLocked_ =
         (currentTime < lockData.endAt && currentTime >= lockData.startAt);
     }
   }
