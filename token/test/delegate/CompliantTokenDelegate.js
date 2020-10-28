@@ -101,7 +101,7 @@ contract('CompliantTokenDelegate', function (accounts) {
   });
 
   it('should not be transferable from accounts[0] to accounts[1] if token is locked', async function () {
-    await core.defineLock(token.address, 0, AFTER, []);
+    await core.defineLock(token.address, accounts[0], accounts[1], 0, AFTER);
     await core.defineTokenLocks(token.address, [token.address]);
     const result = await token.canTransfer(accounts[0], accounts[1], '3333');
     assert.equal(result, TRANSFER_CODE_LOCK, 'canTransfer');

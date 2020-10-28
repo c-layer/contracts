@@ -185,12 +185,11 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     rules = tokenData.rules;
   }
 
-  function lock(address _lock) override external view returns (
-    uint256 startAt, uint256 endAt,
-    address[] memory exceptions)
+  function lock(address _lock, address _sender, address _receiver) override external view returns (
+    uint64 startAt, uint64 endAt)
   {
-    Lock storage lock_ = locks[_lock];
-    return (lock_.startAt, lock_.endAt, lock_.exceptionsList);
+    LockData storage lockData_ = locks[_lock][_sender][_receiver];
+    return (lockData_.startAt, lockData_.endAt);
   }
 
   function canTransfer(address, address, uint256)
@@ -232,7 +231,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCall(_token);
   }
 
-  function defineLock(address _lock, uint256, uint256, address[] calldata)
+  function defineLock(address _lock, address, address, uint64, uint64)
     override external onlyProxyOp(_lock) returns (bool)
   {
     return delegateCall(_lock);

@@ -16,11 +16,9 @@ import "./interface/ITokenStorage.sol";
 contract TokenStorage is ITokenStorage, OperableStorage {
   using SafeMath for uint256;
 
-  struct Lock {
-    uint256 startAt;
-    uint256 endAt;
-    mapping(address => bool) exceptions;
-    address[] exceptionsList;
+  struct LockData {
+    uint64 startAt;
+    uint64 endAt;
   }
 
   struct TokenData {
@@ -80,7 +78,8 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   // Prevents operator to act on behalf
   mapping (address => bool) internal selfManaged;
 
-  mapping (address => Lock) internal locks;
+  // Proxy x Sender x Receiver x LockData
+  mapping (address => mapping (address => mapping(address => LockData))) internal locks;
 
   IUserRegistry internal userRegistry_;
   IRatesProvider internal ratesProvider_;

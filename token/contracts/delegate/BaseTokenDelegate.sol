@@ -14,7 +14,7 @@ import "../TokenProxy.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * TD01: Recipient must not be null
+ * TD01: Recipient must not be null or be a reserved address
  * TD02: Not enougth tokens
  * TD03: Transfer event must be generated
  * TD04: Allowance limit reached
@@ -139,7 +139,7 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
     address receiver = _transferData.receiver;
     uint256 value = _transferData.value;
 
-    require(receiver != address(0), "TD01");
+    require(receiver != address(0) || receiver != ANY_ADDRESSES, "TD01");
     require(value <= token.balances[sender], "TD02");
 
     if (caller != address(0)

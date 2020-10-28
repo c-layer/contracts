@@ -76,7 +76,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     string memory _name,
     string memory _symbol,
     uint256 _decimals,
-    uint256 _lockEnd,
+    uint64 _lockEnd,
     bool _finishMinting,
     address[] memory _vaults,
     uint256[] memory _supplies,
@@ -112,7 +112,12 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
       address[] memory locks = new address[](1);
       locks[0] = address(token);
       require(_core.defineTokenLocks(address(token), locks), "TF09");
-      require(_core.defineLock(address(token), 0, _lockEnd, new address[](0)), "TF10");
+      require(_core.defineLock(
+        address(token),
+        ANY_ADDRESSES,
+        ANY_ADDRESSES,
+        0,
+        _lockEnd), "TF10");
     }
 
     // 6- Minting the token
@@ -159,8 +164,9 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     require(hasCoreAccess(core), "TF01");
     require(_tokensales.length == _allowances.length, "TF15");
 
-    (uint256 startAt, uint256 endAt,) = core.lock(address(_token));
-    require(core.defineLock(address(_token), startAt, endAt, _tokensales), "TF16");
+    for(uint256 i=0; i < _tokensales.length; i++) {
+      require(core.defineLock(address(_token), _tokensales[i], ANY_ADDRESSES, ~uint64(0), ~uint64(0)), "TF16");
+    }
 
     updateAllowances(_token, _tokensales, _allowances);
     emit TokensalesConfigured(_token, _tokensales);

@@ -321,16 +321,20 @@ contract('TokenCore', function (accounts) {
 
         beforeEach(async function () {
           await core.defineProxy(delegate.address, 1);
-          await core.defineLock(delegate.address, LOCK_START, LOCK_END,
-            [accounts[1], accounts[2]]);
+          await core.defineLock(delegate.address, accounts[1], accounts[2], LOCK_START, LOCK_END);
           await core.defineTokenLocks(token.address, [token.address, delegate.address]);
         });
 
         it('should have a lock', async function () {
-          const lockData = await core.lock(delegate.address);
+          const lockData = await core.lock(delegate.address, accounts[1], accounts[2]);
           assert.equal(lockData.startAt, LOCK_START, 'startAt');
           assert.equal(lockData.endAt, LOCK_END, 'endAt');
-          assert.deepEqual(lockData.exceptions, [accounts[1], accounts[2]], 'lock exceptions');
+        });
+
+        it('should have no locks', async function () {
+          const lockData = await core.lock(delegate.address, NULL_ADDRESS, NULL_ADDRESS);
+          assert.equal(lockData.startAt.toString(), '0', 'startAt');
+          assert.equal(lockData.endAt.toString(), '0', 'endAt');
         });
 
         it('should have the lock on the token', async function () {

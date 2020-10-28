@@ -31,7 +31,7 @@ const REQUIRED_CORE_PRIVILEGES = [
 const COMPLIANCE_PROXY_ROLE = web3.utils.fromAscii('ComplianceProxyRole').padEnd(66, '0');
 const COMPLIANCE_PROXY_PRIVILEGES = [
   web3.utils.sha3('defineRules(address,address[])'),
-  web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
+  web3.utils.sha3('defineLock(address,address,address,uint64,uint64)'),
   web3.utils.sha3('seize(address,address,uint256)'),
   web3.utils.sha3('freezeManyAddresses(address,address[],uint256)'),
 ].map((x) => x.substr(0, 10));
@@ -40,7 +40,7 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
   web3.utils.sha3('burn(address,uint256)'),
   web3.utils.sha3('finishMinting(address)'),
-  web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
+  web3.utils.sha3('defineLock(address,address,address,uint64,uint64'),
   web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));

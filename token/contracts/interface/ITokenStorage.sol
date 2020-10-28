@@ -77,9 +77,10 @@ abstract contract ITokenStorage {
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
     address indexed lock,
+    address sender,
+    address receiver,
     uint256 startAt,
-    uint256 endAt,
-    address[] exceptions
+    uint256 endAt
   );
   event Seize(address indexed token, address account, uint256 amount);
   event Freeze(address address_, uint256 until);

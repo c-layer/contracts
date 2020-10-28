@@ -21,8 +21,7 @@ abstract contract LockableDelegate is TokenStorage {
   /**
    * @dev define token lock
    */
-  function defineTokenLocks(address _token, address[] memory _locks)
-    public returns (bool)
+  function defineTokenLocks(address _token, address[] memory _locks) public returns (bool)
   {
     for(uint256 i=0; i < _locks.length; i++) {
       require(delegates[proxyDelegateIds[_locks[i]]] != address(0), "LD01");
@@ -37,35 +36,45 @@ abstract contract LockableDelegate is TokenStorage {
    */
   function defineLock(
     address _lock,
-    uint256 _startAt,
-    uint256 _endAt,
-    address[] memory _exceptions) public returns (bool)
+    address _sender,
+    address _receiver,
+    uint64 _startAt,
+    uint64 _endAt) public returns (bool)
   {
     require(_startAt <= _endAt, "LD02");
-    locks[_lock] = Lock(_startAt, _endAt, _exceptions);
-    Lock storage lock = locks[_lock];
-    for (uint256 i=0; i < _exceptions.length; i++) {
-      lock.exceptions[_exceptions[i]] = true;
-    }
-    emit LockDefined(_lock, _startAt, _endAt, _exceptions);
+    locks[_lock][_sender][_receiver] = LockData(_startAt, _endAt);
+    emit LockDefined(_lock, _sender, _receiver, _startAt, _endAt);
     return true;
   }
 
   /**
    * @dev isLocked
    */
-  function isLocked(STransferData memory _transferData) internal view returns (bool isLocked_) {
+  function isLocked(STransferData memory _transferData)
+    internal view returns (bool isLocked_)
+  {
     address[] storage lockAddresses = tokens[_transferData.token].locks;
 
+    // solhint-disable-next-line not-rely-on-time
+    uint256 currentTime = now;
+
     for (uint256 i=0; i < lockAddresses.length; i++) {
-      Lock storage tokenLock = locks[lockAddresses[i]];
-      // solhint-disable-next-line not-rely-on-time
-      uint256 currentTime = now;
-      isLocked_ = isLocked_ || (currentTime < tokenLock.endAt
-        && currentTime >= tokenLock.startAt
-        && !tokenLock.exceptions[_transferData.caller]
-        && !tokenLock.exceptions[_transferData.sender]
-        && !tokenLock.exceptions[_transferData.receiver]);
+      LockData storage lockData = locks[lockAddresses[i]][_transferData.sender][_transferData.receiver];
+
+      if(lockData.endAt < currentTime) {
+        lockData = locks[lockAddresses[i]][_transferData.sender][ANY_ADDRESSES];
+      }
+
+      if(lockData.endAt < currentTime) {
+        lockData = locks[lockAddresses[i]][ANY_ADDRESSES][_transferData.receiver];
+      }
+
+      if(lockData.endAt < currentTime) {
+        lockData = locks[lockAddresses[i]][ANY_ADDRESSES][ANY_ADDRESSES];
+      }
+
+      isLocked_ = isLocked_ ||
+        (currentTime < lockData.endAt && currentTime >= lockData.startAt);
     }
   }
 }

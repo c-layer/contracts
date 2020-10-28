@@ -41,7 +41,7 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
     string memory _name,
     string memory _symbol,
     uint256 _decimals,
-    uint256 _lockEnd,
+    uint64 _lockEnd,
     bool _finishMinting,
     address[] memory _vaults,
     uint256[] memory _supplies,

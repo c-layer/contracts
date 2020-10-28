@@ -23,9 +23,13 @@ const LOCK_END = '' + Math.floor((new Date().getTime() + 3600 * 24 * 365) / 1000
 const SUPPLIES_DECIMALS = '000000000000000000';
 const SUPPLIES = [42 * 10 ** 6 + SUPPLIES_DECIMALS, 24 * 10 ** 6 + SUPPLIES_DECIMALS];
 const TOTAL_SUPPLY = 66 * 10 ** 6 + SUPPLIES_DECIMALS;
+const END_OF_TIME = '18446744073709551615';
 
 const ALL_PROXIES = web3.utils.toChecksumAddress(
   '0x' + web3.utils.fromAscii('AllProxies').substr(2).padStart(40, '0'));
+const ANY_ADDRESSES = web3.utils.toChecksumAddress(
+  '0x' + web3.utils.fromAscii('AnyAddresses').substr(2).padStart(40, '0'));
+
 const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3('assignProxyOperators(address,bytes32,address[])'),
   web3.utils.sha3('defineToken(address,uint256,string,string,uint256)'),
@@ -33,7 +37,7 @@ const REQUIRED_CORE_PRIVILEGES = [
 const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
   web3.utils.sha3('finishMinting(address)'),
-  web3.utils.sha3('defineLock(address,uint256,uint256,address[])'),
+  web3.utils.sha3('defineLock(address,address,address,uint64,uint64)'),
   web3.utils.sha3('defineTokenLocks(address,address[])'),
   web3.utils.sha3('defineRules(address,address[])'),
 ].map((x) => x.substr(0, 10));
@@ -177,10 +181,9 @@ contract('TokenFactory', function (accounts) {
       });
 
       it('should have token locked', async function () {
-        const lockData = await core.lock(token.address);
+        const lockData = await core.lock(token.address, ANY_ADDRESSES, ANY_ADDRESSES);
         assert.equal(lockData.startAt.toString(), '0', 'startAt');
         assert.equal(lockData.endAt.toString(), LOCK_END, 'endAt');
-        assert.deepEqual(lockData.exceptions, [], 'locks');
       });
 
       it('should return canTransfer tokens', async function () {
@@ -260,11 +263,16 @@ contract('TokenFactory', function (accounts) {
               [accounts[1], accounts[2]], ['10000', '20000']);
           });
 
-          it('should have token locked', async function () {
-            const lockData = await core.lock(token.address);
-            assert.equal(lockData.startAt.toString(), '0', 'startAt');
-            assert.equal(lockData.endAt.toString(), LOCK_END, 'endAt');
-            assert.deepEqual(lockData.exceptions, [accounts[1], accounts[2]], 'locks');
+          it('should have token locked for tokensale 1', async function () {
+            const lockData = await core.lock(token.address, accounts[1], ANY_ADDRESSES);
+            assert.equal(lockData.startAt.toString(), END_OF_TIME, 'startAt');
+            assert.equal(lockData.endAt.toString(), END_OF_TIME, 'endAt');
+          });
+
+          it('should have token locked for tokensale 2', async function () {
+            const lockData = await core.lock(token.address, accounts[2], ANY_ADDRESSES);
+            assert.equal(lockData.startAt.toString(), END_OF_TIME, 'startAt');
+            assert.equal(lockData.endAt.toString(), END_OF_TIME, 'endAt');
           });
 
           it('should return canTransfer tokens', async function () {

@@ -17,6 +17,9 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
   bytes32 internal constant COMPLIANCE_PROXY_ROLE = bytes32("ComplianceProxyRole");
   bytes32 internal constant ISSUER_PROXY_ROLE = bytes32("IssuerProxyRole");
 
+  // Addresses
+  address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
+
   // Core Privileges
   bytes4 internal constant DEFINE_CORE_CONFIGURATION_PRIV =
     bytes4(keccak256("defineCoreConfigurations(address,address,address[],address,address,address,address,address)"));
@@ -39,7 +42,7 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
   bytes4 internal constant SEIZE_PRIV =
     bytes4(keccak256("seize(address,address,uint256)"));
   bytes4 internal constant DEFINE_LOCK_PRIV =
-    bytes4(keccak256("defineLock(address,uint256,uint256,address[])"));
+    bytes4(keccak256("defineLock(address,address,address,uint64,uint64)"));
   bytes4 internal constant DEFINE_TOKEN_LOCK_PRIV =
     bytes4(keccak256("defineTokenLocks(address,address[])"));
   bytes4 internal constant FREEZE_MANY_ADDRESSES_PRIV =
