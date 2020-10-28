@@ -82,25 +82,25 @@ contract('LockableDelegate', function (accounts) {
     it('should have transfer locked', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[2], accounts[1], accounts[0], '1000');
-      assert.ok(result, 'frozen');
+      assert.ok(result, 'locked');
     });
 
     it('should have transfer unlocked with sender the exception', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[3], accounts[2], accounts[1], '1000');
-      assert.ok(result, 'frozen');
+      assert.ok(result, 'locked');
     });
 
     it('should have transfer unlocked with receiver the exception', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[0], accounts[3], accounts[2], '1000');
-      assert.ok(!result, 'unfrozen');
+      assert.ok(!result, 'unlocked');
     });
 
     it('should have transfer unlocked without the exception', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[0], accounts[1], accounts[3], '1000');
-      assert.ok(result, 'frozen');
+      assert.ok(result, 'locked');
     });
 
     it('should let remove the lock', async function () {
@@ -135,7 +135,7 @@ contract('LockableDelegate', function (accounts) {
     it('should have transfer unlocked', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[0], accounts[1], accounts[2], '1000');
-      assert.ok(!result, 'not frozen');
+      assert.ok(!result, 'not locked');
     });
 
     it('should let remove the lock', async function () {
@@ -146,6 +146,32 @@ contract('LockableDelegate', function (accounts) {
       assert.equal(tx.logs[0].args.lock, TOKEN_ADDRESS, 'lock');
       assert.equal(tx.logs[0].args.startAt, 0, 'startAt');
       assert.equal(tx.logs[0].args.endAt, 0, 'endAt');
+    });
+  });
+
+  describe('With a lock defined where A => * is unlocked in future and * => B is locked now', function () {
+    beforeEach(async function () {
+      await delegate.defineTokenLocks(TOKEN_ADDRESS, [TOKEN_ADDRESS]);
+      await delegate.defineLock(TOKEN_ADDRESS, accounts[1], ANY_ADDRESSES, NEXT_YEAR, NEXT_YEAR + 1);
+      await delegate.defineLock(TOKEN_ADDRESS, ANY_ADDRESSES, accounts[2], PREVIOUS_YEAR, NEXT_YEAR + 1);
+    });
+
+    it('should have transfer unlocked A => C', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[1], accounts[3], '1000');
+      assert.ok(!result, 'unlocked');
+    });
+
+    it('should have transfer locked C => B', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[3], accounts[2], '1000');
+      assert.ok(result, 'locked');
+    });
+
+    it('should have transfer locked A => B', async function () {
+      const result = await delegate.testIsLocked(TOKEN_ADDRESS,
+        accounts[0], accounts[1], accounts[2], '1000');
+      assert.ok(result, 'locked');
     });
   });
 
@@ -160,13 +186,13 @@ contract('LockableDelegate', function (accounts) {
     it('should have transfer locked', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[0], accounts[1], accounts[2], '1000');
-      assert.ok(result, 'frozen');
+      assert.ok(result, 'locked');
     });
 
     it('should have transfer unlocked for accounts[3]', async function () {
       const result = await delegate.testIsLocked(TOKEN_ADDRESS,
         accounts[0], accounts[3], accounts[2], '1000');
-      assert.ok(!result, 'not frozen');
+      assert.ok(!result, 'not locked');
     });
 
     it('should let remove the lock', async function () {
