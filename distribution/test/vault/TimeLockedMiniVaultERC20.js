@@ -15,8 +15,8 @@ const formatAddressToTopic = address =>
 const formatValueToData = value =>
   ('0x' + (value.substr(2).padStart(64, '0')));
 
-const timeLockPlus1Hour = Math.floor(new Date().getTime()/1000) + 3600;
-const timeLockMinus1Hour = Math.floor(new Date().getTime()/1000) - 3600;
+const timeLockPlus1Hour = Math.floor(new Date().getTime() / 1000) + 3600;
+const timeLockMinus1Hour = Math.floor(new Date().getTime() / 1000) - 3600;
 
 contract('TimeLockedSimpleVaultERC20', function (accounts) {
   let vault, token;

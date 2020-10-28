@@ -11,8 +11,8 @@ import "../interface/ISimpleVaultERC20.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   TMV01: Vault is locked
- *   TMV02: Cannot be locked in the past
+ *   TLV01: Vault is locked
+ *   TLV02: Cannot be locked in the past
  */
 contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
 
@@ -20,12 +20,12 @@ contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
 
   modifier whenUnlocked() {
     // solhint-disable-next-line not-rely-on-time
-    require(lockUntil < currentTime(), "TMV01");
+    require(lockUntil < currentTime(), "TLV01");
     _;
   }
 
   constructor(uint64 _lockUntil) public {
-    require(_lockUntil > currentTime(), "TMV02");
+    require(_lockUntil > currentTime(), "TLV02");
     lockUntil = _lockUntil;
   }
 
