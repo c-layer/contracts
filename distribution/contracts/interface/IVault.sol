@@ -10,7 +10,6 @@ import "@c-layer/common/contracts/interface/IERC20.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * VLT01: Invalid number of parameters
  */
 abstract contract IVault {
 

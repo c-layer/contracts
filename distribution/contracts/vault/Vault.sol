@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "@c-layer/common/contracts/operable/Operable.sol";
-import "./interface/IVault.sol";
+import "../interface/IVault.sol";
 
 
 /**
@@ -11,7 +11,6 @@ import "./interface/IVault.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * VLT01: Invalid number of parameters
  */
 contract Vault is IVault, Operable {
 

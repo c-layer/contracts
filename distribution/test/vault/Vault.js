@@ -4,8 +4,8 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertRevert = require('./helpers/assertRevert');
-const Vault = artifacts.require('Vault.sol');
+const assertRevert = require('../helpers/assertRevert');
+const Vault = artifacts.require('vault/Vault.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 
 const TRANSFER_LOG = web3.utils.sha3('Transfer(address,address,uint256)');
