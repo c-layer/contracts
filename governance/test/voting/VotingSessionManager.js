@@ -20,6 +20,8 @@ const NAME = 'Token';
 const SYMBOL = 'TKN';
 const DECIMALS = '2';
 
+const ANY_ADDRESSES = web3.utils.toChecksumAddress(
+  '0x' + web3.utils.fromAscii('AnyAddresses').substr(2).padStart(40, '0'));
 const MAX_UINT64 = '18446744073709551615';
 const DAY_IN_SEC = 24 * 3600;
 const Periods = {
@@ -690,10 +692,9 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have the token locked', async function () {
-        const tokenData = await core.lock(votingSession.address);
-        assert.equal(tokenData.startAt.toString(), Times.voting, 'lock start');
-        assert.equal(tokenData.endAt.toString(), Times.grace, 'lock end');
-        assert.deepEqual(tokenData.exceptions, [], 'exceptions');
+        const lockData = await core.lock(votingSession.address, ANY_ADDRESSES, ANY_ADDRESSES);
+        assert.equal(lockData.startAt.toString(), Times.voting, 'lock start');
+        assert.equal(lockData.endAt.toString(), Times.execution, 'lock end');
       });
 
       it('should be possible to submit a vote', async function () {
@@ -1119,10 +1120,9 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have the token locked', async function () {
-        const lockData = await core.lock(votingSession.address);
+        const lockData = await core.lock(votingSession.address, ANY_ADDRESSES, ANY_ADDRESSES);
         assert.equal(lockData.startAt.toString(), Times.voting, 'lock start');
-        assert.equal(lockData.endAt.toString(), Times.grace, 'lock end');
-        assert.deepEqual(lockData.exceptions, [], 'exceptions');
+        assert.equal(lockData.endAt.toString(), Times.execution, 'lock end');
       });
     });
 
@@ -1430,16 +1430,6 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should be possible to archive it', async function () {
-        const oldest = await votingSession.oldestSessionId();
-        console.log(oldest.toString());
-        const session_ = await votingSession.session(oldest);
-        console.log(session_.voteAt.toString());
-
-        const current = await votingSession.currentSessionId();
-        console.log(current.toString());
-        const currentSession_ = await votingSession.session(oldest);
-        console.log(currentSession_.voteAt.toString());
-
         const tx = await votingSession.archiveSession();
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 1);
@@ -1514,16 +1504,16 @@ contract('VotingSessionManager', function (accounts) {
     });
   });
 
-  const DEFINE_FIRST_PROPOSAL_COST = 372651;
-  const DEFINE_SECOND_PROPOSAL_COST = 216257;
-  const DEFINE_MIN_PROPOSAL_COST = 157513;
-  const FIRST_VOTE_COST = 352297;
-  const SECOND_VOTE_COST = 164879;
-  const VOTE_ON_BEHALF_COST = 208930;
-  const EXECUTE_ONE_COST = 79157;
-  const EXECUTE_ALL_COST = 469379;
-  const ARCHIVE_SESSION_COST = 254119;
-  const DEFINE_PROPOSAL_WITH_ARCHIVING_COST = 266437;
+  const DEFINE_FIRST_PROPOSAL_COST = 348997;
+  const DEFINE_SECOND_PROPOSAL_COST = 216279;
+  const DEFINE_MIN_PROPOSAL_COST = 157535;
+  const FIRST_VOTE_COST = 352319;
+  const SECOND_VOTE_COST = 165727;
+  const VOTE_ON_BEHALF_COST = 208974;
+  const EXECUTE_ONE_COST = 79152;
+  const EXECUTE_ALL_COST = 469329;
+  const ARCHIVE_SESSION_COST = 256627;
+  const DEFINE_PROPOSAL_WITH_ARCHIVING_COST = 264035;
 
   describe('Performance [ @skip-on-coverage ]', function () {
     it('should estimate a first proposal', async function () {
@@ -1654,8 +1644,7 @@ contract('VotingSessionManager', function (accounts) {
 
         it('should estimate archiving a session', async function () {
           const tx = await votingSession.archiveSession();
-          const gas = tx.receipt.gasUsed.toString();
-          assertGasEstimate(gas, ARCHIVE_SESSION_COST, 'estimate');
+          assertGasEstimate(tx.receipt.gasUsed, ARCHIVE_SESSION_COST, 'estimate');
         });
       });
 
@@ -1678,8 +1667,7 @@ contract('VotingSessionManager', function (accounts) {
 
         it('should estimate defining a new proposal', async function () {
           const tx = await votingSession.defineProposal('', '', '0x', ANY_TARGET, '0x', '0', '0');
-          const gas = tx.receipt.gasUsed.toString();
-          assertGasEstimate(gas, DEFINE_PROPOSAL_WITH_ARCHIVING_COST, 'estimate');
+          assertGasEstimate(tx.receipt.gasUsed, DEFINE_PROPOSAL_WITH_ARCHIVING_COST, 'estimate');
         });
       });
     });

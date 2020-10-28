@@ -692,9 +692,10 @@ contract VotingSessionManager is VotingSessionStorage, IVotingSessionManager, Op
 
       require(ITokenCore(core).defineLock(
         address(this),
-        nextStartAt,
-        session_.graceAt,
-        new address[](0)), "VSM35");
+        ANY_ADDRESSES,
+        ANY_ADDRESSES,
+        session_.voteAt,
+        session_.executionAt), "VSM35");
 
       emit SessionScheduled(currentSessionId_, session_.voteAt);
 

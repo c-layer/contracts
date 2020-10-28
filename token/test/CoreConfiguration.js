@@ -40,7 +40,7 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
   web3.utils.sha3('burn(address,uint256)'),
   web3.utils.sha3('finishMinting(address)'),
-  web3.utils.sha3('defineLock(address,address,address,uint64,uint64'),
+  web3.utils.sha3('defineLock(address,address,address,uint64,uint64)'),
   web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));

@@ -17,6 +17,8 @@ import "../interface/IVotingDefinitions.sol";
 contract VotingSessionStorage is IVotingDefinitions {
   using SafeMath for uint256;
 
+  address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
+
   struct SessionRule {
     uint64 campaignPeriod; // Before it starts, the vote will be locked
     uint64 votingPeriod; // Time period for voters to submit their votes
