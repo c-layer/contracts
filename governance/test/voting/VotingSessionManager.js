@@ -214,7 +214,7 @@ contract('VotingSessionManager', function (accounts) {
 
   it('should let owner choose accounts[0] as voting sponsor', async function () {
     const ownable = await Ownable.new();
-    const tx = votingSession.defineContractSponsor(ownable.address, accounts[2], Times.closed);
+    const tx = await votingSession.defineContractSponsor(ownable.address, accounts[2], Times.closed);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'SponsorDefined', 'event');
