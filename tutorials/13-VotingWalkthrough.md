@@ -84,24 +84,39 @@ core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ voting.address ]);
 ```
 
 Each voting session will go through the following states:
-- 0: PLANNED, a new session is planned and proposals can be submitted
-- 1: CAMPAIGN, proposals can not be submitted anymore, poeple can promote their proposals
-- 2: VOTING, votes can be submitted
-- 3: GRACE, proposals can be executed
-- 4: CLOSED
+- 0: UNDEFINED,
+- 1: PLANNED, a new session is planned and proposals can be submitted
+- 2: CAMPAIGN, proposals can not be submitted anymore, poeple can promote their proposals
+- 3: VOTING, votes can be submitted
+- 4: EXECUTION, standard resolutions may be executed
+- 5: GRACE, rules or resolution requirements may be changed
+- 6: CLOSED,
+- 7: ARCHIVED, removed from the blockchain state
+
+Proposals also have different states as described below
+- 0: UNDEFINED,
+- 1: DEFINED, the proposal was created
+- 2: CANCELLED, the proposal was cancelled
+- 3: LOCKED, the proposal is locked (We are in the campaign or voting period)
+- 4: APPROVED, the proposal is approved and may be executed if we are in the correct execution period
+- 5: REJECTED, the proposal is rejected
+- 6: RESOLVED, the proposal was executed
+- 7: CLOSED, the proposal has been closed
+- 8: ARCHIVED, the proposal is removed from the state
 
 By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
 - campaign period of 5 minutes
 - voting period of 5 minutes
+- execution period of 5 minutes
 - grace period of 10 minutes
 - offset for the first period of 0 minutes
 - The 10 first proposals are open to anyone with the minimum requirement
 - maximum of 20 proposals for each voting session
 - maximum of 25 proposals that can be submitted by the quaestor
 - requirement to have a minimum of 1 tokens to be able to submit proposals
-- requirement to have a minimum of 1 tokens to be able to execute proposals
+- non voting addresses (ie: liquidity pool, wrapped token, ...)
 ```
-voting.updateSessionRule(5*60, 5*60, 10*60, 0, 10, 20, 25, 1, 1)
+voting.updateSessionRule(5*60, 5*60, 5*60, 10*60, 0, 10, 20, 25, 1, [])
 ```
 So now it is possible to schedule a new voting session every 15 minutes. 
 
@@ -118,8 +133,10 @@ We can now submit this proposal. We will use the defineProposal function that ta
 - a checksum of the URL content
 - the SmartContract to call 
 - the encoded request to submit to the Smart Contract
+- the reference proposal if this is an alternative, 0 otherwise
+- the execution dependency if orders matter, 0 otherwise
 ```
-voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request)  
+voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request, 0, 0)  
 ```
 
 ### Inspect the current voting session 
@@ -135,6 +152,12 @@ voting.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toS
 ```
 This returns "0", indicating that the session is in the PLANNED stage.
 After a few minutes, "1" will be returned instead, indicating that the voting session is in the CAMPAIGN state.
+
+We can also check the proposal:
+```
+voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+```
+If we are still in the PLANNED state, the proposal should returns it is DEFINED, otherwise it will return LOCKED.
 
 The length of the voting sessions being 15 minutes, the next voting session will start with the next quarter (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:15).
 
@@ -164,21 +187,26 @@ Note here that we could have used instead the hexadecimal representation of this
 
 We can check if the proposal has been approved:
 ```
-voting.isApproved(1)
+voting.proposalApproval(1, 1)
 ```
 The proposal is not approved, as accounts[1] only holds 1/3 of the tokens.
 
 Let's simulate a new vote supporting the proposal from accounts[0] and check that the proposal is then approved:
 ```
 voting.submitVote(1)
-voting.isApproved(1)
+voting.proposalApproval(1, 1)
 ```
 
 
 ### Execution of the proposal
-When the VOTING period is closed (in our case 5 minutes after it began), the session state will enter the GRACE period:
+When the VOTING period is closed (in our case 5 minutes after it began), the session state will enter the EXECUTION period:
 ```
 voting.sessionStateAt(1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+```
+
+Once in EXECUTION, the proposal state will confirmed it has been APPROVED:
+```
+voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
 Anyone who owns enough tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:

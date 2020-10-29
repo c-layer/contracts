@@ -86,27 +86,29 @@ token.canTransfer(accounts[0], accounts[2], 1).then((x) => x.toString())
 token.canTransfer(accounts[2], accounts[0], 1).then((x) => x.toString())
 ```
 
-And a tranfer should fail. Optionnaly truffle might reports you with the following error ["CO03"](../common/contracts/core/Core.sol#L17)
+And a transfer should fail. Optionnaly truffle might reports you with the following error ["CO03"](../common/contracts/core/Core.sol#L17)
 ```javascript
-token.transfer(accounts[0 ], 1, { from: accounts[1] })
+token.transfer(accounts[0], 1, { from: accounts[1] })
 ```
 
 ##### 3- Locking the token
 
-Sometime, it's not about a specific address but rather the token which need to be locked.
+Sometime, it's not about a specific address but rather some transfers which need to be locked.
 
-The following command will let you lock the token for one day
+The following command will let you lock account 2 from receiving any tokens for one day
 ```javascript
 start = Math.floor(new Date().getTime()/1000)
 end = start + 3600 * 24
-core.defineLock(token.address, start, end, [])
-```
-The last parameter can be an array of exception addresses which still need to be allowed to transfer.
-This can be either the compliance oracle addresses or a tokensale address.
+ANY_ADDRESSES = web3.utils.toChecksumAddress(
+  '0x' + web3.utils.fromAscii('AnyAddresses').substr(2).padStart(40, '0'));
 
-The following commands should both return 5 (token locked):
+core.defineLock(token.address, ANY_ADDRESSES, accounts[2], start, end)
+```
+
+Therefore the following command should both return 5 (transfer locked):
 ```javascript
 token.canTransfer(accounts[0], accounts[2], 1).then((x) => x.toString())
+token.canTransfer(accounts[3], accounts[2], 1).then((x) => x.toString())
 ```
 
 And a tranfer should fail. Optionnaly truffle might reports you with the following error ["CO03"](../common/contracts/core/Core.sol#L17)
@@ -116,7 +118,7 @@ token.transfer(accounts[0], 1, { from: accounts[2] })
 
 ##### 4- Seize tokens
 
-Although we froze our friend and we locked the token, we can still recover our tokens.
+Although we froze one friend and prevented another friend to receiven, we can still recover our tokens.
 To do that we need to seize it with the following commands:
 
 ```javascript

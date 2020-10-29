@@ -80,7 +80,7 @@ FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0')
 FACTORY_PROXY_ROLE = web3.utils.fromAscii('FactoryProxyRole').padEnd(66, '0')
 
 REQUIRED_CORE_PRIVILEGES = [ 'assignProxyOperators(address,bytes32,address[])', 'defineToken(address,uint256,string,string,uint256)' ].map((x) => web3.utils.sha3(x).substr(0, 10))
-REQUIRED_PROXY_PRIVILEGES = [ 'mint(address,address[],uint256[])', 'finishMinting(address)', 'defineLock(address,uint256,uint256,address[])', 'defineRules(address,address[])' ].map((x) => web3.utils.sha3(x).substr(0, 10))
+REQUIRED_PROXY_PRIVILEGES = [ 'mint(address,address[],uint256[])', 'finishMinting(address)', 'defineLock(address,address,address,uint256,uint256)', 'defineRules(address,address[])' ].map((x) => web3.utils.sha3(x).substr(0, 10))
 ```
 
 To configure the core with these privileges, proceed as follows:
