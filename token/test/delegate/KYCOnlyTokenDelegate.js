@@ -4,6 +4,7 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
+const assertRevert = require('../helpers/assertRevert');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const KYCOnlyTokenDelegate = artifacts.require('KYCOnlyTokenDelegate.sol');
@@ -49,6 +50,10 @@ contract('KYCOnlyTokenDelegate', function (accounts) {
       token.address, 1, NAME, SYMBOL, DECIMALS);
     await core.mint(token.address, [accounts[0]], [AMOUNT]);
     await token.approve(accounts[1], AMOUNT);
+  });
+
+  it('should not define delegate without an audit config', async function () {
+    await assertRevert(core.defineTokenDelegate(1, delegate.address, []), 'TC03');
   });
 
   it('should transfer from accounts[0] to accounts[1]', async function () {

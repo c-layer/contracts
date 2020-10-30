@@ -30,6 +30,17 @@ contract KYCOnlyTokenDelegate is
   MintableTokenDelegate
 {
 
+  uint256 internal constant AUDIT_CONFIG_REQUIREMENTS = 1; // 1- Transfer Limits
+
+  /**
+   * @dev check config requirements
+   **/
+  function checkConfigurations(uint256[] memory _auditConfigurationIds)
+    override public returns (bool)
+  {
+    return (_auditConfigurationIds.length >= AUDIT_CONFIG_REQUIREMENTS);
+  }
+
  /**
    * @dev transfer
    */
