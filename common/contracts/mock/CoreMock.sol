@@ -29,6 +29,10 @@ contract CoreMock is Core {
     return delegateCall(msg.sender);
   }
 
+  function delegateCallBoolMock(bool) public returns (bool) {
+    return delegateCallBool(msg.sender);
+  }
+
   function delegateCallUint256Mock(uint256) public returns (uint256) {
     return delegateCallUint256(msg.sender);
   }

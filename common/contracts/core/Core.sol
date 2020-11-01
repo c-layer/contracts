@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "./Storage.sol";
-import "../convert/BytesConvert.sol";
+import "../call/DelegateCall.sol";
 import "./Proxy.sol";
 
 
@@ -23,39 +23,40 @@ import "./Proxy.sol";
  *   CO07: Proxy update must be successful
  **/
 contract Core is Storage {
-  using BytesConvert for bytes;
+  using DelegateCall for address;
 
   modifier onlyProxy {
     require(delegates[proxyDelegateIds[msg.sender]] != address(0), "CO01");
     _;
   }
 
+  function validProxyDelegate(address _proxy) internal view returns (address delegate) {
+    uint256 delegateId = proxyDelegateIds[_proxy];
+    delegate = delegates[delegateId];
+    require(delegate != address(0), "CO02");
+  }
+
   function delegateCall(address _proxy) internal returns (bool status)
   {
-    uint256 delegateId = proxyDelegateIds[_proxy];
-    address delegate = delegates[delegateId];
-    require(delegate != address(0), "CO02");
-    // solhint-disable-next-line avoid-low-level-calls
-    (status, ) = delegate.delegatecall(msg.data);
-    require(status, "CO03");
+    return validProxyDelegate(_proxy)._delegateCall();
+  }
+
+  function delegateCallBool(address _proxy)
+    internal returns (bool)
+  {
+    return validProxyDelegate(_proxy)._delegateCallBool();
   }
 
   function delegateCallUint256(address _proxy)
     internal returns (uint256)
   {
-    return delegateCallBytes(_proxy).toUint256();
+    return validProxyDelegate(_proxy)._delegateCallUint256();
   }
 
   function delegateCallBytes(address _proxy)
     internal returns (bytes memory result)
   {
-    bool status;
-    uint256 delegateId = proxyDelegateIds[_proxy];
-    address delegate = delegates[delegateId];
-    require(delegate != address(0), "CO02");
-    // solhint-disable-next-line avoid-low-level-calls
-    (status, result) = delegate.delegatecall(msg.data);
-    require(status, "CO03");
+    return validProxyDelegate(_proxy)._delegateCallBytes();
   }
 
   function defineDelegateInternal(uint256 _delegateId, address _delegate) internal returns (bool) {

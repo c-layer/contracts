@@ -192,7 +192,7 @@ contract('TokenFactory', function (accounts) {
       });
 
       it('should not be possible to transfer tokens', async function () {
-        await assertRevert(token.transfer(accounts[0], 1, { from: accounts[2] }), 'CO03');
+        await assertRevert(token.transfer(accounts[0], 1, { from: accounts[2] }), 'CT01');
       });
 
       it('should not let non proxy operator to approve token', async function () {

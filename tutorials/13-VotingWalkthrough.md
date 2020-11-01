@@ -18,7 +18,7 @@ It will start the image from the contracts directory and mount this directory in
 You will get a bash prompt inside the container. All the instructions from this tutorial should then to be executed from this environment.
 
 ### Module installation
-Let's first make sure that all required modules are installed and compile all the contracts:
+Let's first make sure that all required modules are installed and let's compile all the contracts:
 ```
 bash-5.0$ yarn clean && yarn install && yarn compile
 ```
@@ -56,9 +56,10 @@ token.balanceOf(accounts[1]).then(x => x.toString())
 ```
 
 ### Setup of a new voting contract 
-A new voting session manager can be created using the `VotingSessionManager` contract. A voting session will be made of several session instances, so do not get confused by the name of the contract. In the rest of this tutorial, the VotingSession contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
+A new voting session manager can be created using the `VotingSessionManager` contract. This contract will manage periodic voting session instances. In the rest of this tutorial, the VotingSessionManager contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
 ```
-voting = await VotingSessionManager.new(token.address) 
+votingDelegate = await VotingSessionDelegate.new()
+voting = await VotingSessionManager.new(token.address, votingDelegate.address) 
 ```
 
 The voting contract needs it's own lock to prevent tokens tranfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
@@ -118,7 +119,7 @@ By default, a voting session will last 2 weeks. As we do not want the tutorial t
 ```
 voting.updateSessionRule(5*60, 5*60, 5*60, 10*60, 0, 10, 20, 25, 1, [])
 ```
-So now it is possible to schedule a new voting session every 15 minutes. 
+So now it is possible to schedule a new voting session every 20 minutes. 
 
 
 ### Submit a proposal 
@@ -157,9 +158,9 @@ We can also check the proposal:
 ```
 voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
-If we are still in the PLANNED state, the proposal should returns it is DEFINED, otherwise it will return LOCKED.
+If we are still in the PLANNED state, the proposal should returns it is DEFINED, otherwise it will return LOCKED during the CAMPAIGN or VOTING period.
 
-The length of the voting sessions being 15 minutes, the next voting session will start with the next quarter (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:15).
+The length of the voting sessions being 20 minutes, the next voting session will start at the begining of the next twenty minutes (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:20).
 
 We can double check by querying the session:
 ```
@@ -179,7 +180,7 @@ voting.proposal(1)
 
 
 ### Voting 
-When the VOTING period begins, we can simulate a vote from account[1] for the proposal. The given value is a 256 bits number where each bit code for a vote
+When the VOTING period begins, we can vote as account 1 for the proposal. The given value is a 256 bits number where each bit code for a proposal approval. For example, if there were 3 proposals and you wanted to vote for the 1rst and the last you would give the following value: `2**0 + 2**2 = 5`
 ```
 voting.submitVote(1, {from: accounts[1]})
 ```

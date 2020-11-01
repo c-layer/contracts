@@ -3,7 +3,8 @@ pragma solidity ^0.6.0;
 import "@c-layer/common/contracts/math/SafeMath.sol";
 import "@c-layer/token/contracts/interface/ITokenProxy.sol";
 import "@c-layer/token/contracts/interface/ITokenCore.sol";
-import "../interface/IVotingDefinitions.sol";
+import "../interface/IVotingSessionStorage.sol";
+import "../interface/IVotingSessionDelegate.sol";
 
 
 /**
@@ -14,7 +15,7 @@ import "../interface/IVotingDefinitions.sol";
  *
  * Error messages
  */
-contract VotingSessionStorage is IVotingDefinitions {
+contract VotingSessionStorage is IVotingSessionStorage {
   using SafeMath for uint256;
 
   address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
@@ -80,6 +81,10 @@ contract VotingSessionStorage is IVotingDefinitions {
     uint64 until;
   }
 
+  IVotingSessionDelegate internal delegate_;
+  ITokenProxy internal token_;
+  ITokenCore internal core_;
+
   SessionRule internal sessionRule_ = SessionRule(
     CAMPAIGN_PERIOD,
     VOTING_PERIOD,
@@ -101,8 +106,6 @@ contract VotingSessionStorage is IVotingDefinitions {
   mapping(address => uint64) internal lastVotes;
   mapping(address => Sponsor) internal sponsors;
  
-  ITokenProxy internal token_;
-
   /**
    * @dev currentTime
    */

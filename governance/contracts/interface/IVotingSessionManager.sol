@@ -1,7 +1,10 @@
 pragma solidity ^0.6.0;
 
+import "@c-layer/common/contracts/operable/Ownable.sol";
 import "@c-layer/token/contracts/interface/ITokenProxy.sol";
-import "./IVotingDefinitions.sol";
+import "./IVotingSessionStorage.sol";
+import "./IVotingSessionDelegate.sol";
+
 
 /**
  * @title IVotingSessionManager
@@ -11,9 +14,11 @@ import "./IVotingDefinitions.sol";
  *
  * Error messages
  */
-abstract contract IVotingSessionManager is IVotingDefinitions {
+abstract contract IVotingSessionManager is IVotingSessionStorage {
 
   function token() virtual public view returns (ITokenProxy);
+
+  function delegate() virtual public view returns (IVotingSessionDelegate);
 
   function sessionRule() virtual public view returns (
     uint64 campaignPeriod,
@@ -57,6 +62,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
     address proposedBy,
     uint128 requirementMajority,
     uint128 requirementQuorum,
+    uint256 executionThreshold,
     uint8 dependsOn,
     uint8 alternativeOf,
     uint256 alternativesMask,
@@ -78,6 +84,9 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
 
   function proposalStateAt(uint256 _sessionId, uint8 _proposalId, uint256 _time)
     virtual public view returns (ProposalState);
+
+  function defineContracts(ITokenProxy _token, IVotingSessionDelegate _delegate)
+    virtual public returns (bool);
 
   function updateSessionRule(
     uint64 _campaignPeriod,
@@ -101,7 +110,7 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   ) virtual public returns (bool);
 
   function defineSponsor(address _sponsor, uint64 _until) virtual public returns (bool);
-  function defineContractSponsor(address _contract, address _sponsor, uint64 _until)
+  function defineSponsorOf(Ownable _contract, address _sponsor, uint64 _until)
     virtual public returns (bool);
 
   function defineProposal(
@@ -135,34 +144,4 @@ abstract contract IVotingSessionManager is IVotingDefinitions {
   function executeResolutions(uint8[] memory _proposalIds) virtual public returns (bool);
 
   function archiveSession() virtual public returns (bool);
-
-  event SessionRuleUpdated(
-    uint64 campaignPeriod,
-    uint64 votingPeriod,
-    uint64 executionPeriod,
-    uint64 gracePeriod,
-    uint64 periodOffset,
-    uint8 openProposals,
-    uint8 maxProposals,
-    uint8 maxProposalsOperator,
-    uint256 newProposalThreshold,
-    address[] nonVotingAddresses);
-  event ResolutionRequirementUpdated(
-    address target,
-    bytes4 methodSignature,
-    uint128 majority,
-    uint128 quorum,
-    uint256 executionThreshold
-  );
-
-  event SponsorDefined(address indexed voter, address address_, uint64 until);
-
-  event SessionScheduled(uint256 indexed sessionId, uint64 voteAt);
-  event SessionArchived(uint256 indexed sessionId);
-  event ProposalDefined(uint256 indexed sessionId, uint8 proposalId);
-  event ProposalUpdated(uint256 indexed sessionId, uint8 proposalId);
-  event ProposalCancelled(uint256 indexed sessionId, uint8 proposalId);
-  event ResolutionExecuted(uint256 indexed sessionId, uint8 proposalId);
-
-  event Vote(uint256 indexed sessionId, address voter, uint256 weight);
 }

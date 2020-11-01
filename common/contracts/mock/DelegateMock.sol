@@ -21,6 +21,11 @@ contract DelegateMock is Delegate {
     return _success;
   }
 
+  function delegateCallBoolMock(bool _success) public pure returns (bool) {
+    require(_success, "AM01");
+    return _success;
+  }
+
   function delegateCallUint256Mock(uint256 _value) public pure returns (uint256) {
     require(_value != 0, "AM02");
     return _value;

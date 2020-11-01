@@ -59,7 +59,7 @@ contract('MintableTokenDelegate', function (accounts) {
   });
 
   it('should prevent operator to mint with inconsistent parameters', async function () {
-    await assertRevert(core.mint(token.address, [accounts[1]], []), 'CO03');
+    await assertRevert(core.mint(token.address, [accounts[1]], []), 'MT03');
   });
 
   it('should prevent non operator to mint', async function () {
@@ -139,11 +139,11 @@ contract('MintableTokenDelegate', function (accounts) {
       });
 
       it('should prevent operator to mint again', async function () {
-        await assertRevert(core.mint(token.address, [accounts[1]], [AMOUNT]), 'CO03');
+        await assertRevert(core.mint(token.address, [accounts[1]], [AMOUNT]), 'MT02');
       });
 
       it('should prevent operator to finish mintingt again', async function () {
-        await assertRevert(core.finishMinting(token.address), 'CO03');
+        await assertRevert(core.finishMinting(token.address), 'MT02');
       });
     });
   });

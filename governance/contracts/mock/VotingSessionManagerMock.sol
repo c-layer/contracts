@@ -10,16 +10,16 @@ import "../voting/VotingSessionManager.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   VSMM01: Session has not started yet
- *   VSMM02: Session is already archived
+ *   VMM01: Session has not started yet
+ *   VMM02: Session is already archived
  **/
 contract VotingSessionManagerMock is VotingSessionManager {
 
   /**
    * @dev constructor
    */
-  constructor(ITokenProxy _token)
-    public VotingSessionManager(_token) {
+  constructor(ITokenProxy _token, IVotingSessionDelegate _delegate)
+    public VotingSessionManager(_token, _delegate) {
   }
 
   /**
@@ -34,11 +34,12 @@ contract VotingSessionManagerMock is VotingSessionManager {
    */
   function nextStepTest(uint256 _sessionId) public returns (bool) {
     uint256 time = currentTime();
-    SessionState state = sessionStateAt(_sessionId, time);
+
+    SessionState state = this.sessionStateAt(_sessionId, time);
     Session storage session_ = sessions[_sessionId];
 
-    require(state != SessionState.UNDEFINED, "VSMM01");
-    require(state != SessionState.ARCHIVED, "VSMM02");
+    require(state != SessionState.UNDEFINED, "VMM01");
+    require(state != SessionState.ARCHIVED, "VMM02");
     uint256 voteAt = time;
 
     if (state == SessionState.PLANNED) {
@@ -71,7 +72,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
       .add(sessionRule_.executionPeriod));
     session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
       .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
-    emit TestVoteAt(sessionStateAt(_sessionId, time), uint64(voteAt));
+    emit TestVoteAt(this.sessionStateAt(_sessionId, time), uint64(voteAt));
     return true;
   }
 
@@ -80,10 +81,10 @@ contract VotingSessionManagerMock is VotingSessionManager {
    */
   function historizeSessionTest() public returns (bool) {
     uint256 time = currentTime();
-    SessionState state = sessionStateAt(currentSessionId_, time);
+    SessionState state = this.sessionStateAt(currentSessionId_, time);
     Session storage session_ = sessions[currentSessionId_];
 
-    require(state != SessionState.UNDEFINED, "VSMM01");
+    require(state != SessionState.UNDEFINED, "VMM01");
 
     uint256 voteAt = time;
     voteAt -= (SESSION_RETENTION_PERIOD + 1);
@@ -95,7 +96,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
       .add(sessionRule_.executionPeriod));
     session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
       .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
-    emit TestVoteAt(sessionStateAt(currentSessionId_, time), uint64(voteAt));
+    emit TestVoteAt(this.sessionStateAt(currentSessionId_, time), uint64(voteAt));
     return true;
   }
 

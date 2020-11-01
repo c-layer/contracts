@@ -46,9 +46,6 @@ contract Proxy is IProxy {
   function staticCallUint256() internal view returns (uint256 result) {
     (bool status, bytes memory value) = core.staticcall(msg.data);
     require(status, "PR02");
-    // solhint-disable-next-line no-inline-assembly
-    assembly {
-      result := mload(add(value, 0x20))
-    }
+    result = abi.decode(value, (uint256));
   }
 }

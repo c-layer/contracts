@@ -63,17 +63,22 @@ contract('Core', function (accounts) {
         await assertRevert(core.successOnlyProxy(true, { from: accounts[1] }), 'CO01');
       });
 
-      it('should delegate call bool', async function () {
-        const success = await core.delegateCallMock.call(true);
+      it('should delegate call actions', async function () {
+        const success = await core.delegateCallMock(true);
         assert.ok(success, 'success');
       });
 
-      it('should delegate call uint256', async function () {
-        const result = await core.delegateCallUint256Mock.call(42);
-        assert.equal(result, '42', 'result');
+      it('should delegate call view bool', async function () {
+        const success = await core.delegateCallBoolMock.call(true);
+        assert.ok(success, 'success');
       });
 
-      it('should delegate call bool', async function () {
+      it('should delegate call view uint256', async function () {
+        const result = await core.delegateCallUint256Mock.call(42);
+        assert.equal(result.toString(), '42', 'result');
+      });
+
+      it('should delegate call view bytes', async function () {
         const bytes = await core.delegateCallBytesMock.call(BYTES);
         assert.equal(bytes.length, 194, 'bytes length');
         assert.ok(bytes.indexOf(BYTES.substr(2)) !== -1, 'bytes ends');

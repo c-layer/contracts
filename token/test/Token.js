@@ -127,7 +127,7 @@ contract('Token', function (accounts) {
       });
 
       it('should prevent transfer too much from accounts[0]', async function () {
-        await assertRevert(token.transfer(accounts[1], '1000001'), 'CO03');
+        await assertRevert(token.transfer(accounts[1], '1000001'), 'TD02');
       });
 
       it('should let accounts[0] provide allowance to accounts[1]', async function () {
@@ -172,7 +172,7 @@ contract('Token', function (accounts) {
         });
 
         it('should prevent transferFrom too much from accounts[0]', async function () {
-          await assertRevert(token.transferFrom(accounts[0], accounts[1], '3334', { from: accounts[1] }), 'CO03');
+          await assertRevert(token.transferFrom(accounts[0], accounts[1], '3334', { from: accounts[1] }), 'TD04');
         });
 
         it('should let accounts[0] increase approval between accounts[0] and accounts[1]', async function () {
