@@ -477,6 +477,9 @@ contract('VotingSessionManager', function (accounts) {
 
   describe('with a new proposal', function () {
     beforeEach(async function () {
+      await votingSession.updateSessionRule(
+        5 * DAY_IN_SEC, 2 * DAY_IN_SEC, DAY_IN_SEC, 6 * DAY_IN_SEC, 2 * DAY_IN_SEC,
+        '5', '20', '25', '1', nonVotingAccounts);
       await votingSession.defineProposal(
         proposalName,
         proposalUrl,
@@ -800,6 +803,10 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(tx.logs[0].args.sessionId.toString(), '1', 'session id');
         assert.equal(tx.logs[0].args.voter, accounts[0], 'voter');
         assert.equal(tx.logs[0].args.weight, '100', 'weight');
+      });
+
+      it('should prevent a non voting address to vote', async function () {
+        await assertRevert(votingSession.submitVote(1, { from: accounts[6] }), 'VD39');
       });
 
       it('should be possible as the quaestor to submit a vote on behalf', async function () {
