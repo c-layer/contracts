@@ -1624,6 +1624,11 @@ contract('VotingSessionManager', function (accounts) {
     const QUAESTOR_ROLE = web3.utils.fromAscii('Quaestor').padEnd(66, '0');
 
     beforeEach(async function () {
+      const assignProxyOperatorsSig = core.abi.filter((method) =>
+        method.name === 'assignProxyOperators').map((method) => method.signature);
+      await votingSession.updateResolutionRequirements(
+        [votingSession.address], assignProxyOperatorsSig, ['250000'], ['100000'], ['1']);
+
       await votingSession.defineProposal(
         'something else',
         proposalUrl,
