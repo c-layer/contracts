@@ -41,15 +41,10 @@ contract VotingSessionManager is IVotingSessionManager, DelegateCallView, Voting
   /**
    * @dev token
    */
-  function token() public override view returns (ITokenProxy) {
-    return token_;
-  }
-
-  /**
-   * @dev delegate
-   */
-  function delegate() public override view returns (IVotingSessionDelegate) {
-    return delegate_;
+  function contracts() public override view returns (
+    IVotingSessionDelegate delegate, ITokenProxy token, ITokenCore core)
+  {
+    return (delegate_, token_, core_);
   }
 
   /**

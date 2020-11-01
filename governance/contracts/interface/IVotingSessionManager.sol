@@ -16,9 +16,8 @@ import "./IVotingSessionDelegate.sol";
  */
 abstract contract IVotingSessionManager is IVotingSessionStorage {
 
-  function token() virtual public view returns (ITokenProxy);
-
-  function delegate() virtual public view returns (IVotingSessionDelegate);
+  function contracts() public virtual view returns (
+    IVotingSessionDelegate delegate, ITokenProxy token, ITokenCore core);
 
   function sessionRule() virtual public view returns (
     uint64 campaignPeriod,

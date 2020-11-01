@@ -1,8 +1,6 @@
 pragma solidity ^0.6.0;
 
 import "@c-layer/common/contracts/math/SafeMath.sol";
-import "@c-layer/token/contracts/interface/ITokenProxy.sol";
-import "@c-layer/token/contracts/interface/ITokenCore.sol";
 import "../interface/IVotingSessionStorage.sol";
 import "../interface/IVotingSessionDelegate.sol";
 

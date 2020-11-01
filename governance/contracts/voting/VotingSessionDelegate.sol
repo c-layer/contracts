@@ -177,10 +177,10 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
         _proposalId : proposal_.alternativeOf;
       Proposal storage baseProposal = session_.proposals[proposal_.alternativeOf];
 
-      uint256 alternativesMask = baseProposal.alternativesMask >> (baseProposalId - 1);
+      uint256 remainingProposals = baseProposal.alternativesMask >> (baseProposalId - 1);
 
-      for (uint256 i = baseProposalId; i <= session_.proposalsCount && alternativesMask != 0; i++) {
-        if (((alternativesMask & 1) != 1) && (i != _proposalId)) {
+      for (uint256 i = baseProposalId; i <= session_.proposalsCount && remainingProposals != 0; i++) {
+        if (((remainingProposals & 1) != 1) && (i != _proposalId)) {
           continue;
         }
 
@@ -191,7 +191,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
         {
           return false;
         }
-        alternativesMask = alternativesMask >> 1;
+        remainingProposals = remainingProposals >> 1;
       }
     }
     return isApproved;
