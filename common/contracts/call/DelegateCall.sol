@@ -17,17 +17,18 @@ library DelegateCall {
     bytes memory result;
     // solhint-disable-next-line avoid-low-level-calls
     (status, result) = _delegate.delegatecall(msg.data);
-    require(status, string(result));
+    if (!status) {
+      result = abi.decode(result, (bytes));
+      require(status, string(result));
+    }
   }
 
-  function _delegateCallBool(address _delegate)
-    internal returns (bool)
+  function _delegateCallBool(address _delegate) internal returns (bool status)
   {
     return abi.decode(_delegateCallBytes(_delegate), (bool));
   }
 
-  function _delegateCallUint256(address _delegate)
-    internal returns (uint256)
+  function _delegateCallUint256(address _delegate) internal returns (uint256)
   {
     return abi.decode(_delegateCallBytes(_delegate), (uint256));
   }
@@ -38,6 +39,9 @@ library DelegateCall {
     bool status;
     // solhint-disable-next-line avoid-low-level-calls
     (status, result) = _delegate.delegatecall(msg.data);
-    require(status, string(result));
+    if (!status) {
+      result = abi.decode(result, (bytes));
+      require(status, string(result));
+    }
   }
 }
