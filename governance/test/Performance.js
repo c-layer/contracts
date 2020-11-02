@@ -23,17 +23,17 @@ const DECIMALS = '2';
 
 const SESSION_RETENTION_COUNT = 10;
 
-const VOTING_DELEGATE_DEPLOYMENT_COST = 4231877;
-const VOTING_DEPLOYMENT_COST = 2505506;
+const VOTING_DELEGATE_DEPLOYMENT_COST = 4215856;
+const VOTING_DEPLOYMENT_COST = 2503538;
 const DEFINE_FIRST_PROPOSAL_COST = 343138;
 const DEFINE_SECOND_PROPOSAL_COST = 208350;
 const DEFINE_MIN_PROPOSAL_COST = 148668;
-const FIRST_VOTE_COST = 351610;
-const SECOND_VOTE_COST = 161086;
-const VOTE_ON_BEHALF_COST = 216057;
-const EXECUTE_ONE_COST = 81161;
-const EXECUTE_ALL_COST = 493063;
-const ARCHIVE_SESSION_COST = 257652;
+const FIRST_VOTE_COST = 351543;
+const SECOND_VOTE_COST = 161019;
+const VOTE_ON_BEHALF_COST = 216068;
+const EXECUTE_ONE_COST = 79527;
+const EXECUTE_ALL_COST = 476717;
+const ARCHIVE_SESSION_COST = 257674;
 const DEFINE_PROPOSAL_WITH_ARCHIVING_COST = 253469;
 
 contract('Performance', function (accounts) {
@@ -141,8 +141,7 @@ contract('Performance', function (accounts) {
           votes += 2 ** i;
         }
 
-        await votingSession.nextSessionStepTest();
-        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest(2);
       });
 
       it('should estimate first vote', async function () {
@@ -182,12 +181,10 @@ contract('Performance', function (accounts) {
           proposals.push(i);
         }
 
-        await votingSession.nextSessionStepTest();
-        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest(2);
         await votingSession.submitVote(votes, { from: accounts[1] });
         await votingSession.submitVote(votes, { from: accounts[2] });
-
-        await votingSession.nextSessionStepTest();
+        await votingSession.nextSessionStepTest(1);
       });
 
       it('should estimate resolution of one proposal', async function () {

@@ -150,51 +150,49 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
    * @dev proposalApproval
    */
   function proposalApproval(uint256 _sessionId, uint8 _proposalId)
-    public override view onlyExistingProposal(_sessionId, _proposalId) returns (bool)
+    public override view onlyExistingProposal(_sessionId, _proposalId) returns (bool isApproved)
   {
     Session storage session_ = sessions[_sessionId];
-    if (session_.participation == 0) {
-      return false;
-    }
-
-    uint256 participation = session_.participation.mul(PERCENT).div(session_.totalSupply);
-
     Proposal storage proposal_ = session_.proposals[_proposalId];
-    bool isApproved = (
-      (proposal_.approvals.mul(PERCENT).div(session_.participation) >= proposal_.requirement.majority) &&
-      (participation >= proposal_.requirement.quorum)
-    );
-    if (!isApproved) {
-      return false;
+
+    uint256 participation = session_.participation;
+    uint256 participationPercent = 0;
+    if (participation != 0) {
+      participationPercent = participation.mul(PERCENT).div(session_.totalSupply);
+      isApproved = (
+        (proposal_.approvals.mul(PERCENT).div(participation) >= proposal_.requirement.majority) &&
+        (participationPercent >= proposal_.requirement.quorum)
+      );
     }
 
     /**
      * @notice when the proposal has fulfiled its own requirements,
      * @notice its approvals must be also compared to alternative proposals if they exist
+     * @notice if more than one proposal have the same approval, the first submitted wins
      */
-    if (proposal_.alternativeOf != 0 || proposal_.alternativesMask != 0) {
-      uint256 baseProposalId = (proposal_.alternativeOf == 0) ?
-        _proposalId : proposal_.alternativeOf;
-      Proposal storage baseProposal = session_.proposals[proposal_.alternativeOf];
+    if (isApproved &&
+      (proposal_.alternativeOf != 0 || proposal_.alternativesMask != 0))
+    {
+      uint256 baseProposalId = (proposal_.alternativeOf == 0) ? _proposalId : proposal_.alternativeOf;
+      Proposal storage baseProposal = session_.proposals[baseProposalId];
 
       uint256 remainingProposals = baseProposal.alternativesMask >> (baseProposalId - 1);
 
-      for (uint256 i = baseProposalId; i <= session_.proposalsCount && remainingProposals != 0; i++) {
-        if (((remainingProposals & 1) != 1) && (i != _proposalId)) {
-          continue;
-        }
-
-        Proposal storage alternative = session_.proposals[i];
-        if ((alternative.approvals > proposal_.approvals) &&
-          (alternative.approvals.mul(PERCENT).div(session_.participation) >= alternative.requirement.majority) &&
-          (participation >= alternative.requirement.quorum))
-        {
-          return false;
+      for (uint256 i = baseProposalId; remainingProposals != 0; i++) {
+        if (((remainingProposals & 1) == 1) && (i != _proposalId)) {
+          Proposal storage alternative = session_.proposals[i];
+          if ((alternative.approvals >= proposal_.approvals &&
+            (alternative.approvals != proposal_.approvals || i < _proposalId)) &&
+            (alternative.approvals.mul(PERCENT).div(participation) >= alternative.requirement.majority) &&
+            (participationPercent >= alternative.requirement.quorum))
+          {
+            isApproved = false;
+            break;
+          }
         }
         remainingProposals = remainingProposals >> 1;
       }
     }
-    return isApproved;
   }
 
   /**
