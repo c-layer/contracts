@@ -18,7 +18,7 @@ See the [requirements](#requirements) for more information.
 11. [A Simple Token Sale](./11-TokenSale.md)
 12. [Planning a sale and bonuses](./12-AdvancedSale.md)
 13. [A voting walkthrough](./13-VotingWalkthrough.md)
-14. [Running as a DAO.md](./14-RunningDAO.md)
+14. [Running as a DAO](./14-RunningDAO.md)
 15. Distributing Dividends
 16. Playing with the rules
 
