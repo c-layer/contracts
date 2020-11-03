@@ -28,11 +28,14 @@ module.exports = async function (promise, expectedReasonOrCode) {
           const revertAt = errorStr.indexOf('revert ');
           const revertStr = errorStr.substr(revertAt);
           const revertReasonFound = revertStr.indexOf(expectedReasonOrCode) !== -1;
+          if (!revertReasonFound) {
+            console.error(errorStr);
+          }
           assert(revertReasonFound, 'Expected "revert ' + expectedReasonOrCode + '", got "' + revertStr + '"!');
-        } /*else {
+        } /* else {
           const errorAt = errorStr.indexOf('VM Exception while processing transaction: revert');
           assert(errorAt !== -1, errorStr);
-        }*/
+        } */
       }
     } else {
       assert(false, 'Invalid error format. Revert not found "' + error + '"!');

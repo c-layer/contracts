@@ -13,6 +13,7 @@ module.exports = async function (promise, expectedReasonOrCode) {
       if (Object.keys(error).length > 1) {
         const revertReasonFound =
           (error.reason && error.reason === expectedReasonOrCode) ||
+          (error.reason && error.reason.indexOf(expectedReasonOrCode) !== -1) ||
             (error.code && error.code === expectedReasonOrCode);
 
         if (!revertReasonFound || !expectedReasonOrCode) {
@@ -22,8 +23,19 @@ module.exports = async function (promise, expectedReasonOrCode) {
           'Expected "revert", got reason=' + error.reason + ' and code=' + error.code + ' instead!');
       } else {
         const errorStr = error.toString();
-        const revertReasonFound = errorStr.indexOf('revert ' + expectedReasonOrCode);
-        assert(revertReasonFound, 'Expected "revert ' + expectedReasonOrCode + '", got "' + errorStr + '"!');
+
+        if (expectedReasonOrCode) {
+          const revertAt = errorStr.indexOf('revert ');
+          const revertStr = errorStr.substr(revertAt);
+          const revertReasonFound = revertStr.indexOf(expectedReasonOrCode) !== -1;
+          if (!revertReasonFound) {
+            console.error(errorStr);
+          }
+          assert(revertReasonFound, 'Expected "revert ' + expectedReasonOrCode + '", got "' + revertStr + '"!');
+        } /* else {
+          const errorAt = errorStr.indexOf('VM Exception while processing transaction: revert');
+          assert(errorAt !== -1, errorStr);
+        } */
       }
     } else {
       assert(false, 'Invalid error format. Revert not found "' + error + '"!');

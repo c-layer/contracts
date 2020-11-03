@@ -141,7 +141,7 @@ contract('BaseTokensale', function (accounts) {
   });
 
   it('should reject refund unspent ETH', async function () {
-    await assertRevert(sale.refundUnspentETH({ form: accounts[3] }), 'TOS04');
+    await assertRevert(sale.refundUnspentETH({ from: accounts[3] }), 'TOS04');
   });
 
   it('should reject refund many unspent ETH', async function () {
@@ -166,7 +166,7 @@ contract('BaseTokensale', function (accounts) {
       to: sale.address,
       value: wei,
       data: '0x1',
-    }), 'TOS03');
+    }));
   });
 
   it('should reject value transfer if no ETH is send along', async function () {

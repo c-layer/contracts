@@ -234,12 +234,12 @@ contract('UserRegistry', function (accounts) {
 
     it('should not update non existing extended users (all)', async function () {
       await assertRevert(
-        userRegistry.updateManyUsersAllExtendedExternal([1, 2, 3], 1, 100), 'UR01');
+        userRegistry.updateManyUsersAllExtendedExternal([1, 2, 3], [1, 100]), 'UR01');
     });
 
     it('should not update non existing extended users (full)', async function () {
       await assertRevert(
-        userRegistry.updateManyUsersFullExternal([1, 2, 3], 1, 100), 'UR01');
+        userRegistry.updateManyUsersFullExternal([1, 2, 3], dayPlusOneTime, true, [4, 100]), 'UR01');
     });
 
     it('should prevent non operator to register user full', async function () {
