@@ -94,7 +94,7 @@ We can update the voting session rules to have a voting session every 20 minutes
 ```
 voting.updateSessionRule(5*60, 5*60, 5*60, 10*60, 0, 10, 20, 25, 1, [])
 ```
-You may check the previous tutorial to see the details of these parameters. Check the [rules configuration](./13-VotingWalkthrough.md#configure-the-rules) for more
+You may check the previous tutorial to see the details of these parameters. Check the [rules configuration](./13-VotingWalkthrough.md#configure-the-rules) for more.
 
 Finally, we need to design a QUAESTOR role that we want the elected quaestor to have.
 ```
