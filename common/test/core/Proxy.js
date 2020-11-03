@@ -6,22 +6,30 @@
 
 const assertRevert = require('../helpers/assertRevert');
 const ProxyMock = artifacts.require('ProxyMock.sol');
-const DelegateMock = artifacts.require('DelegateMock.sol');
+const DelegateViewMock = artifacts.require('DelegateViewMock.sol');
 const CoreMock = artifacts.require('CoreMock.sol');
 
 contract('Proxy', function (accounts) {
   let core, delegate, proxy;
 
-  it('should have static call successful', async function () {
-    delegate = await DelegateMock.new();
-    core = await CoreMock.new();
-    proxy = await ProxyMock.new(core.address);
+  describe('with a core mock', function () {
+    beforeEach(async function () {
+      delegate = await DelegateViewMock.new();
+      core = await CoreMock.new();
+      proxy = await ProxyMock.new(core.address);
 
-    await core.defineDelegateMock(1, delegate.address);
-    await core.defineProxyMock(proxy.address, 1);
+      await core.defineDelegateMock(1, delegate.address);
+      await core.defineProxyMock(proxy.address, 1);
+    });
 
-    const result = await proxy.delegateCallUint256Mock(42);
-    assert.equal(result.toString(), '42', 'static value call');
+    it('should have static call successful', async function () {
+      const result = await proxy.delegateCallUint256Mock(42);
+      assert.equal(result.toString(), '42', 'static value call');
+    });
+
+    it('should have static call failing', async function () {
+      await assertRevert(proxy.delegateCallUint256Mock(0), 'PR02');
+    });
   });
 
   describe('with accounts 0 as a core', function () {

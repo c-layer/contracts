@@ -22,7 +22,7 @@ module.exports = async function (promise, expectedReasonOrCode) {
           'Expected "revert", got reason=' + error.reason + ' and code=' + error.code + ' instead!');
       } else {
         const errorStr = error.toString();
-        const revertReasonFound = errorStr.indexOf('revert ' + expectedReasonOrCode);
+        const revertReasonFound = (errorStr.indexOf('revert ' + expectedReasonOrCode) !== -1);
         assert(revertReasonFound, 'Expected "revert ' + expectedReasonOrCode + '", got "' + errorStr + '"!');
       }
     } else {

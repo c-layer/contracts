@@ -25,7 +25,7 @@ contract CoreMock is Core {
     return _success;
   }
 
-  function delegateCallMock(bool) public returns (bool) {
+  function delegateMockTxSuccess(bool) public returns (bool) {
     return delegateCall(msg.sender);
   }
 

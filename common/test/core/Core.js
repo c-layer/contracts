@@ -64,7 +64,7 @@ contract('Core', function (accounts) {
       });
 
       it('should delegate call actions', async function () {
-        const success = await core.delegateCallMock(true);
+        const success = await core.delegateMockTxSuccess(true);
         assert.ok(success, 'success');
       });
 
