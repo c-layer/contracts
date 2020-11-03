@@ -19,7 +19,6 @@ contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
   uint64 public lockUntil;
 
   modifier whenUnlocked() {
-    // solhint-disable-next-line not-rely-on-time
     require(lockUntil < currentTime(), "TLV01");
     _;
   }
