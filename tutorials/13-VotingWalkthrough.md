@@ -145,7 +145,7 @@ voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.addre
 ### Inspect the current voting session 
 We can get the id of the current voting session using the sessions count function:
 ```
-voting.sessionsCount().then(x => x.toString())
+voting.currentSessionId().then(x => x.toString())
  ```
 This returns "1" as a new voting session has been dynamically created when we submitted our proposal. 
 
