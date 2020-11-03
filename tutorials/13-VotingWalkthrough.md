@@ -105,6 +105,8 @@ Proposals also have different states as described below
 - 7: CLOSED, the proposal has been closed
 - 8: ARCHIVED, the proposal is removed from the state
 
+### Configure the rules
+
 By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
 - campaign period of 5 minutes
 - voting period of 5 minutes
