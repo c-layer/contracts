@@ -33,8 +33,8 @@ contract DelegateCallView {
     bool status;
     (status, result) = address(this).staticcall(
       abi.encodeWithSelector(FORWARD_CALL_BYTES, _delegate, msg.data));
-    result = abi.decode(result, (bytes));
     require(status, string(result));
+    result = abi.decode(result, (bytes));
   }
 
   /**

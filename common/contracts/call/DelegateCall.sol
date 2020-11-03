@@ -17,10 +17,7 @@ library DelegateCall {
     bytes memory result;
     // solhint-disable-next-line avoid-low-level-calls
     (status, result) = _delegate.delegatecall(msg.data);
-    if (!status) {
-      result = abi.decode(result, (bytes));
-      require(status, string(result));
-    }
+    require(status, string(result));
   }
 
   function _delegateCallBool(address _delegate) internal returns (bool status)
@@ -39,9 +36,6 @@ library DelegateCall {
     bool status;
     // solhint-disable-next-line avoid-low-level-calls
     (status, result) = _delegate.delegatecall(msg.data);
-    if (!status) {
-      result = abi.decode(result, (bytes));
-      require(status, string(result));
-    }
+    require(status, string(result));
   }
 }

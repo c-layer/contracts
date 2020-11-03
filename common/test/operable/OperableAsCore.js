@@ -24,9 +24,9 @@ contract('OperableAsCore', function (accounts) {
     assert.ok(success, 'success');
   });
 
-  it('shouldd prevent non core operator access', async function () {
+  it('should prevent non core operator access', async function () {
     await assertRevert(contract.testOnlyCoreOperator(
-      core.address, { from: accounts[2] }));
+      core.address, { from: accounts[2] }), 'OA01');
   });
 
   it('should let proxy operator access', async function () {
@@ -37,6 +37,6 @@ contract('OperableAsCore', function (accounts) {
 
   it('should prevent non proxy operator access', async function () {
     await assertRevert(contract.testOnlyProxyOperator(
-      proxy.address, { from: accounts[2] }));
+      proxy.address, { from: accounts[2] }), 'OA02');
   });
 });

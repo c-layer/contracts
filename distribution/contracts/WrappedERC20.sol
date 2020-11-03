@@ -78,9 +78,9 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
   function withdrawFrom(address _from, address _to, uint256 _value) public override returns (bool) {
     require(_to != address(0), "WE01");
     uint256 wrappedValue = _value.mul(ratio_);
+    require(wrappedValue <= balances[_from], "WE03");
 
     if (_from != msg.sender) {
-      require(wrappedValue <= balances[_from], "WE03");
       require(wrappedValue <= allowed[_from][msg.sender], "WE04");
       allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(wrappedValue);
     }

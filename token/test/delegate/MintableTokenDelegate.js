@@ -120,11 +120,11 @@ contract('MintableTokenDelegate', function (accounts) {
       });
 
       it('should prevent operator to burn too many tokens', async function () {
-        await assertRevert(core.burn(token.address, accounts[1], AMOUNT + 1), 'CO03');
+        await assertRevert(core.burn(token.address, AMOUNT + 1));
       });
 
       it('should prevent non operator to burn any tokens', async function () {
-        await assertRevert(core.burn(token.address, accounts[1], 1, { from: accounts[1] }), 'OC03');
+        await assertRevert(core.burn(token.address, 1, { from: accounts[1] }), 'OC03');
       });
     });
 

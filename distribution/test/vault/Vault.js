@@ -80,7 +80,7 @@ contract('Vault', function (accounts) {
     });
 
     it('should prevent non operator to send ETH', async function () {
-      await assertRevert(vault.transferETH(accounts[0], '1', '0x', { from: accounts[1] }, ''));
+      await assertRevert(vault.transferETH(accounts[0], '1', '0x', { from: accounts[1] }), 'OP01');
     });
 
     it('should let operator send ERC20', async function () {

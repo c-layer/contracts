@@ -11,7 +11,7 @@ const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1349358;
+const TOKEN_DEPLOYMENT_COST = 1362477;
 const TRANSFER_LOCKED = 5;
 const TRANSFER_RULED = 7;
 

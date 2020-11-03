@@ -174,7 +174,7 @@ contract('BaseTokensale', function (accounts) {
       from: accounts[0],
       to: sale.address,
       value: '0',
-    }), 'TOS04');
+    }), 'TOS05');
   });
 
   it('should transfer 1 micro ETH to the sale', async function () {

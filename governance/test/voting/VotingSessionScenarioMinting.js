@@ -67,7 +67,7 @@ const ProposalState = {
   ARCHIVED: '8',
 };
 
-contract('VotingSessionManager', function (accounts) {
+contract('VotingSessionScenarioMinting', function (accounts) {
   let core, delegate, token, votingSession, votingDelegate;
 
   const recipients = [accounts[0], accounts[1], accounts[2], accounts[3], accounts[5], accounts[6]];

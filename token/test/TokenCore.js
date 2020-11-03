@@ -408,11 +408,11 @@ contract('TokenCore', function (accounts) {
         });
 
         it('should have no decimals', async function () {
-          await assertRevert(token.decimals(), 'PR02');
+          await assertRevert(token.decimals(), 'CO01');
         });
 
         it('should have no supplies', async function () {
-          await assertRevert(token.totalSupply(), 'PR02');
+          await assertRevert(token.totalSupply(), 'CO01');
         });
       });
     });

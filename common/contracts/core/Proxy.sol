@@ -45,7 +45,7 @@ contract Proxy is IProxy {
    */
   function staticCallUint256() internal view returns (uint256 value) {
     (bool status, bytes memory result) = core.staticcall(msg.data);
-    require(status, "PR02");
+    require(status, string(result));
     value = abi.decode(result, (uint256));
   }
 }
