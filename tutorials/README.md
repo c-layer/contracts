@@ -17,9 +17,10 @@ See the [requirements](#requirements) for more information.
 
 11. [A Simple Token Sale](./11-TokenSale.md)
 12. [Planning a sale and bonuses](./12-AdvancedSale.md)
-13. Let's the crowd vote
-14. Distributing Dividends
-15. Playing with the rules
+13. [A voting walkthrough](./13-VotingWalkthrough.md)
+14. [Running as a DAO.md](./14-RunningDAO.md)
+15. Distributing Dividends
+16. Playing with the rules
 
 ### Expert level
 
@@ -34,22 +35,22 @@ See the [requirements](#requirements) for more information.
 ##### 1- Truffle
 You can use truffle environment provided with the [start.sh](../start.sh) script.
 This will ensure you have the correct environment required and avoid any versions conflict with already installed dependencies.
-The provided docker image is based on ethereum/solc but include as well the environment for installing node packages. 
+The provided docker image is based on ethereum/solc but includes as well the environment for installing node packages. 
 
-An alternative is to install node on your environment and add truffle and the needed requirements globaly: 
+An alternative is to install node on your environment and add truffle and the needed requirements globally: 
 `npm i -g truffle ganache-cli`
 
 ##### 2- Node packages
-Once truffle is installed, you may proceed to install the dependencies for each modules.
+Once truffle is installed, you may proceed to install the dependencies for each module.
 Run `yarn install` from the root directory.
 
 ##### 3- Live network
 If you plan to run the tutorial on a live network (either ropsten or mainnet), you will need to configure an infura projectId and your mnemonic.
 
-The infura projectId may be obtain from infura website once logged in.
+The infura projectId may be obtained from infura website once logged in.
 A mnemonic can be generated with [myetherwallet](https://www.myetherwallet.com/create-wallet)
 
-Copying the `secret.json` file into `.secret.json` and edit it with the correct projectId and mnemonic values.
+Finally, copy the `secret.json` file into `.secret.json` and edit it with the correct projectId and mnemonic values.
 
 
 

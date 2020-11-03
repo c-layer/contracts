@@ -20,7 +20,7 @@ This tutorial has been validated with a Truffle installation running in the sirh
 After cloning the contracts repository, start the truffle docker using the `start.sh` script in the contracts directory.
 It will start the image from the contracts directory and mount this directory into the container.
 
-You will get a bash prompt inside the container. All the instructions from this tutorial should then to be executed from this environment.
+You will get a bash prompt inside the container. All the instructions from this tutorial should then be executed from this environment.
 
 ### Module installation
 Let's first make sure that all required modules are installed and let's compile all the contracts:
@@ -67,7 +67,7 @@ votingDelegate = await VotingSessionDelegate.new()
 voting = await VotingSessionManager.new(token.address, votingDelegate.address) 
 ```
 
-The voting contract needs it's own lock to prevent tokens tranfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
+The voting contract needs its own lock to prevent tokens transfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
 
 ```
 core.defineProxy(voting.address, 1);
@@ -132,12 +132,12 @@ It will be required during the vote that voters for for no more than one of thes
 
 ### Voting 
 When the VOTING period begins, we can vote as account 1 for the proposal.
-To check, we are indeed in the VOTING period, the follow commmand should return '3' (VOTING).
+To check, we are indeed in the VOTING period, the follow command should return '3' (VOTING).
 ```
 voting.sessionStateAt(1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
-You will need to wait few minutes if you are still in 1-PLANNED or 2-CAMPAIGN.
+You will need to wait a few minutes if you are still in 1-PLANNED or 2-CAMPAIGN.
 ```
 voting.session(1).then((x) => new Date(1000 * x.voteAt))
 ```
@@ -190,7 +190,7 @@ Promise.all([1, 2].map((i) => voting.proposalStateAt(1, i, Math.floor((new Date(
 ```
 The two proposals are now in 6-RESOLVED.
 
-### Congratulation!
+### Congratulations!
 
 Let's verify that our account is now the newly executed quaestor!
 ```

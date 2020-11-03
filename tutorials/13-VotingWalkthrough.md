@@ -15,7 +15,7 @@ This tutorial has been validated with a Truffle installation running in the sirh
 After cloning the contracts repository, start the truffle docker using the `start.sh` script in the contracts directory.
 It will start the image from the contracts directory and mount this directory into the container.
 
-You will get a bash prompt inside the container. All the instructions from this tutorial should then to be executed from this environment.
+You will get a bash prompt inside the container. All the instructions from this tutorial should then be executed from this environment.
 
 ### Module installation
 Let's first make sure that all required modules are installed and let's compile all the contracts:
@@ -62,7 +62,7 @@ votingDelegate = await VotingSessionDelegate.new()
 voting = await VotingSessionManager.new(token.address, votingDelegate.address) 
 ```
 
-The voting contract needs it's own lock to prevent tokens tranfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
+The voting contract needs its own lock to prevent tokens transfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
 
 ```
 core.defineProxy(voting.address, 1);
@@ -87,7 +87,7 @@ core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ voting.address ]);
 Each voting session will go through the following states:
 - 0: UNDEFINED,
 - 1: PLANNED, a new session is planned and proposals can be submitted
-- 2: CAMPAIGN, proposals can not be submitted anymore, poeple can promote their proposals
+- 2: CAMPAIGN, proposals can not be submitted anymore, people can promote their proposals
 - 3: VOTING, votes can be submitted
 - 4: EXECUTION, standard resolutions may be executed
 - 5: GRACE, rules or resolution requirements may be changed
@@ -158,9 +158,9 @@ We can also check the proposal:
 ```
 voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
-If we are still in the PLANNED state, the proposal should returns it is DEFINED, otherwise it will return LOCKED during the CAMPAIGN or VOTING period.
+If we are still in the PLANNED state, the proposal should return it is DEFINED, otherwise it will return LOCKED during the CAMPAIGN or VOTING period.
 
-The length of the voting sessions being 20 minutes, the next voting session will start at the begining of the next twenty minutes (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:20).
+The length of the voting sessions being 20 minutes, the next voting session will start at the beginning of the next twenty minutes (e.g. if you submitted the proposal at 9:03, the next vote will start at 9:20).
 
 We can double check by querying the session:
 ```

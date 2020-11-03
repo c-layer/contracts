@@ -1,6 +1,6 @@
 {
   "name": "@c-layer/common",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "SmartContract common componnents for the Compliance Layer",
   "files": [
     "build",

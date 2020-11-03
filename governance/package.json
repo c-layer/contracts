@@ -39,7 +39,8 @@
   },
   "homepage": "https://c-layer.org",
   "depenencies": {
-    "@c-layer/common": "^1.0.0"
+    "@c-layer/common": "^1.2.0",
+    "@c-layer/token": "^1.2.0"
    },
   "devDependencies": {
     "chai": "^4.2.0",
