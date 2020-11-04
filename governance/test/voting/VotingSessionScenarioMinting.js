@@ -166,7 +166,7 @@ contract('VotingSessionScenarioMinting', function (accounts) {
       });
 
       it('should be possible to vote on behalf', async function () {
-        await votingSession.submitVoteOnBehalf([accounts[1], accounts[2]], 3);
+        await votingSession.submitVotesOnBehalf([accounts[1], accounts[2]], 3);
       });
 
       it('should have the token locked', async function () {
@@ -242,7 +242,7 @@ contract('VotingSessionScenarioMinting', function (accounts) {
     describe('after sucessfull votes, during execution period', function () {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest(2);
-        await votingSession.submitVoteOnBehalf(
+        await votingSession.submitVotesOnBehalf(
           [accounts[0], accounts[1], accounts[2], accounts[3]], 3);
         await votingSession.nextSessionStepTest(1);
       });
@@ -454,7 +454,7 @@ contract('VotingSessionScenarioMinting', function (accounts) {
     describe('after sucessfull votes, and after grace period', function () {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest(2);
-        await votingSession.submitVoteOnBehalf(
+        await votingSession.submitVotesOnBehalf(
           [accounts[0], accounts[1], accounts[2], accounts[3]], 1);
         await votingSession.nextSessionStepTest(3);
       });

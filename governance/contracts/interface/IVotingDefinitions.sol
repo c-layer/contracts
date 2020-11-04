@@ -40,7 +40,7 @@ abstract contract IVotingDefinitions {
   // 4 digits precisions on percentage values
   uint256 internal constant PERCENT = 1000000;
 
-  uint64 internal constant MIN_PERIOD_LENGTH = 5 minutes;
+  uint64 internal constant MIN_PERIOD_LENGTH = 200;
   // MAX_PERIOD_LENGTH (approx 10000 years) protects against period overflow
   uint64 internal constant MAX_PERIOD_LENGTH = 3652500 days;
   uint64 internal constant CAMPAIGN_PERIOD = 5 days;

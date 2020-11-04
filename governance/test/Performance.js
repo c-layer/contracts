@@ -23,7 +23,7 @@ const DECIMALS = '2';
 
 const SESSION_RETENTION_COUNT = 10;
 
-const VOTING_DELEGATE_DEPLOYMENT_COST = 4215856;
+const VOTING_DELEGATE_DEPLOYMENT_COST = 4209784;
 const VOTING_DEPLOYMENT_COST = 2504414;
 const DEFINE_FIRST_PROPOSAL_COST = 343342;
 const DEFINE_SECOND_PROPOSAL_COST = 208350;
@@ -156,7 +156,7 @@ contract('Performance', function (accounts) {
       });
 
       it('should estimate a vote on behalf', async function () {
-        const gas = await votingSession.submitVoteOnBehalf.estimateGas(
+        const gas = await votingSession.submitVotesOnBehalf.estimateGas(
           [accounts[1], accounts[2]], 3);
         assertGasEstimate(gas, VOTE_ON_BEHALF_COST, 'estimate');
       });

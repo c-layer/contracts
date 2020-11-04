@@ -320,9 +320,9 @@ contract VotingSessionManager is IVotingSessionManager, DelegateCallView, Voting
   }
 
   /**
-   * @dev submitVoteOnBehalf
+   * @dev submitVotesOnBehalf
    */
-  function submitVoteOnBehalf(address[] memory, uint256) public override returns (bool)
+  function submitVotesOnBehalf(address[] memory, uint256) public override returns (bool)
   {
     return address(delegate_)._delegateCall();
   }

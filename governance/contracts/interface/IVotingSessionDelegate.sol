@@ -70,7 +70,7 @@ abstract contract IVotingSessionDelegate is IVotingSessionStorage {
   function cancelProposal(uint8 _proposalId) virtual public returns (bool);
 
   function submitVote(uint256 _votes) virtual public returns (bool);
-  function submitVoteOnBehalf(
+  function submitVotesOnBehalf(
     address[] memory _voters,
     uint256 _votes
   ) virtual public returns (bool);

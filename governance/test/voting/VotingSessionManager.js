@@ -818,7 +818,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should be possible as the quaestor to submit a vote on behalf', async function () {
-        const tx = await votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 1);
+        const tx = await votingSession.submitVotesOnBehalf([accounts[0], accounts[1]], 1);
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 2);
         assert.equal(tx.logs[0].event, 'Vote', 'event');
@@ -832,7 +832,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf for self managed voter', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[5]], 1), 'VD38');
+        await assertRevert(votingSession.submitVotesOnBehalf([accounts[0], accounts[5]], 1), 'VD38');
       });
 
       describe('With sponsoring from account 3 to 2', function () {
@@ -848,7 +848,7 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should be possible as account 2 to vote for self and account 3', async function () {
-          const tx = await votingSession.submitVoteOnBehalf(
+          const tx = await votingSession.submitVotesOnBehalf(
             [accounts[2], accounts[3], accounts[5]], 1, { from: accounts[2] });
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 3);
@@ -868,11 +868,11 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should prevent operator to submit a vote on behalf with incorrect proposalIds', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([accounts[0], accounts[1]], 2), 'VD42');
+        await assertRevert(votingSession.submitVotesOnBehalf([accounts[0], accounts[1]], 2), 'VD42');
       });
 
       it('should prevent operator to submit vote without voters', async function () {
-        await assertRevert(votingSession.submitVoteOnBehalf([], 1), 'VD37');
+        await assertRevert(votingSession.submitVotesOnBehalf([], 1), 'VD37');
       });
 
       it('should prevent author to update a proposal', async function () {
@@ -900,7 +900,7 @@ contract('VotingSessionManager', function (accounts) {
 
       describe('after submitted a vote on behalf', function () {
         beforeEach(async function () {
-          await votingSession.submitVoteOnBehalf([accounts[0]], 1);
+          await votingSession.submitVotesOnBehalf([accounts[0]], 1);
         });
 
         it('should not be possible to vote twice', async function () {
@@ -912,7 +912,7 @@ contract('VotingSessionManager', function (accounts) {
 
   describe('with an approved proposal to change the session rules', function () {
     beforeEach(async function () {
-      const request1 = votingSession.contract.methods.updateSessionRule(
+     const request1 = votingSession.contract.methods.updateSessionRule(
         MIN_PERIOD_LENGTH + 1, MIN_PERIOD_LENGTH + 2, MIN_PERIOD_LENGTH + 3, MIN_PERIOD_LENGTH + 4,
         '0', '1', '1', '2', '3000000', nonVotingAccounts).encodeABI();
       const request2 = votingSession.contract.methods.updateSessionRule(
@@ -1161,6 +1161,65 @@ contract('VotingSessionManager', function (accounts) {
     });
   });
 
+  describe('with a 100% majority and quorum', function () {
+
+    beforeEach(async function () {
+      await votingSession.updateResolutionRequirements(
+        [NULL_ADDRESS], [ANY_METHOD], ['1000000'], ['1000000'], ['1']);
+    });
+
+    it('should not accept it without enougth votes', async function() {
+      await votingSession.defineProposal(
+        'something else',
+        proposalUrl,
+        proposalHash,
+        NULL_ADDRESS,
+        '0x',
+        '0',
+        '0');
+       await votingSession.nextSessionStepTest(2);
+       await votingSession.submitVote(1);
+       const result = await votingSession.proposalApproval(1, 1);
+       assert.ok(!result, 'rejected');
+    });
+
+    it('should accept a proposal with many votes', async function() {
+      await votingSession.defineProposal(
+        'something else',
+        proposalUrl,
+        proposalHash,
+        NULL_ADDRESS,
+        '0x',
+        '0',
+        '0');
+       await votingSession.nextSessionStepTest(2);
+       await votingSession.submitVotesOnBehalf(
+         [accounts[0], accounts[1], accounts[2], accounts[3], accounts[6]], 1);
+       await votingSession.submitVote(1, { from: accounts[5] });
+       const result = await votingSession.proposalApproval(1, 1);
+       assert.ok(result, 'approved');
+    });
+
+    it('should accept a proposal with many nonvoting accounts', async function() {
+      await votingSession.updateSessionRule(
+        MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH,
+        '0', '5', '5', '5', '9', [accounts[1], accounts[2], accounts[3], accounts[5], accounts[6]]);
+
+      await votingSession.defineProposal(
+        'something else',
+        proposalUrl,
+        proposalHash,
+        NULL_ADDRESS,
+        '0x',
+        '0',
+        '0');
+       await votingSession.nextSessionStepTest(2);
+       await votingSession.submitVote(1);
+       const result = await votingSession.proposalApproval(1, 1);
+       assert.ok(result, 'approved');
+    });
+  });
+
   describe('with an election between 3 candidates for becoming quaestor', function () {
     let request1, request2, request3;
 
@@ -1397,7 +1456,7 @@ contract('VotingSessionManager', function (accounts) {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest(2);
         await votingSession.submitVote(16, { from: accounts[1] });
-        await votingSession.submitVoteOnBehalf([accounts[2], accounts[3]], 4);
+        await votingSession.submitVotesOnBehalf([accounts[2], accounts[3]], 4);
         await votingSession.nextSessionStepTest(1);
       });
 
@@ -1420,7 +1479,7 @@ contract('VotingSessionManager', function (accounts) {
     describe('after sucessfull votes, during execution period', function () {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest(2);
-        await votingSession.submitVoteOnBehalf(
+        await votingSession.submitVotesOnBehalf(
           [accounts[0], accounts[1], accounts[2], accounts[3]], 4);
         await votingSession.nextSessionStepTest(1);
       });
@@ -1456,7 +1515,7 @@ contract('VotingSessionManager', function (accounts) {
     describe('after sucessfull votes, and after grace period', function () {
       beforeEach(async function () {
         await votingSession.nextSessionStepTest(2);
-        await votingSession.submitVoteOnBehalf(
+        await votingSession.submitVotesOnBehalf(
           [accounts[0], accounts[1], accounts[2], accounts[3]], 4);
         await votingSession.nextSessionStepTest(3);
       });

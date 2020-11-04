@@ -49,7 +49,8 @@ import "./VotingSessionStorage.sol";
  *   VD36: Session is not in VOTING state
  *   VD37: Voters must be provided
  *   VD38: Sender must be either the voter, the voter's sponsor or an operator
- *   VD39: The voter must not have already voted for this session
+ *   VD39: The voter has been marked 'voted'. If the voter has not voted yet,
+ *         he is then part of the non voting addresses.
  *   VD40: Cannot vote for a cancelled proposal
  *   VD41: Cannot submit multiple votes for a proposal and its alternatives
  *   VD42: The vote contains too many proposals
@@ -77,10 +78,8 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
       + sessionRule_.executionPeriod
       + sessionRule_.gracePeriod;
 
-    uint256 currentSessionClosedAt;
-    if (currentSessionId_ > 0) {
-      currentSessionClosedAt = uint256(sessions[currentSessionId_].closedAt);
-    }
+    uint256 currentSessionClosedAt =
+      (currentSessionId_ != 0) ? uint256(sessions[currentSessionId_].closedAt) : 0;
 
     at = (_time > currentSessionClosedAt) ? _time : currentSessionClosedAt;
     at =
@@ -240,6 +239,9 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
 
   /**
    * @dev updateSessionRule
+   * @notice the campaign period may be 0 and therefore not exists
+   * @notice the grace period must be greater than the campaign period and greater
+   *         than the minimal period.
    */
   function updateSessionRule(
     uint64 _campaignPeriod,
@@ -253,10 +255,10 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     uint256 _newProposalThreshold,
     address[] memory _nonVotingAddresses
   )  public override returns (bool) {
-    require(_campaignPeriod >= MIN_PERIOD_LENGTH && _campaignPeriod <= MAX_PERIOD_LENGTH, "VD03");
+    require(_campaignPeriod <= MAX_PERIOD_LENGTH, "VD03");
     require(_votingPeriod >= MIN_PERIOD_LENGTH && _votingPeriod <= MAX_PERIOD_LENGTH, "VD04");
     require(_executionPeriod >= MIN_PERIOD_LENGTH && _executionPeriod <= MAX_PERIOD_LENGTH, "VD05");
-    require(_gracePeriod > _campaignPeriod && _gracePeriod <= MAX_PERIOD_LENGTH, "VD06");
+    require(_gracePeriod >= MIN_PERIOD_LENGTH && _gracePeriod <= MAX_PERIOD_LENGTH, "VD06");
     require(_periodOffset <= MAX_PERIOD_LENGTH, "VD07");
 
     require(_openProposals <= _maxProposals, "VD08");
@@ -429,9 +431,9 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
   }
 
   /**
-   * @dev submitVoteOnBehalf
+   * @dev submitVotesOnBehalf
    */
-  function submitVoteOnBehalf(
+  function submitVotesOnBehalf(
     address[] memory _voters,
     uint256 _votes
   ) public override returns (bool)
