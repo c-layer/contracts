@@ -912,7 +912,7 @@ contract('VotingSessionManager', function (accounts) {
 
   describe('with an approved proposal to change the session rules', function () {
     beforeEach(async function () {
-     const request1 = votingSession.contract.methods.updateSessionRule(
+      const request1 = votingSession.contract.methods.updateSessionRule(
         MIN_PERIOD_LENGTH + 1, MIN_PERIOD_LENGTH + 2, MIN_PERIOD_LENGTH + 3, MIN_PERIOD_LENGTH + 4,
         '0', '1', '1', '2', '3000000', nonVotingAccounts).encodeABI();
       const request2 = votingSession.contract.methods.updateSessionRule(
@@ -1162,13 +1162,12 @@ contract('VotingSessionManager', function (accounts) {
   });
 
   describe('with a 100% majority and quorum', function () {
-
     beforeEach(async function () {
       await votingSession.updateResolutionRequirements(
         [NULL_ADDRESS], [ANY_METHOD], ['1000000'], ['1000000'], ['1']);
     });
 
-    it('should not accept it without enougth votes', async function() {
+    it('should not accept it without enougth votes', async function () {
       await votingSession.defineProposal(
         'something else',
         proposalUrl,
@@ -1177,13 +1176,13 @@ contract('VotingSessionManager', function (accounts) {
         '0x',
         '0',
         '0');
-       await votingSession.nextSessionStepTest(2);
-       await votingSession.submitVote(1);
-       const result = await votingSession.proposalApproval(1, 1);
-       assert.ok(!result, 'rejected');
+      await votingSession.nextSessionStepTest(2);
+      await votingSession.submitVote(1);
+      const result = await votingSession.proposalApproval(1, 1);
+      assert.ok(!result, 'rejected');
     });
 
-    it('should accept a proposal with many votes', async function() {
+    it('should accept a proposal with many votes', async function () {
       await votingSession.defineProposal(
         'something else',
         proposalUrl,
@@ -1192,15 +1191,15 @@ contract('VotingSessionManager', function (accounts) {
         '0x',
         '0',
         '0');
-       await votingSession.nextSessionStepTest(2);
-       await votingSession.submitVotesOnBehalf(
-         [accounts[0], accounts[1], accounts[2], accounts[3], accounts[6]], 1);
-       await votingSession.submitVote(1, { from: accounts[5] });
-       const result = await votingSession.proposalApproval(1, 1);
-       assert.ok(result, 'approved');
+      await votingSession.nextSessionStepTest(2);
+      await votingSession.submitVotesOnBehalf(
+        [accounts[0], accounts[1], accounts[2], accounts[3], accounts[6]], 1);
+      await votingSession.submitVote(1, { from: accounts[5] });
+      const result = await votingSession.proposalApproval(1, 1);
+      assert.ok(result, 'approved');
     });
 
-    it('should accept a proposal with many nonvoting accounts', async function() {
+    it('should accept a proposal with many nonvoting accounts', async function () {
       await votingSession.updateSessionRule(
         MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH,
         '0', '5', '5', '5', '9', [accounts[1], accounts[2], accounts[3], accounts[5], accounts[6]]);
@@ -1213,10 +1212,10 @@ contract('VotingSessionManager', function (accounts) {
         '0x',
         '0',
         '0');
-       await votingSession.nextSessionStepTest(2);
-       await votingSession.submitVote(1);
-       const result = await votingSession.proposalApproval(1, 1);
-       assert.ok(result, 'approved');
+      await votingSession.nextSessionStepTest(2);
+      await votingSession.submitVote(1);
+      const result = await votingSession.proposalApproval(1, 1);
+      assert.ok(result, 'approved');
     });
   });
 
