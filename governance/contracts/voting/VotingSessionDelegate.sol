@@ -158,7 +158,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     uint256 participation = session_.participation;
     uint256 participationPercent = 0;
     if (participation != 0) {
-      participationPercent = participation.mul(PERCENT).div(session_.totalSupply);
+      participationPercent = participation.mul(PERCENT).div(session_.votingSupply);
       isApproved = (
         (proposal_.approvals.mul(PERCENT).div(participation) >= proposal_.requirement.majority) &&
         (participationPercent >= proposal_.requirement.quorum)
