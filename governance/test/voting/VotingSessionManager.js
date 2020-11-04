@@ -33,7 +33,7 @@ const Periods = {
 const OFFSET_PERIOD = 2 * DAY_IN_SEC;
 const DEFAULT_PERIOD_LENGTH =
   Object.values(Periods).reduce((sum, elem) => sum + elem, 0);
-const MIN_PERIOD_LENGTH = 300;
+const MIN_PERIOD_LENGTH = 200;
 const MAX_PERIOD_LENGTH = 3652500 * 24 * 3600;
 const TODAY = Math.floor(new Date().getTime() / 1000);
 const NEXT_VOTE_AT =
@@ -421,14 +421,33 @@ contract('VotingSessionManager', function (accounts) {
       MAX_PERIOD_LENGTH, '1', '1', '2', '3000000', [accounts[2], accounts[2]]), 'VD12');
   });
 
-  it('should let operator to update session rules', async function () {
+  it('should let operator to update session rules at min levels', async function () {
     const tx = await votingSession.updateSessionRule(
-      MAX_PERIOD_LENGTH - 1, MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH,
+      '0', MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH, MIN_PERIOD_LENGTH,
+      '0', '1', '1', '2', '3000000', nonVotingAccounts);
+    assert.ok(tx.receipt.status, 'Status');
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
+    assert.equal(tx.logs[0].args.campaignPeriod.toString(), '0', 'campaign period');
+    assert.equal(tx.logs[0].args.votingPeriod.toString(), MIN_PERIOD_LENGTH, 'voting period');
+    assert.equal(tx.logs[0].args.executionPeriod.toString(), MIN_PERIOD_LENGTH, 'grace period');
+    assert.equal(tx.logs[0].args.gracePeriod.toString(), MIN_PERIOD_LENGTH, 'grace period');
+    assert.equal(tx.logs[0].args.periodOffset.toString(), '0', 'period offset');
+    assert.equal(tx.logs[0].args.openProposals.toString(), '1', 'openProposals');
+    assert.equal(tx.logs[0].args.maxProposals.toString(), '1', 'max proposals');
+    assert.equal(tx.logs[0].args.maxProposalsOperator.toString(), '2', 'max proposals quaestor');
+    assert.equal(tx.logs[0].args.newProposalThreshold.toString(), '3000000', 'new proposal threshold');
+    assert.deepEqual(tx.logs[0].args.nonVotingAddresses, nonVotingAccounts, 'non voting addresses');
+  });
+
+  it('should let operator to update session rules at max levels', async function () {
+    const tx = await votingSession.updateSessionRule(
+      MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH, MAX_PERIOD_LENGTH,
       MAX_PERIOD_LENGTH, '1', '1', '2', '3000000', nonVotingAccounts);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'SessionRuleUpdated', 'event');
-    assert.equal(tx.logs[0].args.campaignPeriod.toString(), MAX_PERIOD_LENGTH - 1, 'campaign period');
+    assert.equal(tx.logs[0].args.campaignPeriod.toString(), MAX_PERIOD_LENGTH, 'campaign period');
     assert.equal(tx.logs[0].args.votingPeriod.toString(), MAX_PERIOD_LENGTH, 'voting period');
     assert.equal(tx.logs[0].args.executionPeriod.toString(), MAX_PERIOD_LENGTH, 'grace period');
     assert.equal(tx.logs[0].args.gracePeriod.toString(), MAX_PERIOD_LENGTH, 'grace period');
