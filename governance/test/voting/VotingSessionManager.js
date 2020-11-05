@@ -174,11 +174,11 @@ contract('VotingSessionManager', function (accounts) {
       votingSession.nextSessionAt(Times[key]).then((status_) => status_.toString())));
     assert.deepEqual(statuses, [
       '' + NEXT_VOTE_AT,
+      '' + NEXT_VOTE_AT,
       '' + (NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH),
       '' + (NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH),
       '' + (NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH),
       '' + (NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH),
-      '' + (NEXT_VOTE_AT + 2 * DEFAULT_PERIOD_LENGTH),
     ], 'next sessions');
   });
 
@@ -238,7 +238,7 @@ contract('VotingSessionManager', function (accounts) {
       '0', { from: accounts[9] }), 'VD21');
   });
 
-  it('should adding a new proposal depending on a non existing one', async function () {
+  it('should prevent adding a new proposal depending on a non existing one', async function () {
     await assertRevert(votingSession.defineProposal(
       proposalName,
       proposalUrl,
@@ -1186,7 +1186,7 @@ contract('VotingSessionManager', function (accounts) {
         [NULL_ADDRESS], [ANY_METHOD], ['1000000'], ['1000000'], ['1']);
     });
 
-    it('should not accept it without enougth votes', async function () {
+    it('should not accept it without enough votes', async function () {
       await votingSession.defineProposal(
         'something else',
         proposalUrl,

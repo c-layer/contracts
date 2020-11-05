@@ -71,7 +71,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
   /**
    * @dev nextSessionAt
    */
-  function nextSessionAt(uint256 _time) public override view returns (uint256 at) {
+  function nextSessionAt(uint256 _time) public override view returns (uint256 voteAt) {
     uint256 sessionPeriod =
       sessionRule_.campaignPeriod
       + sessionRule_.votingPeriod
@@ -81,9 +81,11 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     uint256 currentSessionClosedAt =
       (currentSessionId_ != 0) ? uint256(sessions[currentSessionId_].closedAt) : 0;
 
-    at = (_time > currentSessionClosedAt) ? _time : currentSessionClosedAt;
-    at =
-      ((at + sessionRule_.campaignPeriod) / sessionPeriod + 1) * sessionPeriod + sessionRule_.periodOffset;
+    voteAt = (_time + sessionRule_.campaignPeriod);
+    voteAt = (voteAt > currentSessionClosedAt) ? voteAt : currentSessionClosedAt;
+
+    uint256 closestPeriodAt = voteAt / sessionPeriod * sessionPeriod + sessionRule_.periodOffset;
+    voteAt = (voteAt != closestPeriodAt) ? closestPeriodAt + sessionPeriod : closestPeriodAt;
   }
 
   /**
