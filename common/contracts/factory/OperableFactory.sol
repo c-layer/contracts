@@ -5,29 +5,32 @@ import "./Factory.sol";
 
 
 /**
- * @title Factory
+ * @title IOperableFactory
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
  * Error messages
  **/
-contract OperableFactory is Operable, Factory {
+contract OperableFactory is Factory, Operable {
 
   /**
-   * @dev defineCode
+   * @dev defineBlueprint
    */
-  function defineCode(uint256 _id, bytes memory _code)
-    public onlyOperator returns (bool)
+  function defineBlueprint(
+    uint256 _id,
+    address _template,
+    bytes memory _bytecode,
+    bytes memory _defaultParameters) override public onlyOperator returns (bool)
   {
-    return defineCodeInternal(_id, _code);
+    return defineBlueprintInternal(_id, _template, _bytecode, _defaultParameters);
   }
 
   /**
    * @dev deployContract
    */
   function deployContract(uint256 _id, bytes memory _parameters)
-    public onlyOperator returns (address)
+    public override returns (address)
   {
     return deployContractInternal(_id, _parameters);
   }

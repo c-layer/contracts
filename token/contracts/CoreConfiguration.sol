@@ -29,9 +29,10 @@ import "./interface/ICoreConfiguration.sol";
  *   CC15: Compliance core role definition failed
  *   CC16: Compliance proxy role definition failed
  *   CC17: Issuer proxy role definition failed
- *   CC18: Oracle definition failed
- *   CC19: Revoking core configuration access failed
- *   CC20: Revoking access from the core configuration was successful
+ *   CC18: Operator proxy role definition failed
+ *   CC19: Oracle definition failed
+ *   CC20: Revoking core configuration access failed
+ *   CC21: Revoking access from the core configuration was successful
  */
 contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
 
@@ -90,8 +91,6 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineTokenDelegate(
       uint256(Delegate.PAYMENT), _mintableDelegate, noAMLConfig), "CC05");
     require(_core.defineTokenDelegate(
-      uint256(Delegate.SECURITY), _compliantDelegate, primaryMarketAMLConfig), "CC06");
-    require(_core.defineTokenDelegate(
       uint256(Delegate.EQUITY), _compliantDelegate, secondaryMarketAMLConfig), "CC07");
     require(_core.defineTokenDelegate(
       uint256(Delegate.BOND), _compliantDelegate, secondaryMarketAMLConfig), "CC08");
@@ -99,6 +98,8 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
       uint256(Delegate.FUND), _compliantDelegate, secondaryMarketAMLConfig), "CC09");
     require(_core.defineTokenDelegate(
       uint256(Delegate.DERIVATIVE), _compliantDelegate, secondaryMarketAMLConfig), "CC10");
+    require(_core.defineTokenDelegate(
+      uint256(Delegate.SECURITY), _compliantDelegate, primaryMarketAMLConfig), "CC06");
 
     // Setup basic roles
     bytes4[] memory privileges = new bytes4[](2);
@@ -135,12 +136,16 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     privileges[5] = UPDATE_ALLOWANCE_PRIV;
     require(_core.defineRole(ISSUER_PROXY_ROLE, privileges), "CC17");
 
+    privileges = new bytes4[](1);
+    privileges[0] = TRANSFER_FROM_PRIV;
+    require(_core.defineRole(OPERATOR_PROXY_ROLE, privileges), "CC18");
+
     // Assign Oracle
-    require(_core.defineOracle(_userRegistry, _ratesProvider, _currency), "CC18");
+    require(_core.defineOracle(_userRegistry, _ratesProvider, _currency), "CC19");
 
     address[] memory configOperators = new address[](1);
     configOperators[0] = address(this);
-    require(_core.revokeOperators(configOperators), "CC19");
-    require(!hasCoreAccess(_core), "CC20");
+    require(_core.revokeOperators(configOperators), "CC20");
+    require(!hasCoreAccess(_core), "CC21");
   }
 }

@@ -16,6 +16,7 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
   bytes32 internal constant COMPLIANCE_CORE_ROLE = bytes32("ComplianceCoreRole");
   bytes32 internal constant COMPLIANCE_PROXY_ROLE = bytes32("ComplianceProxyRole");
   bytes32 internal constant ISSUER_PROXY_ROLE = bytes32("IssuerProxyRole");
+  bytes32 internal constant OPERATOR_PROXY_ROLE = bytes32("OperatorProxyRole");
 
   // Addresses
   address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
@@ -31,8 +32,12 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
     bytes4(keccak256("defineOracle(address,address,address)"));
   bytes4 internal constant DEFINE_TOKEN_PRIV =
     bytes4(keccak256("defineToken(address,uint256,string,string,uint256)"));
+  bytes4 internal constant DEFINE_AUDIT_TRIGGERS_PRIV =
+    bytes4(keccak256("defineAuditTriggers(uint256,address[],address[],uint8[])"));
 
   // Proxy Privileges
+  bytes4 internal constant TRANSFER_FROM_PRIV =
+    bytes4(keccak256("transferFrom(address,address,uint256)"));
   bytes4 internal constant MINT_PRIV =
     bytes4(keccak256("mint(address,address[],uint256[])"));
   bytes4 internal constant BURN_PRIV =

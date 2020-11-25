@@ -11,7 +11,7 @@ const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1362477;
+const TOKEN_DEPLOYMENT_COST = 1379650;
 const TRANSFER_LOCKED = 5;
 const TRANSFER_RULED = 7;
 
@@ -33,6 +33,7 @@ const ANY_ADDRESSES = web3.utils.toChecksumAddress(
 const REQUIRED_CORE_PRIVILEGES = [
   web3.utils.sha3('assignProxyOperators(address,bytes32,address[])'),
   web3.utils.sha3('defineToken(address,uint256,string,string,uint256)'),
+  web3.utils.sha3('defineAuditTriggers(uint256,address[],address[],uint8[])'),
 ].map((x) => x.substr(0, 10));
 const REQUIRED_PROXY_PRIVILEGES = [
   web3.utils.sha3('mint(address,address[],uint256[])'),
@@ -69,19 +70,20 @@ contract('TokenFactory', function (accounts) {
     proxyCodeHash = web3.utils.sha3(proxyCode);
   });
 
-  it('should prevent non authorized to define a proxy code', async function () {
-    await assertRevert(factory.defineProxyCode(proxyCode, { from: accounts[1] }), 'OP01');
+  it('should prevent non authorized to define a blueprint', async function () {
+    await assertRevert(factory.defineBlueprint(
+      0, NULL_ADDRESS, proxyCode, '0x', { from: accounts[1] }), 'OP01');
   });
 
-  it('should let operator define a proxy code', async function () {
-    const tx = await factory.defineProxyCode(proxyCode);
+  it('should let operator define a blueprint', async function () {
+    const tx = await factory.defineBlueprint(0, NULL_ADDRESS, proxyCode, '0x');
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, 'ContractCodeDefined', 'event');
+    assert.equal(tx.logs[0].event, 'BlueprintDefined', 'event');
     assert.equal(tx.logs[0].args.codeHash, proxyCodeHash, 'proxy codeHash');
   });
 
-  it('should prevent non authorized to define a proxy code', async function () {
+  it('should prevent non authorized to define a blueprint', async function () {
     await assertRevert(factory.deployToken(
       core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, false,
       [accounts[0], factory.address], SUPPLIES, [accounts[0]]), 'TF01');
@@ -110,7 +112,7 @@ contract('TokenFactory', function (accounts) {
 
   describe('With proxy code defined and core authorizations', function () {
     beforeEach(async function () {
-      await factory.defineProxyCode(proxyCode);
+      await factory.defineBlueprint(0, NULL_ADDRESS, proxyCode, '0x');
       await core.defineRole(FACTORY_CORE_ROLE, REQUIRED_CORE_PRIVILEGES);
       await core.assignOperators(FACTORY_CORE_ROLE, [factory.address]);
       await core.defineRole(FACTORY_PROXY_ROLE, REQUIRED_PROXY_PRIVILEGES);
@@ -141,6 +143,17 @@ contract('TokenFactory', function (accounts) {
       assert.equal(tx.logs[1].event, 'TokenDeployed', 'event');
       assert.equal(tx.logs[1].args.token.length, 42, 'proxy address length');
       assert.ok(tx.logs[1].args.token !== NULL_ADDRESS, 'proxy address not null');
+    });
+
+    it('should deploy a contract', async function () {
+      const coreParameter =
+        '0x' + core.address.substr(2).padStart(64, '0').toLowerCase();
+      const tx = await factory.deployContract(0, coreParameter);
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1, 'logs');
+      assert.equal(tx.logs[0].event, 'ContractDeployed', 'event');
+      assert.equal(tx.logs[0].args.address_.length, 42, 'proxy address length');
+      assert.ok(tx.logs[0].args.address_ !== NULL_ADDRESS, 'proxy address not null');
     });
 
     describe('With a token deployed', function () {

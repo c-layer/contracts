@@ -26,11 +26,11 @@ abstract contract ICoreConfiguration is ITokenAccessDefinitions {
     UNDEFINED,
     UTILITY,
     PAYMENT,
-    SECURITY,
     EQUITY,
     BOND,
     FUND,
-    DERIVATIVE
+    DERIVATIVE,
+    SECURITY
   }
 
   // The definition below should be considered as a constant

@@ -24,27 +24,31 @@ contract('OperableFactory', function (accounts) {
     proxyCodeHash = web3.utils.sha3(proxyCode);
   });
 
-  it('should have no contract code', async function () {
-    const proxyCodeFound = await factory.contractCode(TOKEN_PROXY_ID);
-    assert.equal(proxyCodeFound, null, 'no proxy code');
+  it('should have no blueprint', async function () {
+    const blueprint = await factory.blueprint(TOKEN_PROXY_ID);
+    assert.equal(blueprint.template, undefined, 'template');
+    assert.equal(blueprint.bytecode, null, 'bytecode');
+    assert.equal(blueprint.parameters, null, 'parameters');
   });
 
   it('should define a contract code', async function () {
-    const tx = await factory.defineCode(TOKEN_PROXY_ID, proxyCode);
+    const tx = await factory.defineBlueprint(TOKEN_PROXY_ID, NULL_ADDRESS, proxyCode, '0x');
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
-    assert.equal(tx.logs[0].event, 'ContractCodeDefined', 'event');
+    assert.equal(tx.logs[0].event, 'BlueprintDefined', 'event');
     assert.equal(tx.logs[0].args.codeHash, proxyCodeHash, 'proxy codeHash');
   });
 
   describe('With proxy code defined', function () {
     beforeEach(async function () {
-      await factory.defineCode(TOKEN_PROXY_ID, proxyCode);
+      await factory.defineBlueprint(TOKEN_PROXY_ID, NULL_ADDRESS, proxyCode, '0x');
     });
 
-    it('should have a contract code', async function () {
-      const proxyCodeFound = await factory.contractCode(TOKEN_PROXY_ID);
-      assert.equal(proxyCodeFound, proxyCode, 'proxy code');
+    it('should have a blueprint', async function () {
+      const blueprint = await factory.blueprint(TOKEN_PROXY_ID);
+      assert.equal(blueprint.template, undefined, 'template');
+      assert.equal(blueprint.bytecode, proxyCode, 'bytecode');
+      assert.equal(blueprint.parameters, null, 'parameters');
     });
 
     it('should let deploy a contract', async function () {

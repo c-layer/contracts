@@ -19,18 +19,42 @@ contract FactoryMock is Factory {
   constructor() public Factory() {}
 
   /**
-   * @dev define code
+   * @dev runtime
    */
-  function defineCode(uint256 _id, bytes memory _code)
-    public returns (bool)
+  function runtime(uint256 _id)
+    public view returns (bytes memory code)
   {
-    return defineCodeInternal(_id, _code);
+    return runtimeInternal(_id);
+  }
+
+  /**
+   * @dev readBytecode
+   */
+  function readyBytecode(address _address)
+    public view returns (bytes memory code)
+  {
+    return readBytecodeInternal(_address);
+  }
+
+  /**
+   * @dev define blueprint
+   */
+  function defineBlueprint(
+    uint256 _id,
+    address _template,
+    bytes memory _bytecode,
+    bytes memory _defaultParameters)
+    override public returns (bool)
+  {
+    return defineBlueprintInternal(
+      _id, _template, _bytecode, _defaultParameters);
   }
 
   /**
    * @dev deploy contract
    */
-  function deployContract(uint256 _id, bytes memory _parameters) public returns (address)
+  function deployContract(uint256 _id, bytes memory _parameters)
+    override public returns (address)
   {
     return deployContractInternal(_id, _parameters);
   }

@@ -16,13 +16,17 @@ import "../interface/ITokenAccessDefinitions.sol";
  **/
 abstract contract ITokenFactory is ITokenAccessDefinitions {
 
-  uint256 internal constant TOKEN_PROXY = 0;
+  enum ProxyCode {
+    TOKEN,
+    WRAPPED_TOKEN
+  }
 
   // The definitions below should be considered as a constant
   // Solidity 0.6.x do not provide ways to have arrays as constants
   bytes4[] public requiredCorePrivileges = [
     ASSIGN_PROXY_OPERATORS_PRIV,
-    DEFINE_TOKEN_PRIV
+    DEFINE_TOKEN_PRIV,
+    DEFINE_AUDIT_TRIGGERS_PRIV
   ];
   bytes4[] public requiredProxyPrivileges = [
     MINT_PRIV,
@@ -34,7 +38,6 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
 
   function hasCoreAccess(ITokenCore _core) virtual public view returns (bool access);
 
-  function defineProxyCode(bytes memory _code) virtual public returns (bool);
   function deployToken(
     ITokenCore _core,
     uint256 _delegateId,
@@ -49,6 +52,17 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
   ) virtual public returns (IERC20);
   function approveToken(ITokenCore _core,
     ITokenProxy _token) virtual public returns (bool);
+
+  function deployWrappedToken(
+    ITokenProxy _token,
+    string memory _name,
+    string memory _symbol,
+    uint256 _decimals,
+    address[] memory _vaults,
+    uint256[] memory _supplies,
+    bool _compliance
+  ) virtual public returns (IERC20);
+
   function configureTokensales(
     ITokenProxy _token,
     address[] memory _tokensales,
@@ -60,6 +74,7 @@ abstract contract ITokenFactory is ITokenAccessDefinitions {
 
   event TokenDeployed(IERC20 token);
   event TokenApproved(IERC20 token);
+  event WrappedTokenDeployed(IERC20 token, IERC20 wrapped);
   event TokensalesConfigured(IERC20 token, address[] tokensales);
   event AllowanceUpdated(IERC20 token, address spender, uint256 allowance);
 }

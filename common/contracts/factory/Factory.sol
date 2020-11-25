@@ -1,6 +1,7 @@
 pragma solidity ^0.6.0;
 
 import "../convert/BytesConvert.sol";
+import "../interface/IFactory.sol";
 
 
 /**
@@ -13,27 +14,43 @@ import "../convert/BytesConvert.sol";
  * FA01: No code was defined 
  * FA02: Unable to deploy contract
  **/
-contract Factory {
+abstract contract Factory is IFactory {
   using BytesConvert for bytes;
 
-  mapping(uint256 => bytes) internal contractCodes_;
+  struct Blueprint {
+    address template;
+    bytes bytecode;
+    bytes defaultParameters;
+  }
+
+  mapping(uint256 => Blueprint) internal blueprints;
 
   /**
-   * @dev contracctCode
+   * @dev blueprint
    */
-  function contractCode(uint256 _id) public view returns (bytes memory) {
-    return contractCodes_[_id];
+  function blueprint(uint256 _id) override public view returns (
+    address _template, bytes memory bytecode, bytes memory defaultParameters)
+  {
+    Blueprint memory blueprint_ = blueprints[_id];
+    return (
+      blueprint_.template,
+      blueprint_.bytecode,
+      blueprint_.defaultParameters);
   }
 
   /**
-   * @dev defineContractCodeInternal
+   * @dev defineBlueprintInternal
    */
-  function defineCodeInternal(
+  function defineBlueprintInternal(
     uint256 _id,
-    bytes memory _contractCode) internal returns (bool)
+    address _template,
+    bytes memory _bytecode,
+    bytes memory _defaultParameters) internal returns (bool)
   {
-    contractCodes_[_id] = _contractCode;
-    emit ContractCodeDefined(_id, keccak256(_contractCode));
+    blueprints[_id] =
+      Blueprint(_template, _bytecode, _defaultParameters);
+
+    emit BlueprintDefined(_id, keccak256(runtimeInternal(_id)));
     return true;
   }
 
@@ -44,16 +61,48 @@ contract Factory {
     uint256 _id,
     bytes memory _parameters) internal returns (address address_)
   {
-    require(contractCodes_[_id].length != 0, "FA01");
-    bytes memory code = abi.encodePacked(contractCodes_[_id], _parameters);
+    bytes memory bytecode = runtimeInternal(_id);
+    require(bytecode.length != 0, "FA01");
+
+    bytecode = abi.encodePacked(bytecode,
+      ((_parameters.length == 0) ? blueprints[_id].defaultParameters : _parameters));
+
     // solhint-disable-next-line no-inline-assembly
     assembly {
-      address_ := create(0, add(code, 0x20), mload(code))
+      address_ := create(0, add(bytecode, 0x20), mload(bytecode))
     }
     require(address_ != address(0), "FA02");
     emit ContractDeployed(_id, address_);
   }
 
-  event ContractCodeDefined(uint256 contractId, bytes32 codeHash);
-  event ContractDeployed(uint256 contractId, address address_);
+  /**
+   * @dev runtimeInternal
+   */
+  function runtimeInternal(uint256 _id) internal view returns (bytes memory runtime) {
+    Blueprint memory blueprint_ = blueprints[_id];
+    return (blueprint_.template != address(0)) ?
+      abi.encodePacked(
+        blueprint_.bytecode,
+        readBytecodeInternal(blueprint_.template)
+      ) : blueprint_.bytecode;
+  }
+
+  /**
+   * @dev readBytecodeInternal
+   */
+  function readBytecodeInternal(address _address) internal view returns (bytes memory bytecode) {
+    // solhint-disable-next-line no-inline-assembly
+    assembly {
+      // retrieve the size of the code, this needs assembly
+      let size := extcodesize(_address)
+      // initialize variable
+      bytecode := mload(0x40)
+      // new "memory end" including padding
+      mstore(0x40, add(bytecode, and(add(add(size, 0x20), 0x1f), not(0x1f))))
+      // store length in memory
+      mstore(bytecode, size)
+      // actually retrieve the code, this needs assembly
+      extcodecopy(_address, add(bytecode, 0x20), 0, size)
+    }
+  }
 }
