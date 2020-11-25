@@ -93,7 +93,7 @@ contract('Factory', function (accounts) {
 
       it('should have the same contract code', async function () {
         const bytecode = await factory.readyBytecode(contract.address);
-        assert.equal(ProxyMock.bytecode.indexOf(bytecode.substr(2)), 204, 'bytecode');
+        assert.ok(ProxyMock.bytecode.indexOf(bytecode.substr(2)) > 0, 'bytecode');
       });
 
       it('should have a contract correctly initialized', async function () {
@@ -134,7 +134,7 @@ contract('Factory', function (accounts) {
 
       it('should have the same contract code', async function () {
         const bytecode = await factory.readyBytecode(contract.address);
-        assert.equal(ProxyMock.bytecode.indexOf(bytecode.substr(2)), 204, 'bytecode');
+        assert.ok(ProxyMock.bytecode.indexOf(bytecode.substr(2)) > 0, 'bytecode');
       });
 
       it('should have a contract correctly initialized', async function () {
