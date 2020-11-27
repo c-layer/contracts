@@ -30,14 +30,15 @@ import "./rule/YesNoRule.sol";
  *   TF11: Incorrect core provided
  *   TF12: The rule must be removed
  *   TF13: Wrapped token contract must be deployed
- *   TF14: Wrapped token contract should be approved on token
- *   TF15: Wrapped tokens should be distributed
- *   TF16: Wrapped token contract should be operator on token
- *   TF17: Audit triggers should be successfully configured
- *   TF18: Same number of tokensales and allowances must be provided
- *   TF19: Exceptions must be added to the lock
- *   TF20: Allowances must be lower than the token balance
- *   TF21: Allowance must be successful
+ *   TF14: Wrapped token contract should be operator on token
+ *   TF15: Audit triggers should be successfully configured
+ *   TF16: Wrapped tokens should be distributed
+ *   TF17: WWrapped token contract should be approved on token
+ *   TF18: Wrapped token contract should be operator on token
+ *   TF19: Same number of tokensales and allowances must be provided
+ *   TF20: Exceptions must be added to the lock
+ *   TF21: Allowance must be lower than the token balance
+ *   TF22: Allowance must be successful
  **/
 contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Operable {
 
@@ -159,8 +160,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     // This ensure that the call does not change a custom made rules configuration
     (,,,,,,IRule[] memory rules) = _core.token(address(_token));
     if (rules.length == 1 && rules[0] == IRule(this)) {
-      require(_core.defineRules(
-        address(_token), new IRule[](0)), "TF12");
+      require(_core.defineRules(address(_token), new IRule[](0)), "TF12");
     }
     emit TokenApproved(_token);
     return true;
@@ -188,37 +188,42 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
       abi.encode(_name, _symbol, _decimals, address(_token))));
     require(address(wToken) != address(0), "TF13");
 
-    // 2- Wrap tokens
-    require(_token.approve(address(wToken), ~uint256(0)), "TF14");
-    for(uint256 i=0; i < _vaults.length; i++) {
-      require(wToken.depositTo(_vaults[i], _supplies[i]), "TF15");
-    }
+    emit WrappedTokenDeployed(_token, wToken);
 
-    // 3- Compliance Configuration
+    // 2- Compliance Configuration
     if (_compliance) {
       // Avoid the approval step for non self managed users
       address[] memory operators = new address[](1);
       operators[0] = address(wToken);
-      require(core.assignProxyOperators(address(_token), OPERATOR_PROXY_ROLE, operators), "TF16");
+      require(core.assignProxyOperators(address(_token), OPERATOR_PROXY_ROLE, operators), "TF14");
 
       // Avoid KYC restrictions for the wrapped tokens (AuditConfigurationId == 0)
-      uint256 delegateId = core.proxyDelegateId(address(_token));
-      uint256 auditConfigurationId = core.delegatesConfigurations(delegateId)[0];
-      address[] memory senders = new address[](2);
-      senders[0] = ANY_ADDRESSES;
-      senders[1] = address(wToken);
-      address[] memory receivers = new address[](2);
-      receivers[0] = address(wToken);
-      receivers[1] = ANY_ADDRESSES;
-      ITokenStorage.AuditTriggerMode[] memory modes = new ITokenStorage.AuditTriggerMode[](2);
-      modes[0] = ITokenStorage.AuditTriggerMode.NONE;
-      modes[1] = ITokenStorage.AuditTriggerMode.RECEIVER_ONLY;
+      {
+        uint256 delegateId = core.proxyDelegateId(address(_token));
+        uint256 auditConfigurationId = core.delegatesConfigurations(delegateId)[0];
+        address[] memory senders = new address[](2);
+        senders[0] = ANY_ADDRESSES;
+        senders[1] = address(wToken);
+        address[] memory receivers = new address[](2);
+        receivers[0] = address(wToken);
+        receivers[1] = ANY_ADDRESSES;
+        ITokenStorage.AuditTriggerMode[] memory modes = new ITokenStorage.AuditTriggerMode[](2);
+        modes[0] = ITokenStorage.AuditTriggerMode.NONE;
+        modes[1] = ITokenStorage.AuditTriggerMode.RECEIVER_ONLY;
+        require(core.defineAuditTriggers(auditConfigurationId,
+          senders, receivers, modes), "TF15");
+      }
 
-      require(core.defineAuditTriggers(auditConfigurationId,
-        senders, receivers, modes), "TF17");
+      require(core.defineLock(address(_token), address(this), ANY_ADDRESSES, ~uint64(0), ~uint64(0)), "TF16");
+    } else {
+      require(_token.approve(address(wToken), ~uint256(0)), "TF17");
     }
 
-    emit WrappedTokenDeployed(_token, wToken);
+    // 3- Wrap tokens
+    for(uint256 i=0; i < _vaults.length; i++) {
+      require(wToken.depositTo(_vaults[i], _supplies[i]), "TF18");
+    }
+
     return wToken;
   }
 
@@ -233,10 +238,10 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   {
     ITokenCore core = ITokenCore(_token.core());
     require(hasCoreAccess(core), "TF01");
-    require(_tokensales.length == _allowances.length, "TF18");
+    require(_tokensales.length == _allowances.length, "TF19");
 
     for(uint256 i=0; i < _tokensales.length; i++) {
-      require(core.defineLock(address(_token), _tokensales[i], ANY_ADDRESSES, ~uint64(0), ~uint64(0)), "TF19");
+      require(core.defineLock(address(_token), _tokensales[i], ANY_ADDRESSES, ~uint64(0), ~uint64(0)), "TF20");
     }
 
     updateAllowances(_token, _tokensales, _allowances);
@@ -254,8 +259,8 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   {
     uint256 balance = _token.balanceOf(address(this));
     for(uint256 i=0; i < _spenders.length; i++) {
-      require(_allowances[i] <= balance, "TF20");
-      require(_token.approve(_spenders[i], _allowances[i]), "TF21");
+      require(_allowances[i] <= balance, "TF21");
+      require(_token.approve(_spenders[i], _allowances[i]), "TF22");
       emit AllowanceUpdated(_token, _spenders[i], _allowances[i]);
     }
   }

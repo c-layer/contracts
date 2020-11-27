@@ -10,6 +10,7 @@ const TokenDelegate = artifacts.require('TokenDelegate.sol');
 const TokenCore = artifacts.require('TokenCore.sol');
 const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
+const WrappedERC20 = artifacts.require('WrappedERC20Mock.sol');
 
 const TOKEN_DEPLOYMENT_COST = 1379650;
 const TRANSFER_LOCKED = 5;
@@ -48,11 +49,16 @@ const APPROVE_PRIVILEGES = [
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
+  web3.utils.sha3('deployWrappedToken(address,string,string,uint256,address[],uint256[],bool)'),
+];
+const OPERATOR_PRIVILEGES = [
+  web3.utils.sha3('transferFrom(address,address,address,uint256)'),
 ];
 const FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0');
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii('FactoryProxyRole').padEnd(66, '0');
 const ISSUER_PROXY_ROLE = web3.utils.fromAscii('IssuerProxyRole').padEnd(66, '0');
 const APPROVER_PROXY_ROLE = web3.utils.fromAscii('ApproverProxyRole').padEnd(66, '0');
+const OPERATOR_PROXY_ROLE = web3.utils.fromAscii('OperatorProxyRole').padEnd(66, '0');
 
 contract('TokenFactory', function (accounts) {
   let proxyCode, proxyCodeHash;
@@ -83,7 +89,7 @@ contract('TokenFactory', function (accounts) {
     assert.equal(tx.logs[0].args.codeHash, proxyCodeHash, 'proxy codeHash');
   });
 
-  it('should prevent non authorized to define a blueprint', async function () {
+  it('should prevent factory to deploy a token without core access', async function () {
     await assertRevert(factory.deployToken(
       core.address, 1, NAME, SYMBOL, DECIMALS, LOCK_END, false,
       [accounts[0], factory.address], SUPPLIES, [accounts[0]]), 'TF01');
@@ -217,6 +223,13 @@ contract('TokenFactory', function (accounts) {
         await assertRevert(factory.configureTokensales(token.address, [], []), 'OA02');
       });
 
+      it('should not let non proxy operator to deploy a wrapped token', async function () {
+        await assertRevert(factory.deployWrappedToken(token.address,
+          'Wrapped Token', 'wTOK', 18,
+          [accounts[0], accounts[1]],
+          ['150000', '200000'], true), 'OA02');
+      });
+
       it('should not let non proxy operator to update allowances', async function () {
         await assertRevert(factory.updateAllowances(token.address, [], []), 'OA02');
       });
@@ -314,6 +327,83 @@ contract('TokenFactory', function (accounts) {
           assert.equal(tx.logs[1].args.spender, accounts[2], 'spender2');
           assert.equal(tx.logs[1].args.allowance, '100000', 'allowance2');
         });
+      });
+    });
+
+    describe('With a simple ERC20 token deployed and roles configured', function () {
+      let token;
+      let wrappedCode, wrappedCodeHash;
+
+      beforeEach(async function () {
+        wrappedCode = WrappedERC20.bytecode;
+        await factory.defineBlueprint(1, NULL_ADDRESS, wrappedCode, '0x');
+
+        token = await TokenProxy.new(core.address);
+        await core.defineToken(token.address, 1, "Token", "TOK", "18");
+        await core.mint(token.address, [factory.address, accounts[1]], SUPPLIES);
+
+        await core.defineRole(ISSUER_PROXY_ROLE, ISSUER_PRIVILEGES);
+        await core.defineRole(OPERATOR_PROXY_ROLE, OPERATOR_PRIVILEGES);
+
+        await core.defineRole(APPROVER_PROXY_ROLE, APPROVE_PRIVILEGES);
+        await core.assignOperators(APPROVER_PROXY_ROLE, [accounts[1]]);
+        await factory.approveToken(core.address, token.address, { from: accounts[1] });
+      });
+
+      it('should let deploy a wrapped token without compliance', async function () {
+        const tx = await factory.deployWrappedToken(token.address,
+          'Wrapped Token', 'wTOK', 18,
+          [accounts[0], accounts[1]],
+          [10 ** 6 + SUPPLIES_DECIMALS, 10 ** 6 + SUPPLIES_DECIMALS], false);
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+
+        assert.equal(tx.logs[0].event, 'ContractDeployed', 'event1');
+        assert.ok(tx.logs[0].args.address_ !== NULL_ADDRESS, 'wToken');
+
+        assert.equal(tx.logs[1].event, 'WrappedTokenDeployed', 'event1');
+        assert.equal(tx.logs[1].args.token, token.address, 'token');
+        assert.ok(tx.logs[1].args.wrapped != NULL_ADDRESS, 'wrapped');
+      });
+    });
+
+    describe('With a C-Layer token deployed, approved and roles configured', function () {
+      let token;
+      let wrappedCode, wrappedCodeHash;
+
+      beforeEach(async function () {
+        wrappedCode = WrappedERC20.bytecode;
+        await factory.defineBlueprint(1, NULL_ADDRESS, wrappedCode, '0x');
+
+        const tx = await factory.deployToken(
+          core.address, 1, NAME, SYMBOL, DECIMALS, 0, true,
+          [factory.address, accounts[1]], SUPPLIES, [accounts[0]]);
+        const tokenAddress = tx.logs[0].args.address_;
+        token = await TokenProxy.at(tokenAddress);
+
+        await core.defineRole(ISSUER_PROXY_ROLE, ISSUER_PRIVILEGES);
+        await core.defineRole(OPERATOR_PROXY_ROLE, OPERATOR_PRIVILEGES);
+
+        await core.defineRole(APPROVER_PROXY_ROLE, APPROVE_PRIVILEGES);
+        await core.assignOperators(APPROVER_PROXY_ROLE, [accounts[1]]);
+        await factory.approveToken(core.address, token.address, { from: accounts[1] });
+      });
+
+      it('should let deploy a wrapped token with compliance', async function () {
+        const tx = await factory.deployWrappedToken(token.address,
+          'Wrapped Token', 'wTOK', 18,
+          [accounts[0], accounts[1]],
+          [10 ** 6 + SUPPLIES_DECIMALS, 10 ** 6 + SUPPLIES_DECIMALS], true);
+
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+
+        assert.equal(tx.logs[0].event, 'ContractDeployed', 'event1');
+        assert.ok(tx.logs[0].args.address_ !== NULL_ADDRESS, 'wToken');
+
+        assert.equal(tx.logs[1].event, 'WrappedTokenDeployed', 'event1');
+        assert.equal(tx.logs[1].args.token, token.address, 'token');
+        assert.ok(tx.logs[1].args.wrapped != NULL_ADDRESS, 'wrapped');
       });
     });
   });
