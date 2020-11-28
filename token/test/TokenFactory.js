@@ -332,14 +332,14 @@ contract('TokenFactory', function (accounts) {
 
     describe('With a simple ERC20 token deployed and roles configured', function () {
       let token;
-      let wrappedCode, wrappedCodeHash;
+      let wrappedCode;
 
       beforeEach(async function () {
         wrappedCode = WrappedERC20.bytecode;
         await factory.defineBlueprint(1, NULL_ADDRESS, wrappedCode, '0x');
 
         token = await TokenProxy.new(core.address);
-        await core.defineToken(token.address, 1, "Token", "TOK", "18");
+        await core.defineToken(token.address, 1, 'Token', 'TOK', '18');
         await core.mint(token.address, [factory.address, accounts[1]], SUPPLIES);
 
         await core.defineRole(ISSUER_PROXY_ROLE, ISSUER_PRIVILEGES);
@@ -363,13 +363,13 @@ contract('TokenFactory', function (accounts) {
 
         assert.equal(tx.logs[1].event, 'WrappedTokenDeployed', 'event1');
         assert.equal(tx.logs[1].args.token, token.address, 'token');
-        assert.ok(tx.logs[1].args.wrapped != NULL_ADDRESS, 'wrapped');
+        assert.ok(tx.logs[1].args.wrapped !== NULL_ADDRESS, 'wrapped');
       });
     });
 
     describe('With a C-Layer token deployed, approved and roles configured', function () {
       let token;
-      let wrappedCode, wrappedCodeHash;
+      let wrappedCode;
 
       beforeEach(async function () {
         wrappedCode = WrappedERC20.bytecode;
@@ -403,7 +403,7 @@ contract('TokenFactory', function (accounts) {
 
         assert.equal(tx.logs[1].event, 'WrappedTokenDeployed', 'event1');
         assert.equal(tx.logs[1].args.token, token.address, 'token');
-        assert.ok(tx.logs[1].args.wrapped != NULL_ADDRESS, 'wrapped');
+        assert.ok(tx.logs[1].args.wrapped !== NULL_ADDRESS, 'wrapped');
       });
     });
   });
