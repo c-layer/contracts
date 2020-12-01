@@ -102,9 +102,10 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
       uint256(Delegate.SECURITY), _compliantDelegate, primaryMarketAMLConfig), "CC06");
 
     // Setup basic roles
-    bytes4[] memory privileges = new bytes4[](2);
+    bytes4[] memory privileges = new bytes4[](3);
     privileges[0] = ASSIGN_PROXY_OPERATORS_PRIV;
     privileges[1] = DEFINE_TOKEN_PRIV;
+    privileges[2] = DEFINE_AUDIT_TRIGGERS_PRIV;
     require(_core.defineRole(FACTORY_CORE_ROLE, privileges), "CC11");
     require(_core.assignOperators(FACTORY_CORE_ROLE, _factories), "CC12");
 
@@ -116,25 +117,26 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineRole(FACTORY_PROXY_ROLE, privileges), "CC13");
     require(_core.assignProxyOperators(ALL_PROXIES, FACTORY_PROXY_ROLE, _factories), "CC14");
 
-    privileges = new bytes4[](1);
+    privileges = new bytes4[](2);
     privileges[0] = DEFINE_TOKEN_PRIV;
+    privileges[1] = APPROVE_TOKEN_PRIV;
     require(_core.defineRole(COMPLIANCE_CORE_ROLE, privileges), "CC15");
 
-    privileges = new bytes4[](4);
+    privileges = new bytes4[](5);
     privileges[0] = DEFINE_RULES_PRIV;
     privileges[1] = SEIZE_PRIV;
     privileges[2] = FREEZE_MANY_ADDRESSES_PRIV;
     privileges[3] = DEFINE_LOCK_PRIV;
+    privileges[4] = DEPLOY_WRAPPED_TOKEN_PRIV;
     require(_core.defineRole(COMPLIANCE_PROXY_ROLE, privileges), "CC16");
 
-    privileges = new bytes4[](7);
+    privileges = new bytes4[](6);
     privileges[0] = MINT_PRIV;
     privileges[1] = BURN_PRIV;
     privileges[2] = FINISH_MINTING_PRIV;
     privileges[3] = DEFINE_LOCK_PRIV;
     privileges[4] = CONFIGURE_TOKENSALES_PRIV;
     privileges[5] = UPDATE_ALLOWANCE_PRIV;
-    privileges[6] = DEPLOY_WRAPPED_TOKEN_PRIV;
     require(_core.defineRole(ISSUER_PROXY_ROLE, privileges), "CC17");
 
     privileges = new bytes4[](1);

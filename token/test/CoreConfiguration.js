@@ -44,6 +44,19 @@ const ISSUER_PROXY_PRIVILEGES = [
   web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
 ].map((x) => x.substr(0, 10));
+const FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0');
+const FACTORY_CORE_PRIVILEGES = [
+  web3.utils.sha3('assignProxyOperators(address,bytes32,address[])'),
+  web3.utils.sha3('defineToken(address,uint256,string,string,uint256)'),
+  web3.utils.sha3('defineAuditTriggers(uint256,address[],address[],uint8[])'),
+].map((x) => x.substr(0, 10));
+const FACTORY_PROXY_ROLE = web3.utils.fromAscii('FactoryProxyRole').padEnd(66, '0');
+const FACTORY_PROXY_PRIVILEGES = [
+  web3.utils.sha3('mint(address,address[],uint256[])'),
+  web3.utils.sha3('finishMinting(address)'),
+  web3.utils.sha3('defineRules(address,address[])'),
+  web3.utils.sha3('defineLock(address,address,address,uint64,uint64)'),
+].map((x) => x.substr(0, 10));
 
 const AUDIT_BOTH = 4;
 const AUDIT_NONE = 1;
@@ -186,7 +199,19 @@ contract('CoreConfiguration', function (accounts) {
         it('should have define issuer proxy role with privileges', async function () {
           const result = await Promise.all(ISSUER_PROXY_PRIVILEGES.map(
             (privilege) => core.rolePrivilege(ISSUER_PROXY_ROLE, privilege)));
-          assert.deepEqual(result, [true, true, true, true, true, true], 'issuer proxy provilege');
+          assert.deepEqual(result, [true, true, true, true, true, true], 'issuer proxy privilege');
+        });
+
+        it('should have define factory core role with privileges', async function () {
+          const result = await Promise.all(FACTORY_CORE_PRIVILEGES.map(
+            (privilege) => core.rolePrivilege(FACTORY_CORE_ROLE, privilege)));
+          assert.deepEqual(result, [true, true, true], 'factory core privilege');
+        });
+
+        it('should have define factory proxy role with privileges', async function () {
+          const result = await Promise.all(FACTORY_PROXY_PRIVILEGES.map(
+            (privilege) => core.rolePrivilege(FACTORY_PROXY_ROLE, privilege)));
+          assert.deepEqual(result, [true, true, true, true], 'factory proxy privilege');
         });
       });
     });

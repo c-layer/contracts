@@ -61,5 +61,7 @@ abstract contract ITokenAccessDefinitions is IAccessDefinitions {
   bytes4 internal constant UPDATE_ALLOWANCE_PRIV =
     bytes4(keccak256("updateAllowances(address,address[],uint256[])"));
   bytes4 internal constant DEPLOY_WRAPPED_TOKEN_PRIV =
-    bytes4(keccak256("deployWrappedToken()"));
+    bytes4(keccak256("deployWrappedToken(address,string,string,uint256,address[],uint256[],bool)"));
+  bytes4 internal constant APPROVE_TOKEN_PRIV =
+    bytes4(keccak256("approveToken(address,address)"));
 }
