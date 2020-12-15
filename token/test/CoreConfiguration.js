@@ -56,6 +56,7 @@ const FACTORY_PROXY_PRIVILEGES = [
   web3.utils.sha3('finishMinting(address)'),
   web3.utils.sha3('defineRules(address,address[])'),
   web3.utils.sha3('defineLock(address,address,address,uint64,uint64)'),
+  web3.utils.sha3('defineTokenLocks(address,address[])'),
 ].map((x) => x.substr(0, 10));
 
 const AUDIT_BOTH = 4;
@@ -211,7 +212,7 @@ contract('CoreConfiguration', function (accounts) {
         it('should have define factory proxy role with privileges', async function () {
           const result = await Promise.all(FACTORY_PROXY_PRIVILEGES.map(
             (privilege) => core.rolePrivilege(FACTORY_PROXY_ROLE, privilege)));
-          assert.deepEqual(result, [true, true, true, true], 'factory proxy privilege');
+          assert.deepEqual(result, [true, true, true, true, true], 'factory proxy privilege');
         });
       });
     });

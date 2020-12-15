@@ -109,11 +109,12 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     require(_core.defineRole(FACTORY_CORE_ROLE, privileges), "CC11");
     require(_core.assignOperators(FACTORY_CORE_ROLE, _factories), "CC12");
 
-    privileges = new bytes4[](4);
+    privileges = new bytes4[](5);
     privileges[0] = MINT_PRIV;
     privileges[1] = FINISH_MINTING_PRIV;
     privileges[2] = DEFINE_RULES_PRIV;
     privileges[3] = DEFINE_LOCK_PRIV;
+    privileges[4] = DEFINE_TOKEN_LOCK_PRIV;
     require(_core.defineRole(FACTORY_PROXY_ROLE, privileges), "CC13");
     require(_core.assignProxyOperators(ALL_PROXIES, FACTORY_PROXY_ROLE, _factories), "CC14");
 
