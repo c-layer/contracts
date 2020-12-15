@@ -22,7 +22,7 @@ contract('TimeLockedSimpleVaultERC20', function (accounts) {
   let vault, token;
 
   beforeEach(async function () {
-    vault = await TimeLockedSimpleVaultERC20.new(timeLockPlus1Hour);
+    vault = await TimeLockedSimpleVaultERC20.new(accounts[2], timeLockPlus1Hour);
     token = await Token.new('Name', 'Symbol', 0, accounts[1], 1000000);
   });
 
@@ -50,8 +50,8 @@ contract('TimeLockedSimpleVaultERC20', function (accounts) {
       assert.equal(value.toString(), '1000');
     });
 
-    it('should not let owner send ERC20', async function () {
-      await assertRevert(vault.transfer(token.address, accounts[0], '1000'), 'TLV01');
+    it('should not allow transfer of ERC20', async function () {
+      await assertRevert(vault.transfer(token.address, accounts[0], '1000', { from: accounts[2] }), 'TLV01');
     });
 
     describe('after the unlocking', function () {
@@ -60,7 +60,7 @@ contract('TimeLockedSimpleVaultERC20', function (accounts) {
       });
 
       it('should let owner send ERC20', async function () {
-        const tx = await vault.transfer(token.address, accounts[0], '1000');
+        const tx = await vault.transfer(token.address, accounts[0], '1000', { from: accounts[2] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
@@ -70,7 +70,7 @@ contract('TimeLockedSimpleVaultERC20', function (accounts) {
       });
 
       it('should prevent non owner to send ERC20', async function () {
-        await assertRevert(vault.transfer(token.address, accounts[0], '1000', { from: accounts[1] }), 'OW01');
+        await assertRevert(vault.transfer(token.address, accounts[0], '1000'), 'OW01');
       });
     });
   });

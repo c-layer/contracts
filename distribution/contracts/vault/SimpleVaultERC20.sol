@@ -11,8 +11,14 @@ import "../interface/ISimpleVaultERC20.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
+ *   SV01: Beneficiary must be defined
  */
 contract SimpleVaultERC20 is ISimpleVaultERC20, Ownable {
+
+  constructor(address _beneficiary) public {
+    require(_beneficiary != address(0), "SV01");
+    transferOwnership(_beneficiary);
+  }
 
   function transfer(IERC20 _token, address _to, uint256 _value)
     public override onlyOwner returns (bool)

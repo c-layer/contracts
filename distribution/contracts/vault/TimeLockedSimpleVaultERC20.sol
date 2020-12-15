@@ -12,7 +12,8 @@ import "../interface/ISimpleVaultERC20.sol";
  *
  * Error messages
  *   TLV01: Vault is locked
- *   TLV02: Cannot be locked in the past
+ *   TLV02: Beneficiary must be defined
+ *   TLV03: Cannot be locked in the past
  */
 contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
 
@@ -23,9 +24,11 @@ contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
     _;
   }
 
-  constructor(uint64 _lockUntil) public {
-    require(_lockUntil > currentTime(), "TLV02");
+  constructor(address _beneficiary, uint64 _lockUntil) public {
+    require(_beneficiary != address(0), "TLV02");
+    require(_lockUntil > currentTime(), "TLV03");
     lockUntil = _lockUntil;
+    transferOwnership(_beneficiary);
   }
 
   function transfer(IERC20 _token, address _to, uint256 _value)

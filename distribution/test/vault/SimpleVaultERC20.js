@@ -19,7 +19,7 @@ contract('SimpleVaultERC20', function (accounts) {
   let vault, token;
 
   beforeEach(async function () {
-    vault = await SimpleVaultERC20.new();
+    vault = await SimpleVaultERC20.new(accounts[2]);
     token = await Token.new('Name', 'Symbol', 0, accounts[1], 1000000);
   });
 
@@ -48,7 +48,7 @@ contract('SimpleVaultERC20', function (accounts) {
     });
 
     it('should let operator send ERC20', async function () {
-      const tx = await vault.transfer(token.address, accounts[0], '1000');
+      const tx = await vault.transfer(token.address, accounts[0], '1000', { from: accounts[2] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
@@ -58,7 +58,7 @@ contract('SimpleVaultERC20', function (accounts) {
     });
 
     it('should prevent non owner to send ERC20', async function () {
-      await assertRevert(vault.transfer(token.address, accounts[0], '1000', { from: accounts[1] }), 'OW01');
+      await assertRevert(vault.transfer(token.address, accounts[0], '1000'), 'OW01');
     });
   });
 });

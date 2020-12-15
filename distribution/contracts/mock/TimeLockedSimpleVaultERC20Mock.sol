@@ -13,7 +13,8 @@ import "../vault/TimeLockedSimpleVaultERC20.sol";
  */
 contract TimeLockedSimpleVaultERC20Mock is TimeLockedSimpleVaultERC20 {
 
-  constructor(uint64 _lockUntil) public TimeLockedSimpleVaultERC20(_lockUntil) {}
+  constructor(address _beneficiary, uint64 _lockUntil)
+    public TimeLockedSimpleVaultERC20(_beneficiary, _lockUntil) {}
 
   function setLockUntilTest(uint64 _lockUntil) public returns (bool) {
     lockUntil = _lockUntil;
