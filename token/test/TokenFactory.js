@@ -196,7 +196,7 @@ contract('TokenFactory', function (accounts) {
         assert.equal(tokenData.allTimeMinted.toString(), TOTAL_SUPPLY, 'all time minted');
         assert.equal(tokenData.allTimeBurned.toString(), 0, 'all time burned');
         assert.equal(tokenData.allTimeSeized.toString(), 0, 'all time seized');
-        assert.deepEqual(tokenData.locks, [], 'locks');
+        assert.deepEqual(tokenData.locks, [token.address], 'locks');
         assert.deepEqual(tokenData.rules, [factory.address], 'rules');
       });
 

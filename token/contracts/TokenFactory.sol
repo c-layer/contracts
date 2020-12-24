@@ -126,11 +126,12 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     }
 
     // 5- Locking the token
+    address[] memory locks = new address[](1);
+    locks[0] = address(token);
+    require(_core.defineTokenLocks(address(token), locks), "TF07");
+
     // solhint-disable-next-line not-rely-on-time
     if (_lockEnd > now) {
-      address[] memory locks = new address[](1);
-      locks[0] = address(token);
-      require(_core.defineTokenLocks(address(token), locks), "TF07");
       require(_core.defineLock(
         address(token),
         ANY_ADDRESSES,
