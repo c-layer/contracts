@@ -83,11 +83,10 @@ abstract contract ITokenStorage {
     uint256 endAt
   );
   event Seize(address indexed token, address account, uint256 amount);
-  event Freeze(address address_, uint256 until);
-  event ClaimDefined(
+  event Freeze(
     address indexed token,
-    address indexed claim,
-    uint256 claimAt);
+    address address_,
+    uint256 until);
   event TokenLocksDefined(
     address indexed token,
     address[] locks);

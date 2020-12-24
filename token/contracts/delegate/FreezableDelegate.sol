@@ -30,7 +30,7 @@ abstract contract FreezableDelegate is TokenStorage {
     mapping(address => uint256) storage frozenUntils = tokens[_token].frozenUntils;
     for (uint256 i = 0; i < _addresses.length; i++) {
       frozenUntils[_addresses[i]] = _until;
-      emit Freeze(_addresses[i], _until);
+      emit Freeze(_token, _addresses[i], _until);
     }
     return true;
   }

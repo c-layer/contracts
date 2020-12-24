@@ -28,9 +28,11 @@ contract('FreezableDelegate', function (accounts) {
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, 'Freeze', 'event');
+    assert.equal(tx.logs[0].args.token, TOKEN_ADDRESS, 'address');
     assert.equal(tx.logs[0].args.address_, accounts[1], 'address');
     assert.equal(tx.logs[0].args.until, NEXT_YEAR, 'until');
     assert.equal(tx.logs[1].event, 'Freeze', 'event');
+    assert.equal(tx.logs[1].args.token, TOKEN_ADDRESS, 'address');
     assert.equal(tx.logs[1].args.address_, accounts[2], 'address');
     assert.equal(tx.logs[1].args.until, NEXT_YEAR, 'until');
   });
