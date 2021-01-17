@@ -17,6 +17,13 @@ contract Vault is IVault, Operable {
   receive() external payable {}
   fallback() external payable {}
 
+  /**
+   * @dev constructor
+   */
+  constructor(address _beneficiary) public {
+    transferOwnership(_beneficiary);
+  }
+
   function transferETH(address _to, uint256 _value, bytes memory _data)
     public override onlyOperator returns (bool, bytes memory)
   {

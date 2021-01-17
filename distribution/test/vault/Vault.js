@@ -20,8 +20,18 @@ contract('Vault', function (accounts) {
   let vault, token;
 
   beforeEach(async function () {
-    vault = await Vault.new();
+    vault = await Vault.new(accounts[1]);
     token = await Token.new('Name', 'Symbol', 0, accounts[1], 1000000);
+  });
+
+  it('should have a owner', async function () {
+    const owner = await vault.owner();
+    assert.equal(owner, accounts[1], 'owner');
+  });
+
+  it('should have vault creator as operator', async function () {
+    const isOperator = await vault.isOperator(accounts[0]);
+    assert.ok(isOperator, 'operator');
   });
 
   it('should have no ETH', async function () {

@@ -31,7 +31,7 @@ contract Operable is Ownable {
    * @dev constructor
    */
   constructor() public {
-    defineOperator("Owner", msg.sender);
+    operators_[msg.sender] = true;
   }
 
   /**
