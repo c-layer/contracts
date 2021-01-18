@@ -15,15 +15,20 @@ const formatAddressToTopic = address =>
 const formatValueToData = value =>
   ('0x' + (value.substr(2).padStart(64, '0')));
 
-const timeLockPlus1Hour = Math.floor(new Date().getTime() / 1000) + 3600;
-const timeLockMinus1Hour = Math.floor(new Date().getTime() / 1000) - 3600;
+const timeLockedPlus1Hour = Math.floor(new Date().getTime() / 1000) + 3600;
+const timeLockedMinus1Hour = Math.floor(new Date().getTime() / 1000) - 3600;
 
 contract('TimeLockedSimpleVaultERC20', function (accounts) {
   let vault, token;
 
   beforeEach(async function () {
-    vault = await TimeLockedSimpleVaultERC20.new(accounts[2], timeLockPlus1Hour);
+    vault = await TimeLockedSimpleVaultERC20.new(accounts[2], timeLockedPlus1Hour);
     token = await Token.new('Name', 'Symbol', 0, accounts[1], 1000000);
+  });
+
+  it('should be locked until', async function () {
+    const lockedUntil = await vault.lockedUntil();
+    assert.equal(lockedUntil, timeLockedPlus1Hour, 'lockedUntil');
   });
 
   it('should receive ERC20', async function () {
@@ -56,7 +61,7 @@ contract('TimeLockedSimpleVaultERC20', function (accounts) {
 
     describe('after the unlocking', function () {
       beforeEach(async function () {
-        await vault.setLockUntilTest(timeLockMinus1Hour);
+        await vault.setLockedUntilTest(timeLockedMinus1Hour);
       });
 
       it('should let owner send ERC20', async function () {

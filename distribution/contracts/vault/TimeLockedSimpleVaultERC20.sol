@@ -17,17 +17,17 @@ import "../interface/ISimpleVaultERC20.sol";
  */
 contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
 
-  uint64 public lockUntil;
+  uint64 public lockedUntil;
 
   modifier whenUnlocked() {
-    require(lockUntil < currentTime(), "TLV01");
+    require(lockedUntil < currentTime(), "TLV01");
     _;
   }
 
-  constructor(address _beneficiary, uint64 _lockUntil) public {
+  constructor(address _beneficiary, uint64 _lockedUntil) public {
     require(_beneficiary != address(0), "TLV02");
-    require(_lockUntil > currentTime(), "TLV03");
-    lockUntil = _lockUntil;
+    require(_lockedUntil > currentTime(), "TLV03");
+    lockedUntil = _lockedUntil;
     transferOwnership(_beneficiary);
   }
 
