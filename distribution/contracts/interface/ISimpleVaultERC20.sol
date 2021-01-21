@@ -4,8 +4,8 @@ import "@c-layer/common/contracts/interface/IERC20.sol";
 
 
 /**
- * @title SimpleVaultERC20
- * @dev SimpleVault managing ERC20
+ * @title ISimpleVaultERC20
+ * @dev SimpleVaultERC20 interface
  * @author Cyril Lapinte - <cyril@openfiz.com>
  * SPDX-License-Identifier: MIT
  *
