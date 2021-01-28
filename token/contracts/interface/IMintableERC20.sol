@@ -14,7 +14,7 @@ interface IMintableERC20 {
 
   function mintingFinished() external view returns (bool);
   function allTimeMinted() external view returns (uint256);
- 
+
   function burn(uint256 _amount) external returns (bool);
   function mint(address[] memory _recipients, uint256[] memory _amounts)
     external returns (bool);

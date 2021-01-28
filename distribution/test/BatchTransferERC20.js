@@ -136,7 +136,7 @@ contract('BatchTransferERC20', function (accounts) {
         assert.equal(account3Balance, 100, 'account 3 balance');
       });
 
-      it('should have receive ethers in the vault', async function () {
+      it('should have receive ethers in the vault [ @skip-on-coverage ]', async function () {
         const balanceVaultETHAfter = await web3.eth.getBalance(VAULT_ETH);
         const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
         assert.equal(balanceDiff.toString(), TWO_TRANSFERS_FEES);
@@ -164,7 +164,7 @@ contract('BatchTransferERC20', function (accounts) {
         assert.equal(account4Balance, 100, 'account 4 balance');
       });
 
-      it('should have receive ethers in the vault', async function () {
+      it('should have receive ethers in the vault [ @skip-on-coverage ]', async function () {
         const balanceVaultETHAfter = await web3.eth.getBalance(VAULT_ETH);
         const balanceDiff = new BN(balanceVaultETHAfter).sub(new BN(balanceVaultETHBefore));
         assert.equal(balanceDiff.toString(), THREE_TRANSFERS_FEES);

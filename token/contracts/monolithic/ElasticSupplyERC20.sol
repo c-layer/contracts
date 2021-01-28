@@ -60,7 +60,7 @@ contract ElasticSupplyERC20 is IElasticSupplyERC20, Ownable, MintableTokenERC20 
       require(_from == msg.sender || _value <= allowed[_from][msg.sender], "ES03");
       allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
     }
- 
+
     uint256 currentElasticity = elasticity();
     uint256 baseValue = _value.mul(ELASTICITY_PRECISION).div(currentElasticity);
 

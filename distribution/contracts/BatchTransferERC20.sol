@@ -26,12 +26,10 @@ contract BatchTransferERC20 is IBatchTransferERC20, Ownable {
   modifier withFees {
     uint256 fees = gasleft() * tx.gasprice * feesRate_ / 1000000;
     require(msg.value >= fees, "BT01");
+
+    // solhint-disable-next-line check-send-result
     require(vaultETH_.send(fees), "BT02");
     _;
-  }
-
-  function estimateTransferFees() public view returns (uint256) {
-    return gasleft() * tx.gasprice * feesRate_ / 1000000;
   }
 
   constructor(address payable _vaultETH, uint256 _feesRate) public {

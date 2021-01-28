@@ -89,6 +89,16 @@ contract('InterestBearingERC20', function (accounts) {
       assert.equal(tx.logs.length, 0);
     });
 
+    it('should not rebase during the transfer', async function () {
+      const tx = await token.transfer(accounts[1], '750000');
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'Transfer', 'event1');
+      assert.equal(tx.logs[0].args.from.toString(), accounts[0], 'from');
+      assert.equal(tx.logs[0].args.to.toString(), accounts[1], 'to');
+      assert.equal(tx.logs[0].args.value.toString(), '750000', 'from');
+    });
+
     describe('after a year rebase', function () {
       beforeEach(async function () {
         await token.defineInterestFrom(String(from - PERIOD));
@@ -113,6 +123,19 @@ contract('InterestBearingERC20', function (accounts) {
         assert.equal(tx.logs[1].event, 'InterestUpdate', 'event2');
         assert.equal(tx.logs[1].args.rate.toString(), 1, 'rate');
         assert.equal(tx.logs[1].args.elasticity.toString(), '1050000000', 'elasticity2');
+      });
+
+      it('should rebase during the transfer', async function () {
+        const tx = await token.transfer(accounts[1], '750000');
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 2);
+        assert.equal(tx.logs[0].event, 'InterestRebase', 'event1');
+        assert.equal(tx.logs[0].args.at.toString(), String(from), 'at');
+        assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
+        assert.equal(tx.logs[1].event, 'Transfer', 'event1');
+        assert.equal(tx.logs[1].args.from.toString(), accounts[0], 'from');
+        assert.equal(tx.logs[1].args.to.toString(), accounts[1], 'to');
+        assert.equal(tx.logs[1].args.value.toString(), '750000', 'from');
       });
     });
 
