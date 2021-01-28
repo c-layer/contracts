@@ -31,11 +31,11 @@ contract('MintableTokenERC20', function (accounts) {
   });
 
   it('should prevent non owner to mint tokens', async function () {
-    await assertRevert(token.mint([ accounts[1] ], [ '100000000' ], { from: accounts[1] }), 'OW01');
+    await assertRevert(token.mint([accounts[1]], ['100000000'], { from: accounts[1] }), 'OW01');
   });
 
   it('should let owner mint more tokens', async function () {
-    const tx = await token.mint([ accounts[1] ], [ '1000' ]);
+    const tx = await token.mint([accounts[1]], ['1000']);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
     assert.equal(tx.logs[0].event, 'Transfer', 'event');
@@ -81,7 +81,7 @@ contract('MintableTokenERC20', function (accounts) {
     });
 
     it('should prevent owner to mint tokens', async function () {
-      await assertRevert(token.mint([ accounts[1] ], [ '100000000' ]), 'MT01');
+      await assertRevert(token.mint([accounts[1]], ['100000000']), 'MT01');
     });
 
     it('should prevent owner to finish minting', async function () {

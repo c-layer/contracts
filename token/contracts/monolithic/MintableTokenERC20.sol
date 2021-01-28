@@ -1,7 +1,7 @@
 pragma solidity ^0.6.0;
 
-import ".//TokenERC20.sol";
-import "../operable/Ownable.sol";
+import "@c-layer/common/contracts/token/TokenERC20.sol";
+import "@c-layer/common/contracts/operable/Ownable.sol";
 import "../interface/IMintableERC20.sol";
 
 

@@ -55,11 +55,11 @@ contract TokenERC20 is IERC20 {
     return decimals_;
   }
 
-  function totalSupply() external override view returns (uint256) {
+  function totalSupply() external override virtual view returns (uint256) {
     return totalSupply_;
   }
 
-  function balanceOf(address _owner) external override view returns (uint256) {
+  function balanceOf(address _owner) external override virtual view returns (uint256) {
     return balances[_owner];
   }
 
@@ -69,26 +69,29 @@ contract TokenERC20 is IERC20 {
     return allowed[_owner][_spender];
   }
 
-  function transfer(address _to, uint256 _value) external override returns (bool) {
-    require(_to != address(0), "TE01");
-    require(_value <= balances[msg.sender], "TE02");
-
-    balances[msg.sender] = balances[msg.sender].sub(_value);
-    balances[_to] = balances[_to].add(_value);
-    emit Transfer(msg.sender, _to, _value);
-    return true;
+  function transfer(address _to, uint256 _value) external override virtual returns (bool) {
+    return transferFromInternal(msg.sender, _to, _value);
   }
 
   function transferFrom(address _from, address _to, uint256 _value)
-    external override returns (bool)
+    external override virtual returns (bool)
+  {
+    return transferFromInternal(_from, _to, _value);
+  }
+
+  function transferFromInternal(address _from, address _to, uint256 _value)
+    internal virtual returns (bool)
   {
     require(_to != address(0), "TE01");
     require(_value <= balances[_from], "TE02");
-    require(_value <= allowed[_from][msg.sender], "TE03");
+
+    if (_from != msg.sender) {
+      require(_value <= allowed[_from][msg.sender], "TE03");
+      allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+    }
 
     balances[_from] = balances[_from].sub(_value);
     balances[_to] = balances[_to].add(_value);
-    allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
     emit Transfer(_from, _to, _value);
     return true;
   }
