@@ -156,6 +156,7 @@ contract('InterestBearingERC20', function (accounts) {
       it('should let add interest', async function () {
         const tx = await token.defineInterest(1);
         const rebaseFrom = await web3.eth.getBlock('latest').then((block) => block.timestamp);
+        const interest = 1076250000 + Math.floor((rebaseFrom - from) / PERIOD);
 
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.logs.length, 3);
@@ -164,10 +165,10 @@ contract('InterestBearingERC20', function (accounts) {
         assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
         assert.equal(tx.logs[1].event, 'InterestRebase', 'event');
         assert.equal(tx.logs[1].args.at.toString(), String(rebaseFrom), 'at2');
-        assert.equal(tx.logs[1].args.elasticity.toString(), '1076250000', 'elasticity2');
+        assert.equal(tx.logs[1].args.elasticity.toString(), String(interest), 'elasticity2');
         assert.equal(tx.logs[2].event, 'InterestUpdate', 'event');
         assert.equal(tx.logs[2].args.rate.toString(), 1, 'value');
-        assert.equal(tx.logs[2].args.elasticity.toString(), '1076250000', 'value');
+        assert.equal(tx.logs[2].args.elasticity.toString(), String(interest), 'value');
       });
     });
 
