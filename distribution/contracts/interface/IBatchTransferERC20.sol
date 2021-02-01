@@ -11,6 +11,8 @@ pragma solidity ^0.6.0;
  */
 abstract contract IBatchTransferERC20 {
 
+  uint256 internal constant FEES_PRECISION = 1000000;
+
   event FeesUpdate(address vaultETH, uint256 feesRate);
 
   enum TransferMode {

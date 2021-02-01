@@ -24,7 +24,7 @@ contract BatchTransferERC20 is IBatchTransferERC20, Ownable {
   uint256 internal feesRate_;
 
   modifier withFees {
-    uint256 fees = gasleft() * tx.gasprice * feesRate_ / 1000000;
+    uint256 fees = gasleft() * tx.gasprice * feesRate_ / FEES_PRECISION;
     require(msg.value >= fees, "BT01");
 
     // solhint-disable-next-line check-send-result
