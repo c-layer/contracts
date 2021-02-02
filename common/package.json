@@ -49,7 +49,7 @@
     "eslint-plugin-standard": "^4.0.1",
     "ethereumjs-util": "^7.0.5",
     "ganache-cli": "^6.9.1",
-    "solhint": "^3.2.1",
+    "solhint": "^3.3.2",
     "solidity-coverage": "^0.7.10",
     "solidity-docgen": "^0.5.4",
     "truffle": "^5.1.47",
