@@ -101,7 +101,7 @@ contract('InterestBearingERC20', function (accounts) {
 
     describe('after a year rebase', function () {
       beforeEach(async function () {
-        await token.defineInterestFrom(String(from - PERIOD));
+        await token.defineTestingTimes(from, String(from - PERIOD));
       });
 
       it('should rebase once', async function () {
@@ -141,7 +141,7 @@ contract('InterestBearingERC20', function (accounts) {
 
     describe('after one and half year rebase', function () {
       beforeEach(async function () {
-        await token.defineInterestFrom(String(from - 3 * PERIOD / 2));
+        await token.defineTestingTimes(from, String(from - 3 * PERIOD / 2));
       });
 
       it('should rebase once', async function () {
@@ -174,7 +174,7 @@ contract('InterestBearingERC20', function (accounts) {
 
     describe('after two years rebase', function () {
       beforeEach(async function () {
-        await token.defineInterestFrom(String(from - 2 * PERIOD));
+        await token.defineTestingTimes(from, String(from - 2 * PERIOD));
       });
 
       it('should rebase twice', async function () {
@@ -192,7 +192,7 @@ contract('InterestBearingERC20', function (accounts) {
 
     describe('after twenty years rebase', function () {
       beforeEach(async function () {
-        await token.defineInterestFrom(String(from - 20 * PERIOD));
+        await token.defineTestingTimes(from, String(from - 20 * PERIOD));
       });
 
       it('should rebase ten times', async function () {
@@ -234,7 +234,6 @@ contract('InterestBearingERC20', function (accounts) {
       });
 
       it('should have an elasticity at 3, 6, 9 and 12 months', async function () {
-        // There might a delta but it will be likely very low
         const elastictyAts = await Promise.all([7889400, 15778800, 23668200, 31557600].map((at) => {
           return token.elasticityAt(from + at).then((elasticity) => elasticity.toString());
         }));

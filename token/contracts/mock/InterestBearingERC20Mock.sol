@@ -14,6 +14,8 @@ import "../monolithic/InterestBearingERC20.sol";
  */
 contract InterestBearingERC20Mock is InterestBearingERC20 {
 
+  uint256 private currentTime_;
+
   constructor(
     string memory _name,
     string memory _symbol,
@@ -23,9 +25,15 @@ contract InterestBearingERC20Mock is InterestBearingERC20 {
   ) public InterestBearingERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {
   }
 
-  function defineInterestFrom(uint256 _interestFrom) public returns (bool)
+  function defineTestingTimes(uint256 _currentTime, uint256 _interestFrom) public returns (bool)
   {
+    currentTime_ = _currentTime;
     interestFrom_ = _interestFrom;
     return true;
+  }
+
+  function currentTime() internal override view returns (uint256) {
+    // solhint-disable-next-line not-rely-on-time
+    return (currentTime_ == 0) ? block.timestamp : currentTime_;
   }
 }

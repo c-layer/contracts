@@ -100,7 +100,7 @@ contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
   /**
    * @dev currentTime()
    */
-  function currentTime() internal view returns (uint256) {
+  function currentTime() internal virtual view returns (uint256) {
     // solhint-disable-next-line not-rely-on-time
     return block.timestamp;
   }
