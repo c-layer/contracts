@@ -144,6 +144,7 @@ contract('BatchTransfer', function (accounts) {
           [emptyAccounts[0], emptyAccounts[1]], [101, 102], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
             gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas: withGasSafetyFactor(TWO_ETH_TRANSFERS_GAS),
             value: web3.utils.toWei('1', 'milli'),
           });
         assert.ok(tx.receipt.status, 'Status');
