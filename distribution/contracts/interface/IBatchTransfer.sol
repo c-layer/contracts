@@ -1,5 +1,7 @@
 pragma solidity ^0.6.0;
 
+import "@c-layer/common/contracts/interface/IERC20.sol";
+
 
 /**
  * @title IBatchTransfer
@@ -24,8 +26,8 @@ abstract contract IBatchTransfer {
     external virtual payable returns (bool);
 
   function transferERC20(
-    address _token,
-    address payable[] memory _addresses,
+    IERC20 _token,
+    address[] memory _addresses,
     uint256[] memory _values)
     external virtual payable returns (bool);
 

@@ -13,11 +13,11 @@ import "@c-layer/common/contracts/interface/IERC20.sol";
  */
 abstract contract IVault {
 
-  function transferETH(address _to, uint256 _value, bytes memory _data)
+  function transfer(address payable _to, uint256 _value, bytes memory _data)
     public virtual returns (bool, bytes memory);
-  function transfer(IERC20 _token, address _to, uint256 _value)
+  function transferERC20(IERC20 _token, address _to, uint256 _value)
     public virtual returns (bool);
-  function transferFrom(
+  function transferERC20From(
     IERC20 _token, address _from, address _to, uint256 _value)
     public virtual returns (bool);
   function approve(IERC20 _token, address _spender, uint256 _value)

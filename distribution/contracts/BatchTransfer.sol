@@ -1,7 +1,6 @@
 pragma solidity ^0.6.0;
 
 import "@c-layer/common/contracts/operable/Ownable.sol";
-import "./interface/IWrappedERC20.sol";
 import "./interface/IBatchTransfer.sol";
 
 
@@ -64,20 +63,20 @@ contract BatchTransfer is IBatchTransfer, Ownable {
    * @dev token transfer
    */
   function transferERC20(
-    address _token,
-    address payable[] calldata _addresses,
+    IERC20 _token,
+    address[] calldata _addresses,
     uint256[] calldata _values)
     external override payable withFees(_addresses.length) returns (bool)
   {
-    require(_token != address(0), "BT02");
+    require(address(_token) != address(0), "BT02");
     require(_addresses.length == _values.length, "BT03");
 
     uint256 totalValue = unsafeTotalValuePrivate(_values);
-    require(IERC20(_token).balanceOf(msg.sender) >= totalValue
-      && IERC20(_token).allowance(msg.sender, address(this)) >= totalValue, "BT04");
+    require(_token.balanceOf(msg.sender) >= totalValue
+      && _token.allowance(msg.sender, address(this)) >= totalValue, "BT04");
 
     for(uint256 i = 0; i < _addresses.length; i++) {
-      require(IERC20(_token).transferFrom(msg.sender, _addresses[i], _values[i]), "BT05");
+      require(_token.transferFrom(msg.sender, _addresses[i], _values[i]), "BT05");
     }
     return true;
   }

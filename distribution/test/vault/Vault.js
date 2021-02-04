@@ -82,7 +82,7 @@ contract('Vault', function (accounts) {
     });
 
     it('should let operator send ETH', async function () {
-      const tx = await vault.transferETH(accounts[0], '1', '0x');
+      const tx = await vault.transfer(accounts[0], '1', '0x');
       assert.ok(tx.receipt.status, 'Status');
 
       const value = await web3.eth.getBalance(vault.address);
@@ -90,11 +90,11 @@ contract('Vault', function (accounts) {
     });
 
     it('should prevent non operator to send ETH', async function () {
-      await assertRevert(vault.transferETH(accounts[0], '1', '0x', { from: accounts[1] }), 'OP01');
+      await assertRevert(vault.transfer(accounts[0], '1', '0x', { from: accounts[1] }), 'OP01');
     });
 
     it('should let operator send ERC20', async function () {
-      const tx = await vault.transfer(token.address, accounts[0], '1000');
+      const tx = await vault.transferERC20(token.address, accounts[0], '1000');
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
@@ -104,7 +104,7 @@ contract('Vault', function (accounts) {
     });
 
     it('should prevent non operator to send ERC20', async function () {
-      await assertRevert(vault.transfer(token.address, accounts[0], '1000', { from: accounts[1] }), 'OP01');
+      await assertRevert(vault.transferERC20(token.address, accounts[0], '1000', { from: accounts[1] }), 'OP01');
     });
 
     it('should let operator approve a spender', async function () {
@@ -158,7 +158,7 @@ contract('Vault', function (accounts) {
     it('should execute binary call', async function () {
       const request = token.contract.methods.transfer(accounts[0], '1000').encodeABI();
 
-      const tx = await vault.transferETH(token.address, '0', request);
+      const tx = await vault.transfer(token.address, '0', request);
       assert.ok(tx.receipt.status, 'Status');
 
       const logs = await token.getPastEvents('allEvents', {
@@ -173,8 +173,8 @@ contract('Vault', function (accounts) {
     });
 
     it('should prevent non operator to execute binary call', async function () {
-      const request = vault.contract.methods.transfer(token.address, accounts[0], '1000').encodeABI();
-      await assertRevert(vault.transferETH(vault.address, '0', request, { from: accounts[1] }), 'OP01');
+      const request = vault.contract.methods.transferERC20(token.address, accounts[0], '1000').encodeABI();
+      await assertRevert(vault.transfer(vault.address, '0', request, { from: accounts[1] }), 'OP01');
     });
   });
 
@@ -184,7 +184,7 @@ contract('Vault', function (accounts) {
     });
 
     it('should let operator transfer from accounts[1] tokens', async function () {
-      const tx = await vault.transferFrom(token.address,
+      const tx = await vault.transferERC20From(token.address,
         accounts[1], accounts[0], '1000');
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
@@ -195,7 +195,7 @@ contract('Vault', function (accounts) {
     });
 
     it('should prevent non operator to transfer accounts[1] token', async function () {
-      await assertRevert(vault.transferFrom(token.address,
+      await assertRevert(vault.transferERC20From(token.address,
         accounts[1], accounts[0], '1000', { from: accounts[1] }), 'OP01');
     });
   });
