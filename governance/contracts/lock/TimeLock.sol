@@ -1,5 +1,7 @@
 pragma solidity ^0.6.0;
+
 import "@c-layer/common/contracts/operable/Ownable.sol";
+import "../interface/ITimeLock.sol";
 
 
 /**
@@ -14,36 +16,43 @@ import "@c-layer/common/contracts/operable/Ownable.sol";
  *   TL03: Cannot be locked in the past
  *   TL04: Execution must be successfull
  */
-contract TimeLock is Ownable {
+contract TimeLock is ITimeLock, Ownable {
 
-  address payable public target;
-  uint64 public lockedUntil;
+  address payable internal target_;
+  uint64 internal lockedUntil_;
 
   modifier whenUnlocked() {
-    require(lockedUntil < currentTime(), "TL01");
+    require(lockedUntil_ < currentTime(), "TL01");
     _;
   }
 
   constructor(address payable _target, uint64 _lockedUntil) public {
     require(_target != address(0), "TL02");
     require(_lockedUntil > currentTime(), "TL03");
-    lockedUntil = _lockedUntil;
-    target = _target;
+    lockedUntil_ = _lockedUntil;
+    target_ = _target;
   }
 
-  receive() external payable {
-    require(callInternal(), "TL04");
+  function target() external override view returns (address payable) {
+    return target_;
   }
 
-  fallback() external payable {
-    require(callInternal(), "TL04");
+  function lockedUntil() external override view returns (uint64) {
+    return lockedUntil_;
   }
 
-  function callInternal() internal onlyOwner whenUnlocked returns (bool) {
-    (bool success, ) =
+  receive() external override payable {
+    callInternal();
+  }
+
+  fallback() external override payable {
+    callInternal();
+  }
+
+  function callInternal() internal onlyOwner whenUnlocked {
     // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
-    target.call{value: msg.value}(msg.data);
-    return success;
+    (bool success, ) = target_.call{ value: msg.value }(msg.data);
+    require(success, "TL04");
   }
 
   /**
@@ -51,7 +60,7 @@ contract TimeLock is Ownable {
    */
   function currentTime() internal view returns (uint256) {
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    return block.timestamp;
   }
 }
 

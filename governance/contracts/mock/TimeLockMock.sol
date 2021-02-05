@@ -18,7 +18,7 @@ contract TimeLockMock is TimeLock {
     public TimeLock(_target, _lockedUntil) {}
 
   function setLockedUntilTest(uint64 _lockedUntil) public returns (bool) {
-    lockedUntil = _lockedUntil;
+    lockedUntil_ = _lockedUntil;
     return true;
   }
 }
