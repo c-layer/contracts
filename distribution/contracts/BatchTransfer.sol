@@ -1,6 +1,6 @@
 pragma solidity ^0.6.0;
 
-import "@c-layer/common/contracts/operable/Ownable.sol";
+import "@c-layer/common/contracts/operable/Operable.sol";
 import "./interface/IBatchTransfer.sol";
 
 
@@ -21,7 +21,7 @@ import "./interface/IBatchTransfer.sol";
  *   BT08: Vault must be defined
  *   BT09: Inconsistent methods and feesRates values
  */
-contract BatchTransfer is IBatchTransfer, Ownable {
+contract BatchTransfer is IBatchTransfer, Operable {
 
   address payable internal vaultETH_;
   mapping(bytes4 => uint256) internal feesRates;
@@ -68,18 +68,21 @@ contract BatchTransfer is IBatchTransfer, Ownable {
     uint256[] calldata _values)
     external override payable withFees(_addresses.length) returns (bool)
   {
-    require(address(_token) != address(0), "BT02");
-    require(_addresses.length == _values.length, "BT03");
-
-    uint256 totalValue = unsafeTotalValuePrivate(_values);
-    require(_token.balanceOf(msg.sender) >= totalValue
-      && _token.allowance(msg.sender, address(this)) >= totalValue, "BT04");
-
-    for(uint256 i = 0; i < _addresses.length; i++) {
-      require(_token.transferFrom(msg.sender, _addresses[i], _values[i]), "BT05");
-    }
-    return true;
+    return transferERC20Internal(_token, msg.sender, _addresses, _values);
   }
+
+  /**
+   * @dev token transfer operator
+   */
+  function transferERC20Operator(
+    IERC20 _token,
+    address _sender,
+    address[] calldata _addresses,
+    uint256[] calldata _values)
+    external override onlyOperator returns (bool)
+  {
+    return transferERC20Internal(_token, _sender, _addresses, _values);
+  }     
 
   /**
    * @dev ETH transfer
@@ -105,7 +108,7 @@ contract BatchTransfer is IBatchTransfer, Ownable {
    * @dev update feesRates
    */
   function updateFeesRates(address payable _vaultETH, bytes4[] memory _methods, uint256[] memory _feesRates)
-    public override onlyOwner returns (bool)
+    public override onlyOperator returns (bool)
   {
     require(_vaultETH != address(0), "BT08");
     require(_methods.length == _feesRates.length, "BT09");
@@ -120,6 +123,28 @@ contract BatchTransfer is IBatchTransfer, Ownable {
       emit FeesRateUpdate(_methods[i], _feesRates[i]);
     }
 
+    return true;
+  }
+
+  /**
+   * @dev transferERC20 internal
+   */
+  function transferERC20Internal(
+    IERC20 _token,
+    address _sender,
+    address[] calldata _addresses,
+    uint256[] calldata _values) internal returns (bool)
+  {
+    require(address(_token) != address(0), "BT02");
+    require(_addresses.length == _values.length, "BT03");
+
+    uint256 totalValue = unsafeTotalValuePrivate(_values);
+    require(_token.balanceOf(_sender) >= totalValue
+      && _token.allowance(_sender, address(this)) >= totalValue, "BT04");
+
+    for(uint256 i = 0; i < _addresses.length; i++) {
+      require(_token.transferFrom(_sender, _addresses[i], _values[i]), "BT05");
+    }
     return true;
   }
 
