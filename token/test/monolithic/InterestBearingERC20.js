@@ -176,8 +176,8 @@ contract('InterestBearingERC20', function (accounts) {
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
           assert.equal(tx.logs[1].event, 'InterestRebase', 'event');
           // FIXME at is never equal to rebaseFrom
-          //assert.equal(tx.logs[1].args.at.toString(), String(rebaseFrom), 'at2');
-          //temporary workaround
+          // assert.equal(tx.logs[1].args.at.toString(), String(rebaseFrom), 'at2');
+          // temporary workaround
           assert.equal(new BN(tx.logs[1].args.at.toString()).div(new BN('100')).toString(),
             new BN(rebaseFrom).div(new BN('100')).toString(), 'at2');
 
