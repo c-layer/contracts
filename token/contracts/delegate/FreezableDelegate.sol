@@ -41,7 +41,7 @@ abstract contract FreezableDelegate is TokenStorage {
   function isFrozen(STransferData memory _transferData) internal view returns (bool) {
     mapping(address => uint256) storage frozenUntils = tokens[_transferData.token].frozenUntils;
     // solhint-disable-next-line not-rely-on-time
-    uint256 currentTime = now;
+    uint256 currentTime = block.timestamp;
     return currentTime < frozenUntils[_transferData.caller]
       || currentTime < frozenUntils[_transferData.sender]
       || currentTime < frozenUntils[_transferData.receiver];

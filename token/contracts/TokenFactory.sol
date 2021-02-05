@@ -131,7 +131,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
     require(_core.defineTokenLocks(address(token), locks), "TF07");
 
     // solhint-disable-next-line not-rely-on-time
-    if (_lockEnd > now) {
+    if (_lockEnd > block.timestamp) {
       require(_core.defineLock(
         address(token),
         ANY_ADDRESSES,
@@ -140,7 +140,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
         _lockEnd), "TF08");
     }
 
-    // 6- Minting the token
+    // 6- Mint the token
     require(_core.mint(address(token), _vaults, _supplies), "TF09");
 
     // 7 - Finish the minting

@@ -91,6 +91,6 @@ contract TokenStorage is ITokenStorage, OperableStorage {
    */
   function currentTime() internal view returns (uint64) {
     // solhint-disable-next-line not-rely-on-time
-    return uint64(now);
+    return uint64(block.timestamp);
   }
 }

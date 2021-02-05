@@ -54,9 +54,8 @@ abstract contract LockableDelegate is TokenStorage {
     internal view returns (bool isLocked_)
   {
     address[] storage lockAddresses = tokens[_transferData.token].locks;
-
     // solhint-disable-next-line not-rely-on-time
-    uint256 currentTime = now;
+    uint256 currentTime = block.timestamp;
 
     for (uint256 i=0; i < lockAddresses.length && !isLocked_; i++) {
       address lockAddress = lockAddresses[i];

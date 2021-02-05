@@ -5,6 +5,7 @@
  */
 
 const assertRevert = require('../helpers/assertRevert');
+const assertTime = require('../helpers/assertTime');
 const BN = require('bn.js');
 const InterestBearingERC20 = artifacts.require('InterestBearingERC20.sol');
 const InterestBearingERC20Mock = artifacts.require('InterestBearingERC20Mock.sol');
@@ -31,7 +32,7 @@ contract('InterestBearingERC20', function (accounts) {
     it('should have no interest', async function () {
       const interest = await token.interest();
       assert.equal(interest.rate.toString(), String(ELASTICITY_PRECISION), 'no rate');
-      assert.equal(interest.from.toString(), from, 'from');
+      assertTime(interest.from.toNumber(), from, 'from');
     });
 
     it('should have an elasticity', async function () {
@@ -120,7 +121,7 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event');
-          assert.equal(tx.logs[0].args.at.toString(), String(from), 'at');
+          assertTime(tx.logs[0].args.at.toNumber(), from, 'at');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity');
         });
 
@@ -129,7 +130,7 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event1');
-          assert.equal(tx.logs[0].args.at.toString(), String(from), 'at');
+          assertTime(tx.logs[0].args.at.toNumber(), (from), 'at');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
           assert.equal(tx.logs[1].event, 'InterestUpdate', 'event2');
           assert.equal(tx.logs[1].args.rate.toString(), 1, 'rate');
@@ -141,7 +142,7 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event1');
-          assert.equal(tx.logs[0].args.at.toString(), String(from), 'at');
+          assertTime(tx.logs[0].args.at.toNumber(), String(from), 'at');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
           assert.equal(tx.logs[1].event, 'Transfer', 'event1');
           assert.equal(tx.logs[1].args.from.toString(), accounts[0], 'from');
@@ -160,7 +161,7 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event');
-          assert.equal(tx.logs[0].args.at.toString(), String(from - PERIOD / 2), 'at');
+          assertTime(tx.logs[0].args.at.toNumber(), (from - PERIOD / 2), 'at');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity');
         });
 
@@ -172,14 +173,10 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 3);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event');
-          assert.equal(tx.logs[0].args.at.toString(), String(from - PERIOD / 2), 'at1');
+          assertTime(tx.logs[0].args.at.toNumber(), (from - PERIOD / 2), 'at1');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
           assert.equal(tx.logs[1].event, 'InterestRebase', 'event');
-          // FIXME at is never equal to rebaseFrom
-          // assert.equal(tx.logs[1].args.at.toString(), String(rebaseFrom), 'at2');
-          // temporary workaround
-          assert.equal(new BN(tx.logs[1].args.at.toString()).div(new BN('100')).toString(),
-            new BN(rebaseFrom).div(new BN('100')).toString(), 'at2');
+          assertTime(tx.logs[1].args.at.toNumber(), rebaseFrom, 'at2');
 
           assert.equal(tx.logs[1].args.elasticity.toString(), String(interest), 'elasticity2');
           assert.equal(tx.logs[2].event, 'InterestUpdate', 'event');
@@ -198,10 +195,10 @@ contract('InterestBearingERC20', function (accounts) {
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 2);
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event1');
-          assert.equal(tx.logs[0].args.at.toString(), String(from - PERIOD), 'at1');
+          assertTime(tx.logs[0].args.at.toNumber(), (from - PERIOD), 'at1');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
           assert.equal(tx.logs[1].event, 'InterestRebase', 'event2');
-          assert.equal(tx.logs[1].args.at.toString(), String(from), 'at2');
+          assertTime(tx.logs[1].args.at.toNumber(), from, 'at2');
           assert.equal(tx.logs[1].args.elasticity.toString(), '1102500000', 'elasticity2');
         });
       });
