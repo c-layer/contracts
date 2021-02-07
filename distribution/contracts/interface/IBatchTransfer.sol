@@ -31,13 +31,6 @@ abstract contract IBatchTransfer {
     uint256[] memory _values)
     external virtual payable returns (bool);
   
-  function transferERC20Operator(
-    IERC20 _token,
-    address _sender,
-    address[] calldata _addresses,
-    uint256[] calldata _values)
-    external virtual returns (bool);
-
   function updateFeesRates(address payable _vaultETH, bytes4[] calldata _methods, uint256[] calldata _feesRates)
     external virtual returns (bool);
 

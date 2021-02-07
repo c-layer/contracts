@@ -51,6 +51,24 @@ contract Faucet is IFaucet, Vault {
    * @dev withdraw
    */
   function withdraw(IERC20 _token, uint256 _value) external override returns (bool) {
+    return withdrawInternal(_token, msg.sender, _value);
+  }
+
+  /**
+   * @dev withdrawTo
+   */
+  function withdrawTo(IERC20 _token, address payable _to, uint256 _value)
+    external override returns (bool)
+  {
+    return withdrawInternal(_token, _to, _value);
+  }
+
+  /**
+   * @dev withdrawInternal
+   */
+  function withdrawInternal(IERC20 _token, address payable _to, uint256 _value)
+    internal returns (bool)
+  {
     if(!isOperator(msg.sender)) {
       SWithdrawLimit storage withdrawLimit_ = withdrawLimits[_token];
       withdrawLimit_ = (withdrawLimit_.maxBalance != 0) ?
@@ -58,12 +76,12 @@ contract Faucet is IFaucet, Vault {
 
       require(_value <= withdrawLimit_.maxBalance, "FC01");
 
-      uint256 senderBalance =
-        (address(_token) == address(0)) ? msg.sender.balance : _token.balanceOf(msg.sender);
-      require(senderBalance.add(_value) <= withdrawLimit_.maxBalance, "FC02");
+      uint256 recipientBalance =
+        (address(_token) == address(0)) ? _to.balance : _token.balanceOf(_to);
+      require(recipientBalance.add(_value) <= withdrawLimit_.maxBalance, "FC02");
 
       if(withdrawLimit_.period > 0) {
-        SWithdrawStatus storage senderStatus = withdrawStatus_[_token][msg.sender];
+        SWithdrawStatus storage senderStatus = withdrawStatus_[_token][_to];
 
         uint256 currentTime_ = currentTime();
         uint256 timeDelta = (currentTime_ - senderStatus.lastAt);
@@ -82,9 +100,9 @@ contract Faucet is IFaucet, Vault {
 
     bool success;
     if(address(_token) == address(0)) {
-      (success,) = transferInternal(msg.sender, _value, "");
+      (success,) = transferInternal(_to, _value, "");
     } else {
-      success =_token.transfer(msg.sender, _value);
+      success =_token.transfer(_to, _value);
     }
     return success;
   }

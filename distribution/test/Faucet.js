@@ -210,6 +210,16 @@ contract('Faucet', function (accounts) {
         assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
       });
 
+      it('should allow withdrawTo some tokens if below maxBalance', async function () {
+        const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE - 10, { from: accounts[1] });
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
+        assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
+        assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
+        assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+      });
+
       it('should not let withdrawer withdraws maxBalance again too soon', async function () {
         await assertRevert(faucet.withdraw(token.address, MAX_BALANCE - 9, { from: accounts[1] }), 'FC02');
       });
@@ -255,6 +265,16 @@ contract('Faucet', function (accounts) {
         assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(2500)), 'value');
       });
 
+      it('should let withdrawTo all tokens for someone else', async function () {
+        const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE, { from: accounts[1] });
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
+        assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
+        assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
+        assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+      });
+
       it('should prevnet withdrawing too much for that period', async function () {
         await assertRevert(
           faucet.withdraw(
@@ -277,6 +297,16 @@ contract('Faucet', function (accounts) {
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
       assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
       assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+    });
+
+    it('should let non operator to withdrawTo some tokens', async function () {
+      const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE, { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
+      assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
+      assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
+      assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
       assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
     });
 
@@ -308,6 +338,13 @@ contract('Faucet', function (accounts) {
 
     it('should let non operator to withdraw ethers tokens', async function () {
       const tx = await faucet.withdraw(NULL_ADDRESS, web3.utils.toWei('1', 'ether'), { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.receipt.rawLogs.length, 0, 'logs');
+    });
+
+    it('should let non operator to withdrawTo ethers tokens', async function () {
+      const tx = await faucet.withdrawTo(
+        NULL_ADDRESS, accounts[1], web3.utils.toWei('1', 'ether'), { from: accounts[2] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 0, 'logs');
     });

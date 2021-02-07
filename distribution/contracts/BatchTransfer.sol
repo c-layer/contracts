@@ -14,7 +14,7 @@ import "./interface/IBatchTransfer.sol";
  *   BT01: Unable to process the feesRates payment
  *   BT02: Invalid token address
  *   BT03: Inconsistent number of addresses and values
- *   BT04: Insufficient tokens balance or allowance to distribute these tokens
+ *   BT04: Insufficient tokens balance or allowance for this contract
  *   BT05: Unable to process tokens transfers
  *   BT06: Insufficient ethers provided to distribute these ethers
  *   BT07: Unable to process ether transfers
@@ -27,13 +27,15 @@ contract BatchTransfer is IBatchTransfer, Operable {
   mapping(bytes4 => uint256) internal feesRates;
 
   modifier withFees(uint256 _weight) {
-    // As long as feesRates is reasonable, it will not overflow
-    uint256 fees = _weight * tx.gasprice * feesRates[msg.sig];
+    if(!isOperator(msg.sender)) {
+      // As long as feesRates is reasonable, it will not overflow
+      uint256 fees = _weight * tx.gasprice * feesRates[msg.sig];
 
-    uint256 transferValue = address(this).balance + fees - msg.value;
-    if (transferValue != 0) {
-      // solhint-disable-next-line check-send-result
-      require(vaultETH_.send(transferValue), "BT01");
+      uint256 transferValue = address(this).balance + fees - msg.value;
+      if (transferValue != 0) {
+        // solhint-disable-next-line check-send-result
+        require(vaultETH_.send(transferValue), "BT01");
+      }
     }
     _;
   }
@@ -68,21 +70,18 @@ contract BatchTransfer is IBatchTransfer, Operable {
     uint256[] calldata _values)
     external override payable withFees(_addresses.length) returns (bool)
   {
-    return transferERC20Internal(_token, msg.sender, _addresses, _values);
-  }
+    require(address(_token) != address(0), "BT02");
+    require(_addresses.length == _values.length, "BT03");
 
-  /**
-   * @dev token transfer operator
-   */
-  function transferERC20Operator(
-    IERC20 _token,
-    address _sender,
-    address[] calldata _addresses,
-    uint256[] calldata _values)
-    external override onlyOperator returns (bool)
-  {
-    return transferERC20Internal(_token, _sender, _addresses, _values);
-  }     
+    uint256 totalValue = unsafeTotalValuePrivate(_values);
+    require(_token.balanceOf(msg.sender) >= totalValue
+      && _token.allowance(msg.sender, address(this)) >= totalValue, "BT04");
+
+    for(uint256 i = 0; i < _addresses.length; i++) {
+      require(_token.transferFrom(msg.sender, _addresses[i], _values[i]), "BT05");
+    }
+    return true;
+  }
 
   /**
    * @dev ETH transfer
@@ -123,28 +122,6 @@ contract BatchTransfer is IBatchTransfer, Operable {
       emit FeesRateUpdate(_methods[i], _feesRates[i]);
     }
 
-    return true;
-  }
-
-  /**
-   * @dev transferERC20 internal
-   */
-  function transferERC20Internal(
-    IERC20 _token,
-    address _sender,
-    address[] calldata _addresses,
-    uint256[] calldata _values) internal returns (bool)
-  {
-    require(address(_token) != address(0), "BT02");
-    require(_addresses.length == _values.length, "BT03");
-
-    uint256 totalValue = unsafeTotalValuePrivate(_values);
-    require(_token.balanceOf(_sender) >= totalValue
-      && _token.allowance(_sender, address(this)) >= totalValue, "BT04");
-
-    for(uint256 i = 0; i < _addresses.length; i++) {
-      require(_token.transferFrom(_sender, _addresses[i], _values[i]), "BT05");
-    }
     return true;
   }
 

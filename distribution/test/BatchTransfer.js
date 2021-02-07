@@ -14,10 +14,10 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const ETH_TRANSFER_MIN_GAS = '230000';
 
 const GAS_SAFETY_FACTOR_PERCENT = '110';
-const TWO_ETH_TRANSFERS_GAS = '125366';
-const THREE_ETH_TRANSFERS_GAS = '158554';
-const TWO_ERC20_TRANSFERS_GAS = '134155';
-const THREE_ERC20_TRANSFERS_GAS = '165434';
+const TWO_ETH_TRANSFERS_GAS = '126284';
+const THREE_ETH_TRANSFERS_GAS = '159448';
+const TWO_ERC20_TRANSFERS_GAS = '135528';
+const THREE_ERC20_TRANSFERS_GAS = '166808';
 
 contract('BatchTransfer', function (accounts) {
   let batch, vaultETH, emptyAccounts;
@@ -250,12 +250,7 @@ contract('BatchTransfer', function (accounts) {
         [emptyAccounts[0]], [1001], { from: accounts[1] }), 'BT04');
     });
 
-    it('should not let operator transfer without approval', async function () {
-      await assertRevert(batch.transferERC20Operator(token.address, accounts[1],
-        [emptyAccounts[0]], [1001]), 'BT04');
-    });
-
-    describe('With approval', function () {
+    describe('With an approval from spender to this contract', function () {
       beforeEach(async function () {
         await token.approve(batch.address, 1000, { from: accounts[1] });
       });
@@ -263,17 +258,6 @@ contract('BatchTransfer', function (accounts) {
       it('should distribute some tokens', async function () {
         const tx = await batch.transferERC20(
           token.address, [emptyAccounts[0], emptyAccounts[1]], [101, 102], { from: accounts[1] });
-        assert.ok(tx.receipt.status, 'Status');
-
-        const account0Balance = await token.balanceOf(emptyAccounts[0]);
-        assert.equal(account0Balance.toString(), '101', 'account 0 balance');
-        const account1Balance = await token.balanceOf(emptyAccounts[1]);
-        assert.equal(account1Balance.toString(), '102', 'account 1 balance');
-      });
-
-      it('should let operator distrbute some tokens', async function () {
-        const tx = await batch.transferERC20Operator(
-          token.address, accounts[1], [emptyAccounts[0], emptyAccounts[1]], [101, 102]);
         assert.ok(tx.receipt.status, 'Status');
 
         const account0Balance = await token.balanceOf(emptyAccounts[0]);
@@ -295,11 +279,6 @@ contract('BatchTransfer', function (accounts) {
             from: accounts[1],
             gasPrice: web3.utils.toWei('1', 'gwei'),
           }), 'BT01');
-      });
-
-      it('should let operator distribute some tokens without fees', async function () {
-        await batch.transferERC20Operator(
-          token.address, accounts[1], [emptyAccounts[0], emptyAccounts[1]], [100, 100]);
       });
 
       it('should transfers all remaining ethers to the vault', async function () {
