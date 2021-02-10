@@ -190,9 +190,9 @@ contract('Faucet', function (accounts) {
       });
 
       it('should have withdrawer status', async function () {
-        const limit = await faucet.withdrawStatus(token.address, accounts[1]);
-        assert.equal(limit.recentlyDistributed.toString(), '10', 'recently distributed');
-        assert.equal(limit.lastAt.toString(), String(lastAt), 'last at');
+        const status_ = await faucet.withdrawStatus(token.address, accounts[1]);
+        assert.equal(status_.recentlyDistributed.toString(), '10', 'recently distributed');
+        assert.equal(status_.lastAt.toString(), String(lastAt), 'last at');
       });
 
       it('should have transferred tokens to withdrawer', async function () {
@@ -241,6 +241,23 @@ contract('Faucet', function (accounts) {
 
         it('should prevnet withdrawing too much for that period', async function () {
           await assertRevert(faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] }), 'FC03');
+        });
+
+        describe('and a minute later', function () {
+          beforeEach(async function () {
+            const status_ = await faucet.withdrawStatus(token.address, accounts[1]);
+            await faucet.defineWithdrawStatusLastAtTest(token.address, accounts[1], status_.lastAt - 240);
+          });
+
+          it('should let withdrawing all tokens', async function () {
+            const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+            assert.ok(tx.receipt.status, 'Status');
+            assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
+            assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
+            assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
+            assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
+            assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+          });
         });
       });
     });

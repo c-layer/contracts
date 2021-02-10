@@ -87,8 +87,12 @@ contract Faucet is IFaucet, Vault {
         uint256 timeDelta = (currentTime_ - senderStatus.lastAt);
 
         if(timeDelta < withdrawLimit_.period)  {
-          senderStatus.recentlyDistributed = senderStatus.recentlyDistributed.sub(
-            (timeDelta.mul(withdrawLimit_.maxBalance)).div(withdrawLimit_.period)).add(_value);
+          uint256 recovery = timeDelta.mul(withdrawLimit_.maxBalance).div(withdrawLimit_.period);
+
+          senderStatus.recentlyDistributed = (senderStatus.recentlyDistributed <= recovery) ?
+            0 :  senderStatus.recentlyDistributed.sub(recovery);
+
+          senderStatus.recentlyDistributed = senderStatus.recentlyDistributed.add(_value);
           require(senderStatus.recentlyDistributed <= withdrawLimit_.maxBalance, "FC03");
         } else {
           senderStatus.recentlyDistributed = _value;
