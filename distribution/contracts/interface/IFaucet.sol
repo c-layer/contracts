@@ -39,9 +39,9 @@ abstract contract IFaucet is IVault {
   function withdrawLimit(IERC20 _token)
     external virtual view returns (
       uint256 maxBalance,
-      uint256 _maxWithdrawOnce,
-      uint256 _maxWithdrawPeriod,
-      uint256 _maxWithdrawAllTime,
+      uint256 maxWithdrawOnce,
+      uint256 maxWithdrawPeriod,
+      uint256 maxWithdrawAllTime,
       uint256 period);
 
   function withdrawStatus(IERC20 _token, address _beneficiary)
