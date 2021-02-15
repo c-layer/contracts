@@ -14,7 +14,8 @@ import "./vault/Vault.sol";
  * Error messages
  *   FC01: Withdrew value is higher than the limit
  *   FC02: Sender has already many tokens
- *   FC03: Sender is withdrawing tokens too fast
+ *   FC03: Sender has already received many tokens
+ *   FC04: Sender is withdrawing tokens too fast
  */
 contract Faucet is IFaucet, Vault {
   using SafeMath for uint256;
@@ -31,20 +32,36 @@ contract Faucet is IFaucet, Vault {
    * @dev withdrawLimit
    */
   function withdrawLimit(IERC20 _token)
-    external override view returns (uint256 maxBalance, uint256 period)
+    external override view returns (
+      uint256 maxBalance,
+      uint256 maxWithdrawOnce,
+      uint256 maxWithdrawPeriod,
+      uint256 maxWithdrawAllTime,
+      uint256 period)
   {
     SWithdrawLimit memory limit = withdrawLimits[_token];
-    return (limit.maxBalance, limit.period);
+    return (
+      limit.maxBalance,
+      limit.maxWithdrawOnce,
+      limit.maxWithdrawPeriod,
+      limit.maxWithdrawAllTime,
+      limit.period);
   }
 
   /**
    * @dev withdrawStatus
    */
   function withdrawStatus(IERC20 _token, address _beneficiary)
-    external override view returns (uint256 recentlyDistributed, uint64 lastAt)
+    external override view returns (
+      uint256 allTimeDistributed,
+      uint256 recentlyDistributed,
+      uint64 lastAt)
   {
     SWithdrawStatus memory status =  withdrawStatus_[_token][_beneficiary];
-    return (status.recentlyDistributed, status.lastAt);
+    return (
+      status.allTimeDistributed,
+      status.recentlyDistributed,
+      status.lastAt);
   }
 
   /**
@@ -74,26 +91,28 @@ contract Faucet is IFaucet, Vault {
       withdrawLimit_ = (withdrawLimit_.maxBalance != 0) ?
         withdrawLimit_ : withdrawLimits[ALL_TOKENS];
 
-      require(_value <= withdrawLimit_.maxBalance, "FC01");
+      require(_value <= withdrawLimit_.maxWithdrawOnce, "FC01");
 
       uint256 recipientBalance =
         (address(_token) == address(0)) ? _to.balance : _token.balanceOf(_to);
       require(recipientBalance.add(_value) <= withdrawLimit_.maxBalance, "FC02");
 
-      if(withdrawLimit_.period > 0) {
-        SWithdrawStatus storage senderStatus = withdrawStatus_[_token][_to];
+      SWithdrawStatus storage senderStatus = withdrawStatus_[_token][_to];
+      senderStatus.allTimeDistributed = senderStatus.allTimeDistributed.add(_value);
+      require(senderStatus.allTimeDistributed <= withdrawLimit_.maxWithdrawAllTime, "FC03");
 
+      if(withdrawLimit_.period > 0) {
         uint256 currentTime_ = currentTime();
         uint256 timeDelta = (currentTime_ - senderStatus.lastAt);
 
         if(timeDelta < withdrawLimit_.period)  {
-          uint256 recovery = timeDelta.mul(withdrawLimit_.maxBalance).div(withdrawLimit_.period);
+          uint256 recovery = timeDelta.mul(withdrawLimit_.maxWithdrawPeriod).div(withdrawLimit_.period);
 
           senderStatus.recentlyDistributed = (senderStatus.recentlyDistributed <= recovery) ?
             0 :  senderStatus.recentlyDistributed.sub(recovery);
 
           senderStatus.recentlyDistributed = senderStatus.recentlyDistributed.add(_value);
-          require(senderStatus.recentlyDistributed <= withdrawLimit_.maxBalance, "FC03");
+          require(senderStatus.recentlyDistributed <= withdrawLimit_.maxWithdrawPeriod, "FC04");
         } else {
           senderStatus.recentlyDistributed = _value;
         }
@@ -117,10 +136,24 @@ contract Faucet is IFaucet, Vault {
   function defineWithdrawLimit(
     IERC20 _token,
     uint256 _maxBalance,
+    uint256 _maxWithdrawOnce,
+    uint256 _maxWithdrawPeriod,
+    uint256 _maxWithdrawAllTime,
     uint256 _period) external override onlyOperator returns (bool)
   {
-    withdrawLimits[_token] = SWithdrawLimit(_maxBalance, _period);
-    emit WithdrawLimitUpdate(_token, _maxBalance, _period);
+    withdrawLimits[_token] = SWithdrawLimit(
+      _maxBalance,
+      _maxWithdrawOnce,
+      _maxWithdrawPeriod,
+      _maxWithdrawAllTime,
+      _period);
+    emit WithdrawLimitUpdate(
+      _token,
+      _maxBalance,
+      _maxWithdrawOnce,
+      _maxWithdrawPeriod,
+      _maxWithdrawAllTime,
+      _period);
     return true;
   }
 

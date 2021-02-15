@@ -19,6 +19,9 @@ const formatValueToData = value =>
 const ALL_TOKENS = web3.utils.toChecksumAddress(
   '0x' + web3.utils.fromAscii('AllTokens').substr(2).padStart(40, '0'));
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
+const MAX_WITHDRAW_ONCE = 1000;
+const MAX_WITHDRAW_PERIOD = 1010;
+const MAX_WITHDRAW_ALL_TIME = 1999;
 const ONE_DAY_PERIOD = 24 * 3600;
 const MAX_BALANCE = 5000;
 
@@ -32,13 +35,13 @@ contract('Faucet', function (accounts) {
   });
 
   it('should let operator withdraw tokens without a limit defined', async function () {
-    const tx = await faucet.withdraw(token.address, MAX_BALANCE + 1);
+    const tx = await faucet.withdraw(token.address, 1);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
     assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
     assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
     assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[0]), 'to');
-    assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5001)), 'value');
+    assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1)), 'value');
   });
 
   it('should not let non operator withdraw any tokens without a maxBalance defined', async function () {
@@ -47,11 +50,22 @@ contract('Faucet', function (accounts) {
 
   it('should prevent non operator to define the token withdraw limit', async function () {
     await assertRevert(faucet.defineWithdrawLimit(
-      token.address, MAX_BALANCE, ONE_DAY_PERIOD, { from: accounts[1] }), 'OP01');
+      token.address,
+      MAX_BALANCE,
+      MAX_WITHDRAW_ONCE,
+      MAX_WITHDRAW_PERIOD,
+      MAX_WITHDRAW_ALL_TIME,
+      ONE_DAY_PERIOD,
+      { from: accounts[1] }), 'OP01');
   });
 
   it('should let operator define the token withdraw limit', async function () {
-    const tx = await faucet.defineWithdrawLimit(token.address, MAX_BALANCE, ONE_DAY_PERIOD);
+    const tx = await faucet.defineWithdrawLimit(token.address,
+      MAX_BALANCE,
+      MAX_WITHDRAW_ONCE,
+      MAX_WITHDRAW_PERIOD,
+      MAX_WITHDRAW_ALL_TIME,
+      ONE_DAY_PERIOD);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'WithdrawLimitUpdate', 'event');
@@ -62,46 +76,64 @@ contract('Faucet', function (accounts) {
 
   describe('With a maxBalance defined', function () {
     beforeEach(async function () {
-      await faucet.defineWithdrawLimit(token.address, MAX_BALANCE, 0);
+      await faucet.defineWithdrawLimit(token.address,
+        MAX_BALANCE,
+        MAX_WITHDRAW_ONCE,
+        MAX_WITHDRAW_PERIOD,
+        MAX_WITHDRAW_ALL_TIME,
+        0);
     });
 
     it('should have a withdraw limit', async function () {
       const limit = await faucet.withdrawLimit(token.address);
       assert.equal(limit.maxBalance.toString(), String(MAX_BALANCE), 'max balance');
+      assert.equal(limit.maxWithdrawOnce.toString(), String(MAX_WITHDRAW_ONCE), 'max withdraw once');
+      assert.equal(limit.maxWithdrawPeriod.toString(), String(MAX_WITHDRAW_PERIOD), 'max withdraw period');
+      assert.equal(limit.maxWithdrawAllTime.toString(), String(MAX_WITHDRAW_ALL_TIME), 'max withdraw all time');
       assert.equal(limit.period.toString(), '0', 'period');
     });
 
     it('should let non operator to withdraw some tokens', async function () {
-      const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+      const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
       assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
       assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(MAX_WITHDRAW_ONCE)), 'value');
     });
 
-    it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-      await assertRevert(faucet.withdraw(token.address, MAX_BALANCE + 1, { from: accounts[1] }), 'FC01');
+    it('should prevent non operator to withdraw more tokens than maxWithdrawAtOnce', async function () {
+      await assertRevert(faucet.withdraw(token.address, MAX_WITHDRAW_ONCE + 1, { from: accounts[1] }), 'FC01');
     });
 
     describe('and some tokens transferred prior', function () {
       beforeEach(async function () {
-        await faucet.transferERC20(token.address, accounts[1], 10);
+        await faucet.transferERC20(token.address, accounts[1], MAX_BALANCE - 10);
       });
 
       it('should allow withdrawing some tokens if below maxBalance', async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE - 10, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, 10, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(10)), 'value');
+      });
+
+      it('should let operator withdraw more tokens than maxBalance', async function () {
+        const tx = await faucet.withdraw(token.address, 11);
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
+        assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
+        assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
+        assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[0]), 'to');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(11)), 'value');
       });
 
       it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-        await assertRevert(faucet.withdraw(token.address, MAX_BALANCE - 9, { from: accounts[1] }), 'FC02');
+        await assertRevert(faucet.withdraw(token.address, 11, { from: accounts[1] }), 'FC02');
       });
     });
 
@@ -113,6 +145,7 @@ contract('Faucet', function (accounts) {
 
       it('should have withdrawer status', async function () {
         const limit = await faucet.withdrawStatus(token.address, accounts[1]);
+        assert.equal(limit.allTimeDistributed.toString(), '10', 'all time distributed');
         assert.equal(limit.recentlyDistributed.toString(), '0', 'recently distributed');
         assert.equal(limit.lastAt.toString(), '0', 'last at');
       });
@@ -121,142 +154,141 @@ contract('Faucet', function (accounts) {
         const balance = await token.balanceOf(accounts[1]);
         assert.equal(balance.toString(), '10', 'balance');
       });
-
-      it('should let withdrawer withdraws again below maxBalance', async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE - 10, { from: accounts[1] });
-        assert.ok(tx.receipt.status, 'Status');
-        assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
-        assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
-        assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
-        assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
-      });
-
-      it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-        await assertRevert(faucet.withdraw(token.address, MAX_BALANCE - 9, { from: accounts[1] }), 'FC02');
-      });
     });
   });
 
   describe('With a maxBalance and a period defined', function () {
     beforeEach(async function () {
-      await faucet.defineWithdrawLimit(token.address, MAX_BALANCE, ONE_DAY_PERIOD);
+      await faucet.defineWithdrawLimit(token.address,
+        MAX_BALANCE,
+        MAX_WITHDRAW_ONCE,
+        MAX_WITHDRAW_PERIOD,
+        MAX_WITHDRAW_ALL_TIME,
+        ONE_DAY_PERIOD);
     });
 
     it('should have a withdraw limit', async function () {
       const limit = await faucet.withdrawLimit(token.address);
       assert.equal(limit.maxBalance.toString(), MAX_BALANCE, 'max balance');
+      assert.equal(limit.maxWithdrawOnce.toString(), String(MAX_WITHDRAW_ONCE), 'max withdraw once');
+      assert.equal(limit.maxWithdrawPeriod.toString(), String(MAX_WITHDRAW_PERIOD), 'max withdraw period');
+      assert.equal(limit.maxWithdrawAllTime.toString(), String(MAX_WITHDRAW_ALL_TIME), 'max withdraw all time');
       assert.equal(limit.period.toString(), ONE_DAY_PERIOD, 'period');
     });
 
     it('should let non operator to withdraw some tokens', async function () {
-      const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+      const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
       assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
       assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(MAX_WITHDRAW_ONCE)), 'value');
     });
 
-    it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-      await assertRevert(faucet.withdraw(token.address, MAX_BALANCE + 1, { from: accounts[1] }), 'FC01');
+    it('should prevent non operator to withdraw more tokens than max withdraw once', async function () {
+      await assertRevert(faucet.withdraw(token.address, MAX_WITHDRAW_ONCE + 1, { from: accounts[1] }), 'FC01');
     });
 
     describe('and some tokens transferred prior', function () {
       beforeEach(async function () {
-        await faucet.transferERC20(token.address, accounts[1], 10);
+        await faucet.transferERC20(token.address, accounts[1], MAX_BALANCE - 10);
       });
 
       it('should allow withdrawing some tokens if below maxBalance', async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE - 10, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, 10, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(10)), 'value');
       });
 
       it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-        await assertRevert(faucet.withdraw(token.address, MAX_BALANCE - 9, { from: accounts[1] }), 'FC02');
+        await assertRevert(faucet.withdraw(token.address, 11, { from: accounts[1] }), 'FC02');
       });
     });
 
     describe('and a non operator first withdraw some tokens', function () {
       beforeEach(async function () {
-        const tx = await faucet.withdraw(token.address, 10, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
         lastAt = await web3.eth.getBlock(tx.receipt.blockNumber).then((block) => block.timestamp);
       });
 
       it('should have withdrawer status', async function () {
         const status_ = await faucet.withdrawStatus(token.address, accounts[1]);
-        assert.equal(status_.recentlyDistributed.toString(), '10', 'recently distributed');
+        assert.equal(status_.allTimeDistributed.toString(), MAX_WITHDRAW_ONCE, 'all time distributed');
+        assert.equal(status_.recentlyDistributed.toString(), MAX_WITHDRAW_ONCE, 'recently distributed');
         assert.equal(status_.lastAt.toString(), String(lastAt), 'last at');
       });
 
       it('should have transferred tokens to withdrawer', async function () {
         const balance = await token.balanceOf(accounts[1]);
-        assert.equal(balance.toString(), '10', 'balance');
+        assert.equal(balance.toString(), MAX_WITHDRAW_ONCE, 'balance');
       });
 
       it('should allow withdrawing some tokens if below maxBalance', async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE - 10, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, 1, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1)), 'value');
       });
 
       it('should allow withdrawTo some tokens if below maxBalance', async function () {
-        const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE - 10, { from: accounts[1] });
+        const tx = await faucet.withdrawTo(token.address, accounts[2], 1, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1)), 'value');
       });
 
-      it('should not let withdrawer withdraws maxBalance again too soon', async function () {
-        await assertRevert(faucet.withdraw(token.address, MAX_BALANCE - 9, { from: accounts[1] }), 'FC02');
+      it('should not let withdrawer withdraws too many tokens again too soon', async function () {
+        await assertRevert(faucet.withdraw(token.address, 11, { from: accounts[1] }), 'FC04');
       });
 
       describe('and sent back the tokens to the faucet', async function () {
         beforeEach(async function () {
-          await token.transfer(faucet.address, 10, { from: accounts[1] });
+          await token.transfer(faucet.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
         });
 
         it('should let withdrawing the remaining for that period', async function () {
-          const tx = await faucet.withdraw(token.address, MAX_BALANCE - 10, { from: accounts[1] });
+          const tx = await faucet.withdraw(token.address, 10, { from: accounts[1] });
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
           assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
           assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
           assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-          assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(4990)), 'value');
+          assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(10)), 'value');
         });
 
-        it('should prevnet withdrawing too much for that period', async function () {
-          await assertRevert(faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] }), 'FC03');
+        it('should prevent withdrawing too much for that period', async function () {
+          await assertRevert(faucet.withdraw(token.address, 11, { from: accounts[1] }), 'FC04');
         });
 
-        describe('and a minute later', function () {
+        describe('and a period later', function () {
           beforeEach(async function () {
             const status_ = await faucet.withdrawStatus(token.address, accounts[1]);
-            await faucet.defineWithdrawStatusLastAtTest(token.address, accounts[1], status_.lastAt - 240);
+            await faucet.defineWithdrawStatusLastAtTest(token.address, accounts[1], status_.lastAt - ONE_DAY_PERIOD);
           });
 
-          it('should let withdrawing all tokens', async function () {
-            const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+          it('should let withdrawing more tokens again', async function () {
+            const tx = await faucet.withdraw(token.address, 11, { from: accounts[1] });
             assert.ok(tx.receipt.status, 'Status');
             assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
             assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
             assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
             assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-            assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+            assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(11)), 'value');
+          });
+
+          it('should prevent withdrawing too much for that period', async function () {
+            await assertRevert(faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] }), 'FC03');
           });
         });
       });
@@ -265,38 +297,38 @@ contract('Faucet', function (accounts) {
     describe('and a non operator first withdraw max balance tokens' +
       ' half a period ago and sent them back since', function () {
       beforeEach(async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
         lastAt = await web3.eth.getBlock(tx.receipt.blockNumber).then((block) => block.timestamp);
         lastAt = lastAt - ONE_DAY_PERIOD / 2;
         await faucet.defineWithdrawStatusLastAtTest(token.address, accounts[1], lastAt);
-        await token.transfer(faucet.address, MAX_BALANCE, { from: accounts[1] });
+        await token.transfer(faucet.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
       });
 
       it('should let withdrawing more tokens', async function () {
-        const tx = await faucet.withdraw(token.address, MAX_BALANCE / 2, { from: accounts[1] });
+        const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE / 2, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(2500)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(500)), 'value');
       });
 
       it('should let withdrawTo all tokens for someone else', async function () {
-        const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE, { from: accounts[1] });
+        const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_WITHDRAW_ONCE, { from: accounts[1] });
         assert.ok(tx.receipt.status, 'Status');
         assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
         assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
         assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
         assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
-        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+        assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1000)), 'value');
       });
 
       it('should prevnet withdrawing too much for that period', async function () {
         await assertRevert(
           faucet.withdraw(
-            token.address, Math.floor(MAX_BALANCE / 2 * 1.10), { from: accounts[1] }),
-          'FC03',
+            token.address, Math.floor(MAX_WITHDRAW_ONCE / 2 * 1.10), { from: accounts[1] }),
+          'FC04',
         );
       });
     });
@@ -304,31 +336,36 @@ contract('Faucet', function (accounts) {
 
   describe('With a maxBalance and a period defined for the ALL_TOKENS rules', function () {
     beforeEach(async function () {
-      await faucet.defineWithdrawLimit(ALL_TOKENS, MAX_BALANCE, ONE_DAY_PERIOD);
+      await faucet.defineWithdrawLimit(ALL_TOKENS,
+        MAX_BALANCE,
+        MAX_WITHDRAW_ONCE,
+        MAX_WITHDRAW_PERIOD,
+        MAX_WITHDRAW_ALL_TIME,
+        ONE_DAY_PERIOD);
     });
 
     it('should let non operator to withdraw some tokens', async function () {
-      const tx = await faucet.withdraw(token.address, MAX_BALANCE, { from: accounts[1] });
+      const tx = await faucet.withdraw(token.address, MAX_WITHDRAW_ONCE, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
       assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
       assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[1]), 'to');
-      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1000)), 'value');
     });
 
     it('should let non operator to withdrawTo some tokens', async function () {
-      const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_BALANCE, { from: accounts[1] });
+      const tx = await faucet.withdrawTo(token.address, accounts[2], MAX_WITHDRAW_ONCE, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
       assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
       assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
       assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(faucet.address), 'from');
       assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[2]), 'to');
-      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(5000)), 'value');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1000)), 'value');
     });
 
     it('should prevent non operator to withdraw more tokens than maxBalance', async function () {
-      await assertRevert(faucet.withdraw(token.address, MAX_BALANCE + 1, { from: accounts[1] }), 'FC01');
+      await assertRevert(faucet.withdraw(token.address, MAX_WITHDRAW_ONCE + 1, { from: accounts[1] }), 'FC01');
     });
   });
 
@@ -344,12 +381,20 @@ contract('Faucet', function (accounts) {
 
       const accountBalance = await web3.eth.getBalance(accounts[1]);
       maxETHAmount = new BN(accountBalance.toString()).add(new BN(web3.utils.toWei('1', 'ether'))).toString();
-      await faucet.defineWithdrawLimit(NULL_ADDRESS, maxETHAmount, ONE_DAY_PERIOD);
+      await faucet.defineWithdrawLimit(NULL_ADDRESS,
+        maxETHAmount,
+        maxETHAmount,
+        maxETHAmount,
+        maxETHAmount,
+        ONE_DAY_PERIOD);
     });
 
     it('should have a withdraw limit', async function () {
       const limit = await faucet.withdrawLimit(NULL_ADDRESS);
       assert.equal(limit.maxBalance.toString(), maxETHAmount, 'max balance');
+      assert.equal(limit.maxWithdrawOnce.toString(), String(maxETHAmount), 'max withdraw once');
+      assert.equal(limit.maxWithdrawPeriod.toString(), String(maxETHAmount), 'max withdraw period');
+      assert.equal(limit.maxWithdrawAllTime.toString(), String(maxETHAmount), 'max withdraw all time');
       assert.equal(limit.period.toString(), ONE_DAY_PERIOD, 'period');
     });
 
