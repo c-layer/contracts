@@ -6,8 +6,8 @@ import "../interface/IMintableERC20.sol";
 
 
 /**
- * @title Token ERC20
- * @dev Token ERC20 default implementation
+ * @title Mintable Token ERC20
+ * @dev Mintable Token ERC20 default implementation
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
