@@ -18,8 +18,8 @@ import "../interface/IMintableERC20.sol";
  */
 contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
 
-  bool public mintingFinished_;
-  uint256 public allTimeMinted_;
+  bool internal mintingFinished_;
+  uint256 internal allTimeMinted_;
 
   modifier canMint {
     require(!mintingFinished_, "MT01");
