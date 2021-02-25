@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/factory/Factory.sol";
 import "@c-layer/common/contracts/operable/Operable.sol";
@@ -46,7 +46,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
   /*
    * @dev constructor
    */
-  constructor() public YesNoRule(false) {}
+  constructor() YesNoRule(false) {}
 
   /*
    * @dev has core access
@@ -255,6 +255,7 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
 
     updateAllowances(_token, _tokensales, _allowances);
     emit TokensalesConfigured(_token, _tokensales);
+    return true;
   }
 
   /**
@@ -272,5 +273,6 @@ contract TokenFactory is ITokenFactory, Factory, OperableAsCore, YesNoRule, Oper
       require(_token.approve(_spenders[i], _allowances[i]), "TF23");
       emit AllowanceUpdated(_token, _spenders[i], _allowances[i]);
     }
+    return true;
   }
 }

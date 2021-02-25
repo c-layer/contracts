@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 
 /**
@@ -12,7 +12,7 @@ pragma solidity ^0.6.0;
  **/
 library DelegateCall {
 
-  function _delegateCall(address _delegate) internal virtual returns (bool status)
+  function _delegateCall(address _delegate) internal returns (bool status)
   {
     bytes memory result;
     // solhint-disable-next-line avoid-low-level-calls

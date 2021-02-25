@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./OracleEnrichedDelegate.sol";
 
@@ -75,7 +75,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
           }
 
           senderAudit.cumulatedEmission =
-            senderAudit.cumulatedEmission.add(_transferData.convertedValue);
+            senderAudit.cumulatedEmission + _transferData.convertedValue;
         }
       }
 
@@ -88,7 +88,7 @@ contract AuditableDelegate is OracleEnrichedDelegate {
             receiverAudit.createdAt = transactionAt;
           }
           receiverAudit.cumulatedReception =
-            receiverAudit.cumulatedReception.add(_transferData.convertedValue);
+            receiverAudit.cumulatedReception + _transferData.convertedValue;
         }
       }
     }

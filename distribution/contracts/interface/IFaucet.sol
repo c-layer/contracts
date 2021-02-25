@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./IVault.sol";
 
@@ -11,7 +11,8 @@ import "./IVault.sol";
  */
 abstract contract IFaucet is IVault {
 
-  IERC20 internal constant ALL_TOKENS = IERC20(0x416c6c546f6b656e73); // "AllTokens"
+  IERC20 internal constant ALL_TOKENS =
+    IERC20(address(uint160(0x416c6c546f6b656e73))); // "AllTokens"
 
   // Token address is null when it is the ethers' limit
   event WithdrawLimitUpdate(

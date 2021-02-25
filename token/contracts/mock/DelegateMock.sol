@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../delegate/STransferData.sol";
 import "../delegate/STransferAuditData.sol";
@@ -73,43 +73,43 @@ contract DelegateMock is TokenStorage {
     address scope = address(this);
     AuditStorage storage auditStorage = audits[scope][configuration.scopeId];
 
-    AuditData storage audit = auditStorage.sharedData;
+    AuditData storage audit_ = auditStorage.sharedData;
     emit LogAuditData(
-      audit.createdAt,
-      audit.lastTransactionAt,
-      audit.cumulatedEmission,
-      audit.cumulatedReception);
+      audit_.createdAt,
+      audit_.lastTransactionAt,
+      audit_.cumulatedEmission,
+      audit_.cumulatedReception);
 
-    audit = auditStorage.addressData[_transferData.sender];
+    audit_ = auditStorage.addressData[_transferData.sender];
     emit LogAuditData(
-      audit.createdAt,
-      audit.lastTransactionAt,
-      audit.cumulatedEmission,
-      audit.cumulatedReception);
+      audit_.createdAt,
+      audit_.lastTransactionAt,
+      audit_.cumulatedEmission,
+      audit_.cumulatedReception);
 
-    audit = auditStorage.addressData[_transferData.receiver];
+    audit_ = auditStorage.addressData[_transferData.receiver];
     emit LogAuditData(
-      audit.createdAt,
-      audit.lastTransactionAt,
-      audit.cumulatedEmission,
-      audit.cumulatedReception);
+      audit_.createdAt,
+      audit_.lastTransactionAt,
+      audit_.cumulatedEmission,
+      audit_.cumulatedReception);
 
     if(_transferData.senderId != 0) {
-      audit = auditStorage.userData[_transferData.senderId];
+      audit_ = auditStorage.userData[_transferData.senderId];
       emit LogAuditData(
-        audit.createdAt,
-        audit.lastTransactionAt,
-        audit.cumulatedEmission,
-        audit.cumulatedReception);
+        audit_.createdAt,
+        audit_.lastTransactionAt,
+        audit_.cumulatedEmission,
+        audit_.cumulatedReception);
     }
 
     if(_transferData.receiverId != 0) {
-      audit = auditStorage.userData[_transferData.receiverId];
+      audit_ = auditStorage.userData[_transferData.receiverId];
       emit LogAuditData(
-        audit.createdAt,
-        audit.lastTransactionAt,
-        audit.cumulatedEmission,
-        audit.cumulatedReception);
+        audit_.createdAt,
+        audit_.lastTransactionAt,
+        audit_.cumulatedEmission,
+        audit_.cumulatedReception);
     }
   }
 

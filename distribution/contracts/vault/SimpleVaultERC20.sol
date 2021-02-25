@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Ownable.sol";
 import "../interface/ISimpleVaultERC20.sol";
@@ -15,7 +15,7 @@ import "../interface/ISimpleVaultERC20.sol";
  */
 contract SimpleVaultERC20 is ISimpleVaultERC20, Ownable {
 
-  constructor(address _beneficiary) public {
+  constructor(address _beneficiary) {
     require(_beneficiary != address(0), "SV01");
     transferOwnership(_beneficiary);
   }

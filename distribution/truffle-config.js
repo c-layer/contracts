@@ -130,7 +130,7 @@ let config = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.6.12",    // Fetch exact version from solc-bin (default: truffle's version)
+      version: "0.8.1",    // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
       settings: {          // See the solidity docs for advice about optimization and evmVersion
         optimizer: {
@@ -178,8 +178,8 @@ if (endpoints) {
   Object.keys(endpoints).forEach((name) => {
     if (!config.networks[name]) {
       let template = {
-        network_id: 9999,       // Network's id
-        gas: 5500000,        // Default block limit
+        network_id: 9999,       // Goerli's id
+        gas: 5500000,        // Goerli has a lower block limit than mainnet
         confirmations: 2,    // # of confs to wait between deployments. (default: 0)
         timeoutBlocks: 200,  // # of blocks before a deployment times out  (minimum/default: 50)
         skipDryRun: true     // Skip dry run before migrations? (default: false for public nets )

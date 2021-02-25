@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 
 import "../operable/Ownable.sol";
@@ -37,10 +37,14 @@ contract BasicRouter is IRouter, Ownable {
   }
 
   receive() override external payable {
-    _callPayable(msg.value, msg.sender, msg.data);
+    fallbackInternal();
   }
 
   fallback() override external payable {
+    fallbackInternal();
+  }
+
+  function fallbackInternal() internal {
     _callPayable(msg.value, msg.sender, msg.data);
   }
 
@@ -87,6 +91,7 @@ contract BasicRouter is IRouter, Ownable {
     routes[_origin].activeDestination = _activeDestination;
     
     emit DestinationSwitched(_origin, _activeDestination);
+    return true;
   }
 
   /*

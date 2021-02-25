@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../call/DelegateCallView.sol";
 
@@ -15,7 +15,7 @@ contract DelegateCallViewMock is DelegateCallView {
 
   address public delegate;
 
-  constructor(address _delegate) public {
+  constructor(address _delegate) {
     delegate = _delegate;
   }
 

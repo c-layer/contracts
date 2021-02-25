@@ -13,7 +13,7 @@ const VotingSessionManagerMock = artifacts.require('mock/VotingSessionManagerMoc
 const Ownable = artifacts.require('Ownable.sol');
 
 const ANY_TARGET = web3.utils.fromAscii('AnyTarget').padEnd(42, '0');
-const ANY_METHOD = web3.utils.fromAscii('AnyMethod').padEnd(10, '0');
+const ANY_METHOD = web3.utils.fromAscii('AnyMethod').slice(0, 10);
 const ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const NAME = 'Token';

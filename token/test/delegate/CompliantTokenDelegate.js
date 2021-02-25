@@ -61,10 +61,10 @@ contract('CompliantTokenDelegate', function (accounts) {
 
   it('should have no valid configurations with 0 configurations', async function () {
     const check = await delegate.checkConfigurations([]);
-    assert.ok(check, 'checked configurations');
+    assert.ok(!check, 'invalid configurations');
   });
 
-  it('should have no valid configurations with 1 configurations', async function () {
+  it('should have valid configurations with 1 configurations', async function () {
     const check = await delegate.checkConfigurations([1]);
     assert.ok(check, 'checked configurations');
   });

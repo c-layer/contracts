@@ -10,6 +10,10 @@ module.exports = function (actualTime, expectedTime, message) {
     const delta = (actualTime > expectedTime)
       ? actualTime - expectedTime : expectedTime - actualTime;
 
+    if (delta == 0) {
+      return;
+    }
+
     if (delta > MAX_TOLERANCE_VALUE) {
       assert.equal(actualTime, expectedTime, message);
     } else {

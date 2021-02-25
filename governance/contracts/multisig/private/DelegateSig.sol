@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./LockableSig.sol";
 
@@ -57,7 +57,7 @@ contract DelegateSig is LockableSig {
    * @dev constructor
    */
   constructor(address[] memory _addresses, uint8 _threshold)
-    public LockableSig(_addresses, _threshold)
+    LockableSig(_addresses, _threshold)
   {} // solhint-disable-line no-empty-blocks
 
   /**

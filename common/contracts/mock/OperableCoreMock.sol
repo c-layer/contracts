@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../core/OperableCore.sol";
 
@@ -17,7 +17,7 @@ contract OperableCoreMock is OperableCore {
 
   mapping(address => bool) public successes;
 
-  constructor(address[] memory _sysOperators) public
+  constructor(address[] memory _sysOperators)
     OperableCore(_sysOperators) {}
 
   function defineDelegate(uint256 _delegateId, address _delegate) public returns (bool) {
@@ -36,11 +36,13 @@ contract OperableCoreMock is OperableCore {
     public onlyCoreOp returns (bool)
   {
     successes[_proxy] = true;
+    return true;
   }
 
   function successAsProxyOp(address _proxy)
     public onlyProxyOp(_proxy) returns (bool)
   {
     successes[_proxy] = true;
+    return true;
   }
 }

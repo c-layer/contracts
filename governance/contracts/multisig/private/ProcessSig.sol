@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./DelegateSig.sol";
 
@@ -17,7 +17,7 @@ contract ProcessSig is DelegateSig {
   /**
    * @dev fallback function
    */
-  constructor(address[] memory _addresses, uint8 _threshold) public
+  constructor(address[] memory _addresses, uint8 _threshold)
     DelegateSig(_addresses, _threshold)
   {} // solhint-disable-line no-empty-blocks
 

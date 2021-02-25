@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "./interface/IFaucet.sol";
 import "./vault/Vault.sol";
 
@@ -18,7 +17,6 @@ import "./vault/Vault.sol";
  *   FC04: Sender is withdrawing tokens too fast
  */
 contract Faucet is IFaucet, Vault {
-  using SafeMath for uint256;
 
   mapping(IERC20 => SWithdrawLimit) internal withdrawLimits;
   mapping(IERC20 => mapping(address => SWithdrawStatus)) internal withdrawStatus_;
@@ -26,7 +24,7 @@ contract Faucet is IFaucet, Vault {
   /**
    * @dev constructor
    */
-  constructor(address _beneficiary) public Vault(_beneficiary) {}
+  constructor(address _beneficiary) Vault(_beneficiary) {}
 
   /**
    * @dev withdrawLimit
@@ -68,7 +66,7 @@ contract Faucet is IFaucet, Vault {
    * @dev withdraw
    */
   function withdraw(IERC20 _token, uint256 _value) external override returns (bool) {
-    return withdrawInternal(_token, msg.sender, _value);
+    return withdrawInternal(_token, payable(msg.sender), _value);
   }
 
   /**
@@ -95,10 +93,10 @@ contract Faucet is IFaucet, Vault {
 
       uint256 recipientBalance =
         (address(_token) == address(0)) ? _to.balance : _token.balanceOf(_to);
-      require(recipientBalance.add(_value) <= withdrawLimit_.maxBalance, "FC02");
+      require(recipientBalance + _value <= withdrawLimit_.maxBalance, "FC02");
 
       SWithdrawStatus storage senderStatus = withdrawStatus_[_token][_to];
-      senderStatus.allTimeDistributed = senderStatus.allTimeDistributed.add(_value);
+      senderStatus.allTimeDistributed = senderStatus.allTimeDistributed + _value;
       require(senderStatus.allTimeDistributed <= withdrawLimit_.maxWithdrawAllTime, "FC03");
 
       if(withdrawLimit_.period > 0) {
@@ -106,12 +104,12 @@ contract Faucet is IFaucet, Vault {
         uint256 timeDelta = (currentTime_ - senderStatus.lastAt);
 
         if(timeDelta < withdrawLimit_.period)  {
-          uint256 recovery = timeDelta.mul(withdrawLimit_.maxWithdrawPeriod).div(withdrawLimit_.period);
+          uint256 recovery = timeDelta * withdrawLimit_.maxWithdrawPeriod / withdrawLimit_.period;
 
           senderStatus.recentlyDistributed = (senderStatus.recentlyDistributed <= recovery) ?
-            0 :  senderStatus.recentlyDistributed.sub(recovery);
+            0 :  senderStatus.recentlyDistributed - recovery;
 
-          senderStatus.recentlyDistributed = senderStatus.recentlyDistributed.add(_value);
+          senderStatus.recentlyDistributed = senderStatus.recentlyDistributed + _value;
           require(senderStatus.recentlyDistributed <= withdrawLimit_.maxWithdrawPeriod, "FC04");
         } else {
           senderStatus.recentlyDistributed = _value;

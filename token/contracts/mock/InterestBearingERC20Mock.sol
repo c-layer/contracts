@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../monolithic/InterestBearingERC20.sol";
 
@@ -22,7 +22,7 @@ contract InterestBearingERC20Mock is InterestBearingERC20 {
     uint256 _decimals,
     address _initialAccount,
     uint256 _initialSupply
-  ) public InterestBearingERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {
+  ) InterestBearingERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {
   }
 
   function defineTestingTimes(uint256 _currentTime, uint256 _interestFrom) public returns (bool)

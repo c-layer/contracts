@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/token/TokenERC20.sol";
 
@@ -17,5 +17,5 @@ contract TokenERC20Mock is TokenERC20 {
     uint256 _decimals,
     address _initialAccount,
     uint256 _initialSupply
-  ) public TokenERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {}
+  ) TokenERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {}
 }

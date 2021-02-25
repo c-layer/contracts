@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../convert/BytesConvert.sol";
 import "../interface/IFactory.sol";

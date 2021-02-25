@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./tokensale/BonusTokensale.sol";
 import "./tokensale/UserTokensale.sol";
@@ -29,9 +29,7 @@ contract Tokensale is UserTokensale {
     IRatesProvider _ratesProvider,
     uint256 _start,
     uint256 _end
-  ) public
-    UserTokensale(_token,
-      _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) UserTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
     baseCurrency_ = _baseCurrency;
     userRegistry_ = _userRegistry;

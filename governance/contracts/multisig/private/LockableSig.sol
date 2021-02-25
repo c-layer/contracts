@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./MultiSig.sol";
 
@@ -21,7 +21,7 @@ contract LockableSig is MultiSig {
    * @dev constructor
    */
   constructor(address[] memory _addresses, uint8 _threshold)
-    public MultiSig(_addresses, _threshold)
+    MultiSig(_addresses, _threshold)
   {} // solhint-disable-line no-empty-blocks
 
   /**

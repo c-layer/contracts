@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./STransferData.sol";
 import "../TokenStorage.sol";
@@ -29,6 +29,7 @@ abstract contract LockableDelegate is TokenStorage {
 
     tokens[_token].locks = _locks;
     emit TokenLocksDefined(_token, _locks);
+    return true;
   }
 
   /**

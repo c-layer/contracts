@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./PublicMultiSig.sol";
 
@@ -35,7 +35,7 @@ contract SecretMultiSig is PublicMultiSig {
     uint256 _duration,
     address[] memory _participants,
     uint256[] memory _weights
-  ) public PublicMultiSig(_threshold, _duration, _participants, _weights)
+  ) PublicMultiSig(_threshold, _duration, _participants, _weights)
   {} // solhint-disable-line no-empty-blocks
 
   /**
@@ -120,18 +120,9 @@ contract SecretMultiSig is PublicMultiSig {
   function suggestHash(bytes32 _hash) public returns (bool) {
     require(_hash != "", "SMS02");
     privateTransactions[transactionCount_] = SecretTransaction(_hash, false);
-    transactions[transactionCount_] = Transaction(
-      address(0),
-      0,
-      "",
-      0,
-      false,
-      false,
-      msg.sender,
-      // solhint-disable-next-line not-rely-on-time
-      now,
-      false
-    );
+    Transaction storage transaction = transactions[transactionCount_];
+    transaction.creator = msg.sender;
+    transaction.createdAt = currentTime();
     emit TransactionAdded(transactionCount_);
     transactionCount_++;
     return true;

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/token/contracts/TokenProxy.sol";
 
@@ -11,5 +11,5 @@ import "@c-layer/token/contracts/TokenProxy.sol";
  **/
 contract TokenProxyMock is TokenProxy {
 
-  constructor(address _core) public TokenProxy(_core) { }
+  constructor(address _core) TokenProxy(_core) { }
 }

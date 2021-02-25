@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Ownable.sol";
 import "@c-layer/token/contracts/interface/ITokenProxy.sol";

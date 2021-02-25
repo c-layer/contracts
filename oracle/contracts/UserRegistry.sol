@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Operable.sol";
 import "./interface/IUserRegistry.sol";
@@ -46,7 +46,7 @@ contract UserRegistry is IUserRegistry, Operable {
     string memory _name,
     bytes32 _currency,
     address[] memory _addresses,
-    uint256 _validUntilTime) public
+    uint256 _validUntilTime)
   {
     name_ = _name;
     currency_ = _currency;
@@ -253,7 +253,7 @@ contract UserRegistry is IUserRegistry, Operable {
    */
   function validity(uint256 _userId)
     override public view returns (uint256, bool) {
-    User memory user = users[_userId];
+    User storage user = users[_userId];
     return (user.validUntilTime, user.suspended);
   }
 
@@ -476,9 +476,9 @@ contract UserRegistry is IUserRegistry, Operable {
     private
   {
     require(walletOwners[_address] == 0, "UR03");
-    users[++userCount_] = User(_validUntilTime, false);
+    User storage user = users[++userCount_];
+    user.validUntilTime = _validUntilTime;
     walletOwners[_address] = userCount_;
-
     emit UserRegistered(userCount_, _address, _validUntilTime);
   }
 
@@ -510,6 +510,6 @@ contract UserRegistry is IUserRegistry, Operable {
    */
   function isValidPrivate(User storage user) private view returns (bool) {
     // solhint-disable-next-line not-rely-on-time
-    return !user.suspended && user.validUntilTime > now;
+    return !user.suspended && user.validUntilTime > block.timestamp;
   }
 }

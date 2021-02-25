@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/token/TokenERC20.sol";
 import "@c-layer/common/contracts/operable/Ownable.sol";
@@ -32,7 +32,7 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
     uint256 _decimals,
     address _initialAccount,
     uint256 _initialSupply
-  ) public TokenERC20(
+  ) TokenERC20(
     _name,
     _symbol,
     _decimals,
@@ -57,8 +57,8 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
    */
   function burn(uint256 _amount) external override onlyOwner returns (bool)
   {
-    totalSupply_ = totalSupply_.sub(_amount);
-    balances[msg.sender] = balances[msg.sender].sub(_amount);
+    totalSupply_ = totalSupply_ - _amount;
+    balances[msg.sender] = balances[msg.sender] - _amount;
 
     emit Transfer(msg.sender, address(0), _amount);
     emit Burn(msg.sender, _amount);
@@ -102,9 +102,9 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
    */
   function mintInternal(address _to, uint256 _amount) internal returns (bool)
   {
-    totalSupply_ = totalSupply_.add(_amount);
-    balances[_to] = balances[_to].add(_amount);
-    allTimeMinted_ = allTimeMinted_.add(_amount);
+    totalSupply_ = totalSupply_ + _amount;
+    balances[_to] = balances[_to] + _amount;
+    allTimeMinted_ = allTimeMinted_ + _amount;
 
     emit Transfer(address(0), _to, _amount);
     emit Mint(_to, _amount);

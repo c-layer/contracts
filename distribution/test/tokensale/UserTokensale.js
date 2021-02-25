@@ -57,7 +57,7 @@ contract('UserTokensale', function (accounts) {
       ratesProvider.address,
       userRegistry.address,
     );
-    await sale.updateSchedule(0, Number.MAX_SAFE_INTEGER);
+    await sale.updateSchedule(0, '' + Number.MAX_SAFE_INTEGER);
     await token.approve(sale.address, supply, { from: accounts[1] });
   });
 

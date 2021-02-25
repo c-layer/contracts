@@ -12,7 +12,7 @@ const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const WrappedERC20 = artifacts.require('WrappedERC20Mock.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1328764;
+const TOKEN_DEPLOYMENT_COST = 1268717;
 const TRANSFER_OK = 1;
 const TRANSFER_LOCKED = 5;
 const TRANSFER_RULED = 7;
@@ -46,15 +46,15 @@ const REQUIRED_PROXY_PRIVILEGES = [
 ].map((x) => x.substr(0, 10));
 const APPROVE_PRIVILEGES = [
   web3.utils.sha3('approveToken(address,address)'),
-];
+].map((x) => x.substr(0, 10));
 const ISSUER_PRIVILEGES = [
   web3.utils.sha3('configureTokensales(address,address[],uint256[])'),
   web3.utils.sha3('updateAllowances(address,address[],uint256[])'),
   web3.utils.sha3('deployWrappedToken(address,string,string,uint256,address[],uint256[],bool)'),
-];
+].map((x) => x.substr(0, 10));
 const OPERATOR_PRIVILEGES = [
   web3.utils.sha3('transferFrom(address,address,address,uint256)'),
-];
+].map((x) => x.substr(0, 10));
 const FACTORY_CORE_ROLE = web3.utils.fromAscii('FactoryCoreRole').padEnd(66, '0');
 const FACTORY_PROXY_ROLE = web3.utils.fromAscii('FactoryProxyRole').padEnd(66, '0');
 const ISSUER_PROXY_ROLE = web3.utils.fromAscii('IssuerProxyRole').padEnd(66, '0');

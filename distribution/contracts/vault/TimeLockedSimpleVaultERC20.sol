@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Ownable.sol";
 import "../interface/ISimpleVaultERC20.sol";
@@ -24,7 +24,7 @@ contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
     _;
   }
 
-  constructor(address _beneficiary, uint64 _lockedUntil) public {
+  constructor(address _beneficiary, uint64 _lockedUntil) {
     require(_beneficiary != address(0), "TLV02");
     require(_lockedUntil > currentTime(), "TLV03");
     lockedUntil = _lockedUntil;
@@ -42,6 +42,6 @@ contract TimeLockedSimpleVaultERC20 is ISimpleVaultERC20, Ownable {
    */
   function currentTime() internal view returns (uint256) {
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    return block.timestamp;
   }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/distribution/contracts/WrappedERC20.sol";
 
@@ -17,6 +17,6 @@ contract WrappedERC20Mock is WrappedERC20 {
     string memory _symbol,
     uint256 _decimals,
     IERC20 _base
-  ) public WrappedERC20(_name, _symbol, _decimals, _base) {
+  ) WrappedERC20(_name, _symbol, _decimals, _base) {
   }
 }

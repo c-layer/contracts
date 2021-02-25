@@ -44,7 +44,7 @@ contract('ChangeTokensale', function (accounts) {
         CHF,
         ratesProvider.address,
       );
-      await sale.updateSchedule(0, Number.MAX_SAFE_INTEGER);
+      await sale.updateSchedule(0, '' + Number.MAX_SAFE_INTEGER);
       await token.approve(sale.address, supply, { from: accounts[1] });
     });
 
@@ -235,7 +235,7 @@ contract('ChangeTokensale', function (accounts) {
         ETH,
         ratesProvider.address,
       );
-      await sale.updateSchedule(0, Number.MAX_SAFE_INTEGER);
+      await sale.updateSchedule(0, '' + Number.MAX_SAFE_INTEGER);
       await token.approve(sale.address, supply, { from: accounts[1] });
     });
 
@@ -289,7 +289,7 @@ contract('ChangeTokensale', function (accounts) {
         CHF,
         ratesProvider.address,
       );
-      await sale.updateSchedule(0, Number.MAX_SAFE_INTEGER);
+      await sale.updateSchedule(0, '' + Number.MAX_SAFE_INTEGER);
       await token.approve(sale.address, supply, { from: accounts[1] });
     });
 

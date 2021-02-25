@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/ITokenStorage.sol";
 
@@ -34,6 +34,6 @@ abstract contract ITokenDelegate is ITokenStorage {
     virtual public returns (bool);
   function decreaseApproval(address _sender, address _spender, uint _subtractedValue)
     virtual public returns (bool);
-  function checkConfigurations(uint256[] memory _auditConfigurationIds)
-    virtual public returns (bool);
+  function checkConfigurations(uint256[] calldata _auditConfigurationIds)
+    virtual public view returns (bool);
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../factory/Factory.sol";
 
@@ -16,7 +16,7 @@ contract FactoryMock is Factory {
   /**
    * @dev constructor
    */
-  constructor() public Factory() {}
+  constructor() Factory() {}
 
   /**
    * @dev runtime

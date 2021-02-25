@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "@c-layer/common/contracts/core/OperableStorage.sol";
 import "./interface/IRule.sol";
 import "./interface/ITokenStorage.sol";
@@ -14,7 +13,6 @@ import "./interface/ITokenStorage.sol";
  * SPDX-License-Identifier: MIT
  */
 contract TokenStorage is ITokenStorage, OperableStorage {
-  using SafeMath for uint256;
 
   struct LockData {
     uint64 startAt;

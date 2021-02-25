@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/core/OperableCore.sol";
 import "./TokenStorage.sol";
@@ -25,7 +25,7 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
    * @dev constructor
    */
   constructor(string memory _name, address[] memory _sysOperators)
-    public OperableCore(_sysOperators)
+    OperableCore(_sysOperators)
   {
     name_ = _name;
   }
@@ -381,5 +381,6 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   {
     selfManaged[msg.sender] = _active;
     emit SelfManaged(msg.sender, _active);
+    return true;
   }
 }

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/OperableAsCore.sol";
 import "./interface/ICoreConfiguration.sol";
@@ -151,5 +151,7 @@ contract CoreConfiguration is ICoreConfiguration, OperableAsCore {
     configOperators[0] = address(this);
     require(_core.revokeOperators(configOperators), "CC20");
     require(!hasCoreAccess(_core), "CC21");
+
+    return true;
   }
 }

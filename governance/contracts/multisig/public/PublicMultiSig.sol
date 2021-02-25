@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "@c-layer/common/contracts/operable/Operable.sol";
 import "../../interface/IPublicMultiSig.sol";
 
@@ -31,7 +30,6 @@ import "../../interface/IPublicMultiSig.sol";
  * PMS10: Transaction is already unapproved
  */
 contract PublicMultiSig is IPublicMultiSig, Operable {
-  using SafeMath for uint256;
 
   uint256 internal threshold_;
   uint256 internal duration_;
@@ -75,7 +73,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
     uint256 _duration,
     address[] memory _participants,
     uint256[] memory _weights
-  ) public
+  )
   {
     threshold_ = _threshold;
     duration_ = _duration;
@@ -160,7 +158,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
    */
   function isExpired(uint256 _transactionId) public view returns (bool) {
     return
-      transactions[_transactionId].createdAt.add(duration_) < currentTime();
+      transactions[_transactionId].createdAt + duration_ < currentTime();
   }
 
   /**
@@ -169,7 +167,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
   function toBeExpiredAt(uint256 _transactionId)
     public view returns (uint256)
   {
-    return transactions[_transactionId].createdAt.add(duration_);
+    return transactions[_transactionId].createdAt + duration_;
   }
 
   /**
@@ -275,19 +273,14 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
   function suggest(address payable _destination, uint256 _value, bytes memory _data)
     public virtual returns (bool)
   {
-    transactions[transactionCount_] = Transaction(
-      _destination,
-      _value,
-      _data,
-      0,
-      false,
-      false,
-      msg.sender,
-      currentTime(),
-      false
-    );
+    Transaction storage transaction = transactions[transactionCount_];
+    transaction.destination = _destination;
+    transaction.value = _value;
+    transaction.data = _data;
+    transaction.creator = msg.sender;
+    transaction.createdAt = currentTime();
+    emit TransactionAdded(transactionCount_);
     transactionCount_++;
-    emit TransactionAdded(transactionCount_-1);
     return true;
   }
 
@@ -340,8 +333,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
     Transaction storage transaction = transactions[_transactionId];
     require(!transaction.confirmations[msg.sender], "PMS08");
 
-    transaction.confirmed = transaction.confirmed.add(
-      participants[msg.sender].weight);
+    transaction.confirmed = transaction.confirmed + participants[msg.sender].weight;
     transaction.confirmations[msg.sender] = true;
 
     if (transaction.confirmed >= threshold_) {
@@ -360,13 +352,11 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
     Transaction storage transaction = transactions[_transactionId];
     require(transaction.confirmations[msg.sender], "PMS10");
 
-    transaction.confirmed = transaction.confirmed.sub(
-      participants[msg.sender].weight);
+    transaction.confirmed = transaction.confirmed - participants[msg.sender].weight;
     transaction.confirmations[msg.sender] = false;
 
     if (transaction.confirmed < threshold_ &&
-        transaction.confirmed.add(
-          participants[msg.sender].weight) >= threshold_)
+        transaction.confirmed + participants[msg.sender].weight >= threshold_)
     {
       emit TransactionUnconfirmed(_transactionId);
     }
@@ -418,7 +408,7 @@ contract PublicMultiSig is IPublicMultiSig, Operable {
 
   function currentTime() internal view returns (uint256) {
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    return block.timestamp;
   }
 
   event TransactionAdded(uint256 transactionId);

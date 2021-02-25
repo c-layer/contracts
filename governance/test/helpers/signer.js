@@ -42,9 +42,9 @@ module.exports = {
     const signedHash = await this.web3.eth.sign(hash, address);
 
     return {
-      r: '0x' + signedHash.slice(2).slice(0, 64),
-      s: '0x' + signedHash.slice(2).slice(64, 128),
-      v: this.web3.utils.toDecimal(signedHash.slice(2).slice(128, 130)),
+      r: signedHash.slice(0, 66),
+      s: '0x' + signedHash.slice(66, 130),
+      v: this.web3.utils.toDecimal('0x' + signedHash.slice(130, 132)),
     };
   },
 };

@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "../interface/IVotingSessionStorage.sol";
 import "../interface/IVotingSessionDelegate.sol";
 
@@ -14,7 +13,6 @@ import "../interface/IVotingSessionDelegate.sol";
  * Error messages
  */
 contract VotingSessionStorage is IVotingSessionStorage {
-  using SafeMath for uint256;
 
   address internal constant ANY_ADDRESSES = address(0x416e79416464726573736573); // "AnyAddresses"
 

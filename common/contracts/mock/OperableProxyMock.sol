@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../core/OperableProxy.sol";
 
@@ -18,9 +18,10 @@ contract OperableProxyMock is OperableProxy {
   bool public success;
 
   // solhint-disable-next-line no-empty-blocks
-  constructor(address _core) public OperableProxy(_core) { }
+  constructor(address _core) OperableProxy(_core) { }
 
   function setSuccess() public onlyOperator returns (bool) {
     success = true;
+    return true;
   }
 }

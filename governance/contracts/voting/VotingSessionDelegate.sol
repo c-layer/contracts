@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IVotingSessionDelegate.sol";
 import "./VotingSessionStorage.sol";
@@ -142,9 +142,12 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
       || _proposalsCount <= sessionRule_.openProposals
       || session_.totalSupply <= sessionRule_.newProposalThreshold);
 
-    return (baseThreshold) ? sessionRule_.newProposalThreshold : sessionRule_.newProposalThreshold.add(
-      (session_.totalSupply.div(2)).sub(sessionRule_.newProposalThreshold).mul(
-        (_proposalsCount - sessionRule_.openProposals) ** 2).div((sessionRule_.maxProposals - sessionRule_.openProposals) ** 2));
+    return baseThreshold ? sessionRule_.newProposalThreshold :
+      sessionRule_.newProposalThreshold + (
+        (session_.totalSupply / 2 - sessionRule_.newProposalThreshold) *
+        (_proposalsCount - sessionRule_.openProposals) ** 2 /
+        (sessionRule_.maxProposals - sessionRule_.openProposals) ** 2
+      );
   }
 
   /**
@@ -159,9 +162,9 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     uint256 participation = session_.participation;
     uint256 participationPercent = 0;
     if (participation != 0) {
-      participationPercent = participation.mul(PERCENT).div(session_.votingSupply);
+      participationPercent = participation * PERCENT / session_.votingSupply;
       isApproved = (
-        (proposal_.approvals.mul(PERCENT).div(participation) >= proposal_.requirement.majority) &&
+        ((proposal_.approvals * PERCENT / participation) >= proposal_.requirement.majority) &&
         (participationPercent >= proposal_.requirement.quorum)
       );
     }
@@ -184,7 +187,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
           Proposal storage alternative = session_.proposals[i];
           if ((alternative.approvals >= proposal_.approvals &&
             (alternative.approvals != proposal_.approvals || i < _proposalId)) &&
-            (alternative.approvals.mul(PERCENT).div(participation) >= alternative.requirement.majority) &&
+            ((alternative.approvals * PERCENT / participation) >= alternative.requirement.majority) &&
             (participationPercent >= alternative.requirement.quorum))
           {
             isApproved = false;
@@ -507,6 +510,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     }
     delete sessions[oldestSessionId_];
     emit SessionArchived(oldestSessionId_++);
+    return true;
   }
 
   /**
@@ -537,14 +541,14 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
         state == SessionState.CLOSED || state == SessionState.ARCHIVED, "VD11");
       uint256 nextStartAt = nextSessionAt(currentTime_);
       session_ = sessions[++currentSessionId_];
-      session_.campaignAt = uint64(nextStartAt.sub(sessionRule_.campaignPeriod));
+      session_.campaignAt = uint64(nextStartAt - sessionRule_.campaignPeriod);
       session_.voteAt = uint64(nextStartAt);
 
-      uint256 at = nextStartAt.add(sessionRule_.votingPeriod);
+      uint256 at = nextStartAt + sessionRule_.votingPeriod;
       session_.executionAt = uint64(at);
-      at = at.add(sessionRule_.executionPeriod);
+      at = at + sessionRule_.executionPeriod;
       session_.graceAt = uint64(at);
-      at = at.add(sessionRule_.gracePeriod);
+      at = at + sessionRule_.gracePeriod;
       session_.closedAt = uint64(at);
       session_.totalSupply = token_.totalSupply();
 
@@ -634,7 +638,7 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
     session_.votingSupply = session_.totalSupply;
     for (uint256 i=0; i < sessionRule_.nonVotingAddresses.length; i++) {
       session_.votingSupply =
-        session_.votingSupply.sub(token_.balanceOf(sessionRule_.nonVotingAddresses[i]));
+        session_.votingSupply - token_.balanceOf(sessionRule_.nonVotingAddresses[i]);
     }
   }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../vault/TimeLockedSimpleVaultERC20.sol";
 
@@ -14,7 +14,7 @@ import "../vault/TimeLockedSimpleVaultERC20.sol";
 contract TimeLockedSimpleVaultERC20Mock is TimeLockedSimpleVaultERC20 {
 
   constructor(address _beneficiary, uint64 _lockedUntil)
-    public TimeLockedSimpleVaultERC20(_beneficiary, _lockedUntil) {}
+    TimeLockedSimpleVaultERC20(_beneficiary, _lockedUntil) {}
 
   function setLockedUntilTest(uint64 _lockedUntil) public returns (bool) {
     lockedUntil = _lockedUntil;

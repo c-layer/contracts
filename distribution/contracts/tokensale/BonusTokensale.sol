@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./SchedulableTokensale.sol";
 
@@ -37,8 +37,7 @@ contract BonusTokensale is SchedulableTokensale {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit
-  ) public
-    SchedulableTokensale(_token,
+  ) SchedulableTokensale(_token,
       _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {} /* solhint-disable no-empty-blocks */
   
@@ -55,7 +54,7 @@ contract BonusTokensale is SchedulableTokensale {
   function earlyBonus(uint256 _currentTime)
     public view returns (uint256 bonus, uint256 remainingAtBonus)
   {
-    remainingAtBonus = uint256(-1);
+    remainingAtBonus = ~uint256(0);
 
     if (bonusMode_ == BonusMode.EARLY
       && _currentTime >= startAt && _currentTime <= endAt) {
@@ -75,7 +74,7 @@ contract BonusTokensale is SchedulableTokensale {
     public view returns (uint256 bonus, uint256 remainingAtBonus)
   {
     if (bonusMode_ != BonusMode.FIRST) {
-      return (uint256(0), uint256(-1));
+      return (uint256(0), ~uint256(0));
     }
 
     for(uint256 i=0; i < bonusUntils_.length; i++) {
@@ -84,7 +83,7 @@ contract BonusTokensale is SchedulableTokensale {
       }
     }
 
-    return (uint256(0), uint256(-1));
+    return (uint256(0), ~uint256(0));
   }
 
   /**
@@ -143,7 +142,7 @@ contract BonusTokensale is SchedulableTokensale {
 
       uint256 tokensAtCurrentBonus =
         (unprocessed < remainingAtBonus) ? unprocessed : remainingAtBonus;
-      tokenBonus_ += bonus.mul(tokensAtCurrentBonus).div(100);
+      tokenBonus_ += bonus * tokensAtCurrentBonus / 100;
       unprocessed -= tokensAtCurrentBonus;
     } while(bonus > 0 && unprocessed > 0 && remainingAtBonus > 0);
   }
@@ -156,6 +155,6 @@ contract BonusTokensale is SchedulableTokensale {
   {
     (uint256 invested, uint256 tokens) = super.evalInvestmentInternal(_tokens);
     uint256 bonus = tokenBonus(tokens);
-    return (invested, tokens.add(bonus));
+    return (invested, tokens + bonus);
   }
 }

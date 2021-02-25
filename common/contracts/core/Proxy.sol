@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IProxy.sol";
 
@@ -25,7 +25,7 @@ contract Proxy is IProxy {
     _;
   }
 
-  constructor(address _core) public {
+  constructor(address _core) {
     core = _core;
   }
 

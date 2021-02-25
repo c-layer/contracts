@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/ITokenDelegate.sol";
 import "./STransferData.sol";
@@ -93,8 +93,7 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
     virtual override public returns (bool)
   {
     TokenData storage token = tokens[msg.sender];
-    token.allowances[_sender][_spender] = (
-      token.allowances[_sender][_spender].add(_addedValue));
+    token.allowances[_sender][_spender] = token.allowances[_sender][_spender] + _addedValue;
     require(
       TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowances[_sender][_spender]),
       "TD03");
@@ -112,7 +111,7 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
     if (_subtractedValue > oldValue) {
       token.allowances[_sender][_spender] = 0;
     } else {
-      token.allowances[_sender][_spender] = oldValue.sub(_subtractedValue);
+      token.allowances[_sender][_spender] = oldValue - _subtractedValue;
     }
     require(
       TokenProxy(msg.sender).emitApproval(_sender, _spender, token.allowances[_sender][_spender]),
@@ -123,7 +122,7 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
   /**
    * @dev check configuration
    **/
-  function checkConfigurations(uint256[] memory) virtual override public returns (bool) {
+  function checkConfigurations(uint256[] calldata) virtual override public pure returns (bool) {
     return true;
   }
 
@@ -147,11 +146,11 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
         || !hasProxyPrivilege(caller, _transferData.token, msg.sig)))
     {
       require(value <= token.allowances[sender][caller], "TD04");
-      token.allowances[sender][caller] = token.allowances[sender][caller].sub(value);
+      token.allowances[sender][caller] = token.allowances[sender][caller] - value;
     }
 
-    token.balances[sender] = token.balances[sender].sub(value);
-    token.balances[receiver] = token.balances[receiver].add(value);
+    token.balances[sender] = token.balances[sender] - value;
+    token.balances[receiver] = token.balances[receiver] + value;
     require(
       TokenProxy(msg.sender).emitTransfer(sender, receiver, value),
       "TD03");

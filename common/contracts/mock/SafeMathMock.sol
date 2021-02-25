@@ -1,6 +1,4 @@
-pragma solidity ^0.6.0;
-
-import "../math/SafeMath.sol";
+pragma solidity ^0.8.0;
 
 
 /**
@@ -12,21 +10,20 @@ import "../math/SafeMath.sol";
  * Error messages
  */
 contract SafeMathMock {
-  using SafeMath for uint256;
 
   function mul(uint256 a, uint256 b) public pure returns (uint256 c) {
-    return a.mul(b);
+    return a * b;
   }
 
   function div(uint256 a, uint256 b) public pure returns (uint256) {
-    return a.div(b);
+    return a / b;
   }
 
   function sub(uint256 a, uint256 b) public pure returns (uint256) {
-    return a.sub(b);
+    return a - b;
   }
 
   function add(uint256 a, uint256 b) public pure returns (uint256 c) {
-    return a.add(b);
+    return a + b;
   }
 }

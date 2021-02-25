@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../tokensale/UserTokensale.sol";
 
@@ -26,8 +26,7 @@ contract UserTokensaleMock is UserTokensale {
     bytes32 _baseCurrency,
     IRatesProvider _ratesProvider,
     IUserRegistry _userRegistry
-  ) public
-    UserTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) UserTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
     userRegistry_ = _userRegistry;
     baseCurrency_ = _baseCurrency;

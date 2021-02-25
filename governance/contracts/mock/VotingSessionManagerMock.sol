@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../voting/VotingSessionManager.sol";
 
@@ -19,7 +19,7 @@ contract VotingSessionManagerMock is VotingSessionManager {
    * @dev constructor
    */
   constructor(ITokenProxy _token, IVotingSessionDelegate _delegate)
-    public VotingSessionManager(_token, _delegate) {
+    VotingSessionManager(_token, _delegate) {
   }
 
   /**
@@ -69,13 +69,13 @@ contract VotingSessionManagerMock is VotingSessionManager {
       voteAt -= SESSION_RETENTION_PERIOD;
     }
 
-    session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
+    session_.campaignAt = uint64(voteAt - sessionRule_.campaignPeriod);
     session_.voteAt = uint64(voteAt);
-    session_.executionAt = uint64(voteAt.add(sessionRule_.votingPeriod));
-    session_.graceAt = uint64(voteAt.add(sessionRule_.votingPeriod)
-      .add(sessionRule_.executionPeriod));
-    session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
-      .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
+    session_.executionAt = uint64(voteAt + sessionRule_.votingPeriod);
+    session_.graceAt = uint64(voteAt + sessionRule_.votingPeriod
+      + sessionRule_.executionPeriod);
+    session_.closedAt = uint64(voteAt + sessionRule_.votingPeriod
+      + sessionRule_.executionPeriod + sessionRule_.gracePeriod);
     emit TestVoteAt(this.sessionStateAt(_sessionId, time), uint64(voteAt));
     return true;
   }
@@ -93,13 +93,13 @@ contract VotingSessionManagerMock is VotingSessionManager {
     uint256 voteAt = time;
     voteAt -= (SESSION_RETENTION_PERIOD + 1);
 
-    session_.campaignAt = uint64(voteAt.sub(sessionRule_.campaignPeriod));
+    session_.campaignAt = uint64(voteAt - sessionRule_.campaignPeriod);
     session_.voteAt = uint64(voteAt);
-    session_.executionAt = uint64(voteAt.add(sessionRule_.votingPeriod));
-    session_.graceAt = uint64(voteAt.add(sessionRule_.votingPeriod)
-      .add(sessionRule_.executionPeriod));
-    session_.closedAt = uint64(voteAt.add(sessionRule_.votingPeriod)
-      .add(sessionRule_.executionPeriod).add(sessionRule_.gracePeriod));
+    session_.executionAt = uint64(voteAt + sessionRule_.votingPeriod);
+    session_.graceAt = uint64(voteAt + sessionRule_.votingPeriod
+      + sessionRule_.executionPeriod);
+    session_.closedAt = uint64(voteAt + sessionRule_.votingPeriod
+      + sessionRule_.executionPeriod + sessionRule_.gracePeriod);
     emit TestVoteAt(this.sessionStateAt(currentSessionId_, time), uint64(voteAt));
     return true;
   }

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../Faucet.sol";
 
@@ -13,8 +13,7 @@ import "../Faucet.sol";
  */
 contract FaucetMock is Faucet {
 
-  constructor(address _beneficiary)
-    public Faucet(_beneficiary) {}
+  constructor(address _beneficiary) Faucet(_beneficiary) {}
 
   function defineWithdrawStatusLastAtTest(
     IERC20 _token,

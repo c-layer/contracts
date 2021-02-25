@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/oracle/contracts/interface/IUserRegistry.sol";
 import "../interface/IRule.sol";
@@ -22,7 +22,7 @@ contract UserRule is IRule {
   /**
    * @dev constructor
    */
-  constructor(IUserRegistry _userRegistry) public {
+  constructor(IUserRegistry _userRegistry) {
     userRegistry_ = _userRegistry;
   }
 

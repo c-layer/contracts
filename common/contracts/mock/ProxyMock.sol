@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../core/Proxy.sol";
 
@@ -13,7 +13,7 @@ import "../core/Proxy.sol";
  */
 contract ProxyMock is Proxy {
 
-  constructor(address _core) public Proxy(_core) { }
+  constructor(address _core) Proxy(_core) { }
 
   function successOnlyCore(bool _success) public view onlyCore returns (bool) {
     return _success;

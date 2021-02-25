@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Operable.sol";
 import "./interface/IBatchTransfer.sol";
@@ -28,7 +28,6 @@ contract BatchTransfer is IBatchTransfer, Operable {
 
   modifier withFees(uint256 _weight) {
     if(!isOperator(msg.sender)) {
-      // As long as feesRates is reasonable, it will not overflow
       uint256 fees = _weight * tx.gasprice * feesRates[msg.sig];
 
       uint256 transferValue = address(this).balance + fees - msg.value;
@@ -43,7 +42,7 @@ contract BatchTransfer is IBatchTransfer, Operable {
   /**
    * @dev constructor
    */
-  constructor(address payable _vaultETH, bytes4[] memory _methods, uint256[] memory _feesRates) public {
+  constructor(address payable _vaultETH, bytes4[] memory _methods, uint256[] memory _feesRates) {
     updateFeesRates(_vaultETH, _methods, _feesRates);
   }
 
@@ -73,7 +72,7 @@ contract BatchTransfer is IBatchTransfer, Operable {
     require(address(_token) != address(0), "BT02");
     require(_addresses.length == _values.length, "BT03");
 
-    uint256 totalValue = unsafeTotalValuePrivate(_values);
+    uint256 totalValue = totalValuePrivate(_values);
     require(_token.balanceOf(msg.sender) >= totalValue
       && _token.allowance(msg.sender, address(this)) >= totalValue, "BT04");
 
@@ -93,7 +92,7 @@ contract BatchTransfer is IBatchTransfer, Operable {
     external override payable withFees(_addresses.length) returns (bool)
   {
     require(_addresses.length == _values.length, "BT03");
-    require(address(this).balance >= unsafeTotalValuePrivate(_values), "BT06");
+    require(address(this).balance >= totalValuePrivate(_values), "BT06");
 
     for(uint256 i = 0; i < _addresses.length; i++) {
       // solhint-disable-next-line avoid-call-value, avoid-low-level-calls
@@ -126,10 +125,10 @@ contract BatchTransfer is IBatchTransfer, Operable {
   }
 
   /**
-   * @dev unsafe total value private
+   * @dev total value private
    * @notice value may overflow, hence to be used only for defensive checks
    */
-  function unsafeTotalValuePrivate(uint256[] memory _values) private pure returns (uint256) {
+  function totalValuePrivate(uint256[] memory _values) private pure returns (uint256) {
     uint256 totalValue = 0;
     for(uint256 i = 0; i < _values.length; i++) {
       totalValue = totalValue + _values[i];

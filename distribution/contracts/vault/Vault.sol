@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Operable.sol";
 import "../interface/IVault.sol";
@@ -26,7 +26,7 @@ contract Vault is IVault, Operable {
   /**
    * @dev constructor
    */
-  constructor(address _beneficiary) public {
+  constructor(address _beneficiary) {
     transferOwnership(_beneficiary);
   }
 

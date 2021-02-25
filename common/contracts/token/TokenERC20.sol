@@ -1,7 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IERC20.sol";
-import "../math/SafeMath.sol";
 
 
 /**
@@ -17,7 +16,6 @@ import "../math/SafeMath.sol";
  *   TE03: Approval too low
  */
 contract TokenERC20 is IERC20 {
-  using SafeMath for uint256;
 
   string internal name_;
   string internal symbol_;
@@ -33,7 +31,7 @@ contract TokenERC20 is IERC20 {
     uint256 _decimals,
     address _initialAccount,
     uint256 _initialSupply
-  ) public {
+  ) {
     name_ = _name;
     symbol_ = _symbol;
     decimals_ = _decimals;
@@ -87,11 +85,11 @@ contract TokenERC20 is IERC20 {
 
     if (_from != msg.sender) {
       require(_value <= allowed[_from][msg.sender], "TE03");
-      allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(_value);
+      allowed[_from][msg.sender] = allowed[_from][msg.sender] - _value;
     }
 
-    balances[_from] = balances[_from].sub(_value);
-    balances[_to] = balances[_to].add(_value);
+    balances[_from] = balances[_from] - _value;
+    balances[_to] = balances[_to] + _value;
     emit Transfer(_from, _to, _value);
     return true;
   }
@@ -105,8 +103,8 @@ contract TokenERC20 is IERC20 {
   function increaseApproval(address _spender, uint _addedValue)
     external override returns (bool)
   {
-    allowed[msg.sender][_spender] = (
-      allowed[msg.sender][_spender].add(_addedValue));
+    allowed[msg.sender][_spender] =
+      allowed[msg.sender][_spender] + _addedValue;
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;
   }
@@ -118,7 +116,7 @@ contract TokenERC20 is IERC20 {
     if (_subtractedValue > oldValue) {
       allowed[msg.sender][_spender] = 0;
     } else {
-      allowed[msg.sender][_spender] = oldValue.sub(_subtractedValue);
+      allowed[msg.sender][_spender] = oldValue - _subtractedValue;
     }
     emit Approval(msg.sender, _spender, allowed[msg.sender][_spender]);
     return true;

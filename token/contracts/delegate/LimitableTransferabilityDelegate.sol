@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./AuditableDelegate.sol";
 
@@ -41,7 +41,7 @@ contract LimitableTransferabilityDelegate is AuditableDelegate {
         return TransferCode.NON_REGISTRED_SENDER;
       }
 
-      if (auditStorage.userData[_transferData.senderId].cumulatedEmission.add(_transferData.convertedValue)
+      if ((auditStorage.userData[_transferData.senderId].cumulatedEmission + _transferData.convertedValue)
         > _transferData.senderKeys[SENDER_LIMIT_ID])
       {
         return TransferCode.LIMITED_EMISSION;
@@ -54,7 +54,7 @@ contract LimitableTransferabilityDelegate is AuditableDelegate {
         return TransferCode.NON_REGISTRED_RECEIVER;
       }
 
-      if (auditStorage.userData[_transferData.receiverId].cumulatedReception.add(_transferData.convertedValue)
+      if ((auditStorage.userData[_transferData.receiverId].cumulatedReception + _transferData.convertedValue)
         >  _transferData.receiverKeys[RECEIVER_LIMIT_ID])
       {  
          return TransferCode.LIMITED_RECEPTION;

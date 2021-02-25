@@ -4,8 +4,11 @@
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  */
 
-const assertJump = require('../helpers/assertJump');
+const assertOutOfBounds = require('../helpers/assertOutOfBounds.js');
+const assertRevert = require('../helpers/assertRevert.js');
 const SafeMathMock = artifacts.require('SafeMathMock.sol');
+
+const MAX_UINT = '0x'.padEnd(64, 'f');
 
 contract('SafeMath', function (accounts) {
   let contract;
@@ -20,7 +23,11 @@ contract('SafeMath', function (accounts) {
   });
 
   it('should prevent add overflow', async function () {
-    await assertJump(contract.add(-1, 1));
+    await assertOutOfBounds(contract.add(MAX_UINT, 1));
+  });
+
+  it('should prevent add negative overflow', async function () {
+    await assertOutOfBounds(contract.add(-1, 1));
   });
 
   it('should sub', async function () {
@@ -29,7 +36,7 @@ contract('SafeMath', function (accounts) {
   });
 
   it('should prevent sub overflow', async function () {
-    await assertJump(contract.sub(0, 1));
+    await assertRevert(contract.sub(0, 1));
   });
 
   it('should mul', async function () {
@@ -43,7 +50,11 @@ contract('SafeMath', function (accounts) {
   });
 
   it('should prevent mul overflow', async function () {
-    await assertJump(contract.mul(-1, 2));
+    await assertOutOfBounds(contract.mul(MAX_UINT, 2));
+  });
+
+  it('should prevent negative mul overflow', async function () {
+    await assertOutOfBounds(contract.mul(-1, 2));
   });
 
   it('should div', async function () {
@@ -52,6 +63,6 @@ contract('SafeMath', function (accounts) {
   });
 
   it('should prevent div by 0', async function () {
-    await assertJump(contract.div(1, 0));
+    await assertRevert(contract.div(1, 0));
   });
 });

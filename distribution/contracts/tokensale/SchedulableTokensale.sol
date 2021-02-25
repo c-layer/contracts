@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./BaseTokensale.sol";
 
@@ -62,8 +62,7 @@ contract SchedulableTokensale is BaseTokensale {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit
-  ) public
-    BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) BaseTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {} /* solhint-disable no-empty-blocks */
 
   /**
@@ -114,6 +113,6 @@ contract SchedulableTokensale is BaseTokensale {
    */
   function currentTime() internal view returns (uint256) {
     // solhint-disable-next-line not-rely-on-time
-    return now;
+    return block.timestamp;
   }
 }

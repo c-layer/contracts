@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 /**
  * @title MultiSig
@@ -22,7 +22,7 @@ contract MultiSig {
   /**
    * @dev constructor
    */
-  constructor(address[] memory _signers, uint8 _threshold) public {
+  constructor(address[] memory _signers, uint8 _threshold) {
     signers_ = _signers;
     threshold_ = _threshold;
 

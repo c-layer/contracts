@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/oracle/contracts/interface/IUserRegistry.sol";
 import "./ChangeTokensale.sol";
@@ -33,7 +33,7 @@ contract UserTokensale is ChangeTokensale {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit
-  ) public ChangeTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) ChangeTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {}
 
   /**
@@ -106,7 +106,7 @@ contract UserTokensale is ChangeTokensale {
       amlLimit = contributionLimits_[kycLevel];
     }
 
-    return amlLimit.sub(investorIds[_investorId].invested);
+    return amlLimit - investorIds[_investorId].invested;
   }
 
   /**

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
   
 import "../lock/TimeLock.sol";
 
@@ -15,7 +15,7 @@ import "../lock/TimeLock.sol";
 contract TimeLockMock is TimeLock {
 
   constructor(address payable _target, uint64 _lockedUntil)
-    public TimeLock(_target, _lockedUntil) {}
+    TimeLock(_target, _lockedUntil) {}
 
   function setLockedUntilTest(uint64 _lockedUntil) public returns (bool) {
     lockedUntil_ = _lockedUntil;

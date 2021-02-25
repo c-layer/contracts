@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/oracle/contracts/RatesProvider.sol";
 
@@ -12,6 +12,5 @@ import "@c-layer/oracle/contracts/RatesProvider.sol";
  **/
 contract RatesProviderMock is RatesProvider {
 
-  constructor(string memory _name) public RatesProvider(_name) {
-  }
+  constructor(string memory _name) RatesProvider(_name) {}
 }

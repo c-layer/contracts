@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/token/contracts/TokenCore.sol";
 
@@ -12,5 +12,5 @@ import "@c-layer/token/contracts/TokenCore.sol";
 contract TokenCoreMock is TokenCore {
 
   constructor(string memory _name, address[] memory _sysOperators)
-    public TokenCore(_name, _sysOperators) {}
+    TokenCore(_name, _sysOperators) {}
 }

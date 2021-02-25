@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../tokensale/ChangeTokensale.sol";
 
@@ -25,8 +25,7 @@ contract ChangeTokensaleMock is ChangeTokensale {
     uint256 _priceUnit,
     bytes32 _baseCurrency,
     IRatesProvider _ratesProvider
-  ) public
-    ChangeTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) ChangeTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {
     baseCurrency_ = _baseCurrency;
     ratesProvider_ = _ratesProvider;

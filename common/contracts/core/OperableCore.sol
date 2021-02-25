@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IOperableCore.sol";
 import "./OperableStorage.sol";
@@ -24,7 +24,7 @@ import "./Core.sol";
  */
 contract OperableCore is IOperableCore, Core, OperableStorage {
 
-  constructor(address[] memory _sysOperators) public {
+  constructor(address[] memory _sysOperators) {
     assignOperators(ALL_PRIVILEGES, _sysOperators);
     assignProxyOperators(ALL_PROXIES, ALL_PRIVILEGES, _sysOperators);
   }

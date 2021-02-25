@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IOperableCore.sol";
 import "../core/Proxy.sol";

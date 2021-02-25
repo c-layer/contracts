@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./Ownable.sol";
 
@@ -30,7 +30,7 @@ contract Operable is Ownable {
   /**
    * @dev constructor
    */
-  constructor() public {
+  constructor() {
     operators_[msg.sender] = true;
   }
 

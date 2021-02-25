@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IInterestBearingERC20.sol";
 import "./ElasticSupplyERC20.sol";
@@ -12,8 +12,9 @@ import "./ElasticSupplyERC20.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   IB01: Interest rate must be defined (ie != 0)
- *   IB02: Rates can only be updated when latest rebase have been calculated
+ *   IB01: Unable to predict elasticity in the past
+ *   IB02: Interest rate must be defined (ie != 0)
+ *   IB03: Rates can only be updated when latest rebase have been calculated
  */
 contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
 
@@ -26,7 +27,7 @@ contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
     uint256 _decimals,
     address _initialAccount,
     uint256 _initialSupply
-  ) public ElasticSupplyERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {
+  ) ElasticSupplyERC20(_name, _symbol, _decimals, _initialAccount, _initialSupply) {
     interestFrom_ = currentTime();
   }
 
@@ -38,20 +39,26 @@ contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
     return elasticityAt(currentTime());
   }
 
+  /**
+   * @dev elasticityAt
+   * @dev evaluate the increase of elasticity within the current interest period
+   **/
   function elasticityAt(uint256 _at) public override view returns (uint256) {
-    if (_at <= interestFrom_) {
-      return elasticity_;
-    }
+    require(_at >= interestFrom_ && _at <= interestFrom_ + INTEREST_PERIOD, "IB01");
 
     if (interestRate_ > ELASTICITY_PRECISION) {
-      return elasticity_.add(elasticity_.mul(interestRate_.sub(ELASTICITY_PRECISION)).mul(_at.sub(interestFrom_)).div(INTEREST_PERIOD).div(ELASTICITY_PRECISION));
+      return elasticity_ + (
+        elasticity_ * (_at - interestFrom_) * (interestRate_ - ELASTICITY_PRECISION)
+      ) / INTEREST_PERIOD / ELASTICITY_PRECISION;
+    } else {
+      return elasticity_ - (
+        elasticity_ * (_at - interestFrom_) * (ELASTICITY_PRECISION - interestRate_)
+      ) / INTEREST_PERIOD / ELASTICITY_PRECISION;
     }
-
-    return elasticity_.sub(elasticity_.mul(ELASTICITY_PRECISION.sub(interestRate_)).mul(_at.sub(interestFrom_)).div(INTEREST_PERIOD).div(ELASTICITY_PRECISION));
   }
 
   function rebaseInterest() public override returns (bool) {
-    uint256 periodCount = (currentTime().sub(interestFrom_)).div(INTEREST_PERIOD);
+    uint256 periodCount = (currentTime() - interestFrom_) / INTEREST_PERIOD;
     if(periodCount == 0 || interestRate_ == ELASTICITY_PRECISION) {
       return true;
     }
@@ -61,7 +68,7 @@ contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
     periodCount = (result) ? periodCount : REBASE_AT_ONCE;
 
     for(uint256 i=0; i < periodCount; i++) {
-      elasticity_ = elasticity_.mul(interestRate_).div(ELASTICITY_PRECISION);
+      elasticity_ = elasticity_ * interestRate_ / ELASTICITY_PRECISION;
       interestFrom_ += INTEREST_PERIOD;
       emit InterestRebase(interestFrom_, elasticity_);
     }
@@ -71,11 +78,11 @@ contract InterestBearingERC20 is IInterestBearingERC20, ElasticSupplyERC20 {
   function defineInterest(uint256 _interestRate)
     external override onlyOwner returns (bool)
   {
-    require(_interestRate != 0, "IB01");
+    require(_interestRate != 0, "IB02");
     uint256 currentTime_ = currentTime();
 
     // Catch up from previous missing rebase (if needed)
-    require(rebaseInterest(), "IB02");
+    require(rebaseInterest(), "IB03");
     uint256 latestElasticity = elasticityAt(currentTime_);
     if (latestElasticity != elasticity_) {
       // Update with the remaining interest of the current period

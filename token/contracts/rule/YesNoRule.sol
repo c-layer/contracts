@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../interface/IRule.sol";
 
@@ -14,7 +14,7 @@ import "../interface/IRule.sol";
 contract YesNoRule is IRule {
   bool public yesNo;
 
-  constructor(bool _yesNo) public {
+  constructor(bool _yesNo) {
     yesNo = _yesNo;
   }
 

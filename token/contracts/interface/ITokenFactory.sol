@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/interface/IERC20.sol";
 import "../interface/ITokenCore.sol";

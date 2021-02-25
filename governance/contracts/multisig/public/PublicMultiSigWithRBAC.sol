@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./PublicMultiSig.sol";
 
@@ -58,7 +58,7 @@ contract PublicMultiSigWithRBAC is PublicMultiSig {
     bool[] memory _suggesters,
     bool[] memory _approvers,
     bool[] memory _executers)
-    public PublicMultiSig(_threshold, _duration, _participants, _weights)
+    PublicMultiSig(_threshold, _duration, _participants, _weights)
   {
     updateManyParticipantsRoles(
       _participants,

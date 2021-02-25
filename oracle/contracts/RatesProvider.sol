@@ -1,7 +1,6 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Operable.sol";
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "./interface/IRatesProvider.sol";
 
 
@@ -20,7 +19,6 @@ import "./interface/IRatesProvider.sol";
  *   RP03: Rates definition must only target configured currencies
  */
 contract RatesProvider is IRatesProvider, Operable {
-  using SafeMath for uint256;
 
   string internal name_;
 
@@ -42,7 +40,7 @@ contract RatesProvider is IRatesProvider, Operable {
   /*
    * @dev constructor
    */
-  constructor(string memory _name) public {
+  constructor(string memory _name) {
     name_ = _name;
     for (uint256 i=0; i < currencies_.length; i++) {
       ratesMap[currencies_[i]] = i;
@@ -60,7 +58,7 @@ contract RatesProvider is IRatesProvider, Operable {
     require(_rates.length < currencies_.length, "RP03");
 
     // solhint-disable-next-line not-rely-on-time
-    updatedAt_ = now;
+    updatedAt_ = block.timestamp;
     for (uint256 i=0; i < _rates.length; i++) {
       if (rates_[i] != _rates[i]) {
         rates_[i] = _rates[i];
@@ -116,7 +114,7 @@ contract RatesProvider is IRatesProvider, Operable {
       ratePrivate(_toCurrency) : rateOffset_;
 
     return (rateTo != 0) ?
-      _amount.mul(rateFrom).div(rateTo) : 0;
+      _amount * rateFrom / rateTo : 0;
   }
 
   /**
@@ -166,7 +164,7 @@ contract RatesProvider is IRatesProvider, Operable {
     }
 
     // solhint-disable-next-line not-rely-on-time
-    updatedAt_ = now;
+    updatedAt_ = block.timestamp;
     currencies_ = _currencies;
     decimals_ = _decimals;
 
@@ -185,7 +183,7 @@ contract RatesProvider is IRatesProvider, Operable {
     require(_rates.length < currencies_.length, "RP03");
 
     // solhint-disable-next-line not-rely-on-time
-    updatedAt_ = now;
+    updatedAt_ = block.timestamp;
     for (uint256 i=0; i < _rates.length; i++) {
       if (rates_[i] != _rates[i]) {
         rates_[i] = _rates[i];

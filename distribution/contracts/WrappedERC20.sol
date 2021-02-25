@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/token/TokenERC20.sol";
 import "./interface/IWrappedERC20.sol";
@@ -30,10 +30,9 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
     string memory _symbol,
     uint256 _decimals,
     IERC20 _base
-  ) public
-    TokenERC20(_name, _symbol, _decimals, address(0), 0)
+  ) TokenERC20(_name, _symbol, _decimals, address(0), 0)
   {
-    ratio_ = 10 ** _decimals.sub(_base.decimals());
+    ratio_ = 10 ** _decimals - _base.decimals();
     base_ = _base;
   }
 
@@ -58,9 +57,9 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
     require(_to != address(0), "WE01");
     require(base_.transferFrom(msg.sender, address(this), _value), "WE02");
 
-    uint256 wrappedValue = _value.mul(ratio_);
-    balances[_to] = balances[_to].add(wrappedValue);
-    totalSupply_ = totalSupply_.add(wrappedValue);
+    uint256 wrappedValue = _value * ratio_;
+    balances[_to] = balances[_to]  + wrappedValue;
+    totalSupply_ = totalSupply_ + wrappedValue;
     emit Transfer(address(0), _to, wrappedValue);
     return true;
   }
@@ -77,16 +76,16 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
    */
   function withdrawFrom(address _from, address _to, uint256 _value) public override returns (bool) {
     require(_to != address(0), "WE01");
-    uint256 wrappedValue = _value.mul(ratio_);
+    uint256 wrappedValue = _value * ratio_;
     require(wrappedValue <= balances[_from], "WE03");
 
     if (_from != msg.sender) {
       require(wrappedValue <= allowed[_from][msg.sender], "WE04");
-      allowed[_from][msg.sender] = allowed[_from][msg.sender].sub(wrappedValue);
+      allowed[_from][msg.sender] = allowed[_from][msg.sender] - wrappedValue;
     }
 
-    balances[_from] = balances[_from].sub(wrappedValue);
-    totalSupply_ = totalSupply_.sub(wrappedValue);
+    balances[_from] = balances[_from] - wrappedValue;
+    totalSupply_ = totalSupply_ - wrappedValue;
     emit Transfer(_from, address(0), wrappedValue);
 
     require(base_.transfer(_to, _value), "WE05");

@@ -55,7 +55,7 @@ contract('InterestBearingERC20', function (accounts) {
     });
 
     it('should prevent have undefined interest', async function () {
-      await assertRevert(token.defineInterest(0), 'IB01');
+      await assertRevert(token.defineInterest(0), 'IB02');
     });
 
     it('should let add interest', async function () {
@@ -230,7 +230,7 @@ contract('InterestBearingERC20', function (accounts) {
         });
 
         it('should prevent adding interest', async function () {
-          await assertRevert(token.defineInterest(1), 'IB02');
+          await assertRevert(token.defineInterest(1), 'IB03');
         });
       });
 

@@ -1,6 +1,5 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
-import "@c-layer/common/contracts/math/SafeMath.sol";
 import "@c-layer/common/contracts/operable/Operable.sol";
 import "@c-layer/common/contracts/lifecycle/Pausable.sol";
 import "../interface/ITokensale.sol";
@@ -23,7 +22,6 @@ import "../interface/ITokensale.sol";
  * TOS07: Only exact amount is authorized
  */
 contract BaseTokensale is ITokensale, Operable, Pausable {
-  using SafeMath for uint256;
 
   /* General sale details */
   IERC20 internal token_;
@@ -55,7 +53,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit
-  ) public {
+  ) {
     require(_tokenPrice > 0, "TOS01");
     require(_priceUnit > 0, "TOS02");
 
@@ -78,7 +76,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   function investETH() public virtual override payable
   {
     Investor storage investor = investorInternal(msg.sender);
-    uint256 amountETH = investor.unspentETH.add(msg.value);
+    uint256 amountETH = investor.unspentETH + msg.value;
 
     investInternal(msg.sender, amountETH, false);
   }
@@ -179,7 +177,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     public virtual override view returns (uint256)
   {
     uint256 availableSupplyValue = availableSupply();
-    uint256 contribution = _amount.mul(priceUnit_).div(tokenPrice_);
+    uint256 contribution = _amount * priceUnit_ / tokenPrice_;
 
     return (contribution < availableSupplyValue) ? contribution : availableSupplyValue;
   }
@@ -200,7 +198,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
    * @dev refund unspentETH
    */
   function refundUnspentETH() public override returns (bool) {
-    refundUnspentETHInternal(msg.sender);
+    refundUnspentETHInternal(payable(msg.sender));
     return true;
   }
 
@@ -236,7 +234,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     Investor storage _investor, uint256 _investedETH
   ) internal virtual view returns (uint256)
   {
-    return _investor.unspentETH.add(msg.value).sub(_investedETH);
+    return _investor.unspentETH + msg.value - _investedETH;
   }
 
   /**
@@ -245,7 +243,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
   function evalInvestmentInternal(uint256 _tokens)
     internal virtual view returns (uint256, uint256)
   {
-    uint256 invested = _tokens.mul(tokenPrice_).div(priceUnit_);
+    uint256 invested = _tokens * tokenPrice_ / priceUnit_;
     return (invested, _tokens);
   }
 
@@ -268,8 +266,8 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     require(investor.unspentETH > 0, "TOS04");
 
     uint256 unspentETH = investor.unspentETH;
-    totalRefundedETH_ = totalRefundedETH_.add(unspentETH);
-    totalUnspentETH_ = totalUnspentETH_.sub(unspentETH);
+    totalRefundedETH_ = totalRefundedETH_ + unspentETH;
+    totalUnspentETH_ = totalUnspentETH_ - unspentETH;
     investor.unspentETH = 0;
 
     // Multiple sends are required for refundManyUnspentETH
@@ -306,14 +304,14 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
       require(invested == _amount, "TOS07");
     } else {
       uint256 unspentETH = evalUnspentETHInternal(investor, invested);
-      totalUnspentETH_ = totalUnspentETH_.sub(investor.unspentETH).add(unspentETH);
+      totalUnspentETH_ = totalUnspentETH_ - investor.unspentETH + unspentETH;
       investor.unspentETH = unspentETH;
     }
 
-    investor.invested = investor.invested.add(invested);
-    investor.tokens = investor.tokens.add(tokens);
-    totalRaised_ = totalRaised_.add(invested);
-    totalTokensSold_ = totalTokensSold_.add(tokens);
+    investor.invested = investor.invested + invested;
+    investor.tokens = investor.tokens + tokens;
+    totalRaised_ = totalRaised_ + invested;
+    totalTokensSold_ = totalTokensSold_ + tokens;
 
     emit Investment(_investor, invested, tokens);
 
@@ -321,7 +319,7 @@ contract BaseTokensale is ITokensale, Operable, Pausable {
     distributeTokensInternal(_investor, tokens);
 
     uint256 balance = address(this).balance;
-    uint256 withdrawableETH = balance.sub(totalUnspentETH_);
+    uint256 withdrawableETH = balance - totalUnspentETH_;
     if (withdrawableETH != 0) {
       withdrawETHInternal(withdrawableETH);
     }

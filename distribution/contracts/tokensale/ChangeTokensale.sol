@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/oracle/contracts/interface/IRatesProvider.sol";
 import "./BonusTokensale.sol";
@@ -31,17 +31,17 @@ contract ChangeTokensale is BonusTokensale {
     address payable _vaultETH,
     uint256 _tokenPrice,
     uint256 _priceUnit
-  ) public BonusTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
+  ) BonusTokensale(_token, _vaultERC20, _vaultETH, _tokenPrice, _priceUnit)
   {}
 
   /* Investment */
   function investETH() override public payable
   {
     require(msg.value > 0, "CTS01");
-    totalReceivedETH_ = totalReceivedETH_.add(msg.value);
+    totalReceivedETH_ = totalReceivedETH_ + msg.value;
 
     Investor storage investor = investorInternal(msg.sender);
-    uint256 amountETH = investor.unspentETH.add(msg.value);
+    uint256 amountETH = investor.unspentETH + msg.value;
     uint256 amountCurrency =
       ratesProvider_.convert(amountETH, "ETH", baseCurrency_);
     require(amountCurrency > 0, "CTS02");
@@ -67,7 +67,7 @@ contract ChangeTokensale is BonusTokensale {
    * @dev returns totalRaisedETH
    */
   function totalRaisedETH() public view returns (uint256) {
-    return totalReceivedETH_.sub(totalUnspentETH_).sub(totalRefundedETH_);
+    return totalReceivedETH_ - totalUnspentETH_ - totalRefundedETH_;
   }
 
   /**

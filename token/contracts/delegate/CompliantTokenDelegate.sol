@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./MintableTokenDelegate.sol";
 import "./RuleEngineDelegate.sol";
@@ -36,8 +36,8 @@ contract CompliantTokenDelegate is
   /**
    * @dev check config requirements
    **/
-  function checkConfigurations(uint256[] memory _auditConfigurationIds)
-    override public returns (bool)
+  function checkConfigurations(uint256[] calldata _auditConfigurationIds)
+    override public pure returns (bool)
   {
     return (_auditConfigurationIds.length >= AUDIT_CONFIG_REQUIREMENTS);
   }

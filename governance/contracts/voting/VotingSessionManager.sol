@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/call/DelegateCall.sol";
 import "@c-layer/common/contracts/call/DelegateCallView.sol";
@@ -31,7 +31,7 @@ contract VotingSessionManager is IVotingSessionManager, DelegateCallView, Voting
   /**
    * @dev constructor
    */
-  constructor(ITokenProxy _token, IVotingSessionDelegate _delegate) public {
+  constructor(ITokenProxy _token, IVotingSessionDelegate _delegate) {
     defineContractsInternal(_token, _delegate);
 
     resolutionRequirements[ANY_TARGET][ANY_METHOD] =

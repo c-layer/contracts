@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/operable/Ownable.sol";
 import "../interface/ITimeLock.sol";
@@ -26,7 +26,7 @@ contract TimeLock is ITimeLock, Ownable {
     _;
   }
 
-  constructor(address payable _target, uint64 _lockedUntil) public {
+  constructor(address payable _target, uint64 _lockedUntil) {
     require(_target != address(0), "TL02");
     require(_lockedUntil > currentTime(), "TL03");
     lockedUntil_ = _lockedUntil;

@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../TokenStorage.sol";
 import "../TokenProxy.sol";
@@ -28,9 +28,9 @@ abstract contract SeizableDelegate is TokenStorage {
     require(_account != msg.sender, "ST02");
     TokenData storage token = tokens[_token];
 
-    token.balances[_account] = token.balances[_account].sub(_amount);
-    token.balances[msg.sender] = token.balances[msg.sender].add(_amount);
-    token.allTimeSeized = token.allTimeSeized.add(_amount);
+    token.balances[_account] = token.balances[_account] - _amount;
+    token.balances[msg.sender] = token.balances[msg.sender] + _amount;
+    token.allTimeSeized = token.allTimeSeized + _amount;
 
     require(
       TokenProxy(_token).emitTransfer(_account, msg.sender, _amount),

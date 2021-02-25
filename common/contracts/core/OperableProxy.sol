@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./Proxy.sol";
 import "./OperableCore.sol";
@@ -18,7 +18,7 @@ import "./OperableCore.sol";
 contract OperableProxy is Proxy {
 
   // solhint-disable-next-line no-empty-blocks
-  constructor(address _core) public Proxy(_core) { }
+  constructor(address _core) Proxy(_core) { }
 
   /**
    * @dev Throws if called by any account other than the operator

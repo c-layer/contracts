@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "@c-layer/common/contracts/core/OperableProxy.sol";
 import "./interface/ITokenProxy.sol";
@@ -15,7 +15,7 @@ import "./TokenCore.sol";
 contract TokenProxy is ITokenProxy, OperableProxy {
 
   // solhint-disable-next-line no-empty-blocks
-  constructor(address _core) public OperableProxy(_core) { }
+  constructor(address _core) OperableProxy(_core) { }
 
   function name() override public view returns (string memory) {
     return TokenCore(core).tokenName();

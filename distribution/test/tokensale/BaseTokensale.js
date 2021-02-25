@@ -10,6 +10,9 @@ const Tokensale = artifacts.require('tokensale/BaseTokensale.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 const BN = require('bn.js');
 
+const INVEST_ETH_GAS_ESTIMATE = '178819';
+const REFUND_GAS_ESTIMATE = '64589';
+
 contract('BaseTokensale', function (accounts) {
   let sale, token;
 
@@ -191,7 +194,7 @@ contract('BaseTokensale', function (accounts) {
   it('should have correct gas estimate for investing  1 micro ETH [ @skip-on-coverage ]', async function () {
     const wei = web3.utils.toWei('1', 'microether');
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
-    assertGasEstimate(gas, 177999, 'gas estimate');
+    assertGasEstimate(gas, INVEST_ETH_GAS_ESTIMATE, 'gas estimate');
   });
 
   it('should invest 1 micro ETH', async function () {
@@ -347,13 +350,13 @@ contract('BaseTokensale', function (accounts) {
     });
 
     it('should have a refund cost [ @skip-on-coverage ]', async function () {
-      assertGasEstimate(refundCost.toString(), '64603', 'refund gas estimate');
+      assertGasEstimate(refundCost.toString(), REFUND_GAS_ESTIMATE, 'refund gas estimate');
     });
 
     it('should have account refunded [ @skip-on-coverage ]', async function () {
       const balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
 
-      const memorySpaceFreed = new BN(15734);
+      const memorySpaceFreed = new BN(15680);
       const realCost = new BN(refundCost).sub(memorySpaceFreed);
 
       const balanceDiff = new BN(balanceAfterRefund).add(new BN(realCost)).sub(new BN(balanceBeforeRefund));

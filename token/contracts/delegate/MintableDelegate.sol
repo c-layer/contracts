@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "../TokenStorage.sol";
 import "../TokenProxy.sol";
@@ -12,14 +12,15 @@ import "../TokenProxy.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * MT01: Transfer events must be generated
- * MT02: Token is already minted
- * MT03: Parameters must be same length
+ * MT01: Token is already minted
+ * MT02: Cannot burn more tokens than owned by the operator
+ * MT03: Transfer events must be generated
+ * MT04: Parameters must be same length
  */
 abstract contract MintableDelegate is TokenStorage {
 
   modifier canMint(address _token) {
-    require(!tokens[_token].mintingFinished, "MT02");
+    require(!tokens[_token].mintingFinished, "MT01");
     _;
   }
 
@@ -32,13 +33,14 @@ abstract contract MintableDelegate is TokenStorage {
     public returns (bool)
   {
     TokenData storage token = tokens[_token];
-    token.totalSupply = token.totalSupply.sub(_amount);
-    token.balances[msg.sender] = token.balances[msg.sender].sub(_amount);
-    token.allTimeBurned = token.allTimeBurned.add(_amount);
+    require(_amount <= token.balances[msg.sender], "MT02");
+    token.totalSupply = token.totalSupply - _amount;
+    token.balances[msg.sender] = token.balances[msg.sender] - _amount;
+    token.allTimeBurned = token.allTimeBurned + _amount;
 
     require(
       TokenProxy(_token).emitTransfer(msg.sender, address(0), _amount),
-      "MT01");
+      "MT03");
     emit Burned(_token, _amount);
     return true;
   }
@@ -47,16 +49,16 @@ abstract contract MintableDelegate is TokenStorage {
    * @dev Function to mint all tokens at once
    * @param _recipients The addresses that will receive the minted tokens.
    * @param _amounts The amounts of tokens to mint.
-   * @return A boolean that indicates if the operation was successful.
+   * @return success The boolean that indicates if the operation was successful.
    */
   function mint(address _token, address[] memory _recipients, uint256[] memory _amounts)
-    public canMint(_token) returns (bool)
+    public canMint(_token) returns (bool success)
   {
-    require(_recipients.length == _amounts.length, "MT03");
+    require(_recipients.length == _amounts.length, "MT04");
 
-    bool result = true;
-    for (uint256 i=0; i < _recipients.length; i++) {
-      result = result && mintInternal(_token, _recipients[i], _amounts[i]);
+    success = true;
+    for (uint256 i=0; i < _recipients.length && success; i++) {
+      success = mintInternal(_token, _recipients[i], _amounts[i]);
     }
   }
 
@@ -82,13 +84,13 @@ abstract contract MintableDelegate is TokenStorage {
     virtual internal canMint(_token) returns (bool)
   {
     TokenData storage token = tokens[_token];
-    token.totalSupply = token.totalSupply.add(_amount);
-    token.balances[_to] = token.balances[_to].add(_amount);
-    token.allTimeMinted = token.allTimeMinted.add(_amount);
+    token.totalSupply = token.totalSupply + _amount;
+    token.balances[_to] = token.balances[_to] + _amount;
+    token.allTimeMinted = token.allTimeMinted + _amount;
 
     require(
       TokenProxy(_token).emitTransfer(address(0), _to, _amount),
-      "MT01");
+      "MT03");
     emit Minted(_token, _amount);
     return true;
   }
