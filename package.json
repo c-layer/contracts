@@ -1,6 +1,6 @@
 {
   "name": "c-layer-contracts",
-  "version": "1.2.0",
+  "version": "1.4.0",
   "description": "SmartContract for the Compliance Layer",
   "private": true,
   "workspaces": [

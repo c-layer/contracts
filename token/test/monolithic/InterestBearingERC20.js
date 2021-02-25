@@ -14,9 +14,8 @@ const NAME = 'name';
 const SYMBOL = 'SYM';
 const DECIMALS = '18';
 const TOTAL_SUPPLY = '10000000';
-// const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
-const PERIOD = 31557600; // 24 * 365.25 * 3600;
+const PERIOD = 24 * 365.25 * 3600;
 const ELASTICITY_PRECISION = 10 ** 9;
 
 contract('InterestBearingERC20', function (accounts) {
