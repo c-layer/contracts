@@ -4,6 +4,7 @@
     "plugin:promise/recommended"
   ],
   "plugins": [
+    "mocha-no-only",
     "promise"
   ],
   "env": {
@@ -16,7 +17,9 @@
     "artifacts": false,
     "contract": false,
     "assert": false,
-    "web3": false
+    "web3": false,
+    "usePlugin": false,
+    "extendedEnvironment": false,
   },
   "rules": {
 
@@ -24,6 +27,7 @@
     "strict": ["error", "global"],
 
     // Code style
+    "array-bracket-spacing": ["off"],
     "camelcase": ["error", {"properties": "always"}],
     "comma-dangle": ["error", "always-multiline"],
     "comma-spacing": ["error", {"before": false, "after": true}],
@@ -48,6 +52,11 @@
     "quotes": ["error", "single"],
     "semi": ["error", "always"],
     "space-before-function-paren": ["error", "always"],
+
+    "mocha-no-only/mocha-no-only": ["error"],
+
+    "promise/always-return": "off",
+    "promise/avoid-new": "off",
   },
   "parserOptions": {
     "ecmaVersion": 2018

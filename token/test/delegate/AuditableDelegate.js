@@ -237,6 +237,7 @@ contract('AuditableDelegate', function (accounts) {
         const logId = i + 1;
         assert.equal(tx.logs[logId].event, 'LogAuditData', 'event [' + logId + ']');
         assertAuditLog(tx.logs[logId].args, audit, 'audit [' + logId + ']');
+        return audit;
       });
     });
   });
@@ -297,6 +298,7 @@ contract('AuditableDelegate', function (accounts) {
           const logId = i + 1;
           assert.equal(tx.logs[logId].event, 'LogAuditData', 'event [' + logId + ']');
           assertAuditLog(tx.logs[logId].args, audit, 'audit [' + logId + ']');
+          return audit;
         });
       });
     });
@@ -351,6 +353,7 @@ contract('AuditableDelegate', function (accounts) {
           const logId = i + 1;
           assert.equal(tx.logs[logId].event, 'LogAuditData', 'event [' + logId + ']');
           assertAuditLog(tx.logs[logId].args, audit, 'audit [' + logId + ']');
+          return audit;
         });
       });
     });
@@ -417,6 +420,7 @@ contract('AuditableDelegate', function (accounts) {
         const logId = i + 1;
         assert.equal(tx.logs[logId].event, 'LogAuditData', 'event [' + logId + ']');
         assertAuditLog(tx.logs[logId].args, audit, 'audit [' + logId + ']');
+        return audit;
       });
     });
   });

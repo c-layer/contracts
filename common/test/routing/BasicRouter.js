@@ -154,7 +154,7 @@ contract('BasicRouter', function (accounts) {
           from: accounts[0],
           to: router.address,
           value: WEI,
-          data: '0x1',
+          data: '0x00000001',
         });
         assert.ok(tx.status, 'Status');
       });

@@ -16,6 +16,7 @@
     "coverage": "yarn workspaces run coverage",
     "lint": "yarn workspaces run lint",
     "test": "yarn workspaces run test",
-    "flatten": "yarn workspaces run flatten"
+    "flatten": "yarn workspaces run flatten",
+    "gas-report": "yarn workspace run gas-report"
   }
 }

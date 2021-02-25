@@ -1172,7 +1172,8 @@ contract('VotingSessionManager', function (accounts) {
         assert.equal(tx.logs[0].args.sessionId.toString(), '2', 'session id');
         assert.equal(tx.logs[0].args.voteAt.toString(),
           ((NEXT_VOTE_AT - TODAY) < Periods.campaign)
-            ? NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH : NEXT_VOTE_AT, 'voteAt');
+            ? NEXT_VOTE_AT + DEFAULT_PERIOD_LENGTH
+            : NEXT_VOTE_AT, 'voteAt');
         assert.equal(tx.logs[1].event, 'ProposalDefined', 'event');
         assert.equal(tx.logs[1].args.sessionId.toString(), '2', 'session id');
         assert.equal(tx.logs[1].args.proposalId.toString(), '1', 'proposalId');

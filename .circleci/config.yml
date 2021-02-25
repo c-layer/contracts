@@ -3,7 +3,7 @@ version: 2.1
 aliases:
   - &defaults
     docker:
-      - image: circleci/node:12
+      - image: cimg/node:15.10.0
     parameters:
       package:
         type: string
@@ -12,7 +12,7 @@ aliases:
       ~/project/<< parameters.package >>
 
   - &cache_key_node_modules
-    key: v1-node_modules-{{ checksum "package-lock.json" }}
+    key: v1-node_modules-{{ checksum "yarn.lock" }}
 
   - &matrix_workflow_job
     matrix:

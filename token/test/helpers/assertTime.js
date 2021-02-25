@@ -8,9 +8,10 @@ const MAX_TOLERANCE_VALUE = 1; // in secondes
 module.exports = function (actualTime, expectedTime, message) {
   if (actualTime !== expectedTime) {
     const delta = (actualTime > expectedTime)
-      ? actualTime - expectedTime : expectedTime - actualTime;
+      ? actualTime - expectedTime
+      : expectedTime - actualTime;
 
-    if (delta == 0) {
+    if (delta === 0) {
       return;
     }
 
