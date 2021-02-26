@@ -5,6 +5,7 @@
  */
 
 const assertThrow = require('../helpers/assertThrow');
+const assertGasEstimate = require('../helpers/assertGasEstimate');
 const { assertTransferLog } = require('../helpers/assertLog');
 const OracleEnrichedDelegateMock = artifacts.require('OracleEnrichedDelegateMock.sol');
 const UserRegistry = artifacts.require('UserRegistry.sol');
@@ -20,9 +21,9 @@ const EMPTY_ADDRESS = '0x'.padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 const FETCH_SENDER_ID_ESTIMATE = 33435;
-const FETCH_SENDER_ESTIMATE = 103690;
+const FETCH_SENDER_ESTIMATE = 103664;
 const FETCH_RECEIVER_ID_ESTIMATE = 33475;
-const FETCH_RECEIVER_ESTIMATE = 103664;
+const FETCH_RECEIVER_ESTIMATE = 103690;
 const FETCH_CONVERT_RATE = 39872;
 
 contract('OracleEnrichedDelegate', function (accounts) {
@@ -350,28 +351,28 @@ contract('OracleEnrichedDelegate', function (accounts) {
 
     it('should estimate gas to fetch sender user id [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchSenderUserId.estimateGas(accounts[2]);
-      assert.equal(estimate, FETCH_SENDER_ID_ESTIMATE, 'fetch sender user id estimate');
+      assertGasEstimate(estimate, FETCH_SENDER_ID_ESTIMATE, 'fetch sender user id estimate');
     });
 
     it('should estimate gas to fetch sender user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchSenderUser.estimateGas(accounts[2], [1, 2]);
-      assert.equal(estimate, FETCH_SENDER_ESTIMATE, 'fetch sender user estimate');
+      assertGasEstimate(estimate, FETCH_SENDER_ESTIMATE, 'fetch sender user estimate');
     });
 
     it('should estimate gas to fetch receiver user id [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchReceiverUserId.estimateGas(accounts[2]);
-      assert.equal(estimate, FETCH_RECEIVER_ID_ESTIMATE, 'fetch receiver user id estimate');
+      assertGasEstimate(estimate, FETCH_RECEIVER_ID_ESTIMATE, 'fetch receiver user id estimate');
     });
 
     it('should estimate gas to fetch receiver user [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchReceiverUser.estimateGas(accounts[2], [1, 2]);
-      assert.equal(estimate, FETCH_RECEIVER_ESTIMATE, 'fetch receiver user estimate');
+      assertGasEstimate(estimate, FETCH_RECEIVER_ESTIMATE, 'fetch receiver user estimate');
     });
 
     it('should estimate gas to fetch converted value [ @skip-on-coverage ]', async function () {
       const estimate = await delegate.testFetchConvertedValue.estimateGas(
         100, ratesProvider.address, TOKEN_ADDRESS, CHF_ADDRESS);
-      assert.equal(estimate, FETCH_CONVERT_RATE, 'fetch convert estimate');
+      assertGasEstimate(estimate, FETCH_CONVERT_RATE, 'fetch convert estimate');
     });
   });
 });

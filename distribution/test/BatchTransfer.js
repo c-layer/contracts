@@ -17,7 +17,7 @@ const GAS_SAFETY_FACTOR_PERCENT = '110';
 const TWO_ETH_TRANSFERS_GAS = 128373;
 const THREE_ETH_TRANSFERS_GAS = 161442;
 const TWO_ERC20_TRANSFERS_GAS = 137970;
-const THREE_ERC20_TRANSFERS_GAS = 170134;
+const THREE_ERC20_TRANSFERS_GAS = 170097;
 
 contract('BatchTransfer', function (accounts) {
   let batch, vaultETH, emptyAccounts;
