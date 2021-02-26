@@ -138,36 +138,6 @@ contract DelegateMock is TokenStorage {
   }
 
   /**
-   * @dev audit
-   */
-  function audit(
-    address _scope,
-    uint256 _scopeId,
-    AuditStorageMode _storageMode,
-    bytes32 _storageId) public view returns (
-    uint64 createdAt,
-    uint64 lastTransactionAt,
-    uint256 cumulatedEmission,
-    uint256 cumulatedReception)
-  {
-    AuditData memory auditData;
-    if (_storageMode == AuditStorageMode.SHARED) {
-      auditData = audits[_scope][_scopeId].sharedData;
-    }
-    if (_storageMode == AuditStorageMode.ADDRESS) {
-      auditData = audits[_scope][_scopeId].addressData[address(bytes20(_storageId))];
-    }
-    if (_storageMode == AuditStorageMode.USER_ID) {
-      auditData = audits[_scope][_scopeId].userData[uint256(_storageId)];
-    }
-
-    createdAt = auditData.createdAt;
-    lastTransactionAt = auditData.lastTransactionAt;
-    cumulatedEmission = auditData.cumulatedEmission;
-    cumulatedReception = auditData.cumulatedReception;
-  }
-
-  /**
    * @dev convert
    */
   function convert(uint256 _amount, bytes32, bytes32)
