@@ -37,7 +37,9 @@ contract('PublicMultiSig', function (accounts) {
     assert.equal(await multiSig.transactionCreator(txId), accounts[0], 'transactionCreator');
 
     const createdAt = await multiSig.transactionCreatedAt(txId);
-    assert.ok(createdAt < (new Date().getTime()) / 1000, 'transactionCreatedAt');
+    console.log(createdAt.toString());
+    console.log(new Date().getTime() / 1000);
+    assert.ok(createdAt < (new Date().getTime() / 1000), 'transactionCreatedAt');
 
     const toBeExpiredAt = await multiSig.toBeExpiredAt(txId);
     assert.ok(toBeExpiredAt > createdAt, 'toBeExpiredAt');

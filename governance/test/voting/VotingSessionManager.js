@@ -529,7 +529,7 @@ contract('VotingSessionManager', function (accounts) {
     });
 
     it('should have a session state at PLANNED', async function () {
-      const now = Math.floor(new Date().getTime() / 1000);
+      const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
       const sessionState = await votingSession.sessionStateAt(1, now);
       assert.equal(sessionState.toString(), SessionState.PLANNED, 'session state');
     });
@@ -684,8 +684,8 @@ contract('VotingSessionManager', function (accounts) {
         await votingSession.cancelProposal(1);
       });
 
-      it('should have a proposal state at APPROVED', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+      it('should have a proposal state at CANCELLED', async function () {
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const proposalState = await votingSession.proposalStateAt(1, 1, now);
         assert.equal(proposalState.toString(), ProposalState.CANCELLED, 'proposal state');
       });
@@ -788,7 +788,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have a session state at CAMPAIGN', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const sessionState = await votingSession.sessionStateAt(1, now);
         assert.equal(sessionState.toString(), SessionState.CAMPAIGN, 'session state');
       });
@@ -811,7 +811,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have a session state at VOTING', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const sessionState = await votingSession.sessionStateAt(1, now);
         assert.equal(sessionState.toString(), SessionState.VOTING, 'session state');
       });
@@ -960,7 +960,7 @@ contract('VotingSessionManager', function (accounts) {
     });
 
     it('should have a session state at GRACE', async function () {
-      const now = Math.floor(new Date().getTime() / 1000);
+      const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
       const sessionState = await votingSession.sessionStateAt(1, now);
       assert.equal(sessionState.toString(), SessionState.GRACE, 'session state');
     });
@@ -970,7 +970,7 @@ contract('VotingSessionManager', function (accounts) {
     });
 
     it('should have a proposal state at APPROVED', async function () {
-      const now = Math.floor(new Date().getTime() / 1000);
+      const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
       const proposalState = await votingSession.proposalStateAt(1, 1, now);
       assert.equal(proposalState.toString(), ProposalState.APPROVED, 'proposal state');
     });
@@ -1051,13 +1051,13 @@ contract('VotingSessionManager', function (accounts) {
     });
 
     it('should have a session state at GRACE', async function () {
-      const now = Math.floor(new Date().getTime() / 1000);
+      const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
       const sessionState = await votingSession.sessionStateAt(1, now);
       assert.equal(sessionState.toString(), SessionState.GRACE, 'session state');
     });
 
     it('should have a proposal state at APPROVED', async function () {
-      const now = Math.floor(new Date().getTime() / 1000);
+      const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
       const proposalState = await votingSession.proposalStateAt(1, 1, now);
       assert.equal(proposalState.toString(), ProposalState.APPROVED, 'proposal state');
     });
@@ -1117,7 +1117,7 @@ contract('VotingSessionManager', function (accounts) {
 
     describe('during the grace period', function () {
       it('should have a session state at GRACE', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const sessionState = await votingSession.sessionStateAt(1, now);
         assert.equal(sessionState.toString(), SessionState.GRACE, 'session state');
       });
@@ -1151,7 +1151,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have a session state at CLOSED', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const sessionState = await votingSession.sessionStateAt(1, now);
         assert.equal(sessionState.toString(), SessionState.CLOSED, 'session state');
       });
@@ -1540,7 +1540,7 @@ contract('VotingSessionManager', function (accounts) {
       });
 
       it('should have a session state at CLOSED', async function () {
-        const now = Math.floor(new Date().getTime() / 1000);
+        const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
         const sessionState = await votingSession.sessionStateAt(1, now);
         assert.equal(sessionState.toString(), SessionState.CLOSED, 'session state');
       });
@@ -1579,13 +1579,13 @@ contract('VotingSessionManager', function (accounts) {
         });
 
         it('should have a session state at ARCHIVED', async function () {
-          const now = Math.floor(new Date().getTime() / 1000);
+          const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
           const sessionState = await votingSession.sessionStateAt(1, now);
           assert.equal(sessionState.toString(), SessionState.ARCHIVED, 'session state');
         });
 
         it('should have prooposal state at ARCHIVED', async function () {
-          const now = Math.floor(new Date().getTime() / 1000);
+          const now = await web3.eth.getBlock('latest').then((block) => block.timestamp);
           const proposalState = await votingSession.proposalStateAt(1, 1, now);
           assert.equal(proposalState.toString(), ProposalState.ARCHIVED, 'proposal state');
         });

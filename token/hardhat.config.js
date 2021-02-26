@@ -15,8 +15,8 @@ try {
   // Secret file format is:
   // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
 
-  const secretFiles = [ "~/.secret.json", "../.secret.json", "../../.secret.json", "../../../.secret.json" ];
-  for (let i=0; i < secretFiles.length && !secret; i++) {
+  const secretFiles = [ '~/.secret.json', '../.secret.json', '../../.secret.json', '../../../.secret.json' ];
+  for (let i = 0; i < secretFiles.length && !secret; i++) {
     if (fs.existsSync(secretFiles[i])) {
       secret = JSON.parse(fs.readFileSync(secretFiles[i]));
     }
@@ -32,7 +32,7 @@ try {
 
 const enableGasReport = !!process.env.ENABLE_GAS_REPORT;
 
-module.exports = {
+const config = {
   solidity: {
     version: '0.8.1',
     settings: {
@@ -45,6 +45,7 @@ module.exports = {
   networks: {
     hardhat: {
       blockGasLimit: 10000000,
+      allowUnlimitedContractSize: true,
     },
     ropsten: {
       url: 'https://ropsten.infura.io/v3/' + secret.infuraKey,
@@ -94,7 +95,6 @@ module.exports = {
   },
 };
 
-
 if (secret.endpoints) {
   // Injecting endpoints
   Object.keys(secret.endpoints).forEach((name) => {
@@ -117,3 +117,4 @@ if (secret.endpoints) {
   });
 }
 
+module.exports = config;

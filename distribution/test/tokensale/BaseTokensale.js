@@ -10,8 +10,9 @@ const Tokensale = artifacts.require('tokensale/BaseTokensale.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 const BN = require('bn.js');
 
-const INVEST_ETH_GAS_ESTIMATE = '178819';
+const INVEST_ETH_GAS_ESTIMATE = 184730;
 const REFUND_GAS_ESTIMATE = '64589';
+const REFUND_REAL_COST = '-395544000000000';
 
 contract('BaseTokensale', function (accounts) {
   let sale, token;
@@ -194,6 +195,7 @@ contract('BaseTokensale', function (accounts) {
   it('should have correct gas estimate for investing  1 micro ETH [ @skip-on-coverage ]', async function () {
     const wei = web3.utils.toWei('1', 'microether');
     const gas = await sale.investETH.estimateGas({ value: wei, from: accounts[3] });
+
     assertGasEstimate(gas, INVEST_ETH_GAS_ESTIMATE, 'gas estimate');
   });
 
@@ -326,8 +328,6 @@ contract('BaseTokensale', function (accounts) {
       assert.ok(tx5.receipt.status, 'Status');
 
       balanceBeforeRefund = await web3.eth.getBalance(accounts[4]);
-
-      // gas price is 1 WEI
       refundCost = await sale.refundUnspentETH.estimateGas({ from: accounts[4] });
       const tx6 = await sale.refundUnspentETH({ from: accounts[4] });
       assert.ok(tx6.receipt.status, 'Status');
@@ -355,12 +355,9 @@ contract('BaseTokensale', function (accounts) {
 
     it('should have account refunded [ @skip-on-coverage ]', async function () {
       const balanceAfterRefund = await web3.eth.getBalance(accounts[4]);
-
-      const memorySpaceFreed = new BN(15680);
-      const realCost = new BN(refundCost).sub(memorySpaceFreed);
-
-      const balanceDiff = new BN(balanceAfterRefund).add(new BN(realCost)).sub(new BN(balanceBeforeRefund));
-      assert.equal(balanceDiff.toString(), web3.utils.toWei('0.1', 'microether'), 'balance refunded');
+      const refundRealCost = new BN(balanceAfterRefund).sub(new BN(balanceBeforeRefund)).sub(
+        new BN(web3.utils.toWei('0.1', 'microether')));
+      assert.equal(refundRealCost.toString(), REFUND_REAL_COST, 'balance refunded');
     });
 
     it('should have a total raised', async function () {

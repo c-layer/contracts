@@ -546,9 +546,9 @@ contract VotingSessionDelegate is IVotingSessionDelegate, VotingSessionStorage {
 
       uint256 at = nextStartAt + sessionRule_.votingPeriod;
       session_.executionAt = uint64(at);
-      at = at + sessionRule_.executionPeriod;
+      at += sessionRule_.executionPeriod;
       session_.graceAt = uint64(at);
-      at = at + sessionRule_.gracePeriod;
+      at += sessionRule_.gracePeriod;
       session_.closedAt = uint64(at);
       session_.totalSupply = token_.totalSupply();
 

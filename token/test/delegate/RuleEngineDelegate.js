@@ -9,9 +9,9 @@ const YesNoRule = artifacts.require('YesNoRule.sol');
 
 const TOKEN_ADDRESS = '0x' + '123456789'.padStart(40, '0');
 
-const ESTIMATE_NO_RULES = 25008;
-const ESTIMATE_ONE_RULE = 29252;
-const ESTIMATE_TWO_RULES = 33418;
+const ESTIMATE_NO_RULES = 26738;
+const ESTIMATE_ONE_RULE = 32127;
+const ESTIMATE_TWO_RULES = 37438;
 
 contract('RuleEngineDelegate', function (accounts) {
   let delegate, yesRule, noRule;
@@ -43,21 +43,21 @@ contract('RuleEngineDelegate', function (accounts) {
   it('should estimate no rules validation [ @skip-on-coverage ]', async function () {
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
-    assert.equal(estimate.toString(), ESTIMATE_NO_RULES, 'no rules estimate');
+    assert.equal(estimate, ESTIMATE_NO_RULES, 'no rules estimate');
   });
 
   it('should estimate one rules validation [ @skip-on-coverage ]', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
-    assert.equal(estimate.toString(), ESTIMATE_ONE_RULE, 'one rule estimate');
+    assert.equal(estimate, ESTIMATE_ONE_RULE, 'one rule estimate');
   });
 
   it('should estimate two rules validation [ @skip-on-coverage ]', async function () {
     await delegate.defineRules(TOKEN_ADDRESS, [yesRule.address, yesRule.address]);
     const estimate = await delegate.testAreTransferRulesValid.estimateGas(
       TOKEN_ADDRESS, accounts[0], accounts[1], accounts[2], '1000');
-    assert.equal(estimate.toString(), ESTIMATE_TWO_RULES, 'two rules estimate');
+    assert.equal(estimate, ESTIMATE_TWO_RULES, 'two rules estimate');
   });
 
   describe('With a yes rule defined', function () {

@@ -14,10 +14,10 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const ETH_TRANSFER_MIN_GAS = '230000';
 
 const GAS_SAFETY_FACTOR_PERCENT = '110';
-const TWO_ETH_TRANSFERS_GAS = '127431';
-const THREE_ETH_TRANSFERS_GAS = '160932';
-const TWO_ERC20_TRANSFERS_GAS = '137459';
-const THREE_ERC20_TRANSFERS_GAS = '169497';
+const TWO_ETH_TRANSFERS_GAS = 129521;
+const THREE_ETH_TRANSFERS_GAS = 163524;
+const TWO_ERC20_TRANSFERS_GAS = 144058;
+const THREE_ERC20_TRANSFERS_GAS = 178150;
 
 contract('BatchTransfer', function (accounts) {
   let batch, vaultETH, emptyAccounts;
