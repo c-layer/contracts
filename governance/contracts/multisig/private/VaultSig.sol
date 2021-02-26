@@ -12,9 +12,8 @@ import "./LockableSig.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- * VS01: no data is expected when transfer ETH
- * VS02: there should be no ETH provided when data is found
- * VS03: this contract only accept data for ERC20 transfer
+ * VS01: there should be no ETH provided when data is found
+ * VS02: this contract only accept data for ERC20 transfer
  */
 contract VaultSig is LockableSig {
 
@@ -37,9 +36,7 @@ contract VaultSig is LockableSig {
   /**
    * @dev fallback function
    */
-  fallback() external override payable {
-    require(msg.data.length == 0, "VS01");
-  }
+  fallback() external override payable {}
 
   /**
    * @dev execute the transaction
@@ -59,8 +56,8 @@ contract VaultSig is LockableSig {
     if (_data.length == 0) {
       executeInternal(_destination, _value, "");
     } else {
-      require(_value == 0, "VS02");
-      require(readSelector(_data) == ERC20_TRANSFER_SELECTOR, "VS03");
+      require(_value == 0, "VS01");
+      require(readSelector(_data) == ERC20_TRANSFER_SELECTOR, "VS02");
       executeInternal(_destination, 0, _data);
     }
     return true;

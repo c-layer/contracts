@@ -63,21 +63,15 @@ contract('VaultSig', function (accounts) {
       );
     });
 
-    it('should not accept data with ETH in the same transaction', async function () {
-      await assertRevert(new Promise(
-        (resolve, reject) => web3.eth.sendTransaction({
-          from: accounts[0],
-          to: vaultSig.address,
-          value: 1,
-          data: 'abc',
-        }, (err, data) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-        }),
-      ));
+    it('should accept data with ETH in the same transaction', async function () {
+      const receipt = await web3.eth.sendTransaction({
+        from: accounts[0],
+        to: vaultSig.address,
+        value: 1,
+        data: web3.utils.fromAscii('abc'),
+      });
+
+      assert.ok(receipt.status, 'status');
     });
 
     it('should transfer ETH', async function () {
@@ -146,7 +140,7 @@ contract('VaultSig', function (accounts) {
       await assertRevert(
         vaultSig.execute([rsv.r], [rsv.s], [rsv.v],
           token.address, 1, request.params[0].data, 0),
-        'VS02');
+        'VS01');
     });
   });
 });

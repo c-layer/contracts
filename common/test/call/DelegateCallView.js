@@ -24,7 +24,7 @@ contract('DelegateCallView', function (accounts) {
   });
 
   it('should fail with error when unsucessfull call view bool', async function () {
-    await assertRevert(delegateView.delegateCallBoolMock.call(false), 'DVM02');
+    await assertRevert(delegateView.delegateCallBoolMock.call(false), 'DVM01');
   });
 
   it('should delegate call view uint256', async function () {
@@ -33,7 +33,7 @@ contract('DelegateCallView', function (accounts) {
   });
 
   it('should fail with error when unsuccessfull call view uint256', async function () {
-    await assertRevert(delegateView.delegateCallUint256Mock.call(0), 'DVM03');
+    await assertRevert(delegateView.delegateCallUint256Mock.call(0), 'DVM02');
   });
 
   it('should delegate call view bytes', async function () {
@@ -43,7 +43,7 @@ contract('DelegateCallView', function (accounts) {
   });
 
   it('should fail with error when unsucessfull call view bytes', async function () {
-    await assertRevert(delegateView.delegateCallBytesMock.call('0x'), 'DVM04');
+    await assertRevert(delegateView.delegateCallBytesMock.call('0x'), 'DVM03');
   });
 
   it('should not be possible to call forwardCallBytes directly', async function () {

@@ -28,7 +28,7 @@ contract('Proxy', function (accounts) {
     });
 
     it('should have static call failing', async function () {
-      await assertRevert(proxy.delegateCallUint256Mock(0), 'DVM03');
+      await assertRevert(proxy.delegateCallUint256Mock(0), 'DVM02');
     });
   });
 

@@ -248,32 +248,4 @@ contract DelegateMock is TokenStorage {
     emit AuditTriggersDefined(_configurationId, _senders, _receivers, _modes);
     return true;
   }
-
-  /**
-   * @dev updateAuditStorage
-   */
-  function updateAuditStorage(
-    address _scope,
-    uint256 _scopeId,
-    AuditStorageMode _storageMode,
-    bytes32 _storageId,
-    uint64 _createdAt,
-    uint64 _lastTransactionAt,
-    uint256 _cumulatedEmission,
-    uint256 _cumulatedReception) public returns (bool)
-  {
-    AuditData storage auditData = audits[_scope][_scopeId].sharedData;
-    if (_storageMode == AuditStorageMode.ADDRESS) {
-      auditData = audits[_scope][_scopeId].addressData[address(bytes20(_storageId))];
-    }
-    if (_storageMode == AuditStorageMode.USER_ID) {
-      auditData = audits[_scope][_scopeId].userData[uint256(_storageId)];
-    }
-
-    auditData.createdAt = _createdAt;
-    auditData.lastTransactionAt = _lastTransactionAt;
-    auditData.cumulatedEmission = _cumulatedEmission;
-    auditData.cumulatedReception = _cumulatedReception;
-    return true;
-  }
 }
