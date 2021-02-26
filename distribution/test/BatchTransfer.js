@@ -182,7 +182,7 @@ contract('BatchTransfer', function (accounts) {
         assert.equal(balanceVaultETH2.toString(), '1000000', 'vault');
       });
 
-      it('should estimate ether transfer to two addresses', async function () {
+      it('should estimate ether transfer to two addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transfer.estimateGas(
           [emptyAccounts[0], emptyAccounts[1]], [100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
@@ -209,7 +209,7 @@ contract('BatchTransfer', function (accounts) {
         assert.equal(balanceVaultETH.toString(), fees.toString(), 'vault');
       });
 
-      it('should estimate ether transfer to three addresses', async function () {
+      it('should estimate ether transfer to three addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transfer.estimateGas(
           [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
@@ -308,7 +308,7 @@ contract('BatchTransfer', function (accounts) {
         assert.equal(balanceVaultETH2.toString(), '1000000', 'vault');
       });
 
-      it('should estimate token transfer to two addresses', async function () {
+      it('should estimate token transfer to two addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transferERC20.estimateGas(
           token.address, [emptyAccounts[0], emptyAccounts[1]], [100, 100], {
             from: accounts[1],
@@ -335,7 +335,7 @@ contract('BatchTransfer', function (accounts) {
         assert.equal(balanceVaultETH.toString(), fees.toString(), 'vault');
       });
 
-      it('should estimate token transfer to three addresses', async function () {
+      it('should estimate token transfer to three addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transferERC20.estimateGas(
           token.address, [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], {
             from: accounts[1],
