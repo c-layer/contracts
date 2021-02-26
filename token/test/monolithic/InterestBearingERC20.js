@@ -167,17 +167,19 @@ contract('InterestBearingERC20', function (accounts) {
         it('should let add interest', async function () {
           const tx = await token.defineInterest(1);
           const rebaseFrom = await web3.eth.getBlock(tx.receipt.blockNumber).then((block) => block.timestamp);
-          const interest = 1076250000 + Math.floor((rebaseFrom - from) / PERIOD);
+          const interest = 1076250000;
 
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 3);
+
           assert.equal(tx.logs[0].event, 'InterestRebase', 'event');
           assertTime(tx.logs[0].args.at.toNumber(), (from - PERIOD / 2), 'at1');
           assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity1');
-          assert.equal(tx.logs[1].event, 'InterestRebase', 'event');
-          assertTime(tx.logs[1].args.at.toNumber(), rebaseFrom, 'at2');
 
+          assert.equal(tx.logs[1].event, 'InterestRebase', 'event');
+          assertTime(tx.logs[1].args.at.toNumber(), from, 'at2');
           assert.equal(tx.logs[1].args.elasticity.toString(), String(interest), 'elasticity2');
+
           assert.equal(tx.logs[2].event, 'InterestUpdate', 'event');
           assert.equal(tx.logs[2].args.rate.toString(), 1, 'value');
           assert.equal(tx.logs[2].args.elasticity.toString(), String(interest), 'value');

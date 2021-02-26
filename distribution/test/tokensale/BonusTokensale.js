@@ -260,7 +260,7 @@ contract('BonusTokensale', function (accounts) {
 
     describe('during the sale', async function () {
       beforeEach(async function () {
-        sale.updateSchedule(0, end);
+        await sale.updateSchedule(0, end);
       });
 
       it('should have current bonus', async function () {

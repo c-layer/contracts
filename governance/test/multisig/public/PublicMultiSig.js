@@ -25,6 +25,7 @@ contract('PublicMultiSig', function (accounts) {
 
   async function suggest () {
     const txReceipt = await multiSig.suggest(request.params[0].to, 0, request.params[0].data);
+
     assert.equal(txReceipt.logs.length, 1);
     assert.equal(txReceipt.logs[0].event, 'TransactionAdded');
     const txId = (txReceipt.logs[0].args.transactionId).toNumber();
@@ -36,10 +37,10 @@ contract('PublicMultiSig', function (accounts) {
     assert.equal(await multiSig.isCancelled(txId), false, 'isCancelled');
     assert.equal(await multiSig.transactionCreator(txId), accounts[0], 'transactionCreator');
 
+    const timestamp = await web3.eth.getBlock(txReceipt.receipt.blockNumber).then(
+      (block) => block.timestamp);
     const createdAt = await multiSig.transactionCreatedAt(txId);
-    console.log(createdAt.toString());
-    console.log(new Date().getTime() / 1000);
-    assert.ok(createdAt < (new Date().getTime() / 1000), 'transactionCreatedAt');
+    assert.equal(createdAt, timestamp, 'transactionCreatedAt');
 
     const toBeExpiredAt = await multiSig.toBeExpiredAt(txId);
     assert.ok(toBeExpiredAt > createdAt, 'toBeExpiredAt');

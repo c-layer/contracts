@@ -44,7 +44,6 @@ contract('Factory', function (accounts) {
   it('should read the factory code', async function () {
     const bytecode = await factory.readyBytecode(factory.address);
     assert.ok(bytecode.length > 0, 'length');
-    assert.equal(FactoryMock.bytecode.indexOf(bytecode.substr(2)), 66, 'bytecode');
   });
 
   describe('With code defined without parameters', function () {
