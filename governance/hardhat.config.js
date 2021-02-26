@@ -37,7 +37,7 @@ const config = {
     version: '0.8.1',
     settings: {
       optimizer: {
-        enabled: enableGasReport,
+        enabled: true,
         runs: 10000,
       },
     },

@@ -9,9 +9,9 @@ const YesNoRule = artifacts.require('YesNoRule.sol');
 
 const TOKEN_ADDRESS = '0x' + '123456789'.padStart(40, '0');
 
-const ESTIMATE_NO_RULES = 26738;
-const ESTIMATE_ONE_RULE = 32127;
-const ESTIMATE_TWO_RULES = 37438;
+const ESTIMATE_NO_RULES = 24996;
+const ESTIMATE_ONE_RULE = 29240;
+const ESTIMATE_TWO_RULES = 33406;
 
 contract('RuleEngineDelegate', function (accounts) {
   let delegate, yesRule, noRule;

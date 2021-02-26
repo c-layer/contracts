@@ -10,9 +10,9 @@ const Tokensale = artifacts.require('tokensale/BaseTokensale.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 const BN = require('bn.js');
 
-const INVEST_ETH_GAS_ESTIMATE = 184730;
-const REFUND_GAS_ESTIMATE = '64589';
-const REFUND_REAL_COST = '-395544000000000';
+const INVEST_ETH_GAS_ESTIMATE = 179078;
+const REFUND_GAS_ESTIMATE = 64956;
+const REFUND_REAL_COST = '-391272000000000';
 
 contract('BaseTokensale', function (accounts) {
   let sale, token;
