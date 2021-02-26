@@ -166,7 +166,6 @@ contract('InterestBearingERC20', function (accounts) {
 
         it('should let add interest', async function () {
           const tx = await token.defineInterest(1);
-          const rebaseFrom = await web3.eth.getBlock(tx.receipt.blockNumber).then((block) => block.timestamp);
           const interest = 1076250000;
 
           assert.ok(tx.receipt.status, 'Status');

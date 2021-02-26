@@ -34,7 +34,10 @@ contract('SecretMultiSig', function (accounts) {
     assert.equal(await multiSig.isExpired(txId), false, 'isExpired');
     assert.equal(await multiSig.isCancelled(txId), false, 'isCancelled');
     assert.equal(await multiSig.transactionCreator(txId), accounts[0], 'transactionCreator');
-    assert.ok((await multiSig.transactionCreatedAt(txId)) < (new Date().getTime()) / 1000, 'transactionCreatedAt');
+
+    const timestamp = await web3.eth.getBlock(txReceipt.receipt.blockNumber).then(
+      (block) => block.timestamp);
+    assert.equal(await multiSig.transactionCreatedAt(txId), timestamp, 'transactionCreatedAt');
     assert.equal(await multiSig.isExecuted(txId), false, 'isExecuted');
     return txId;
   };
