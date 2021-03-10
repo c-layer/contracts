@@ -57,12 +57,7 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
    */
   function burn(uint256 _amount) external override onlyOwner returns (bool)
   {
-    totalSupply_ = totalSupply_ - _amount;
-    balances[msg.sender] = balances[msg.sender] - _amount;
-
-    emit Transfer(msg.sender, address(0), _amount);
-    emit Burn(msg.sender, _amount);
-    return true;
+    return burnInternal(msg.sender, _amount);
   }
 
   /**
@@ -108,6 +103,22 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
 
     emit Transfer(address(0), _to, _amount);
     emit Mint(_to, _amount);
+    return true;
+  }
+
+  /**
+   * @dev Function to burn tokens internal
+   * @param _from The address that will receive the minted tokens.
+   * @param _amount The amount of tokens to mint.
+   * @return A boolean that indicates if the operation was successful.
+   */
+  function burnInternal(address _from, uint256 _amount) internal returns (bool)
+  {
+    totalSupply_ = totalSupply_ - _amount;
+    balances[_from] = balances[_from] - _amount;
+
+    emit Transfer(_from, address(0), _amount);
+    emit Burn(_from, _amount);
     return true;
   }
 }
