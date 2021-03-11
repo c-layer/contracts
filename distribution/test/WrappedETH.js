@@ -10,7 +10,7 @@ const WrappedETH = artifacts.require('WrappedETH.sol');
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
 contract('WrappedETH', function (accounts) {
-  let wToken, token;
+  let wToken;
 
   beforeEach(async function () {
     wToken = await WrappedETH.new('Name', 'Symbol', 18);
@@ -44,7 +44,7 @@ contract('WrappedETH', function (accounts) {
   });
 
   it('should not deposit too many tokens', async function () {
-    await assertRevert(wToken.deposit({ from: accounts[1], value: '0x'.padEnd(66, 'f')  }));
+    await assertRevert(wToken.deposit({ from: accounts[1], value: '0x'.padEnd(66, 'f') }));
   });
 
   describe('With some wrapped tokens', function () {

@@ -4,8 +4,8 @@ const path = require('path');
 require('@nomiclabs/hardhat-truffle5');
 require('@nomiclabs/hardhat-solhint');
 require('solidity-coverage');
-//require('hardhat-gas-reporter');
-require("hardhat-tracer");
+// require('hardhat-gas-reporter');
+require('hardhat-tracer');
 
 let secret = {
   mnemonic: 'test test test test test test test test test test test junk',
