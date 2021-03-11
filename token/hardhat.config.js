@@ -4,7 +4,8 @@ const path = require('path');
 require('@nomiclabs/hardhat-truffle5');
 require('@nomiclabs/hardhat-solhint');
 require('solidity-coverage');
-require('hardhat-gas-reporter');
+//require('hardhat-gas-reporter');
+require("hardhat-tracer");
 
 let secret = {
   mnemonic: 'test test test test test test test test test test test junk',
@@ -16,9 +17,10 @@ try {
   // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
 
   const secretFiles = [ '~/.secret.json', '../.secret.json', '../../.secret.json', '../../../.secret.json' ];
-  for (let i = 0; i < secretFiles.length && !secret; i++) {
+  for (let i = 0; i < secretFiles.length; i++) {
     if (fs.existsSync(secretFiles[i])) {
       secret = JSON.parse(fs.readFileSync(secretFiles[i]));
+      break;
     }
   }
 
@@ -45,7 +47,6 @@ const config = {
   networks: {
     hardhat: {
       blockGasLimit: 10000000,
-      allowUnlimitedContractSize: true,
     },
     ropsten: {
       url: 'https://ropsten.infura.io/v3/' + secret.infuraKey,
