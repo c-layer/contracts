@@ -32,7 +32,7 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
     IERC20 _base
   ) TokenERC20(_name, _symbol, _decimals, address(0), 0)
   {
-    ratio_ = 10 ** _decimals - _base.decimals();
+    ratio_ = 10 ** (_decimals - _base.decimals());
     base_ = _base;
   }
 
