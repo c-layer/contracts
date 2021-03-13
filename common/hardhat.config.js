@@ -9,12 +9,12 @@ require('hardhat-tracer');
 
 let secret = {
   mnemonic: 'test test test test test test test test test test test junk',
-  infuraKey: '',
+  projectId: '',
 };
 
 try {
   // Secret file format is:
-  // { mnemonic: '', infuraKey, '', endpoints: { <networkname>: 'http://endpoint' } }
+  // { mnemonic: '', projectId, '', endpoints: { <networkname>: 'http://endpoint' } }
 
   const secretFiles = [ '~/.secret.json', '../.secret.json', '../../.secret.json', '../../../.secret.json' ];
   for (let i = 0; i < secretFiles.length; i++) {
@@ -49,7 +49,7 @@ const config = {
       blockGasLimit: 10000000,
     },
     ropsten: {
-      url: 'https://ropsten.infura.io/v3/' + secret.infuraKey,
+      url: 'https://ropsten.infura.io/v3/' + secret.projectId,
       chainId: 3,
       gas: 'auto',
       accounts: {
@@ -57,7 +57,7 @@ const config = {
       },
     },
     rinkeby: {
-      url: 'https://rinkeby.infura.io/v3/' + secret.infuraKey,
+      url: 'https://rinkeby.infura.io/v3/' + secret.projectId,
       chainId: 4,
       gas: 'auto',
       accounts: {
@@ -65,7 +65,7 @@ const config = {
       },
     },
     goerli: {
-      url: 'https://goerli.infura.io/v3/' + secret.infuraKey,
+      url: 'https://goerli.infura.io/v3/' + secret.projectId,
       chainId: 5,
       gas: 'auto',
       accounts: {
@@ -73,7 +73,7 @@ const config = {
       },
     },
     kovan: {
-      url: 'https://kovan.infura.io/v3/' + secret.infuraKey,
+      url: 'https://kovan.infura.io/v3/' + secret.projectId,
       chainId: 42,
       gas: 'auto',
       accounts: {
@@ -81,7 +81,7 @@ const config = {
       },
     },
     mainnet: {
-      url: 'https://mainnet.infura.io/v3/' + secret.infuraKey,
+      url: 'https://mainnet.infura.io/v3/' + secret.projectId,
       chainId: 1,
       gas: 'auto',
       accounts: {
