@@ -1,6 +1,6 @@
 [![Build Status](https://circleci.com/gh/c-layer/contracts.svg?style=shield)](https://circleci.com/gh/c-layer/contracts)
 [![Common Coverage Status](https://codecov.io/gh/c-layer/contracts/graph/badge.svg)](https://codecov.io/gh/c-layer/contracts)
-
+[![License](https://img.shields.io/github/license/c-layer/contracts)](https://github.com/c-layer/contracts/blob/master/LICENSE)
 
 # Compliance Layer SmartContracts
 
