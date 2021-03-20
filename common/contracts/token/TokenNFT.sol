@@ -18,8 +18,7 @@ import "../convert/Bytes32Convert.sol";
 contract TokenNFT is INFT {
   using Bytes32Convert for bytes32;
 
-  uint256 constant ALL_TOKENS = ~uint256(0);
-  uint256 constant NO_TOkENS = uint256(0);
+  uint256 constant internal ALL_TOKENS = ~uint256(0);
 
   string internal name_;
   string internal symbol_;

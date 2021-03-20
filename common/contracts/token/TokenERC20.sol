@@ -11,7 +11,7 @@ import "../interface/IERC20.sol";
  * SPDX-License-Identifier: MIT
  *
  * Error messages
- *   TE01: Address is invalid
+ *   TE01: Recipient is invalid
  *   TE02: Not enougth tokens
  *   TE03: Approval too low
  */
