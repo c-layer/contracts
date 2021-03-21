@@ -9,7 +9,10 @@ const TokenNFT = artifacts.require('TokenNFT.sol');
 
 const NAME = 'name';
 const SYMBOL = 'SYM';
-const BASE_URI = 'https://nft.c-layer.org/?id=0x';
+const TEMPLATE_URI = {
+  base: 'https://nft.c-layer.org/?id=0x',
+  extension: '.html',
+};
 const SUPPLY = [ 1, 2, 4, 8, 16, 32, 64 ];
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
@@ -17,7 +20,8 @@ contract('TokenNFT', function (accounts) {
   let token;
 
   beforeEach(async function () {
-    token = await TokenNFT.new(NAME, SYMBOL, BASE_URI, accounts[0], SUPPLY);
+    token = await TokenNFT.new(NAME, SYMBOL,
+      TEMPLATE_URI.base, TEMPLATE_URI.extension, accounts[0], SUPPLY);
   });
 
   it('should have a name', async function () {
@@ -31,8 +35,9 @@ contract('TokenNFT', function (accounts) {
   });
 
   it('should have a baseURI', async function () {
-    const baseURI = await token.baseURI();
-    assert.equal(baseURI, BASE_URI, 'baseURI');
+    const templateURI = await token.templateURI();
+    assert.equal(templateURI.base, TEMPLATE_URI.base, 'base');
+    assert.equal(templateURI.extension, TEMPLATE_URI.extension, 'extension');
   });
 
   it('should have a total supply', async function () {
@@ -42,7 +47,7 @@ contract('TokenNFT', function (accounts) {
 
   it('should have URI for token', async function () {
     const tokenURI = await token.tokenURI(64);
-    assert.equal(tokenURI, BASE_URI + 40, 'tokenURI');
+    assert.equal(tokenURI, TEMPLATE_URI.base + 40 + TEMPLATE_URI.extension, 'tokenURI');
   });
 
   it('should have token balance for initial account', async function () {
@@ -103,7 +108,7 @@ contract('TokenNFT', function (accounts) {
     assert.equal(tx.logs.length, 1);
     assert.equal(tx.logs[0].event, 'Approval', 'event');
     assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
-    assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+    assert.equal(tx.logs[0].args.approved, accounts[1], 'spender');
     assert.equal(tx.logs[0].args.tokenId, 32, 'value');
   });
 

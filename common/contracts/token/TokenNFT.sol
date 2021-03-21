@@ -19,10 +19,12 @@ contract TokenNFT is INFT {
   using Bytes32Convert for bytes32;
 
   uint256 constant internal ALL_TOKENS = ~uint256(0);
+  uint256 constant internal NO_TOKENS = uint256(0);
 
   string internal name_;
   string internal symbol_;
   string internal baseURI_;
+  string internal extensionURI_;
 
   uint256 internal totalSupply_;
 
@@ -41,12 +43,14 @@ contract TokenNFT is INFT {
     string memory _name,
     string memory _symbol,
     string memory _baseURI,
+    string memory _extensionURI,
     address _initialOwner,
     uint256[] memory _initialTokenIds
   ) {
     name_ = _name;
     symbol_ = _symbol;
     baseURI_ = _baseURI;
+    extensionURI_ = _extensionURI;
     totalSupply_ = _initialTokenIds.length;
 
     Owner storage owner_ = owners[_initialOwner];
@@ -61,6 +65,21 @@ contract TokenNFT is INFT {
     }
   }
 
+  function interface165() public pure returns (bytes4) {
+    return type(IERC721Enumerable).interfaceId;
+  }
+
+  function interface721() public pure returns (bytes4) {
+    return type(IERC721Metadata).interfaceId;
+  }
+
+  function supportsInterface(bytes4 _interfaceId) public pure override returns (bool) {
+    return _interfaceId == type(IERC165).interfaceId
+      || _interfaceId == type(IERC721).interfaceId
+      || _interfaceId == type(IERC721Enumerable).interfaceId
+      || _interfaceId == type(IERC721Metadata).interfaceId;
+  }
+
   function name() external override view returns (string memory) {
     return name_;
   }
@@ -69,8 +88,10 @@ contract TokenNFT is INFT {
     return symbol_;
   }
 
-  function baseURI() external override view returns (string memory) {
-    return baseURI_;
+  function templateURI() external override view
+    returns (string memory base, string memory extension)
+  {
+    return (baseURI_, extensionURI_);
   }
 
   function totalSupply() external override view returns (uint256) {
@@ -78,7 +99,7 @@ contract TokenNFT is INFT {
   }
 
   function tokenURI(uint256 _indexId) external override view returns (string memory) { 
-    return string(abi.encodePacked(baseURI_, bytes32(_indexId).toString()));
+    return string(abi.encodePacked(baseURI_, bytes32(_indexId).toString(), extensionURI_));
   }
 
   function tokenByIndex(uint256 _index) external override view returns (uint256) {
@@ -140,11 +161,18 @@ contract TokenNFT is INFT {
   }
 
   function setApprovalMask(address _spender, uint256 _mask)
-    external override returns (bool)
+    public override returns (bool)
   {
     owners[msg.sender].approvalMasks[_spender] = _mask;
+    emit ApprovalMask(msg.sender, _spender, _mask);
+    return true;
+  }
 
-    emit ApprovalMaskUpdate(msg.sender, _spender, _mask);
+  function setApprovalForAll(address _spender, bool _approved)
+    external override returns (bool)
+  {
+    setApprovalMask(_spender, _approved ? ALL_TOKENS : NO_TOKENS);
+    emit ApprovalForAll(msg.sender, _spender, _approved);
     return true;
   }
 
@@ -171,5 +199,20 @@ contract TokenNFT is INFT {
 
     emit Transfer(_from, _to, _tokenId);
     return true;
+  }
+
+  function getApproved(uint256)
+    external override pure returns (address) {
+    revert("NOT_IMPLEMENTED");
+  }
+
+  function safeTransferFrom(address, address, uint256)
+    external override pure {
+    revert("NOT_IMPLEMENTED");
+  }
+
+  function safeTransferFrom(address, address, uint256, bytes calldata)
+    external override pure {
+    revert("NOT_IMPLEMENTED");
   }
 }
