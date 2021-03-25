@@ -1,6 +1,6 @@
 {
   "name": "@c-layer/governance",
-  "version": "1.4.0",
+  "version": "1.3.0",
   "description": "Governance smart contract for the Compliance Layer",
   "scripts": {
     "clean": "hardhat clean",
@@ -55,7 +55,7 @@
     "ethereumjs-wallet": "^1.0.1",
     "hardhat": "^2.0.11",
     "hardhat-gas-reporter": "^1.0.4",
-    "hardhat-tracer": "1.0.0-alpha.2",
+    "hardhat-tracer": "1.0.0-alpha.3",
     "lodash.startcase": "^4.4.0",
     "lodash.zip": "^4.2.0",
     "micromatch": "^4.0.2",
