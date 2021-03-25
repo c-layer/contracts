@@ -12,7 +12,7 @@ const BN = require('bn.js');
 
 const INVEST_ETH_GAS_ESTIMATE = 179078;
 const REFUND_GAS_ESTIMATE = 64956;
-const REFUND_REAL_COST = '-391272000000000';
+const REFUND_REAL_COST = '-390656000000000';
 
 contract('BaseTokensale', function (accounts) {
   let sale, token;
