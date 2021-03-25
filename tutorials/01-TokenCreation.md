@@ -12,21 +12,21 @@ The token will only provides you with the basic ERC20 features.
 
 ### Start
 
-##### 1- Go into the Core module and start truffle
+##### 1- Go into the token module and start truffle
 ```bash
-cd token && truffle develop
+cd token && yarn develop
 ```
 
-##### 2- Always reompile the contracts to ensure you will be using the latest version
+##### 2- Load definitions
+
+You shall to load the definitions needed for this tutorial:
+
 ```javascript
-compile
-```
+accounts = await web3.eth.getAccounts()
 
-If everything is fine, you will endup with
-```
-Compiling your contracts...
-===========================
-> Everything is up to date, there is nothing to compile.
+MintableTokenDelegate = await artifacts.require('MintableTokenDelegate')
+TokenCore = await artifacts.require('TokenCore')
+TokenProxy = await artifacts.require('TokenProxy')
 ```
 
 ### Steps
@@ -51,7 +51,7 @@ If you are on a live network, you might want to backup this address for later us
 
 ##### 5- Configure the token core with a delegate
 ```javascript
-core.defineTokenDelegate(1, delegate.address, [])
+await core.defineTokenDelegate(1, delegate.address, [])
 ```
 
 The result from the above command should returns with the receipt of the transaction
@@ -92,20 +92,20 @@ Let's do it now:
 ``` javascript
 supply = "42".padEnd(18, "0")
 await core.mint(token.address, [ accounts[0] ], [ supply ])
-token.totalSupply().then((val) => val.toString())
+await token.totalSupply().then((val) => val.toString())
 ```
 
 ``` javascript
-token.totalSupply().then((val) => val.toString())
-token.balanceOf(accounts[0]).then((val) => val.toString())
+await token.totalSupply().then((val) => val.toString())
+await token.balanceOf(accounts[0]).then((val) => val.toString())
 ```
 
 ##### 9- Test a first transfer
 
 ``` javascript
 await token.transfer(accounts[1], "3333")
-token.balanceOf(accounts[0]).then((val) => val.toString())
-token.balanceOf(accounts[1]).then((val) => val.toString())
+await token.balanceOf(accounts[0]).then((val) => val.toString())
+await token.balanceOf(accounts[1]).then((val) => val.toString())
 ```
 
 And voila, you do own now a C-Layer token!

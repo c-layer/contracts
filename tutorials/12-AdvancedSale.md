@@ -11,20 +11,26 @@ This tutorial will guide you how to plan and operate a bonus token sale.
 
 ### Start
 
-You must start `truffle` from the token module
+##### 1- Go into the distribution module and start truffle
+
 ```bash
-cd distribution && truffle develop
+cd distribution && yarn develop
 ```
 
-Once `truffle` is started, you may need to compile contracts as follows:
-```bash
-compile
-```
+##### 2- Load definitions
 
+You shall to load the definitions needed for this tutorial:
+
+```javascript
+accounts = await web3.eth.getAccounts()
+
+TokenERC20 = await artifacts.require('TokenERC20')
+BonusTokensale = await artifacts.require('BonusTokensale')
+```
 
 ### Steps
 
-##### 1- Setup a tokensale
+##### 3- Setup a tokensale
 
 Let's frst create a simple ERC20 token.
 
@@ -62,7 +68,7 @@ Finally, you may want to note the initial amount available in the ETH vault:
 await web3.eth.getBalance(vaultETH)
 ```
 
-##### 2- Giving extra
+##### 4- Giving extra
 
 We shall now define the bonuses as follows:
 BonusMode may be either 0 (None), 1 (Early) or 2 (First).
@@ -84,7 +90,7 @@ Once 20'000 tokens will be sold, there will still be the following bonus :
 await sale.firstBonus(20000).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
-##### 3- We love it when a plan comes together
+##### 5- We love it when a plan comes together
 
 We also need to schedule the plan. This is how to do it by using `Date().getTime()` which returns the current timestamp in milliseconds.
 
@@ -102,7 +108,7 @@ You may review it as follows:
 await sale.schedule().then((values) => Object.values(values).map((v) => new Date(v * 1000)))
 ```
 
-##### 4- Buy tokens
+##### 6- Buy tokens
 
 The sale is currently close. You therefore have two options now.
 You may either call it a day and retry tomorrow, or speed things up by updating once again the planning.
@@ -159,7 +165,7 @@ totalSold = await sale.totalTokensSold()
 await sale.firstBonus(totalSold).then((bonus) => bonus.remainingAtBonus+" tokens still at +"+bonus.bonus+"% bonus")
 ```
 
-##### 5- Closing early
+##### 7- Closing early
 
 You may need to close the sale early.
 In this case all you have to do is to execute the following command
@@ -174,7 +180,7 @@ You can check that the sale was closed as follows:
 await sale.isClosed()
 ```
 
-##### 6- Experimenting
+##### 8- Experimenting
 
 As an exercise, it suggested to the reader to plan a sale that will use the early bonus.
 

@@ -1,6 +1,11 @@
 # Voting Walkthrough
 
-### Goal
+### Requirements
+
+Your environment is setup as described [here](./Tutorials.md#requirements).
+
+### Goals
+
 This tutorial will show you how to create a Voting Session for a specific Token and give you an overview of the voting process.
 
 We will guide you through the following steps:
@@ -9,28 +14,31 @@ We will guide you through the following steps:
 - submit a proposal for minting new tokens
 - go through all the steps of the voting session
 
-### Environment setup
-This tutorial has been validated with a Truffle installation running in the sirhill/truffle docker image. However, the same steps can be followed in a different environment. See [requirements](./Tutorials.md#requirements) for more details.
+### Start
 
-After cloning the contracts repository, start the truffle docker using the `start.sh` script in the contracts directory.
-It will start the image from the contracts directory and mount this directory into the container.
+##### 1- Go into the governance module and start truffle
 
-You will get a bash prompt inside the container. All the instructions from this tutorial should then be executed from this environment.
-
-### Module installation
-Let's first make sure that all required modules are installed and let's compile all the contracts:
-```
-bash-5.0$ yarn clean && yarn install && yarn compile
-```
-
-### Truffle initialisation
-Let's start `truffle` from the governance module
 ```bash
-bash-5.0$ cd governance && truffle develop
-truffle(develop)> 
+cd governance && yarn develop
 ```
-  
-### Token creation
+
+##### 2- Load definitions
+
+You shall to load the definitions needed for this tutorial:
+
+```javascript
+accounts = await web3.eth.getAccounts()
+
+TokenCore = await artifacts.require('TokenCore')
+TokenDelegate = await artifacts.require('TokenDelegate')
+TokenProxy = await artifacts.require('TokenProxy')
+VotingSessionDelegate = await artifacts.require('VotingSessionDelegate')
+VotingSessionManager = await artifacts.require('VotingSessionManager')
+```
+
+### Steps
+
+##### 3- Token creation
 
 First things first! We need a new Token to play with. Here we are simply repeating the main steps from the [token creation tutorial](./01-TokenCreation.md)
 ```javascript
@@ -39,7 +47,7 @@ delegate = await TokenDelegate.new()
 ```
 
 ```
-core.defineTokenDelegate(1, delegate.address, [0,1])
+await core.defineTokenDelegate(1, delegate.address, [0,1])
 token = await TokenProxy.new(core.address)
 ```
 
@@ -50,12 +58,13 @@ await core.mint(token.address, [accounts[0], accounts[1]], ['1000','500'])
 
 So far so good? We have just created a new `TKN` token and minted a few tokens for `accounts[0]` and `accounts[1]`. Let's double check:
 ```
-token.totalSupply().then(x => x.toString())
-token.balanceOf(accounts[0]).then(x => x.toString())
-token.balanceOf(accounts[1]).then(x => x.toString())
+await token.totalSupply().then(x => x.toString())
+await token.balanceOf(accounts[0]).then(x => x.toString())
+await token.balanceOf(accounts[1]).then(x => x.toString())
 ```
 
-### Setup of a new voting contract 
+##### 4- Setup of a new voting contract 
+
 A new voting session manager can be created using the `VotingSessionManager` contract. This contract will manage periodic voting session instances. In the rest of this tutorial, the VotingSessionManager contract will be referred to as the "voting contract" and the voting session instances will be referred to as the "voting sessions".
 ```
 votingDelegate = await VotingSessionDelegate.new()
@@ -65,23 +74,23 @@ voting = await VotingSessionManager.new(token.address, votingDelegate.address)
 The voting contract needs its own lock to prevent tokens transfer during the voting period. We create one when defining a proxy with a Lockable Delegate:
 
 ```
-core.defineProxy(voting.address, 1);
+await core.defineProxy(voting.address, 1);
 ```
 
 We can the assign the newly created lock to the token
 ```
-core.defineTokenLocks(token.address, [token.address, voting.address]);
+await core.defineTokenLocks(token.address, [token.address, voting.address]);
 ```
 
 Then the voting contract needs to be granted sufficient permissions to operate its lock. We will grant the 'AllPriviledges' role to the voting contract for itself (the privileges topic is covered in more details in another tutorial):
 ```
 ALL_PRIVILEGES = web3.utils.fromAscii('AllPrivileges').padEnd(66, '0');
-core.assignProxyOperators(voting.address, ALL_PRIVILEGES, [ voting.address ]);
+await core.assignProxyOperators(voting.address, ALL_PRIVILEGES, [ voting.address ]);
 ```
 
 As we will try to mint more tokens through the voting contract, we need to provide the voting contract with some privileges on the token. Let's reuse the same command:
 ```
-core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ voting.address ]);
+await core.assignProxyOperators(token.address, ALL_PRIVILEGES, [ voting.address ]);
 ```
 
 Each voting session will go through the following states:
@@ -105,7 +114,7 @@ Proposals also have different states as described below
 - 7: CLOSED, the proposal has been closed
 - 8: ARCHIVED, the proposal is removed from the state
 
-### Configure the rules
+##### 5- Configure the rules
 
 By default, a voting session will last 2 weeks. As we do not want the tutorial to last 2 weeks, we can change these values with the following parameters (feel free to modify those values):
 - campaign period of 5 minutes
@@ -119,12 +128,12 @@ By default, a voting session will last 2 weeks. As we do not want the tutorial t
 - requirement to have a minimum of 1 tokens to be able to submit proposals
 - non voting addresses (ie: liquidity pool, wrapped token, ...)
 ```
-voting.updateSessionRule(5*60, 5*60, 5*60, 10*60, 0, 10, 20, 25, 1, [])
+await voting.updateSessionRule(5*60, 5*60, 5*60, 10*60, 0, 10, 20, 25, 1, [])
 ```
 So now it is possible to schedule a new voting session every 20 minutes. 
 
+##### 6- Submit a proposal 
 
-### Submit a proposal 
 Let's assume that our proposal consists in minting 500 new tokens for accounts[2]. We first need to encode this request: 
 ```
 request = core.contract.methods.mint(token.address, [accounts[2]], ['500']).encodeABI()
@@ -139,26 +148,27 @@ We can now submit this proposal. We will use the defineProposal function that ta
 - the reference proposal if this is an alternative, 0 otherwise
 - the execution dependency if orders matter, 0 otherwise
 ```
-voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request, 0, 0)  
+await voting.defineProposal("mint", "Description URL", "0x".padEnd(66,"0"), core.address, request, 0, 0)  
 ```
 
-### Inspect the current voting session 
+##### 7- Inspect the current voting session 
+
 We can get the id of the current voting session using the sessions count function:
 ```
-voting.currentSessionId().then(x => x.toString())
+await voting.currentSessionId().then(x => x.toString())
  ```
 This returns "1" as a new voting session has been dynamically created when we submitted our proposal. 
 
 Let's check where we are with session 1:
 ```
-voting.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+await voting.sessionStateAt(1,Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 This returns "0", indicating that the session is in the PLANNED stage.
 After a few minutes, "1" will be returned instead, indicating that the voting session is in the CAMPAIGN state.
 
 We can also check the proposal:
 ```
-voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+await voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 If we are still in the PLANNED state, the proposal should return it is DEFINED, otherwise it will return LOCKED during the CAMPAIGN or VOTING period.
 
@@ -169,57 +179,57 @@ We can double check by querying the session:
 await voting.session(1).then(x => new Date(x.voteAt*1000))
 ```
 
+##### 8- Modify the proposal
 
-### Modify the proposal
 Until the CAMPAIGN period starts, it is still possible to update the proposal:
 ```
-voting.updateProposal(1, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
+await voting.updateProposal(1, "mint", "Better description URL", "0x".padEnd(66,"0"), core.address, request)  
 ```
 We can check that the proposal has been properly updated:
 ```
-voting.proposal(1)
+await voting.proposal(1)
 ```
 
+##### 9- Voting 
 
-### Voting 
 When the VOTING period begins, we can vote as account 1 for the proposal. The given value is a 256 bits number where each bit code for a proposal approval. For example, if there were 3 proposals and you wanted to vote for the 1rst and the last you would give the following value: `2**0 + 2**2 = 5`
 ```
-voting.submitVote(1, {from: accounts[1]})
+await voting.submitVote(1, {from: accounts[1]})
 ```
 Note here that we could have used instead the hexadecimal representation of this bit map: `0x0000000000000000000000000000000000000000000000000000000000000001`
 
 We can check if the proposal has been approved:
 ```
-voting.proposalApproval(1, 1)
+await voting.proposalApproval(1, 1)
 ```
 The proposal is not approved, as accounts[1] only holds 1/3 of the tokens.
 
 Let's simulate a new vote supporting the proposal from accounts[0] and check that the proposal is then approved:
 ```
-voting.submitVote(1)
-voting.proposalApproval(1, 1)
+await voting.submitVote(1)
+await voting.proposalApproval(1, 1)
 ```
 
+##### 10- Execution of the proposal
 
-### Execution of the proposal
 When the VOTING period is closed (in our case 5 minutes after it began), the session state will enter the EXECUTION period:
 ```
-voting.sessionStateAt(1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+await voting.sessionStateAt(1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
 Once in EXECUTION, the proposal state will confirmed it has been APPROVED:
 ```
-voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
+await voting.proposalStateAt(1, 1, Math.floor((new Date()).getTime()/1000)).then(x => x.toString())
 ```
 
 Anyone who owns enough tokens (10 tokens in our case)  may now trigger the execution of the approved resolutions, including people who did not participate to the vote:
 ```
-voting.executeResolutions([1], {from: accounts[1]})
+await voting.executeResolutions([1], {from: accounts[1]})
 ```
 
 Let's verify that the new tokens have been minted:
 ```
-token.totalSupply().then(x => x.toString())
-token.balanceOf(accounts[2]).then(x => x.toString())
+await token.totalSupply().then(x => x.toString())
+await token.balanceOf(accounts[2]).then(x => x.toString())
 ```
 

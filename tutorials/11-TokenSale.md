@@ -11,20 +11,26 @@ This tutorial will guide you how to setup and operate a token factory.
 
 ### Start
 
-You must start `truffle` from the token module
+##### 1- Go into the distribution module and start truffle
+
 ```bash
-cd distribution && truffle develop
+cd distribution && yarn develop
 ```
 
-Once `truffle` is started, you may need to compile contracts as follows:
-```bash
-compile
-```
+##### 2- Load definitions
 
+You shall to load the definitions needed for this tutorial:
+
+```javascript
+accounts = await web3.eth.getAccounts()
+
+TokenERC20 = await artifacts.require('TokenERC20')
+BaseTokensale = await artifacts.require('BaseTokensale')
+```
 
 ### Steps
 
-##### 1- Setup a tokensale
+##### 3- Setup a tokensale
 
 Let's frst create a simple ERC20 token with 100'000 supplies and 0 decimals.
 
@@ -57,8 +63,7 @@ Finally, you may want to note the initial amount available in the ETH vault.
 await web3.eth.getBalance(vaultETH)
 ```
 
-
-##### 2- Buy tokens
+##### 4- Buy tokens
 
 How many token would you receive, if you were to invest 1 ETH ?
 Let's find out with the following command below to query before the real investment.
@@ -93,7 +98,7 @@ await sale.investorInvested(accounts[0]).then((value) => web3.utils.fromWei(valu
 await sale.investorTokens(accounts[0]).then((value) => value.toString())
 ```
 
-##### 3- Pause the sale
+##### 5- Pause the sale
 
 At any time, you may need to pause the sale. This can be done using the pause method.
 
@@ -112,7 +117,7 @@ Unpausing can be done at any time while paused.
 await sale.unpause()
 ```
 
-##### 4- Withdraw funds
+##### 5- Withdraw funds
 
 ETH received by the tokensale contract should be redirected to the ETH vault address.
 However when round up, may be unspent (when rounding up, ETH does not match)

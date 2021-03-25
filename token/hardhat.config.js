@@ -36,7 +36,7 @@ const enableGasReport = !!process.env.ENABLE_GAS_REPORT;
 
 const config = {
   solidity: {
-    version: '0.8.1',
+    version: '0.8.3',
     settings: {
       optimizer: {
         enabled: true,

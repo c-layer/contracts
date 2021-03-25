@@ -5,6 +5,7 @@
   "scripts": {
     "clean": "hardhat clean",
     "compile": "hardhat compile",
+    "develop": "hardhat console --network hardhat",
     "console": "hardhat console",
     "coverage": "hardhat coverage",
     "lint": "npm run lint:sol && npm run lint:js",

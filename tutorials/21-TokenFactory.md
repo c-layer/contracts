@@ -11,12 +11,24 @@ This tutorial will guide you how to setup and operate a token factory.
 
 ### Start
 
-You must start `truffle` from the token module
+##### 1- Go into the token module and start truffle
 ```bash
-cd token && truffle develop
+cd token && yarn develop
 ```
 
-### Load contracts
+##### 2- Load definitions
+
+You shall to load the definitions needed for this tutorial:
+
+```javascript
+accounts = await web3.eth.getAccounts()
+
+TokenDelegate = await artifacts.require('TokenDelegate')
+TokenCore = await artifacts.require('TokenCore')
+TokenProxy = await artifacts.require('TokenProxy')
+```
+
+##### 3- Load contracts
 
 If you are on a live network you can reimport the core contract using the following command
 
@@ -39,7 +51,7 @@ await core.defineTokenDelegate(2, delegate.address, [0, 1])
 
 ### Steps
 
-##### 1- Setup a token factory
+##### 4- Setup a token factory
 
 First, you will need to create the factory as follows:
 
@@ -102,7 +114,7 @@ It shouldd be true.
 await factory.hasCoreAccess(core.address)
 ```
 
-##### 2- Deploy a token through the factory
+##### 5- Deploy a token through the factory
 
 Once you factory is configured, you are free to proceed and deploy a token.
 
