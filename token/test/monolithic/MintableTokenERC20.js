@@ -38,11 +38,11 @@ contract('MintableTokenERC20', function (accounts) {
     const tx = await token.mint([accounts[1]], ['1000']);
     assert.ok(tx.receipt.status, 'Status');
     assert.equal(tx.logs.length, 2);
-    assert.equal(tx.logs[0].event, 'Transfer', 'event');
-    assert.equal(tx.logs[0].args.from, NULL_ADDRESS, 'from');
+    assert.equal(tx.logs[0].event, 'Mint', 'event');
     assert.equal(tx.logs[0].args.to, accounts[1], 'to');
     assert.equal(tx.logs[0].args.value, '1000', 'value');
-    assert.equal(tx.logs[1].event, 'Mint', 'event');
+    assert.equal(tx.logs[1].event, 'Transfer', 'event');
+    assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
     assert.equal(tx.logs[1].args.to, accounts[1], 'to');
     assert.equal(tx.logs[1].args.value, '1000', 'value');
   });

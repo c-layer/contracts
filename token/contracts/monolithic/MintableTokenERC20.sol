@@ -95,14 +95,14 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
    * @param _amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function mintInternal(address _to, uint256 _amount) internal returns (bool)
+  function mintInternal(address _to, uint256 _amount) internal virtual returns (bool)
   {
     totalSupply_ = totalSupply_ + _amount;
     balances[_to] = balances[_to] + _amount;
     allTimeMinted_ = allTimeMinted_ + _amount;
 
-    emit Transfer(address(0), _to, _amount);
     emit Mint(_to, _amount);
+    emit Transfer(address(0), _to, _amount);
     return true;
   }
 
@@ -112,7 +112,7 @@ contract MintableTokenERC20 is IMintableERC20, Ownable, TokenERC20 {
    * @param _amount The amount of tokens to mint.
    * @return A boolean that indicates if the operation was successful.
    */
-  function burnInternal(address _from, uint256 _amount) internal returns (bool)
+  function burnInternal(address _from, uint256 _amount) internal virtual returns (bool)
   {
     totalSupply_ = totalSupply_ - _amount;
     balances[_from] = balances[_from] - _amount;
