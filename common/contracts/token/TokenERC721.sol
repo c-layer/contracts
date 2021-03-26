@@ -1,30 +1,36 @@
 pragma solidity ^0.8.0;
 
-import "../interface/INFT.sol";
+import "../interface/ITokenERC721.sol";
+import "../interface/IERC721TokenReceiver.sol";
+import "../Account.sol";
 import "../convert/Bytes32Convert.sol";
 
 
 /**
- * @title TokenNFT contract
+ * @title TokenERC721 contract
  *
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  * 
  * Error messages
- *   NFT01: Recipient is invalid
- *   NFT02: Sender is not the owner
- *   NFT03: Sender is not approved
+ *   TN01: Token does not exist
+ *   TN02: Recipient is invalid
+ *   TN03: The approver must either be the owner or the operator
+ *   TN04: The token sender is not the owner
+ *   TN05: The sender must either be the owner, the operator or the approvee
+ *   TN06: The receiver callback was unsuccessfull
  */
-contract TokenNFT is INFT {
+contract TokenERC721 is ITokenERC721 {
+  using Account for address;
   using Bytes32Convert for bytes32;
 
-  uint256 constant internal ALL_TOKENS = ~uint256(0);
-  uint256 constant internal NO_TOKENS = uint256(0);
+  bytes4 internal constant RECEIVER_CALLBACK_SUCCESS =
+    bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
 
   string internal name_;
   string internal symbol_;
   string internal baseURI_;
-  string internal extensionURI_;
+  string internal suffixURI_;
 
   uint256 internal totalSupply_;
 
@@ -32,25 +38,27 @@ contract TokenNFT is INFT {
     uint256 balance;
     mapping (uint256 => uint256) ownedTokenIds;
     mapping (uint256 => uint256) ownedTokenIndexes;
-    mapping (address => uint256) approvalMasks;
   }
 
   mapping (uint256 => uint256) internal tokenIds;
   mapping (uint256 => address) internal ownersAddresses;
   mapping (address => Owner) internal owners;
 
+  mapping (uint256 => address) internal approveds;
+  mapping (address => mapping (address => bool)) internal operators;
+
   constructor(
     string memory _name,
     string memory _symbol,
     string memory _baseURI,
-    string memory _extensionURI,
+    string memory _suffixURI,
     address _initialOwner,
     uint256[] memory _initialTokenIds
   ) {
     name_ = _name;
     symbol_ = _symbol;
     baseURI_ = _baseURI;
-    extensionURI_ = _extensionURI;
+    suffixURI_ = _suffixURI;
     totalSupply_ = _initialTokenIds.length;
 
     Owner storage owner_ = owners[_initialOwner];
@@ -88,60 +96,59 @@ contract TokenNFT is INFT {
     return symbol_;
   }
 
-  function templateURI() external override view
-    returns (string memory base, string memory extension)
-  {
-    return (baseURI_, extensionURI_);
-  }
-
   function totalSupply() external override view returns (uint256) {
     return totalSupply_;
   }
 
   function tokenURI(uint256 _indexId) external override view returns (string memory) { 
-    return string(abi.encodePacked(baseURI_, bytes32(_indexId).toString(), extensionURI_));
+    return string(abi.encodePacked(baseURI_, bytes32(_indexId).toString(), suffixURI_));
   }
 
   function tokenByIndex(uint256 _index) external override view returns (uint256) {
-    return tokenIds[_index];
+    uint256 tokenId = tokenIds[_index];
+    tokenExistsInternal(tokenId);
+    return tokenId;
   }
 
   function balanceOf(address _owner) external override view returns (uint256) {
+    require(_owner != address(0), "TN02");
     return owners[_owner].balance;
   }
 
   function tokenOfOwnerByIndex(address _owner, uint256 _index)
     external override view returns (uint256)
   {
+    uint256 tokenId = tokenIds[_index];
+    tokenExistsInternal(tokenId);
+    require(_owner != address(0), "TN02");
     return owners[_owner].ownedTokenIds[_index];
   }
 
   function ownerOf(uint256 _tokenId) external override view returns (address) {
-    return ownersAddresses[_tokenId];
+    address owner = ownersAddresses[_tokenId];
+    require(owner != address(0), "TN02");
+    return owner;
   }
 
-  function approvals(address _owner, address _spender)
-    external override view returns (uint256)
+  function getApproved(uint256 _tokenId)
+    external override view returns (address)
   {
-    return owners[_owner].approvalMasks[_spender];
+    tokenExistsInternal(_tokenId);
+    return approveds[_tokenId];
   }
 
-  function isApproved(address _owner, address _spender, uint256 _tokenId)
+  function isApprovedForAll(address _owner, address _operator)
     external override view returns (bool)
   {
-    return owners[_owner].approvalMasks[_spender] & _tokenId == _tokenId;
+    return operators[_owner][_operator];
   }
 
-  function isApprovedForAll(address _owner, address _spender)
-    external override view returns (bool)
+  function defineTemplateURI(string memory _baseURI, string memory _suffixURI)
+    external override
   {
-    return owners[_owner].approvalMasks[_spender] == ALL_TOKENS;
-  }
-
-  function transfer(address _to, uint256 _tokenId)
-    external
-  {
-    transferFromInternal(msg.sender, _to, _tokenId);
+    baseURI_ = _baseURI;
+    suffixURI_ = _suffixURI;
+    emit TemplateURIUpdated(_baseURI, _suffixURI);
   }
 
   function transferFrom(address _from, address _to, uint256 _tokenId)
@@ -150,37 +157,49 @@ contract TokenNFT is INFT {
     transferFromInternal(_from, _to, _tokenId);
   }
 
-  function approve(address _spender, uint256 _tokenId)
-    external override
+  function approve(address _approved, uint256 _tokenId) external override
   {
-    require(ownersAddresses[_tokenId] == msg.sender, "NFT02");
-    owners[msg.sender].approvalMasks[_spender] |= _tokenId;
-
-    emit Approval(msg.sender, _spender, _tokenId);
+    require(ownersAddresses[_tokenId] == msg.sender
+      || operators[_approved][msg.sender], "TN03");
+    approveds[_tokenId] = _approved;
+    emit Approval(msg.sender, _approved, _tokenId);
   }
 
-  function setApprovalMask(address _spender, uint256 _mask)
-    public override returns (bool)
-  {
-    owners[msg.sender].approvalMasks[_spender] = _mask;
-    emit ApprovalMask(msg.sender, _spender, _mask);
-    return true;
-  }
-
-  function setApprovalForAll(address _spender, bool _approved)
+  function setApprovalForAll(address _operator, bool _approved)
     external override
   {
-    setApprovalMask(_spender, _approved ? ALL_TOKENS : NO_TOKENS);
-    emit ApprovalForAll(msg.sender, _spender, _approved);
+    operators[msg.sender][_operator] = _approved;
+    emit ApprovalForAll(msg.sender, _operator, _approved);
+  }
+
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId)
+    external override
+  {
+    transferFromInternal(_from, _to, _tokenId);
+    receiverCallbackInternal(_from, _to, _tokenId, "");
+  }
+
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes calldata _data)
+    external override
+  {
+    transferFromInternal(_from, _to, _tokenId);
+    receiverCallbackInternal(_from, _to, _tokenId, _data);
+  }
+
+  function tokenExistsInternal(uint256 _tokenId) internal view {
+    require(ownersAddresses[_tokenId] != address(0), "TN01");
   }
 
   function transferFromInternal(address _from, address _to, uint256 _tokenId)
     internal
   {
-    require(_to != address(0), "NFT01");
-    require(ownersAddresses[_tokenId] == _from, "NFT02");
-    require(msg.sender == _from ||
-      (owners[_from].approvalMasks[_to] & _tokenId == _tokenId), "NFT03");
+    tokenExistsInternal(_tokenId);
+    require(_to != address(0), "TN02");
+    require(ownersAddresses[_tokenId] == _from, "TN04");
+
+    require(_from == msg.sender ||
+      approveds[_tokenId] == msg.sender ||
+      operators[_from][msg.sender], "TN05");
 
     ownersAddresses[_tokenId] = _to;
 
@@ -198,18 +217,12 @@ contract TokenNFT is INFT {
     emit Transfer(_from, _to, _tokenId);
   }
 
-  function getApproved(uint256)
-    external override pure returns (address) {
-    revert("NOT_IMPLEMENTED");
-  }
-
-  function safeTransferFrom(address, address, uint256)
-    external override pure {
-    revert("NOT_IMPLEMENTED");
-  }
-
-  function safeTransferFrom(address, address, uint256, bytes calldata)
-    external override pure {
-    revert("NOT_IMPLEMENTED");
+  function receiverCallbackInternal(address _from, address _to, uint256 _tokenId, bytes memory _data)
+    internal
+  {
+    if(_to.isContract()) {
+      require(IERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenId, _data)
+        == RECEIVER_CALLBACK_SUCCESS, "TN06");
+    }
   }
 }

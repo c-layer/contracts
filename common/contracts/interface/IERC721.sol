@@ -13,15 +13,15 @@ interface IERC721 is IERC165 {
   event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
   event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
 
-  function balanceOf(address owner) external view returns (uint256 balance);
-  function ownerOf(uint256 tokenId) external view returns (address owner);
+  function balanceOf(address _owner) external view returns (uint256 balance);
+  function ownerOf(uint256 _tokenId) external view returns (address owner);
 
-  function transferFrom(address from, address to, uint256 tokenId) external returns (bool);
-  function safeTransferFrom(address from, address to, uint256 tokenId) external;
-  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) external;
+  function transferFrom(address _from, address _to, uint256 _tokenId) external;
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) external;
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId, bytes calldata data) external;
 
-  function approve(address to, uint256 tokenId) external returns (bool);
-  function getApproved(uint256 tokenId) external view returns (address operator);
-  function setApprovalForAll(address operator, bool _approved) external returns (bool);
-  function isApprovedForAll(address owner, address operator) external view returns (bool);
+  function approve(address _approved, uint256 _tokenId) external;
+  function getApproved(uint256 _tokenId) external view returns (address operator);
+  function setApprovalForAll(address _operator, bool _approved) external;
+  function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 }
