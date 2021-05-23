@@ -30,7 +30,7 @@ abstract contract MintableDelegate is TokenStorage {
    * @return A boolean that indicates if the operation was successful.
    */
   function burn(address _token, uint256 _amount)
-    public returns (bool)
+    public virtual returns (bool)
   {
     TokenData storage token = tokens[_token];
     require(_amount <= token.balances[msg.sender], "MT02");
@@ -52,7 +52,7 @@ abstract contract MintableDelegate is TokenStorage {
    * @return success The boolean that indicates if the operation was successful.
    */
   function mint(address _token, address[] memory _recipients, uint256[] memory _amounts)
-    public canMint(_token) returns (bool success)
+    public virtual canMint(_token) returns (bool success)
   {
     require(_recipients.length == _amounts.length, "MT04");
 
@@ -81,7 +81,7 @@ abstract contract MintableDelegate is TokenStorage {
    * @return A boolean that indicates if the operation was successful.
    */
   function mintInternal(address _token, address _to, uint256 _amount)
-    virtual internal canMint(_token) returns (bool)
+    virtual internal returns (bool)
   {
     TokenData storage token = tokens[_token];
     token.totalSupply = token.totalSupply + _amount;

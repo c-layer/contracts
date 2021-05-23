@@ -74,6 +74,14 @@ abstract contract ITokenStorage {
   event Minted(address indexed token, uint256 amount);
   event MintFinished(address indexed token);
   event Burned(address indexed token, uint256 amount);
+  event ElasticityUpdated(
+    address indexed token,
+    uint256 value);
+  event InterestUpdated(
+    address indexed token, uint256 rate, uint256 elasticity);
+  event InterestRebased(
+    address indexed token, uint256 at, uint256 elasticity);
+
   event RulesDefined(address indexed token, IRule[] rules);
   event LockDefined(
     address indexed lock,

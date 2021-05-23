@@ -2,7 +2,6 @@ pragma solidity ^0.8.0;
 
 import "./MintableDelegate.sol";
 import "./BaseTokenDelegate.sol";
-import "./RuleEngineDelegate.sol";
 
 
 /**
@@ -12,5 +11,5 @@ import "./RuleEngineDelegate.sol";
  * @author Cyril Lapinte - <cyril.lapinte@openfiz.com>
  * SPDX-License-Identifier: MIT
  */
-contract MintableTokenDelegate is RuleEngineDelegate, MintableDelegate, BaseTokenDelegate {
+contract MintableTokenDelegate is MintableDelegate, BaseTokenDelegate {
 }

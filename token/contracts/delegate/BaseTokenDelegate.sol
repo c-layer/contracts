@@ -43,10 +43,13 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
    * @dev Overriden transfer function
    */
   function transfer(address _sender, address _receiver, uint256 _value)
-    virtual override public returns (bool)
+    virtual override public returns (bool success)
   {
-    return transferInternal(
+    success = transferInternal(
       transferData(msg.sender, address(0), _sender, _receiver, _value));
+    require(
+      TokenProxy(msg.sender).emitTransfer(_sender, _receiver, _value),
+      "TD03");
   }
 
   /**
@@ -54,10 +57,13 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
    */
   function transferFrom(
     address _caller, address _sender, address _receiver, uint256 _value)
-    virtual override public returns (bool)
+    virtual override public returns (bool success)
   {
-    return transferInternal(
+    success = transferInternal(
       transferData(msg.sender, _caller, _sender, _receiver, _value));
+    require(
+      TokenProxy(msg.sender).emitTransfer(_sender, _receiver, _value),
+      "TD03");
   }
 
   /**
@@ -138,7 +144,7 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
     address receiver = _transferData.receiver;
     uint256 value = _transferData.value;
 
-    require(receiver != address(0) || receiver != ANY_ADDRESSES, "TD01");
+    require(receiver != address(0) && receiver != ANY_ADDRESSES, "TD01");
     require(value <= token.balances[sender], "TD02");
 
     if (caller != address(0)
@@ -151,9 +157,6 @@ contract BaseTokenDelegate is ITokenDelegate, TokenStorage {
 
     token.balances[sender] = token.balances[sender] - value;
     token.balances[receiver] = token.balances[receiver] + value;
-    require(
-      TokenProxy(msg.sender).emitTransfer(sender, receiver, value),
-      "TD03");
     return true;
   }
 

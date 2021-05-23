@@ -79,6 +79,12 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     uint64 startAt, uint64 endAt);
   function canTransfer(address, address, uint256)
     virtual external returns (uint256);
+  function elasticity(address _token)
+    virtual external returns (uint256);
+  function elasticityAt(address _token, uint256)
+    virtual external returns (uint256);
+  function interest(address _token)
+    virtual external view returns (uint256 rate, uint256 from);
 
   /***********  TOKEN ADMIN  ***********/
   function mint(address, address[] calldata, uint256[] calldata)
@@ -98,6 +104,9 @@ abstract contract ITokenCore is ITokenStorage, IOperableCore {
     address[] calldata _addresses,
     uint256 _until) virtual external returns (bool);
   function defineRules(address, IRule[] calldata) virtual external returns (bool);
+  function defineElasticity(address, uint256) virtual external returns (bool);
+  function rebaseInterest(address _token) virtual external returns (bool);
+  function defineInterest(address _token, uint256 _rate) virtual external returns (bool);
 
   /************  CORE ADMIN  ************/
   function defineToken(

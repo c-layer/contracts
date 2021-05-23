@@ -198,6 +198,19 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
     return delegateCallUint256(msg.sender);
   }
 
+  function elasticity(address _token) override external returns (uint256) {
+    return delegateCallUint256(_token);
+  }
+
+  function elasticityAt(address _token, uint256) override external returns (uint256) {
+    return delegateCallUint256(_token);
+  }
+
+  function interest(address _token) override external view returns (uint256 rate, uint256 from) {
+    TokenData storage tokenData = tokens[_token];
+    return (tokenData.interestRate, tokenData.interestFrom);
+  }
+
   /***********  TOKEN ADMIN  ***********/
   function mint(address _token, address[] calldata, uint256[] calldata)
     override external onlyProxyOp(_token) returns (bool)
@@ -244,6 +257,23 @@ contract TokenCore is ITokenCore, OperableCore, TokenStorage {
   }
 
   function defineRules(address _token, IRule[] calldata)
+    override external onlyProxyOp(_token) returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function defineElasticity(address _token, uint256)
+    override external onlyProxyOp(_token) returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function rebaseInterest(address _token) override external returns (bool)
+  {
+    return delegateCall(_token);
+  }
+
+  function defineInterest(address _token, uint256)
     override external onlyProxyOp(_token) returns (bool)
   {
     return delegateCall(_token);

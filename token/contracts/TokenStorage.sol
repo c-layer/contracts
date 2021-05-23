@@ -28,7 +28,11 @@ contract TokenStorage is ITokenStorage, OperableStorage {
     mapping (address => uint256) balances;
     mapping (address => mapping (address => uint256)) allowances;
 
+    uint256 elasticity;
     bool mintingFinished;
+
+    uint256 interestRate;
+    uint256 interestFrom;
 
     uint256 allTimeMinted;
     uint256 allTimeBurned;
@@ -87,7 +91,7 @@ contract TokenStorage is ITokenStorage, OperableStorage {
   /**
    * @dev currentTime()
    */
-  function currentTime() internal view returns (uint64) {
+  function currentTime() internal virtual view returns (uint64) {
     // solhint-disable-next-line not-rely-on-time
     return uint64(block.timestamp);
   }
