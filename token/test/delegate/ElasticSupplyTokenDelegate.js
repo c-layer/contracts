@@ -66,8 +66,23 @@ contract('ElasticSupplyTokenDelegate', function (accounts) {
     await assertRevert(token.transferFrom(accounts[0], accounts[2], '1000', { from: accounts[1] }), 'ES03');
   });
 
+  it('should let canTransfer returns too many tokens', async function () {
+    const canTransfer = await token.canTransfer.call(accounts[0], accounts[1], '1'.padEnd(20, '0'));
+    assert.equal(canTransfer.toString(), 4, 'canTransfer');
+  });
+
   it('should prevent sending too many tokens', async function () {
     await assertRevert(token.transfer(accounts[1], '1'.padEnd(20, '0')), 'ES03');
+  });
+
+  it('should let canTransfer returns null sender', async function () {
+    const canTransfer = await token.canTransfer.call(NULL_ADDRESS, accounts[1], '1000');
+    assert.equal(canTransfer.toString(), 2, 'canTransfer');
+  });
+
+  it('should let canTransfer returns null recipient', async function () {
+    const canTransfer = await token.canTransfer.call(accounts[0], NULL_ADDRESS, '1000');
+    assert.equal(canTransfer.toString(), 3, 'canTransfer');
   });
 
   it('should prevent sending tokens to null', async function () {
@@ -117,6 +132,11 @@ contract('ElasticSupplyTokenDelegate', function (accounts) {
     it('should have no balance for accounts[1]', async function () {
       const balance = await token.balanceOf(accounts[1]);
       assert.equal(balance.toString(), AMOUNT, 'balance');
+    });
+
+    it('should let canTransfer returns too many tokens', async function () {
+      const canTransfer = await token.canTransfer.call(accounts[1], accounts[0], '1000');
+      assert.equal(canTransfer.toString(), 1, 'canTransfer');
     });
 
     describe('With operator having some tokens', async function () {

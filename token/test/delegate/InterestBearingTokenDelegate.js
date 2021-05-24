@@ -121,6 +121,12 @@ contract('InterestBearingTokenDelegate', function (accounts) {
         assert.equal(tx.logs.length, 0);
       });
 
+      it('should not rebase too early with non owner', async function () {
+        const tx = await core.rebaseInterest(token.address, { from: accounts[1] });
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 0);
+      });
+
       it('should not rebase during the transfer', async function () {
         const tx = await token.transfer(accounts[1], '750000');
         assert.ok(tx.receipt.status, 'Status');
@@ -143,6 +149,15 @@ contract('InterestBearingTokenDelegate', function (accounts) {
 
         it('should rebase once', async function () {
           const tx = await core.rebaseInterest(token.address);
+          assert.ok(tx.receipt.status, 'Status');
+          assert.equal(tx.logs.length, 1);
+          assert.equal(tx.logs[0].event, 'InterestRebased', 'event');
+          assertTime(tx.logs[0].args.at.toNumber(), from, 'at');
+          assert.equal(tx.logs[0].args.elasticity.toString(), '1050000000', 'elasticity');
+        });
+
+        it('should rebase once with non owner', async function () {
+          const tx = await core.rebaseInterest(token.address, { from: accounts[1] });
           assert.ok(tx.receipt.status, 'Status');
           assert.equal(tx.logs.length, 1);
           assert.equal(tx.logs[0].event, 'InterestRebased', 'event');
