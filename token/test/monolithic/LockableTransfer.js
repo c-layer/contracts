@@ -78,6 +78,54 @@ contract('LockableTransfer', function (accounts) {
     });
   });
 
+  describe('With everyone prevented both to receive from account 1 and to send to account 2', async function () {
+    beforeEach(async function () {
+      await lockable.defineLock(accounts[1], ANY_ADDRESSES, PREVIOUS_YEAR, NEXT_YEAR);
+      await lockable.defineLock(ANY_ADDRESSES, accounts[2], PREVIOUS_YEAR, NEXT_YEAR);
+    });
+
+    it('should have transfer locked from account 1 to account 2', async function () {
+      const result = await lockable.isTransferLocked(accounts[1], accounts[2]);
+      assert.ok(result, 'locked');
+    });
+  });
+
+  describe('With everyone prevented both to receive from account 1 and to send to account 2', async function () {
+    beforeEach(async function () {
+      await lockable.defineLock(accounts[1], ANY_ADDRESSES, PREVIOUS_YEAR, NEXT_YEAR);
+      await lockable.defineLock(ANY_ADDRESSES, accounts[2], NEXT_YEAR, NEXT_YEAR);
+    });
+
+    it('should have transfer locked from account 1 to account 2', async function () {
+      const result = await lockable.isTransferLocked(accounts[1], accounts[2]);
+      assert.ok(result, 'locked');
+    });
+  });
+
+  describe('With everyone prevented both to receive from account 1 and to send to account 2', async function () {
+    beforeEach(async function () {
+      await lockable.defineLock(accounts[1], ANY_ADDRESSES, NEXT_YEAR, NEXT_YEAR);
+      await lockable.defineLock(ANY_ADDRESSES, accounts[2], PREVIOUS_YEAR, NEXT_YEAR);
+    });
+
+    it('should have transfer locked from account 1 to account 2', async function () {
+      const result = await lockable.isTransferLocked(accounts[1], accounts[2]);
+      assert.ok(result, 'locked');
+    });
+  });
+
+  describe('With everyone prevented both to receive from account 1 and to send to account 2', async function () {
+    beforeEach(async function () {
+      await lockable.defineLock(accounts[1], ANY_ADDRESSES, NEXT_YEAR, NEXT_YEAR);
+      await lockable.defineLock(ANY_ADDRESSES, accounts[2], NEXT_YEAR, NEXT_YEAR);
+    });
+
+    it('should have transfer locked from account 1 to account 2', async function () {
+      const result = await lockable.isTransferLocked(accounts[1], accounts[2]);
+      assert.ok(!result, 'not locked');
+    });
+  });
+
   describe('With account 1 prevented to send to account 2', async function () {
     beforeEach(async function () {
       await lockable.defineLock(accounts[1], accounts[2], PREVIOUS_YEAR, NEXT_YEAR);
