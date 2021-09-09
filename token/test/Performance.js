@@ -23,11 +23,11 @@ const CHF_ADDRESS = web3.utils.toHex('CHF').padEnd(42, '0');
 const NEXT_YEAR = Math.floor(new Date().getTime() / 1000) + (24 * 3600 * 365);
 
 // Contract Deployments Gas Cost
-const CORE_GAS_COST = 4138085;
-const MINTABLE_DELEGATE_GAS_COST = 1748845;
-const KYCONLY_DELEGATE_GAS_COST = 2888270;
-const DELEGATE_GAS_COST = 3225667;
-const PROXY_GAS_COST = 774344;
+const CORE_GAS_COST = 4140647;
+const MINTABLE_DELEGATE_GAS_COST = 1747590;
+const KYCONLY_DELEGATE_GAS_COST = 2879418;
+const DELEGATE_GAS_COST = 3212439;
+const PROXY_GAS_COST = 776602;
 
 // Contract Interactions Gas Cost
 const MINTABLE_FIRST_TRANSFER_COST = 65369;
