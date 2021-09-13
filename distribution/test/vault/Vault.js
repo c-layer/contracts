@@ -187,11 +187,15 @@ contract('Vault', function (accounts) {
       const tx = await vault.transferERC20From(token.address,
         accounts[1], accounts[0], '1000');
       assert.ok(tx.receipt.status, 'Status');
-      assert.equal(tx.receipt.rawLogs.length, 1, 'logs');
-      assert.equal(tx.receipt.rawLogs[0].topics[0], TRANSFER_LOG, 'transfer');
-      assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(accounts[1]), 'from');
-      assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(accounts[0]), 'to');
-      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(1000)), 'value');
+      assert.equal(tx.receipt.rawLogs.length, 2, 'logs');
+      assert.equal(tx.receipt.rawLogs[0].topics[0], APPROVAL_LOG, 'event');
+      assert.equal(tx.receipt.rawLogs[0].topics[1], formatAddressToTopic(accounts[1]), 'owner');
+      assert.equal(tx.receipt.rawLogs[0].topics[2], formatAddressToTopic(vault.address), 'spender');
+      assert.equal(tx.receipt.rawLogs[0].data, formatValueToData(web3.utils.toHex(0)), 'value');
+      assert.equal(tx.receipt.rawLogs[1].topics[0], TRANSFER_LOG, 'transfer');
+      assert.equal(tx.receipt.rawLogs[1].topics[1], formatAddressToTopic(accounts[1]), 'from');
+      assert.equal(tx.receipt.rawLogs[1].topics[2], formatAddressToTopic(accounts[0]), 'to');
+      assert.equal(tx.receipt.rawLogs[1].data, formatValueToData(web3.utils.toHex(1000)), 'value');
     });
 
     it('should prevent non operator to transfer accounts[1] token', async function () {

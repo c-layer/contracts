@@ -24,9 +24,6 @@ contract TokenERC721 is ITokenERC721 {
   using Account for address;
   using Bytes32Convert for bytes32;
 
-  bytes4 internal constant RECEIVER_CALLBACK_SUCCESS =
-    bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"));
-
   string internal name_;
   string internal symbol_;
   string internal baseURI_;
@@ -38,14 +35,14 @@ contract TokenERC721 is ITokenERC721 {
     uint256 balance;
     mapping (uint256 => uint256) ownedTokenIds;
     mapping (uint256 => uint256) ownedTokenIndexes;
+    mapping (address => bool) operators;
   }
 
   mapping (uint256 => uint256) internal tokenIds;
   mapping (uint256 => address) internal ownersAddresses;
   mapping (address => Owner) internal owners;
 
-  mapping (uint256 => address) internal approveds;
-  mapping (address => mapping (address => bool)) internal operators;
+  mapping (uint256 => address) internal approvees;
 
   constructor(
     string memory _name,
@@ -134,13 +131,13 @@ contract TokenERC721 is ITokenERC721 {
     external override view returns (address)
   {
     tokenExistsInternal(_tokenId);
-    return approveds[_tokenId];
+    return approvees[_tokenId];
   }
 
   function isApprovedForAll(address _owner, address _operator)
     external override view returns (bool)
   {
-    return operators[_owner][_operator];
+    return owners[_owner].operators[_operator];
   }
 
   function defineTemplateURI(string memory _baseURI, string memory _suffixURI)
@@ -159,16 +156,16 @@ contract TokenERC721 is ITokenERC721 {
 
   function approve(address _approved, uint256 _tokenId) external override
   {
-    require(ownersAddresses[_tokenId] == msg.sender
-      || operators[_approved][msg.sender], "TN03");
-    approveds[_tokenId] = _approved;
-    emit Approval(msg.sender, _approved, _tokenId);
+    address owner = ownersAddresses[_tokenId];
+    require(owner == msg.sender || owners[owner].operators[msg.sender], "TN03");
+    approvees[_tokenId] = _approved;
+    emit Approval(owner, _approved, _tokenId);
   }
 
   function setApprovalForAll(address _operator, bool _approved)
     external override
   {
-    operators[msg.sender][_operator] = _approved;
+    owners[msg.sender].operators[_operator] = _approved;
     emit ApprovalForAll(msg.sender, _operator, _approved);
   }
 
@@ -198,8 +195,13 @@ contract TokenERC721 is ITokenERC721 {
     require(ownersAddresses[_tokenId] == _from, "TN04");
 
     require(_from == msg.sender ||
-      approveds[_tokenId] == msg.sender ||
-      operators[_from][msg.sender], "TN05");
+      approvees[_tokenId] == msg.sender ||
+      owners[_from].operators[msg.sender], "TN05");
+
+    if (approvees[_tokenId] != address(0)) {
+      approvees[_tokenId] = address(0);
+      emit Approval(_from, address(0), _tokenId);
+    }
 
     ownersAddresses[_tokenId] = _to;
 
@@ -222,7 +224,7 @@ contract TokenERC721 is ITokenERC721 {
   {
     if(_to.isContract()) {
       require(IERC721TokenReceiver(_to).onERC721Received(msg.sender, _from, _tokenId, _data)
-        == RECEIVER_CALLBACK_SUCCESS, "TN06");
+        == IERC721TokenReceiver.onERC721Received.selector, "TN06");
     }
   }
 }

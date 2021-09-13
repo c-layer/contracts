@@ -86,6 +86,7 @@ contract TokenERC20 is IERC20 {
     if (_from != msg.sender) {
       require(_value <= allowed[_from][msg.sender], "TE03");
       allowed[_from][msg.sender] = allowed[_from][msg.sender] - _value;
+      emit Approval(_from, msg.sender, allowed[_from][msg.sender]);
     }
 
     balances[_from] = balances[_from] - _value;

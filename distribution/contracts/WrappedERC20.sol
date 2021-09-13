@@ -82,6 +82,7 @@ contract WrappedERC20 is TokenERC20, IWrappedERC20 {
     if (_from != msg.sender) {
       require(wrappedValue <= allowed[_from][msg.sender], "WE04");
       allowed[_from][msg.sender] = allowed[_from][msg.sender] - wrappedValue;
+      emit Approval(_from, msg.sender, allowed[_from][msg.sender]);
     }
 
     balances[_from] = balances[_from] - wrappedValue;

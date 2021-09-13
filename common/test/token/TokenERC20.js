@@ -117,11 +117,15 @@ contract('TokenERC20', function (accounts) {
       const tx = await token.transferFrom(
         accounts[0], accounts[1], '1000', { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.equal(tx.logs.length, 1);
-      assert.equal(tx.logs[0].event, 'Transfer', 'event');
-      assert.equal(tx.logs[0].args.from, accounts[0], 'from');
-      assert.equal(tx.logs[0].args.to, accounts[1], 'to');
-      assert.equal(tx.logs[0].args.value, '1000', 'value');
+      assert.equal(tx.logs.length, 2);
+      assert.equal(tx.logs[0].event, 'Approval', 'event');
+      assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+      assert.equal(tx.logs[0].args.spender, accounts[1], 'spender');
+      assert.equal(tx.logs[0].args.value, '0', 'value');
+      assert.equal(tx.logs[1].event, 'Transfer', 'event');
+      assert.equal(tx.logs[1].args.from, accounts[0], 'from');
+      assert.equal(tx.logs[1].args.to, accounts[1], 'to');
+      assert.equal(tx.logs[1].args.value, '1000', 'value');
     });
 
     it('should prevent account 1 to transfer too many token from account 0', async function () {

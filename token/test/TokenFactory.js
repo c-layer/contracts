@@ -12,7 +12,7 @@ const TokenFactory = artifacts.require('TokenFactory.sol');
 const TokenProxy = artifacts.require('TokenProxy.sol');
 const WrappedERC20 = artifacts.require('WrappedERC20Mock.sol');
 
-const TOKEN_DEPLOYMENT_COST = 1267085;
+const TOKEN_DEPLOYMENT_COST = 1269301;
 const TRANSFER_OK = 1;
 const TRANSFER_LOCKED = 5;
 const TRANSFER_RULED = 7;

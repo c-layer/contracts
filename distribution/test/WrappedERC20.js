@@ -44,25 +44,33 @@ contract('WrappedERC20', function (accounts) {
     it('should deposit some tokens', async function () {
       const tx = await wToken.deposit(1000, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
-      assert.equal(tx.logs[0].args.from, accounts[1], 'from');
-      assert.equal(tx.logs[0].args.to, wToken.address, 'to');
-      assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
-      assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
-      assert.equal(tx.logs[1].args.to, accounts[1], 'to');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Approval', 'Transfer', 'Transfer'], 'events');
+      assert.equal(tx.logs[0].event, 'Approval', 'event');
+      assert.equal(tx.logs[0].args.owner, accounts[1], 'owner');
+      assert.equal(tx.logs[0].args.spender, wToken.address, 'spender');
+      assert.equal(tx.logs[0].args.value, '0', 'value');
+      assert.equal(tx.logs[1].args.from, accounts[1], 'from');
+      assert.equal(tx.logs[1].args.to, wToken.address, 'to');
       assert.equal(tx.logs[1].args.value.toString(), 1000, 'value');
+      assert.equal(tx.logs[2].args.from, NULL_ADDRESS, 'from');
+      assert.equal(tx.logs[2].args.to, accounts[1], 'to');
+      assert.equal(tx.logs[2].args.value.toString(), 1000, 'value');
     });
 
     it('should deposit some tokens to accounts 2', async function () {
       const tx = await wToken.depositTo(accounts[2], 1000, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
-      assert.equal(tx.logs[0].args.from, accounts[1], 'from');
-      assert.equal(tx.logs[0].args.to, wToken.address, 'to');
-      assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
-      assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
-      assert.equal(tx.logs[1].args.to, accounts[2], 'to');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Approval', 'Transfer', 'Transfer'], 'events');
+      assert.equal(tx.logs[0].event, 'Approval', 'event');
+      assert.equal(tx.logs[0].args.owner, accounts[1], 'owner');
+      assert.equal(tx.logs[0].args.spender, wToken.address, 'spender');
+      assert.equal(tx.logs[0].args.value, '0', 'value');
+      assert.equal(tx.logs[1].args.from, accounts[1], 'from');
+      assert.equal(tx.logs[1].args.to, wToken.address, 'to');
       assert.equal(tx.logs[1].args.value.toString(), 1000, 'value');
+      assert.equal(tx.logs[2].args.from, NULL_ADDRESS, 'from');
+      assert.equal(tx.logs[2].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[2].args.value.toString(), 1000, 'value');
     });
 
     it('should not deposit tokens to address NULL', async function () {
@@ -137,13 +145,17 @@ contract('WrappedERC20', function (accounts) {
     it('should let account 2 withdraw tokens', async function () {
       const tx = await wToken.withdrawFrom(accounts[1], accounts[2], 1000, { from: accounts[2] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
-      assert.equal(tx.logs[0].args.from, accounts[1], 'from');
-      assert.equal(tx.logs[0].args.to, NULL_ADDRESS, 'to');
-      assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
-      assert.equal(tx.logs[1].args.from, wToken.address, 'from');
-      assert.equal(tx.logs[1].args.to, accounts[2], 'to');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Approval', 'Transfer', 'Transfer'], 'events');
+      assert.equal(tx.logs[0].event, 'Approval', 'event');
+      assert.equal(tx.logs[0].args.owner, accounts[1], 'owner');
+      assert.equal(tx.logs[0].args.spender, accounts[2], 'spender');
+      assert.equal(tx.logs[0].args.value, '0', 'value');
+      assert.equal(tx.logs[1].args.from, accounts[1], 'from');
+      assert.equal(tx.logs[1].args.to, NULL_ADDRESS, 'to');
       assert.equal(tx.logs[1].args.value.toString(), 1000, 'value');
+      assert.equal(tx.logs[2].args.from, wToken.address, 'from');
+      assert.equal(tx.logs[2].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[2].args.value.toString(), 1000, 'value');
     });
   });
 
@@ -156,13 +168,17 @@ contract('WrappedERC20', function (accounts) {
     it('should deposit some tokens', async function () {
       const tx = await wToken.deposit(1000, { from: accounts[1] });
       assert.ok(tx.receipt.status, 'Status');
-      assert.deepEqual(tx.logs.map((log) => log.event), ['Transfer', 'Transfer'], 'events');
-      assert.equal(tx.logs[0].args.from, accounts[1], 'from');
-      assert.equal(tx.logs[0].args.to, wToken.address, 'to');
-      assert.equal(tx.logs[0].args.value.toString(), 1000, 'value');
-      assert.equal(tx.logs[1].args.from, NULL_ADDRESS, 'from');
-      assert.equal(tx.logs[1].args.to, accounts[1], 'to');
-      assert.equal(tx.logs[1].args.value.toString(), '1000' + '0'.padEnd(19, '0'), 'value');
+      assert.deepEqual(tx.logs.map((log) => log.event), ['Approval', 'Transfer', 'Transfer'], 'events');
+      assert.equal(tx.logs[0].event, 'Approval', 'event');
+      assert.equal(tx.logs[0].args.owner, accounts[1], 'owner');
+      assert.equal(tx.logs[0].args.spender, wToken.address, 'spender');
+      assert.equal(tx.logs[0].args.value, '0', 'value');
+      assert.equal(tx.logs[1].args.from, accounts[1], 'from');
+      assert.equal(tx.logs[1].args.to, wToken.address, 'to');
+      assert.equal(tx.logs[1].args.value.toString(), 1000, 'value');
+      assert.equal(tx.logs[2].args.from, NULL_ADDRESS, 'from');
+      assert.equal(tx.logs[2].args.to, accounts[1], 'to');
+      assert.equal(tx.logs[2].args.value.toString(), '1000' + '0'.padEnd(19, '0'), 'value');
     });
 
     it('should not deposit too many tokens', async function () {
