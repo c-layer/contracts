@@ -56,6 +56,8 @@ contract TokenERC721 is ITokenERC721 {
     symbol_ = _symbol;
     baseURI_ = _baseURI;
     suffixURI_ = _suffixURI;
+    emit TemplateURIUpdated(_baseURI, _suffixURI);
+
     totalSupply_ = _initialTokenIds.length;
 
     Owner storage owner_ = owners[_initialOwner];
@@ -68,14 +70,6 @@ contract TokenERC721 is ITokenERC721 {
       owner_.ownedTokenIndexes[_initialTokenIds[i]] = i;
       emit Transfer(address(0), _initialOwner, _initialTokenIds[i]);
     }
-  }
-
-  function interface165() public pure returns (bytes4) {
-    return type(IERC721Enumerable).interfaceId;
-  }
-
-  function interface721() public pure returns (bytes4) {
-    return type(IERC721Metadata).interfaceId;
   }
 
   function supportsInterface(bytes4 _interfaceId) public pure override returns (bool) {
@@ -138,14 +132,6 @@ contract TokenERC721 is ITokenERC721 {
     external override view returns (bool)
   {
     return owners[_owner].operators[_operator];
-  }
-
-  function defineTemplateURI(string memory _baseURI, string memory _suffixURI)
-    external override
-  {
-    baseURI_ = _baseURI;
-    suffixURI_ = _suffixURI;
-    emit TemplateURIUpdated(_baseURI, _suffixURI);
   }
 
   function transferFrom(address _from, address _to, uint256 _tokenId)

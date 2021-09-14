@@ -8,6 +8,13 @@ const assertRevert = require('../helpers/assertRevert');
 const TokenERC721 = artifacts.require('TokenERC721.sol');
 const ERC721TokenReceiverMock = artifacts.require('ERC721TokenReceiverMock.sol');
 
+const INTERFACES = {
+  erc165: '0x01ffc9a7',
+  erc721: '0x80ac58cd',
+  erc721Enumerable: '0x780e9d63',
+  erc721Metadata: '0x5b5e139f',
+};
+
 const NAME = 'name';
 const SYMBOL = 'SYM';
 const TEMPLATE_URI = {
@@ -23,6 +30,36 @@ contract('TokenERC721', function (accounts) {
   beforeEach(async function () {
     token = await TokenERC721.new(NAME, SYMBOL,
       TEMPLATE_URI.base, TEMPLATE_URI.extension, accounts[0], SUPPLY);
+  });
+
+  it('should support ERC165', async function () {
+    const success = await token.supportsInterface(INTERFACES.erc165);
+    assert.ok(success, 'erc165');
+  });
+
+  it('should support ERC721', async function () {
+    const success = await token.supportsInterface(INTERFACES.erc721);
+    assert.ok(success, 'erc721');
+  });
+
+  it('should support ERC721Enumerable', async function () {
+    const success = await token.supportsInterface(INTERFACES.erc721Enumerable);
+    assert.ok(success, 'erc721Enumerable');
+  });
+
+  it('should support ERC721Metadata', async function () {
+    const success = await token.supportsInterface(INTERFACES.erc721Metadata);
+    assert.ok(success, 'erc721Metadata');
+  });
+
+  it('should not support anything', async function () {
+    const success = await token.supportsInterface('0x01234567');
+    assert.ok(!success, 'anything');
+  });
+
+  it('should not support everything', async function () {
+    const success = await token.supportsInterface('0xffffffff');
+    assert.ok(!success, 'everything');
   });
 
   it('should have a name', async function () {
@@ -82,6 +119,16 @@ contract('TokenERC721', function (accounts) {
     assert.ok(!isApprovedForAll, 'approved for all');
   });
 
+  it('should let account 0 define approval for all', async function () {
+    const tx = await token.setApprovalForAll(accounts[1], true);
+    assert.ok(tx.receipt.status, 'Status');
+    assert.equal(tx.logs.length, 1);
+    assert.equal(tx.logs[0].event, 'ApprovalForAll', 'event');
+    assert.equal(tx.logs[0].args.owner, accounts[0], 'owner');
+    assert.equal(tx.logs[0].args.operator, accounts[1], 'operator');
+    assert.equal(tx.logs[0].args.approved, true, 'approved');
+  });
+
   it('should let account 0 transfer token 8 to account 1', async function () {
     const tx = await token.transferFrom(accounts[0], accounts[1], 8);
     assert.ok(tx.receipt.status, 'Status');
@@ -137,7 +184,7 @@ contract('TokenERC721', function (accounts) {
       accounts[0], accounts[1], 64, { from: accounts[1] }), 'TN05');
   });
 
-  describe('with account 0 approval token 64 to account 1', function () {
+  describe('with token 64 approved to account 1 from account 0', function () {
     beforeEach(async function () {
       await token.approve(accounts[1], 64);
     });
@@ -215,6 +262,93 @@ contract('TokenERC721', function (accounts) {
       it('should have account 1 not approved for all from account 0', async function () {
         const isApprovedForAll = await token.isApprovedForAll(accounts[0], accounts[1]);
         assert.ok(!isApprovedForAll, 'approved for all');
+      });
+
+      it('should prevent account 1 to transfer token 64 from account 0', async function () {
+        await assertRevert(token.transferFrom(
+          accounts[0], accounts[1], 64, { from: accounts[1] }), 'TN04');
+      });
+
+      it('should prevent account 1 to transfer token 64 from account 2', async function () {
+        await assertRevert(token.transferFrom(
+          accounts[2], accounts[1], 64, { from: accounts[1] }), 'TN05');
+      });
+    });
+  });
+
+  describe('with account 1 operator on all account 0 tokens', function () {
+    beforeEach(async function () {
+      await token.setApprovalForAll(accounts[1], true);
+    });
+
+    it('should have accounts 1 approved for all account 0 tokens', async function () {
+      const isApprovedForAll = await token.isApprovedForAll(accounts[0], accounts[1]);
+      assert.ok(isApprovedForAll, 'approved');
+    });
+
+    it('should have accounts 0 not approved for all account 1 tokens', async function () {
+      const isApprovedForAll = await token.isApprovedForAll(accounts[1], accounts[0]);
+      assert.ok(!isApprovedForAll, 'not approved');
+    });
+
+    it('should let account1 transfer token 64 from account 0', async function () {
+      const tx = await token.transferFrom(
+        accounts[0], accounts[2], 64, { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'Transfer', 'event');
+      assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+      assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[0].args.tokenId, 64, 'value');
+    });
+
+    it('should let account1 transfer token 32 from account 0', async function () {
+      const tx = await token.transferFrom(
+        accounts[0], accounts[2], 32, { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'Transfer', 'event');
+      assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+      assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[0].args.tokenId, 32, 'value');
+    });
+
+    it('should let account1 safeTransfer token 64 from account 0', async function () {
+      const tx = await token.safeTransferFrom(
+        accounts[0], accounts[2], 64, { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'Transfer', 'event');
+      assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+      assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[0].args.tokenId, 64, 'value');
+    });
+
+    it('should let account1 safeTransfer token 64 from account 0 with data', async function () {
+      const tx = await token.methods['safeTransferFrom(address,address,uint256,bytes)'](
+        accounts[0], accounts[2], 64, '0x12345', { from: accounts[1] });
+      assert.ok(tx.receipt.status, 'Status');
+      assert.equal(tx.logs.length, 1);
+      assert.equal(tx.logs[0].event, 'Transfer', 'event');
+      assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+      assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+      assert.equal(tx.logs[0].args.tokenId, 64, 'value');
+    });
+
+    describe('with token 64 transferred to account 2', function () {
+      beforeEach(async function () {
+        await token.transferFrom(accounts[0], accounts[2], 64);
+      });
+
+      it('should let account1 transfer token 32 from account 0', async function () {
+        const tx = await token.transferFrom(
+          accounts[0], accounts[2], 32, { from: accounts[1] });
+        assert.ok(tx.receipt.status, 'Status');
+        assert.equal(tx.logs.length, 1);
+        assert.equal(tx.logs[0].event, 'Transfer', 'event');
+        assert.equal(tx.logs[0].args.from, accounts[0], 'from');
+        assert.equal(tx.logs[0].args.to, accounts[2], 'to');
+        assert.equal(tx.logs[0].args.tokenId, 32, 'value');
       });
 
       it('should prevent account 1 to transfer token 64 from account 0', async function () {
