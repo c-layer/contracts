@@ -42,15 +42,15 @@ contract VaultSig is LockableSig {
    * @dev execute the transaction
    */
   function execute(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination,
     uint256 _value,
     bytes memory _data,
     uint256 _validity)
     public override
     stillValid(_validity)
-    thresholdRequired(_destination, _value, _data, _validity,
-      threshold_, _sigR, _sigS, _sigV)
+    thresholdRequired(_signatures,
+      _destination, _value, _data, _validity, threshold_)
     returns (bool)
   {
     if (_data.length == 0) {
@@ -67,16 +67,14 @@ contract VaultSig is LockableSig {
    * @dev execute an ERC20 transfer
    */
   function transferERC20(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _token,
     address _destination,
     uint256 _value) public
     returns (bool)
   {
     return execute(
-      _sigR,
-      _sigS,
-      _sigV,
+      _signatures,
       _token,
       0,
       abi.encodeWithSelector(
@@ -90,15 +88,13 @@ contract VaultSig is LockableSig {
    * @dev execute a transfer
    */
   function transfer(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination,
     uint256 _value) public
     returns (bool)
   {
     return execute(
-      _sigR,
-      _sigS,
-      _sigV,
+      _signatures,
       _destination,
       _value,
       "",

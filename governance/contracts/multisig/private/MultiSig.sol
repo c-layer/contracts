@@ -1,5 +1,8 @@
 pragma solidity ^0.8.0;
 
+import "@c-layer/common/contracts/signer/SignerRecovery.sol";
+
+
 /**
  * @title MultiSig
  * @dev MultiSig contract
@@ -13,6 +16,8 @@ pragma solidity ^0.8.0;
  * MS04: Execution should be correct
  */
 contract MultiSig {
+  using SignerRecovery for bytes;
+
   address[] internal signers_;
   uint8 internal threshold_;
 
@@ -86,13 +91,13 @@ contract MultiSig {
    * @dev Modifier verifying that valid signatures are above _threshold
    */
   modifier thresholdRequired(
+    bytes[] memory _signatures,
     address _destination, uint256 _value, bytes memory _data,
-    uint256 _validity, uint8 _threshold,
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV)
+    uint256 _validity, uint8 _threshold)
   {
     require(
       reviewSignatures(
-        _destination, _value, _data, _validity, _sigR, _sigS, _sigV
+        _signatures, _destination, _value, _data, _validity
       ) >= _threshold,
       "MS01"
     );
@@ -160,20 +165,18 @@ contract MultiSig {
    * @dev returns the number of valid signatures
    */
   function reviewSignatures(
+    bytes[] memory _signatures,
     address _destination, uint256 _value, bytes memory _data,
-    uint256 _validity,
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV)
+    uint256 _validity)
     public view returns (uint256)
   {
     return reviewSignaturesInternal(
+      _signatures,
       _destination,
       _value,
       _data,
       _validity,
-      signers_,
-      _sigR,
-      _sigS,
-      _sigV
+      signers_
     );
   }
 
@@ -205,50 +208,30 @@ contract MultiSig {
    * @dev recover the public address from the signatures
    **/
   function recoverAddress(
+    bytes memory _signature,
     address _destination, uint256 _value,
-    bytes memory _data, uint256 _validity,
-    bytes32 _r, bytes32 _s, uint8 _v)
+    bytes memory _data, uint256 _validity)
     public view returns (address)
   {
-    // When used in web.eth.sign, geth will prepend the hash
-    bytes32 hash = keccak256(
-      abi.encodePacked("\x19Ethereum Signed Message:\n32",
-        buildHash(
-          _destination,
-          _value,
-          _data,
-          _validity
-        )
+    return _signature.recoverSigner(
+      buildHash(
+        _destination,
+        _value,
+        _data,
+        _validity
       )
     );
-
-    // Version of signature should be 27 or 28, but 0 and 1 are also possible versions
-    uint8 v = (_v < 27) ? _v += 27 : _v;
-
-    // If the version is correct return the signer address
-    if (v != 27 && v != 28) {
-      return address(0);
-    } else {
-      return ecrecover(
-        hash,
-        v,
-        _r,
-        _s
-      );
-    }
   }
 
   /**
    * @dev execute a transaction if enough signatures are valid
    **/
   function execute(
-    bytes32[] memory _sigR,
-    bytes32[] memory _sigS,
-    uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination, uint256 _value, bytes memory _data, uint256 _validity)
     public virtual
     stillValid(_validity)
-    thresholdRequired(_destination, _value, _data, _validity, threshold_, _sigR, _sigS, _sigV)
+    thresholdRequired(_signatures, _destination, _value, _data, _validity, threshold_)
     returns (bool)
   {
     executeInternal(_destination, _value, _data);
@@ -263,35 +246,30 @@ contract MultiSig {
    * returns 0 if the inputs are inconsistent
    */
   function reviewSignaturesInternal(
+    bytes[] memory _signatures,
     address _destination, uint256 _value, bytes memory _data, uint256 _validity,
-    address[] memory _signers,
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV)
+    address[] memory _signers)
     internal view returns (uint256)
   {
-    uint256 length = _sigR.length;
-    if (length == 0 || length > _signers.length || (
-      _sigS.length != length || _sigV.length != length
-    ))
-    {
+    uint256 length = _signatures.length;
+    if (length == 0 || length > _signers.length) {
       return 0;
     }
 
     uint256 validSigs = 0;
     address recovered = recoverAddress(
-      _destination, _value, _data, _validity, 
-      _sigR[0], _sigS[0], _sigV[0]);
+      _signatures[0],
+      _destination, _value, _data, _validity);
     for (uint256 i = 0; i < _signers.length; i++) {
       if (_signers[i] == recovered) {
         validSigs++;
         if (validSigs < length) {
           recovered = recoverAddress(
+            _signatures[validSigs],
             _destination,
             _value,
             _data,
-            _validity,
-            _sigR[validSigs],
-            _sigS[validSigs],
-            _sigV[validSigs]
+            _validity
           );
         } else {
           break;

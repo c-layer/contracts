@@ -41,11 +41,8 @@ contract LockableSig is MultiSig {
   /**
    * @dev unlock the contract
    */
-  function unlock(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV)
-    public
-    thresholdRequired(address(this), 0, LOCK, 0,
-      threshold_, _sigR, _sigS, _sigV)
+  function unlock(bytes [] memory _signatures) public
+    thresholdRequired(_signatures, address(this), 0, LOCK, 0, threshold_)
   {
     locked_ = false;
   }

@@ -10,15 +10,21 @@ const signer = require('../../helpers/signer');
 const LockableSig = artifacts.require('multisig/private/LockableSig.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 
+const SIGNER_TYPES = ['address', 'uint256', 'bytes', 'uint256', 'bytes32'];
+
 contract('LockableSig', function (accounts) {
   const DATA_TO_SIGN = web3.utils.sha3('LOCK');
   let token, request;
   let lockableSig;
 
+  const sign = async function (values, address) {
+    const replayProtection = await lockableSig.replayProtection();
+    return signer.sign(SIGNER_TYPES, values.concat(replayProtection), address);
+  };
+
   describe('with one address and threshold of 1', function () {
     beforeEach(async function () {
       lockableSig = await LockableSig.new([accounts[1]], 1);
-      signer.multiSig = lockableSig;
       token = await Token.new('Test', 'TST', 18, lockableSig.address, 1000);
       request = {
         params: [{
@@ -51,9 +57,9 @@ contract('LockableSig', function (accounts) {
     });
 
     it('should execute ERC20 transfer', async function () {
-      const rsv = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
+      const signature = await sign([ request.params[0].to, 0, request.params[0].data, 0 ], accounts[1]);
 
-      const tx = await lockableSig.execute([rsv.r], [rsv.s], [rsv.v],
+      const tx = await lockableSig.execute([signature],
         request.params[0].to, 0, request.params[0].data, 0);
       assert.ok(tx.receipt.status, 'status');
 
@@ -69,17 +75,17 @@ contract('LockableSig', function (accounts) {
       });
 
       it('should prevent ERC20 transfer', async function () {
-        const rsv = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
+        const signature = await sign([ request.params[0].to, 0, request.params[0].data, 0 ], accounts[1]);
 
         await assertRevert(
-          lockableSig.execute([rsv.r], [rsv.s], [rsv.v],
+          lockableSig.execute([signature],
             request.params[0].to, 0, request.params[0].data, 0),
           'LS01');
       });
 
       it('should unlock', async function () {
-        const rsv = await signer.sign(lockableSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
-        const tx = await lockableSig.unlock([rsv.r], [rsv.s], [rsv.v]);
+        const signature = await sign([ lockableSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
+        const tx = await lockableSig.unlock([signature]);
         assert.ok(tx.receipt.status, 'status');
 
         const locked = await lockableSig.isLocked();
@@ -88,14 +94,14 @@ contract('LockableSig', function (accounts) {
 
       describe('when unlocked', function () {
         beforeEach(async function () {
-          const rsv = await signer.sign(lockableSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
-          await lockableSig.unlock([rsv.r], [rsv.s], [rsv.v]);
+          const signature = await sign([ lockableSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
+          await lockableSig.unlock([signature]);
         });
 
         it('should execute ERC20 transfer', async function () {
-          const rsv = await signer.sign(request.params[0].to, 0, request.params[0].data, 0, accounts[1]);
+          const signature = await sign([ request.params[0].to, 0, request.params[0].data, 0 ], accounts[1]);
 
-          const tx = await lockableSig.execute([rsv.r], [rsv.s], [rsv.v],
+          const tx = await lockableSig.execute([signature],
             request.params[0].to, 0, request.params[0].data, 0);
           assert.ok(tx.receipt.status, 'status');
 

@@ -35,15 +35,13 @@ contract DelegateSig is LockableSig {
    * @dev check that the signatures reach the threshold for a specific operations
    */
   modifier onlyDelegates(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination, bytes memory _data)
   {
     bytes4 method = readSelector(_data);
     require(
       reviewDelegateSigs(
-        _sigR,
-        _sigS,
-        _sigV,
+        _signatures,
         _destination,
         _data,
         method
@@ -96,20 +94,18 @@ contract DelegateSig is LockableSig {
    * @dev returns the number of valid signatures for an operation
    */
   function reviewDelegateSigs(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination, bytes memory _data, bytes4 _method)
     public view returns (uint256)
   {
     Grant storage grant = grants[_destination][_method];
     return (reviewSignaturesInternal(
+      _signatures,
       _destination,
       0,
       _data,
       0,
-      grant.delegates,
-      _sigR,
-      _sigS,
-      _sigV)
+      grant.delegates)
     );
   }
 
@@ -117,9 +113,9 @@ contract DelegateSig is LockableSig {
    * @dev execute on behalf signers as delegates
    */
   function executeOnBehalf(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address payable _destination, uint256 _value, bytes memory _data) public
-    onlyDelegates(_sigR, _sigS, _sigV, _destination, _data)
+    onlyDelegates(_signatures, _destination, _data)
     returns (bool)
   {
     require(grantsDefined_, "DS02");
@@ -134,13 +130,15 @@ contract DelegateSig is LockableSig {
    * @dev to approve the grants hash
    */
   function addGrant(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV,
+    bytes[] memory _signatures,
     address _destination, bytes4 _method,
     address[] memory _delegates, uint8 _grantThreshold)
     public
-    thresholdRequired(address(this), 0,
+    thresholdRequired(
+      _signatures,
+      address(this), 0,
       abi.encodePacked(GRANT), 0,
-      threshold_, _sigR, _sigS, _sigV)
+      threshold_)
     returns (bool)
   {
     require(!grantsDefined_, "DS03");
@@ -162,12 +160,12 @@ contract DelegateSig is LockableSig {
    * @dev lock grant definition
    * Definition will be fixed after to avoid any mismanipulation
    */
-  function endDefinition(
-    bytes32[] memory _sigR, bytes32[] memory _sigS, uint8[] memory _sigV)
-    public
-    thresholdRequired(address(this), 0,
+  function endDefinition(bytes[] memory _signatures) public
+    thresholdRequired(
+      _signatures,
+      address(this), 0,
       abi.encodePacked(grantsHash_), // conversion from Bytes32 to Bytes
-      0, threshold_, _sigR, _sigS, _sigV)
+      0, threshold_)
     returns (bool)
   {
     require(!grantsDefined_, "DS03");

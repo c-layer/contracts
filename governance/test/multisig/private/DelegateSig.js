@@ -10,15 +10,21 @@ const signer = require('../../helpers/signer');
 const DelegateSig = artifacts.require('multisig/private/DelegateSig.sol');
 const Token = artifacts.require('mock/TokenERC20Mock.sol');
 
+const SIGNER_TYPES = ['address', 'uint256', 'bytes', 'uint256', 'bytes32'];
+
 contract('DelegateSig', function (accounts) {
   const DATA_TO_SIGN = web3.utils.sha3('GRANT');
   let delegateSig;
   let token, request1, request2, request3;
 
+  const sign = async function (values, address) {
+    const replayProtection = await delegateSig.replayProtection();
+    return signer.sign(SIGNER_TYPES, values.concat(replayProtection), address);
+  };
+
   describe('with one address and a threshold of 1', function () {
     beforeEach(async function () {
       delegateSig = await DelegateSig.new([accounts[1]], 1);
-      signer.multiSig = delegateSig;
       token = await Token.new('Test', 'TST', 18, delegateSig.address, 1000);
       await token.approve(accounts[0], 500);
       request1 = {
@@ -42,10 +48,9 @@ contract('DelegateSig', function (accounts) {
     });
 
     it('should review signatures', async function () {
-      const rsv = await signer.sign(request1.params[0].to, 0, request1.params[0].data, 0, accounts[1]);
+      const signature = await sign([ request1.params[0].to, 0, request1.params[0].data, 0 ], accounts[1]);
       const review = await delegateSig.reviewSignatures(
-        request1.params[0].to, 0, request1.params[0].data, 0,
-        [rsv.r], [rsv.s], [rsv.v]);
+        [signature], request1.params[0].to, 0, request1.params[0].data, 0);
       assert.equal(review.toNumber(), 1);
     });
 
@@ -81,7 +86,7 @@ contract('DelegateSig', function (accounts) {
 
     it('should not be possible to add grant without signers', async function () {
       await assertRevert(delegateSig.addGrant(
-        [], [], [],
+        [],
         request1.params[0].to,
         request1.params[0].data.substring(0, 10),
         accounts, 3,
@@ -89,9 +94,9 @@ contract('DelegateSig', function (accounts) {
     });
 
     it('should not be possible to add grant with wrong signers', async function () {
-      const rsv1 = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[2]);
+      const signature1 = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[2]);
       await assertRevert(delegateSig.addGrant(
-        [rsv1.r], [rsv1.s], [rsv1.v],
+        [signature1],
         request1.params[0].to,
         request1.params[0].data.substring(0, 10),
         accounts, 3,
@@ -99,9 +104,9 @@ contract('DelegateSig', function (accounts) {
     });
 
     it('should be possible to add grant', async function () {
-      const rsv = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
+      const signature = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
       const tx = await delegateSig.addGrant(
-        [rsv.r], [rsv.s], [rsv.v],
+        [signature],
         request1.params[0].to,
         request1.params[0].data.substring(0, 10),
         accounts, 3,
@@ -111,36 +116,36 @@ contract('DelegateSig', function (accounts) {
     });
 
     it('should not be possible to end defintion without signers', async function () {
-      await assertRevert(delegateSig.endDefinition([], [], []), 'MS01');
+      await assertRevert(delegateSig.endDefinition([]), 'MS01');
     });
 
     it('should not be possible to end defintion with wrong signers', async function () {
       const grantsHash = await delegateSig.grantsHash();
-      const rsv1 = await signer.sign(delegateSig.address, 0, grantsHash, 0, accounts[2]);
+      const signature1 = await sign([ delegateSig.address, 0, grantsHash, 0 ], accounts[2]);
       await assertRevert(delegateSig.endDefinition(
-        [rsv1.r], [rsv1.s], [rsv1.v]), 'MS01');
+        [signature1]), 'MS01');
     });
 
     it('should not be possible to end defintion with wrong grantsHash signed', async function () {
-      const rsv1 = await signer.sign(delegateSig.address, 0, web3.utils.sha3('wrong grants hash'), 0, accounts[2]);
+      const signature1 = await sign([ delegateSig.address, 0, web3.utils.sha3('wrong grants hash'), 0 ], accounts[2]);
       await assertRevert(delegateSig.endDefinition(
-        [rsv1.r], [rsv1.s], [rsv1.v]), 'MS01');
+        [signature1]), 'MS01');
     });
 
     it('should be possible to end defintion', async function () {
       const grantsHash = await delegateSig.grantsHash();
-      const rsv = await signer.sign(delegateSig.address, 0, grantsHash, 0, accounts[1]);
+      const signature = await sign([ delegateSig.address, 0, grantsHash, 0 ], accounts[1]);
       const tx = await delegateSig.endDefinition(
-        [rsv.r], [rsv.s], [rsv.v]);
+        [signature]);
       assert.ok(tx.receipt.status, 'status');
       assert.equal(tx.logs.length, 0);
     });
 
     it('should not be possible to executeOnBehalf', async function () {
-      const rsv1 = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[2]);
+      const signature1 = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[2]);
       await assertRevert(
         delegateSig.executeOnBehalf(
-          [rsv1.r], [rsv1.s], [rsv1.v],
+          [signature1],
           request1.params[0].to, 0, request1.params[0].data),
         'DS02',
       );
@@ -148,16 +153,16 @@ contract('DelegateSig', function (accounts) {
 
     describe('with two grants defined', function () {
       beforeEach(async function () {
-        const signer1 = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
+        const signature1 = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
         await delegateSig.addGrant(
-          [signer1.r], [signer1.s], [signer1.v],
+          [signature1],
           request1.params[0].to,
           request1.params[0].data.substring(0, 10),
           [accounts[2], accounts[3]], 1,
         );
-        const signer2 = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
+        const signature2 = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
         await delegateSig.addGrant(
-          [signer2.r], [signer2.s], [signer2.v],
+          [signature2],
           request2.params[0].to,
           request2.params[0].data.substring(0, 10),
           [accounts[2], accounts[4], accounts[5]], 2,
@@ -180,9 +185,9 @@ contract('DelegateSig', function (accounts) {
       });
 
       it('should be possible to add grant', async function () {
-        const rsv = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
+        const signature = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
         const tx = await delegateSig.addGrant(
-          [rsv.r], [rsv.s], [rsv.v],
+          [signature],
           request3.params[0].to,
           request3.params[0].data.substring(0, 10),
           accounts, 3,
@@ -192,10 +197,10 @@ contract('DelegateSig', function (accounts) {
       });
 
       it('should not be possible to executeOnBehalf', async function () {
-        const rsv1 = await signer.sign(request1.params[0].to, 0, request1.params[0].data, 0, accounts[2]);
+        const signature1 = await sign([ request1.params[0].to, 0, request1.params[0].data, 0 ], accounts[2]);
         await assertRevert(
           delegateSig.executeOnBehalf(
-            [rsv1.r], [rsv1.s], [rsv1.v],
+            [signature1],
             request1.params[0].to, 0, request1.params[0].data),
           'DS02',
         );
@@ -204,22 +209,21 @@ contract('DelegateSig', function (accounts) {
       describe('with two grants defined and definition ended', function () {
         beforeEach(async function () {
           const grantsHash = await delegateSig.grantsHash();
-          const signer3 = await signer.sign(delegateSig.address, 0, grantsHash, 0, accounts[1]);
-          await delegateSig.endDefinition(
-            [signer3.r], [signer3.s], [signer3.v]);
+          const signature3 = await sign([ delegateSig.address, 0, grantsHash, 0 ], accounts[1]);
+          await delegateSig.endDefinition([signature3]);
         });
 
         it('should no be possible to end definition twice', async function () {
           const grantsHash = await delegateSig.grantsHash();
-          const signer4 = await signer.sign(delegateSig.address, 0, grantsHash, 0, accounts[1]);
+          const signature4 = await sign([ delegateSig.address, 0, grantsHash, 0 ], accounts[1]);
           await assertRevert(delegateSig.endDefinition(
-            [signer4.r], [signer4.s], [signer4.v]), 'DS03');
+            [signature4]), 'DS03');
         });
 
         it('should not be possible to add grant', async function () {
-          const signer4 = await signer.sign(delegateSig.address, 0, DATA_TO_SIGN, 0, accounts[1]);
+          const signature4 = await sign([ delegateSig.address, 0, DATA_TO_SIGN, 0 ], accounts[1]);
           await assertRevert(delegateSig.addGrant(
-            [signer4.r], [signer4.s], [signer4.v],
+            [signature4],
             request3.params[0].to,
             request3.params[0].data.substring(0, 10),
             accounts, 3,
@@ -227,30 +231,29 @@ contract('DelegateSig', function (accounts) {
         });
 
         it('should not be possible to executeOnBehalf with incorrect delegates', async function () {
-          const rsv1 = await signer.sign(request1.params[0].to, 0, request1.params[0].data, 0, accounts[4]);
+          const signature1 = await sign([ request1.params[0].to, 0, request1.params[0].data, 0 ], accounts[4]);
           await assertRevert(
             delegateSig.executeOnBehalf(
-              [rsv1.r], [rsv1.s], [rsv1.v],
+              [signature1],
               request1.params[0].to, 0, request1.params[0].data),
             'DS01',
           );
         });
 
         it('should not be possible to executeOnBehalf with insufficient delegates', async function () {
-          const rsv1 = await signer.sign(request2.params[0].to, 0, request2.params[0].data, 0, accounts[2]);
+          const signature1 = await sign([ request2.params[0].to, 0, request2.params[0].data, 0 ], accounts[2]);
           await assertRevert(
             delegateSig.executeOnBehalf(
-              [rsv1.r], [rsv1.s], [rsv1.v],
+              [signature1],
               request2.params[0].to, 0, request2.params[0].data),
             'DS01',
           );
         });
 
         it('should be possible to executeOnBehalf with grant1', async function () {
-          const rsv1 = await signer.sign(request1.params[0].to, 0, request1.params[0].data, 0, accounts[2]);
+          const signature1 = await sign([ request1.params[0].to, 0, request1.params[0].data, 0 ], accounts[2]);
           const tx = await delegateSig.executeOnBehalf(
-            [rsv1.r], [rsv1.s], [rsv1.v],
-            request1.params[0].to, 0, request1.params[0].data);
+            [signature1], request1.params[0].to, 0, request1.params[0].data);
           assert.ok(tx.receipt.status, 'status');
           assert.equal(tx.logs.length, 1, 'logs');
           assert.equal(tx.logs[0].event, 'Execution');
@@ -260,10 +263,10 @@ contract('DelegateSig', function (accounts) {
         });
 
         it('should be possible to executeOnBehalf with grant2', async function () {
-          const rsv1 = await signer.sign(request2.params[0].to, 0, request2.params[0].data, 0, accounts[2]);
-          const rsv2 = await signer.sign(request2.params[0].to, 0, request2.params[0].data, 0, accounts[4]);
+          const signature1 = await sign([ request2.params[0].to, 0, request2.params[0].data, 0 ], accounts[2]);
+          const signature2 = await sign([ request2.params[0].to, 0, request2.params[0].data, 0 ], accounts[4]);
           const tx = await delegateSig.executeOnBehalf(
-            [rsv1.r, rsv2.r], [rsv1.s, rsv2.s], [rsv1.v, rsv2.v],
+            [signature1, signature2],
             request2.params[0].to, 0, request2.params[0].data);
           assert.ok(tx.receipt.status, 'status');
           assert.equal(tx.logs.length, 1, 'logs');
