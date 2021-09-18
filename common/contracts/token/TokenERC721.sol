@@ -19,6 +19,7 @@ import "../convert/Bytes32Convert.sol";
  *   TN04: The token sender is not the owner
  *   TN05: The sender must either be the owner, the operator or the approvee
  *   TN06: The receiver callback was unsuccessfull
+ *   TN07: The token must not exist
  */
 contract TokenERC721 is ITokenERC721 {
   using Account for address;
@@ -58,18 +59,7 @@ contract TokenERC721 is ITokenERC721 {
     suffixURI_ = _suffixURI;
     emit TemplateURIUpdated(_baseURI, _suffixURI);
 
-    totalSupply_ = _initialTokenIds.length;
-
-    Owner storage owner_ = owners[_initialOwner];
-    owner_.balance = _initialTokenIds.length;
-
-    for(uint256 i=0; i < _initialTokenIds.length; i++) {
-      tokenIds[i] = _initialTokenIds[i];
-      ownersAddresses[_initialTokenIds[i]] = _initialOwner;
-      owner_.ownedTokenIds[i] = _initialTokenIds[i];
-      owner_.ownedTokenIndexes[_initialTokenIds[i]] = i;
-      emit Transfer(address(0), _initialOwner, _initialTokenIds[i]);
-    }
+    mintInternal(_initialOwner, _initialTokenIds);
   }
 
   function supportsInterface(bytes4 _interfaceId) public pure override returns (bool) {
@@ -171,6 +161,23 @@ contract TokenERC721 is ITokenERC721 {
 
   function tokenExistsInternal(uint256 _tokenId) internal view {
     require(ownersAddresses[_tokenId] != address(0), "TN01");
+  }
+
+  function mintInternal(address _recipient, uint256[] memory _tokenIds) internal {
+    totalSupply_ += _tokenIds.length;
+
+    Owner storage owner_ = owners[_recipient];
+    owner_.balance += _tokenIds.length;
+
+    for(uint256 i=0; i < _tokenIds.length; i++) {
+      uint256 tokenId = _tokenIds[i];
+      require(ownersAddresses[tokenId] == address(0), "TN07");
+      tokenIds[i] = tokenId;
+      ownersAddresses[tokenId] = _recipient;
+      owner_.ownedTokenIds[i] = tokenId;
+      owner_.ownedTokenIndexes[tokenId] = i;
+      emit Transfer(address(0), _recipient, tokenId);
+    }
   }
 
   function transferFromInternal(address _from, address _to, uint256 _tokenId)
