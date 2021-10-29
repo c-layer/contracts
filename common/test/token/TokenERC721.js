@@ -18,10 +18,10 @@ const INTERFACES = {
 const NAME = 'name';
 const SYMBOL = 'SYM';
 const TEMPLATE_URI = {
-  base: 'https://nft.c-layer.org/?id=0x',
+  base: 'https://nft.c-layer.org/?id=',
   extension: '.html',
 };
-const SUPPLY = [ 1, 2, 4, 8, 16, 32, 64 ];
+const SUPPLY = [ 1, 2, 4, 8, 10, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096 ];
 const NULL_ADDRESS = '0x'.padEnd(42, '0');
 
 contract('TokenERC721', function (accounts) {
@@ -78,8 +78,8 @@ contract('TokenERC721', function (accounts) {
   });
 
   it('should have URI for token', async function () {
-    const tokenURI = await token.tokenURI(64);
-    assert.equal(tokenURI, TEMPLATE_URI.base + 40 + TEMPLATE_URI.extension, 'tokenURI');
+    const uri = await Promise.all(SUPPLY.map((i) => token.tokenURI(i)));
+    assert.deepEqual(uri, SUPPLY.map((i) => TEMPLATE_URI.base + i + TEMPLATE_URI.extension), 'tokenURI');
   });
 
   it('should have token balance for initial account', async function () {

@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 import "../interface/ITokenERC721.sol";
 import "../interface/IERC721TokenReceiver.sol";
 import "../Account.sol";
-import "../convert/Bytes32Convert.sol";
+import "../convert/Uint256Convert.sol";
 
 
 /**
@@ -23,7 +23,7 @@ import "../convert/Bytes32Convert.sol";
  */
 contract TokenERC721 is ITokenERC721 {
   using Account for address;
-  using Bytes32Convert for bytes32;
+  using Uint256Convert for uint256;
 
   string internal name_;
   string internal symbol_;
@@ -82,7 +82,7 @@ contract TokenERC721 is ITokenERC721 {
   }
 
   function tokenURI(uint256 _indexId) external override view returns (string memory) { 
-    return string(abi.encodePacked(baseURI_, bytes32(_indexId).toString(), suffixURI_));
+    return string(abi.encodePacked(baseURI_, _indexId.toString(), suffixURI_));
   }
 
   function tokenByIndex(uint256 _index) external override view returns (uint256) {
