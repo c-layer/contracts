@@ -22,7 +22,7 @@ contract('RatesProvider', function (accounts) {
   const rateOffset = new BN('10').pow(new BN('18'));
   const aWEICHFSample = '48257890165041';
   const aETHCHFSample = '20722';
-  const DEFINE_RATES_ESTIMATE = 84451;
+  const DEFINE_RATES_ESTIMATE = 85651;
 
   beforeEach(async function () {
     provider = await RatesProvider.new('Test');

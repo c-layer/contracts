@@ -13,7 +13,7 @@ const Types = {
 
 module.exports = {
   // Usualy solidity types
-  Types: Types,
+  Types,
   buildHash: async function (types, values) {
     const parsedTypes = [];
     const parsedValues = [];

@@ -10,7 +10,7 @@ module.exports = async function (promise, expectedReasonOrCode) {
     success = true;
   } catch (error) {
     if (typeof error == 'object') {
-      if (Object.keys(error).length > 1) {
+      if (Object.keys(error).length > 1 && (error.reason || error.code)) {
         const revertReasonFound =
           (error.reason && error.reason === expectedReasonOrCode) ||
           (error.reason && error.reason.indexOf(expectedReasonOrCode) !== -1) ||
@@ -25,7 +25,7 @@ module.exports = async function (promise, expectedReasonOrCode) {
         const errorStr = error.toString();
 
         if (expectedReasonOrCode) {
-          const revertAt = errorStr.indexOf('revert ');
+          const revertAt = errorStr.indexOf('reverted with reason string');
           const revertStr = errorStr.substr(revertAt);
           const revertReasonFound = revertStr.indexOf(expectedReasonOrCode) !== -1;
           if (!revertReasonFound) {

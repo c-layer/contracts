@@ -14,10 +14,10 @@ const NULL_ADDRESS = '0x'.padEnd(42, '0');
 const ETH_TRANSFER_MIN_GAS = '230000';
 
 const GAS_SAFETY_FACTOR_PERCENT = '110';
-const TWO_ETH_TRANSFERS_GAS = 128231;
-const THREE_ETH_TRANSFERS_GAS = 161258;
-const TWO_ERC20_TRANSFERS_GAS = 141209;
-const THREE_ERC20_TRANSFERS_GAS = 175078;
+const TWO_ETH_TRANSFERS_GAS = 137002;
+const THREE_ETH_TRANSFERS_GAS = 172975;
+const TWO_ERC20_TRANSFERS_GAS = 138699;
+const THREE_ERC20_TRANSFERS_GAS = 168452;
 
 contract('BatchTransfer', function (accounts) {
   let batch, vaultETH, emptyAccounts;
@@ -159,19 +159,20 @@ contract('BatchTransfer', function (accounts) {
         const tx1 = await batch.transfer(
           [emptyAccounts[0], emptyAccounts[1]], [101, 102], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
-            gasPrice: '1',
-            value: '1000203',
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas: withGasSafetyFactor(TWO_ETH_TRANSFERS_GAS),
+            value: web3.utils.toWei('1', 'milli'),
           });
         assert.ok(tx1.receipt.status, 'Status');
 
         const balanceBatch1 = await web3.eth.getBalance(batch.address);
-        assert.equal(balanceBatch1.toString(), '992000', 'batch balance');
+        assert.equal(balanceBatch1.toString(), '991999999999797', 'batch balance');
         const balanceVaultETH1 = await web3.eth.getBalance(vaultETH);
-        assert.equal(balanceVaultETH1.toString(), '8000', 'vault');
+        assert.equal(balanceVaultETH1.toString(), '8000000000000', 'vault');
 
         const tx2 = await batch.transfer([], [], ETH_TRANSFER_MIN_GAS, {
           from: accounts[1],
-          gasPrice: '1',
+          gasPrice: web3.utils.toWei('1', 'gwei'),
           value: '0',
         });
         assert.ok(tx2.receipt.status, 'Status');
@@ -179,14 +180,14 @@ contract('BatchTransfer', function (accounts) {
         const balanceBatch2 = await web3.eth.getBalance(batch.address);
         assert.equal(balanceBatch2.toString(), '0', 'batch balance');
         const balanceVaultETH2 = await web3.eth.getBalance(vaultETH);
-        assert.equal(balanceVaultETH2.toString(), '1000000', 'vault');
+        assert.equal(balanceVaultETH2.toString(), '999999999999797', 'vault');
       });
 
       it('should estimate ether transfer to two addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transfer.estimateGas(
           [emptyAccounts[0], emptyAccounts[1]], [100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
-            gasPrice: 1,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
             value: new BN(web3.utils.toWei('1', 'milli')).add(new BN('200')).toString(),
           });
 
@@ -195,12 +196,12 @@ contract('BatchTransfer', function (accounts) {
 
       it('should transfer to two addresses with the exact fees amount', async function () {
         const gas = withGasSafetyFactor(TWO_ETH_TRANSFERS_GAS);
-        const fees = new BN('16000');
+        const fees = new BN('8000').mul(new BN(web3.utils.toWei('1', 'gwei')));
         const tx = await batch.transfer(
           [emptyAccounts[0], emptyAccounts[1]], [100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
-            gasPrice: 2,
-            gas: gas,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas,
             value: fees.add(new BN('200')).toString(),
           });
         assert.ok(tx.receipt.status, 'Status');
@@ -213,7 +214,7 @@ contract('BatchTransfer', function (accounts) {
         const gasEstimate = await batch.transfer.estimateGas(
           [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
-            gasPrice: 1,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
             value: new BN(web3.utils.toWei('1', 'ether')).add(new BN('300')).toString(),
           });
 
@@ -222,12 +223,12 @@ contract('BatchTransfer', function (accounts) {
 
       it('should transfer to three addresses with the exact fees amount', async function () {
         const gas = withGasSafetyFactor(THREE_ETH_TRANSFERS_GAS);
-        const fees = new BN('24000');
+        const fees = new BN('12000').mul(new BN(web3.utils.toWei('1', 'gwei')));
         const tx = await batch.transfer(
           [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], ETH_TRANSFER_MIN_GAS, {
             from: accounts[1],
-            gasPrice: 2,
-            gas: gas,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas,
             value: fees.add(new BN('300')).toString(),
           });
         assert.ok(tx.receipt.status, 'Status');
@@ -285,19 +286,19 @@ contract('BatchTransfer', function (accounts) {
         const tx1 = await batch.transferERC20(
           token.address, [emptyAccounts[0], emptyAccounts[1]], [101, 102], {
             from: accounts[1],
-            gasPrice: '1',
-            value: '1000000',
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            value: web3.utils.toWei('1', 'milli'),
           });
         assert.ok(tx1.receipt.status, 'Status');
 
         const balanceBatch1 = await web3.eth.getBalance(batch.address);
-        assert.equal(balanceBatch1.toString(), '992000', 'batch balance');
+        assert.equal(balanceBatch1.toString(), '992000000000000', 'batch balance');
         const balanceVaultETH1 = await web3.eth.getBalance(vaultETH);
-        assert.equal(balanceVaultETH1.toString(), '8000', 'vault');
+        assert.equal(balanceVaultETH1.toString(), '8000000000000', 'vault');
 
         const tx2 = await batch.transferERC20(token.address, [], [], {
           from: accounts[1],
-          gasPrice: '1',
+          gasPrice: web3.utils.toWei('1', 'gwei'),
           value: '0',
         });
         assert.ok(tx2.receipt.status, 'Status');
@@ -305,14 +306,14 @@ contract('BatchTransfer', function (accounts) {
         const balanceBatch2 = await web3.eth.getBalance(batch.address);
         assert.equal(balanceBatch2.toString(), '0', 'batch balance');
         const balanceVaultETH2 = await web3.eth.getBalance(vaultETH);
-        assert.equal(balanceVaultETH2.toString(), '1000000', 'vault');
+        assert.equal(balanceVaultETH2.toString(), '1000000000000000', 'vault');
       });
 
       it('should estimate token transfer to two addresses [ @skip-on-coverage ]', async function () {
         const gasEstimate = await batch.transferERC20.estimateGas(
           token.address, [emptyAccounts[0], emptyAccounts[1]], [100, 100], {
             from: accounts[1],
-            gasPrice: 1,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
             value: web3.utils.toWei('1', 'ether'),
           });
 
@@ -321,12 +322,12 @@ contract('BatchTransfer', function (accounts) {
 
       it('should transfer to two addresses with the exact fees amount', async function () {
         const gas = withGasSafetyFactor(TWO_ERC20_TRANSFERS_GAS);
-        const fees = '16000';
+        const fees = new BN('8000').mul(new BN(web3.utils.toWei('1', 'gwei')));
         const tx = await batch.transferERC20(
           token.address, [emptyAccounts[0], emptyAccounts[1]], [100, 100], {
             from: accounts[1],
-            gasPrice: 2,
-            gas: gas,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas,
             value: fees.toString(),
           });
         assert.ok(tx.receipt.status, 'Status');
@@ -339,7 +340,7 @@ contract('BatchTransfer', function (accounts) {
         const gasEstimate = await batch.transferERC20.estimateGas(
           token.address, [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], {
             from: accounts[1],
-            gasPrice: 1,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
             value: web3.utils.toWei('1', 'ether'),
           });
 
@@ -348,12 +349,12 @@ contract('BatchTransfer', function (accounts) {
 
       it('should transfer to three addresses with the exact fees amount', async function () {
         const gas = withGasSafetyFactor(THREE_ERC20_TRANSFERS_GAS);
-        const fees = '24000';
+        const fees = new BN('12000').mul(new BN(web3.utils.toWei('1', 'gwei')));
         const tx = await batch.transferERC20(
           token.address, [emptyAccounts[0], emptyAccounts[1], emptyAccounts[2]], [100, 100, 100], {
             from: accounts[1],
-            gasPrice: 2,
-            gas: gas,
+            gasPrice: web3.utils.toWei('1', 'gwei'),
+            gas,
             value: fees.toString(),
           });
         assert.ok(tx.receipt.status, 'Status');
