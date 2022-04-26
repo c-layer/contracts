@@ -3,7 +3,7 @@ version: 2.1
 aliases:
   - &defaults
     docker:
-      - image: cimg/node:15.10.0
+      - image: cimg/node:18.0.0
     parameters:
       package:
         type: string
