@@ -1,6 +1,6 @@
 {
   "name": "@c-layer/governance",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "Governance smart contract for the Compliance Layer",
   "scripts": {
     "clean": "hardhat clean",
@@ -36,8 +36,8 @@
   },
   "homepage": "https://c-layer.org",
   "depenencies": {
-    "@c-layer/common": "^1.4.0",
-    "@c-layer/token": "^1.4.0"
+    "@c-layer/common": "^1.3.2",
+    "@c-layer/token": "^1.3.2"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-solhint": "^2.0.0",

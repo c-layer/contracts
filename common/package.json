@@ -1,6 +1,6 @@
 {
   "name": "@c-layer/common",
-  "version": "1.3.0",
+  "version": "1.3.2",
   "description": "SmartContract common componnents for the Compliance Layer",
   "scripts": {
     "clean": "hardhat clean",
@@ -15,7 +15,8 @@
     "lint:sol": "solhint --max-warnings 0 \"contracts/**/*.sol\"",
     "test": "hardhat test",
     "flatten": "hardhat flatten",
-    "gas-report": "env ENABLE_GAS_REPORT=1 hardhat test"
+    "gas-report": "env ENABLE_GAS_REPORT=1 hardhat test",
+    "github:publish": "npm login --scope=@OWNER --registry=https://npm.pkg.github.com"
   },
   "repository": {
     "type": "git",
@@ -29,9 +30,8 @@
     "erc20",
     "core"
   ],
-  "author": "Cyril Lapinte",
+  "author": "Cyril Lapinte <cyril.lapinte@openfiz.com>",
   "license": "MIT",
-  "private": true,
   "bugs": {
     "url": "https://github.com/c-layer/contracts/issues"
   },

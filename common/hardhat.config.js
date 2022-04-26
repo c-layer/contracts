@@ -12,6 +12,24 @@ let secret = {
   projectId: '',
 };
 
+/*
+task('accounts', 'Prints the list of accounts', async (taskArgs, hre) => {
+  const accounts = await hre.web3.eth.getAccounts().then(async (accounts) =>
+    await Promise.all(accounts.map(async (account) => {
+      const balance = await hre.web3.eth.getBalance(account);
+      return {
+        address: account,
+        balance: await hre.web3.eth.getBalance(account),
+      };
+    }))
+  );
+
+  for (const account of accounts) {
+    console.log(account.address + ' : ' + hre.web3.utils.fromWei(account.balance, 'ether') + ' ETH');
+  }
+});
+*/
+
 try {
   // Secret file format is:
   // { mnemonic: '', projectId, '', endpoints: { <networkname>: 'http://endpoint' } }
@@ -83,6 +101,14 @@ const config = {
     mainnet: {
       url: 'https://mainnet.infura.io/v3/' + secret.projectId,
       chainId: 1,
+      gas: 'auto',
+      accounts: {
+        mnemonic: secret.mnemonic,
+      },
+    },
+    arbitrumRinkeby: {
+      url: 'https://rinkeby.arbitrum.io/rpc',
+      chainId: 421611,
       gas: 'auto',
       accounts: {
         mnemonic: secret.mnemonic,
