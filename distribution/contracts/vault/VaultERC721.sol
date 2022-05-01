@@ -52,6 +52,8 @@ contract VaultERC721 is IVaultERC721, Operable {
   {
     address signer = _signature.recoverSigner(keccak256(abi.encode(_token, _tokenId, _validity)));
     require(isOperator(signer), "IV01");
+
+    // solhint-disable-next-line not-rely-on-time
     require(_validity < block.timestamp, "IV02");
     _token.transferFrom(address(this), msg.sender, _tokenId);
   }

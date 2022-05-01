@@ -64,6 +64,8 @@ contract VaultERC20 is IVaultERC20, Operable {
   {
     address signer = _signature.recoverSigner(keccak256(abi.encode(_token, _value, _validity)));
     require(isOperator(signer), "VE06");
+    
+    // solhint-disable-next-line not-rely-on-time
     require(_validity < block.timestamp, "VE07");
     _token.transferFrom(address(this), msg.sender, _value);
   }

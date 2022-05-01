@@ -103,7 +103,8 @@ contract('VaultERC20', function (accounts) {
       });
 
       it('should prevent non operator to increase spender approval', async function () {
-        await assertRevert(vault.increaseApprovalERC20(token.address, accounts[0], '100', { from: accounts[1] }), 'OP01');
+        await assertRevert(vault.increaseApprovalERC20(token.address, accounts[0], '100',
+          { from: accounts[1] }), 'OP01');
       });
 
       it('should let operator decrease spender approval', async function () {
@@ -117,7 +118,8 @@ contract('VaultERC20', function (accounts) {
       });
 
       it('should prevent non operator to decrease spender approval', async function () {
-        await assertRevert(vault.decreaseApprovalERC20(token.address, accounts[0], '100', { from: accounts[1] }), 'OP01');
+        await assertRevert(vault.decreaseApprovalERC20(token.address, accounts[0], '100',
+          { from: accounts[1] }), 'OP01');
       });
     });
   });

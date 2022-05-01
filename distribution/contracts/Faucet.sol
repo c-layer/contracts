@@ -1,7 +1,7 @@
 pragma solidity ^0.8.0;
 
 import "./interface/IFaucet.sol";
-import "./vault/Vault.sol";
+import "./Vault.sol";
 
 
 /**
@@ -20,11 +20,6 @@ contract Faucet is IFaucet, Vault {
 
   mapping(IERC20 => SWithdrawLimit) internal withdrawLimits;
   mapping(IERC20 => mapping(address => SWithdrawStatus)) internal withdrawStatus_;
-
-  /**
-   * @dev constructor
-   */
-  constructor(address _beneficiary) Vault(_beneficiary) {}
 
   /**
    * @dev withdrawLimit

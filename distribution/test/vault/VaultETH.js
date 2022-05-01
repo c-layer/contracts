@@ -7,11 +7,6 @@
 const assertRevert = require('../helpers/assertRevert');
 const Vault = artifacts.require('vault/VaultETH.sol');
 
-const formatAddressToTopic = address =>
-  ('0x' + (address.toLowerCase().substr(2).padStart(64, '0')));
-const formatValueToData = value =>
-  ('0x' + (value.substr(2).padStart(64, '0')));
-
 contract('VaultETH', function (accounts) {
   let vault;
 

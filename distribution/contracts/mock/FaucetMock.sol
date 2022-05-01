@@ -13,8 +13,6 @@ import "../Faucet.sol";
  */
 contract FaucetMock is Faucet {
 
-  constructor(address _beneficiary) Faucet(_beneficiary) {}
-
   function defineWithdrawStatusLastAtTest(
     IERC20 _token,
     address _beneficiary,

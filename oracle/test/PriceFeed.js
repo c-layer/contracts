@@ -4,9 +4,7 @@
  * @author Cyril Lapinte - <cyril@openfiz.com>
  */
 
-const assertGasEstimate = require('./helpers/assertGasEstimate');
 const assertRevert = require('./helpers/assertRevert');
-const BN = require('bn.js');
 const PricesFeed = artifacts.require('PricesFeed.sol');
 
 contract('PricesFeed', function (accounts) {
@@ -26,12 +24,12 @@ contract('PricesFeed', function (accounts) {
       priceFeed.definePrices(
         [ accounts[0], accounts[1], accounts[2] ],
         [ '100000', '20000', '300333' ],
-        { from: accounts[1] }
+        { from: accounts[1] },
       ), 'OP01');
   });
 
   it('should let operator to update prices', async function () {
-    const tx = await priceFeed.definePrices([ accounts[0], accounts[1], accounts[2] ], [ '100000', '20000', '300333' ]); 
+    const tx = await priceFeed.definePrices([ accounts[0], accounts[1], accounts[2] ], [ '100000', '20000', '300333' ]);
     assert.ok(tx.receipt.status, 'Status');
   });
 
@@ -52,7 +50,7 @@ contract('PricesFeed', function (accounts) {
     });
 
     it('should let operator to update prices', async function () {
-      const tx = await priceFeed.updatePrices([ '100000', '20000', '300333' ]); 
+      const tx = await priceFeed.updatePrices([ '100000', '20000', '300333' ]);
       assert.ok(tx.receipt.status, 'Status');
     });
 

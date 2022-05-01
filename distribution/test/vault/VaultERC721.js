@@ -76,7 +76,8 @@ contract('VaultERC721', function (accounts) {
     });
 
     it('should prevent non operator to send ERC721', async function () {
-      await assertRevert(vault.transferFromERC721(token.address, accounts[1], accounts[0], '10', { from: accounts[1] }), 'OP01');
+      await assertRevert(vault.transferFromERC721(token.address, accounts[1], accounts[0], '10',
+        { from: accounts[1] }), 'OP01');
     });
 
     it('should let operator approve a spender', async function () {

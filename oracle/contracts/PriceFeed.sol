@@ -13,8 +13,8 @@ import "./interface/IPricesFeed.sol";
  */
 contract PricesFeed is IPricesFeed, Operable {
 
-  address[] tokens;
-  mapping(address => uint256) prices;
+  address[] internal tokens;
+  mapping(address => uint256) internal prices;
   uint64 public updatedAt;
 
   function definePrices(address[] calldata _tokens, uint256[] calldata _prices) external onlyOperator {
@@ -22,6 +22,8 @@ contract PricesFeed is IPricesFeed, Operable {
       prices[_tokens[i]] = _prices[i];
     }
     tokens = _tokens;
+
+    // solhint-disable-next-line not-rely-on-time
     updatedAt = uint64(block.timestamp);
   }
 
@@ -29,6 +31,8 @@ contract PricesFeed is IPricesFeed, Operable {
     for(uint256 i=0; i < tokens.length; i++) {
       prices[tokens[i]] = _prices[i];
     }
+
+    // solhint-disable-next-line not-rely-on-time
     updatedAt = uint64(block.timestamp);
   }
 
