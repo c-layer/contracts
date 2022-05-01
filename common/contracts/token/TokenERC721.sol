@@ -164,18 +164,18 @@ contract TokenERC721 is ITokenERC721 {
   }
 
   function mintInternal(address _recipient, uint256[] memory _tokenIds) internal {
-    totalSupply_ += _tokenIds.length;
-
     Owner storage owner_ = owners[_recipient];
-    owner_.balance += _tokenIds.length;
 
     for(uint256 i=0; i < _tokenIds.length; i++) {
       uint256 tokenId = _tokenIds[i];
       require(ownersAddresses[tokenId] == address(0), "TN07");
-      tokenIds[i] = tokenId;
+
+      tokenIds[totalSupply_++] = tokenId;
       ownersAddresses[tokenId] = _recipient;
-      owner_.ownedTokenIds[i] = tokenId;
-      owner_.ownedTokenIndexes[tokenId] = i;
+
+      owner_.ownedTokenIds[owner_.balance] = tokenId;
+      owner_.ownedTokenIndexes[tokenId] = owner_.balance;
+      owner_.balance++;
       emit Transfer(address(0), _recipient, tokenId);
     }
   }
